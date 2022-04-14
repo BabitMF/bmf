@@ -72,6 +72,7 @@ class CFFEncoder : public Module {
     int codec_init_touched_num_;
     AVCodecContext *enc_ctxs_[2];
     AVRational in_stream_tbs_[2];
+    AVIOContext *avio_ctx_ = NULL;
     int streams_idx_[2];
     struct SwsContext *sws_ctx_;
     struct SwrContext *swr_ctx_;
@@ -88,6 +89,7 @@ class CFFEncoder : public Module {
     bool reset_flag_ = false;
     bool b_init_ = false;
     bool null_output_;
+    int push_output_ = 0;
     int64_t time_ = 0;
     int64_t audio_first_pts_ = LLONG_MAX;
     int64_t video_first_pts_ = LLONG_MAX;
@@ -124,6 +126,10 @@ public:
     int encode_and_write(AVFrame *frame, unsigned int idx, int *got_frame);
 
     int init_stream();
+
+    static int write_output_data(void *opaque, uint8_t *buf, int buf_size);
+
+    static int64_t seek_data(void *opaque, int64_t offset, int whence);
 
     int init_codec(int idx, AVFrame *frame);
 

@@ -151,6 +151,20 @@ int CFFEncoder::init() {
 
     /** @addtogroup EncM
      * @{
+     * @arg push_output: output the result to the output queue instead of write to disk, exp.
+     * @code
+            "push_output": 1
+     * @endcode
+     * @} */
+    if (input_option_.has_key("push_output")) {
+        int tmp;
+        input_option_.get_int("push_output", tmp);
+        if (tmp == 1)
+            push_output_ = 1;
+    }
+
+    /** @addtogroup EncM
+     * @{
      * @arg mux_params: specify the extra output mux parameters, exp.
      * @code
             "format": "hls",
@@ -291,6 +305,10 @@ CFFEncoder::~CFFEncoder() {
 int CFFEncoder::clean() {
     if (!b_init_)
         return 0;
+    if (avio_ctx_) {
+        av_freep(&avio_ctx_->buffer);
+        av_freep(&avio_ctx_);
+    }
     for (int idx = 0; idx <= 1; idx++) {
         if (codecs_[idx]) {
             codecs_[idx] = NULL;
@@ -302,7 +320,7 @@ int CFFEncoder::clean() {
         if (ost_[idx].input_stream)
             ost_[idx].input_stream = NULL;
     }
-    if (output_fmt_ctx_ && !(output_fmt_ctx_->oformat->flags & AVFMT_NOFILE)) {
+    if (push_output_ == 0 && output_fmt_ctx_ && !(output_fmt_ctx_->oformat->flags & AVFMT_NOFILE)) {
         avio_closep(&output_fmt_ctx_->pb);
         avformat_free_context(output_fmt_ctx_);
         output_fmt_ctx_ = NULL;
@@ -564,14 +582,14 @@ int CFFEncoder::init_stream() {
     int ret = 0;
     if (!output_fmt_ctx_)
         return 0;
-    if (!(output_fmt_ctx_->oformat->flags & AVFMT_NOFILE)) {
+    if (push_output_ == 0 && !(output_fmt_ctx_->oformat->flags & AVFMT_NOFILE)) {
         ret = avio_open(&output_fmt_ctx_->pb, output_path_.c_str(), AVIO_FLAG_WRITE);
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Could not open output file '%s'", output_path_.c_str());
             return ret;
         }
-
     }
+
     AVDictionary *opts = NULL;
     std::vector<std::pair<std::string, std::string>> params;
     mux_params_.get_iterated(params);
@@ -612,6 +630,16 @@ int CFFEncoder::init_stream() {
     return 0;
 }
 
+int CFFEncoder::write_output_data(void *opaque, uint8_t *buf, int buf_size) {
+    printf("TEST: got output avio data, size : %d\n", buf_size);
+    return 0;
+}
+
+int64_t CFFEncoder::seek_data(void *opaque, int64_t offset, int whence) {
+    printf("TEST: seek call back, offset: %ld, whence: %d \n", offset, whence);
+    return 0;
+}
+
 int CFFEncoder::init_codec(int idx, AVFrame* frame) {
     AVStream *out_stream;
     int ret;
@@ -627,10 +655,23 @@ int CFFEncoder::init_codec(int idx, AVFrame* frame) {
 
     if (!output_fmt_ctx_) {
         avformat_alloc_output_context2(&output_fmt_ctx_, NULL, (oformat_ != "" ? oformat_.c_str() : NULL),
-                                       output_path_.c_str());
+                                           push_output_ == 0 ? output_path_.c_str() : NULL);
         if (!output_fmt_ctx_) {
             BMFLOG_NODE(BMF_ERROR, node_id_) << "Could not create output context";
             return AVERROR_UNKNOWN;
+        }
+        if (push_output_ > 0) {
+            unsigned char *avio_ctx_buffer;
+            size_t avio_ctx_buffer_size = 4 * 4096;
+            avio_ctx_buffer = (unsigned char*)av_malloc(avio_ctx_buffer_size);
+            if (!avio_ctx_buffer) {
+                BMFLOG_NODE(BMF_ERROR, node_id_) << "Could not create avio buffer";
+                return AVERROR_UNKNOWN;
+            }
+            avio_ctx_ = avio_alloc_context(avio_ctx_buffer, avio_ctx_buffer_size, 1, (void*) this, NULL, write_output_data, seek_data);
+            avio_ctx_->seekable = AVIO_SEEKABLE_NORMAL;
+            output_fmt_ctx_->pb = avio_ctx_;
+            output_fmt_ctx_->flags = AVFMT_FLAG_CUSTOM_IO;
         }
     }
 

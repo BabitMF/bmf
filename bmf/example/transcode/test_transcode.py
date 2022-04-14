@@ -874,5 +874,25 @@ class TestTranscode(BaseTestCase):
         self.check_video_diff('./simple_00000.mp4', expect_result1)
         self.check_video_diff('./simple_00001.mp4', expect_result2)
 
+    @timeout_decorator.timeout(seconds=120)
+    def test_encoder_push_output(self):
+        input_video_path = "../files/img.mp4"
+        output_path = "./simple.mp4"
+        graph = bmf.graph({'dump_graph':1})
+        video = graph.decode({
+            "input_path": input_video_path,
+        })
+        (
+            bmf.encode(
+                video['video'],
+                video['audio'],
+                {
+                    "output_path": output_path,
+                    "push_output": 1
+                }
+            )
+            .run()
+        )
+
 if __name__ == '__main__':
     unittest.main()

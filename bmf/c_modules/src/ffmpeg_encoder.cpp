@@ -165,6 +165,21 @@ int CFFEncoder::init() {
 
     /** @addtogroup EncM
      * @{
+     * @arg avio_buffer_size: set avio buffer size, when oformat is image2pipe, this paramter is useful, exp.
+     * @code
+            "avio_buffer_size": 16384
+     * @endcode
+     * @} */
+    if (input_option_.has_key("avio_buffer_size")) {
+        int tmp;
+        input_option_.get_int("avio_buffer_size", tmp);
+        avio_buffer_size_ = tmp;
+    } else {
+        avio_buffer_size_ = 4 * 4096;
+    }
+
+    /** @addtogroup EncM
+     * @{
      * @arg mux_params: specify the extra output mux parameters, exp.
      * @code
             "format": "hls",
@@ -308,6 +323,11 @@ int CFFEncoder::clean() {
     if (avio_ctx_) {
         av_freep(&avio_ctx_->buffer);
         av_freep(&avio_ctx_);
+    }
+    if (current_image_buffer_.buf) {
+        av_freep(&(current_image_buffer_.buf));
+        current_image_buffer_.size = 0;
+        current_image_buffer_.room = 0;
     }
     for (int idx = 0; idx <= 1; idx++) {
         if (codecs_[idx]) {
@@ -517,6 +537,7 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_pack
     }
     if (av_index == 0 && fps_ != 0 && frame) {
         frame->pts = last_pts_ + 1;
+        current_frame_pts_ = frame->pts;
         ++last_pts_;
     }
 
@@ -630,13 +651,106 @@ int CFFEncoder::init_stream() {
     return 0;
 }
 
-int CFFEncoder::write_output_data(void *opaque, uint8_t *buf, int buf_size) {
-    printf("TEST: got output avio data, size : %d\n", buf_size);
-    return 0;
+int write_data(void *opaque, uint8_t *buf, int buf_size) {
+    return ((CFFEncoder *) opaque)->write_output_data(opaque, buf, buf_size);
 }
 
-int64_t CFFEncoder::seek_data(void *opaque, int64_t offset, int whence) {
-    printf("TEST: seek call back, offset: %ld, whence: %d \n", offset, whence);
+int CFFEncoder::write_current_packet_data(uint8_t *buf, int buf_size) {
+    void* data = nullptr;
+    AVPacket *avpkt = av_packet_alloc();
+    avpkt->size = buf_size;
+    av_init_packet(avpkt);
+    data = avpkt->data;
+    BMFAVPacket bmf_avpkt = ffmpeg::to_bmf_av_packet(avpkt, true);
+
+    memcpy(data, buf, buf_size);
+    bmf_avpkt.set_offset(current_offset_);
+    bmf_avpkt.set_whence(current_whence_);
+    auto packet = Packet(bmf_avpkt);
+    packet.set_timestamp(current_frame_pts_);
+    packet.set_data_type(DATA_TYPE_C);
+    packet.set_data_class_type(BMFAVPACKET_TYPE);
+    packet.set_class_name("libbmf_module_sdk.BMFAVPacket");
+    if (current_task_ptr_->get_outputs().find(current_index_) != current_task_ptr_->get_outputs().end())
+        current_task_ptr_->get_outputs()[current_index_]->push(packet);
+    return buf_size;
+}
+
+int CFFEncoder::write_output_data(void *opaque, uint8_t *buf, int buf_size) {
+    int ret = 0;
+    if (oformat_ == "image2pipe") {
+        if (buf_size >= 4) {
+            uint8_t tmp[4] = {buf[0], buf[1], buf[buf_size - 2], buf[buf_size - 1]};
+            if (tmp[0] == 255 && tmp[1] == 216) { // oxff oxd8
+                if (!full_image_buf_flag_) {
+                    ret = write_current_packet_data(current_image_buffer_.buf, current_image_buffer_.size);
+                    current_image_buffer_.size = 0;
+                    full_image_buf_flag_ = true;
+                }
+                if (tmp[2] == 255 && tmp[3] == 217 && full_image_buf_flag_) { // oxff, oxd9
+                    return write_current_packet_data(buf, buf_size);
+                } else {
+                    if (current_image_buffer_.room - current_image_buffer_.size < buf_size) {
+                        current_image_buffer_.buf = (unsigned char*)av_fast_realloc(current_image_buffer_.buf, &current_image_buffer_.room,
+                                                                                    current_image_buffer_.size + buf_size);
+                    }
+                    memcpy(current_image_buffer_.buf + current_image_buffer_.size, buf, buf_size);
+                    current_image_buffer_.size += buf_size;
+                    full_image_buf_flag_ = false;
+                    return buf_size;
+                }
+            } else {
+                if (tmp[2] == 255 && tmp[3] == 217) {
+                    if (current_image_buffer_.room - current_image_buffer_.size < buf_size) {
+                        current_image_buffer_.buf = (unsigned char*)av_fast_realloc(current_image_buffer_.buf, &current_image_buffer_.room,
+                                                                                    current_image_buffer_.size + buf_size);
+                    }
+                    memcpy(current_image_buffer_.buf + current_image_buffer_.size, buf, buf_size);
+                    current_image_buffer_.size += buf_size;
+                    ret = write_current_packet_data(current_image_buffer_.buf, current_image_buffer_.size);
+                    current_image_buffer_.size = 0;
+                    full_image_buf_flag_ = true;
+                    return buf_size;
+                } else {
+                    if (current_image_buffer_.room - current_image_buffer_.size < buf_size) {
+                        current_image_buffer_.buf = (unsigned char*)av_fast_realloc(current_image_buffer_.buf, &current_image_buffer_.room,
+                                                                                    current_image_buffer_.size + buf_size);
+                    }
+                    memcpy(current_image_buffer_.buf + current_image_buffer_.size, buf, buf_size);
+                    current_image_buffer_.size += buf_size;
+                    full_image_buf_flag_ = false;
+                    return buf_size;
+                }
+            }
+        } else {
+            if (current_image_buffer_.room - current_image_buffer_.size < buf_size) {
+                current_image_buffer_.buf = (unsigned char*)av_fast_realloc(current_image_buffer_.buf, &current_image_buffer_.room,
+                                                                                current_image_buffer_.size + buf_size);
+            }
+            memcpy(current_image_buffer_.buf + current_image_buffer_.size, buf, buf_size);
+            current_image_buffer_.size += buf_size;
+            full_image_buf_flag_ = false;
+            if (current_image_buffer_.size < 4) return buf_size;
+            if (current_image_buffer_.buf[current_image_buffer_.size -2] == 255 && current_image_buffer_.buf[current_image_buffer_.size - 1] == 217) {
+                ret = write_current_packet_data(current_image_buffer_.buf, current_image_buffer_.size);
+                current_image_buffer_.size = 0;
+                full_image_buf_flag_ = true;
+                return ret;
+            }
+        }
+    } else {
+        return write_current_packet_data(buf, buf_size);
+    }
+    return buf_size;
+}
+
+int64_t seek_data(void *opaque, int64_t offset, int whence) {
+    return ((CFFEncoder *) opaque)->seek_output_data(opaque, offset, whence);
+}
+
+int64_t CFFEncoder::seek_output_data(void *opaque, int64_t offset, int whence) {
+    current_offset_ = offset;
+    current_whence_ = whence;
     return 0;
 }
 
@@ -662,16 +776,19 @@ int CFFEncoder::init_codec(int idx, AVFrame* frame) {
         }
         if (push_output_ > 0) {
             unsigned char *avio_ctx_buffer;
-            size_t avio_ctx_buffer_size = 4 * 4096;
+            size_t avio_ctx_buffer_size = avio_buffer_size_;
             avio_ctx_buffer = (unsigned char*)av_malloc(avio_ctx_buffer_size);
             if (!avio_ctx_buffer) {
                 BMFLOG_NODE(BMF_ERROR, node_id_) << "Could not create avio buffer";
                 return AVERROR_UNKNOWN;
             }
-            avio_ctx_ = avio_alloc_context(avio_ctx_buffer, avio_ctx_buffer_size, 1, (void*) this, NULL, write_output_data, seek_data);
+            avio_ctx_ = avio_alloc_context(avio_ctx_buffer, avio_ctx_buffer_size, 1, (void*) this, NULL, write_data, seek_data);
             avio_ctx_->seekable = AVIO_SEEKABLE_NORMAL;
             output_fmt_ctx_->pb = avio_ctx_;
             output_fmt_ctx_->flags = AVFMT_FLAG_CUSTOM_IO;
+            current_image_buffer_.buf = (unsigned char*)av_malloc(avio_ctx_buffer_size);
+            current_image_buffer_.room = avio_ctx_buffer_size;
+            current_image_buffer_.size = 0;
         }
     }
 
@@ -1427,6 +1544,7 @@ int CFFEncoder::streamcopy(AVPacket *ipkt, AVPacket *opkt, int idx) {
 }
 
 int CFFEncoder::process(Task &task) {
+    current_task_ptr_ = &task;
     if (reset_flag_) {
         if (check_valid_task(task)) {
             b_init_ = false;
@@ -1445,6 +1563,7 @@ int CFFEncoder::process(Task &task) {
     while (((task.get_inputs().find(0) != task.get_inputs().end() && !task.get_inputs()[0]->empty()) ||
             (task.get_inputs().find(1) != task.get_inputs().end() && !task.get_inputs()[1]->empty())) && !b_eof_) {
         for (int index = 0; index < num_input_streams_; index++) {
+            current_index_ = index;
             if (task.get_inputs().find(index) == task.get_inputs().end())
                 continue;
             if (b_stream_eof_[index])
@@ -1544,6 +1663,7 @@ int CFFEncoder::process(Task &task) {
                         handle_frame(temp.first, temp.second);
                     }
                     frame->pts = frame->pts - first_pts_;
+                    current_frame_pts_ = frame->pts;
                     handle_frame(frame, index);
                 } else {
                     frame_cache_.push_back(std::pair<AVFrame *, int>(frame, index));
@@ -1557,19 +1677,27 @@ int CFFEncoder::process(Task &task) {
     if (b_eof_) {
         if (!null_output_) {
             if (task.get_outputs().size() > 0 && !b_flushed_) {
-                std::string data;
-                if (!output_dir_.empty())
-                    data = output_dir_;
-                else
-                    data = output_path_;
-                auto packet = Packet(data);
-                packet.set_timestamp(1);
-                task.get_outputs()[0]->push(packet);
+                if (push_output_ == 0) {
+                    Packet packet;
+                    std::string data;
+                    if (!output_dir_.empty())
+                        data = output_dir_;
+                    else
+                        data = output_path_;
+                    packet.set_data(data);
+                    packet.set_timestamp(1);
+                    task.get_outputs()[0]->push(packet);
+                } else {
+                    Packet packet = Packet::generate_eof_packet();
+                    assert(packet.timestamp_ == BMF_EOF);
+                    task.get_outputs()[0]->push(packet);
+                }
             }
             flush();
         }
         task.set_timestamp(DONE);
     }
+
     return PROCESS_OK;
 }
 

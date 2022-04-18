@@ -16,6 +16,7 @@
 #define BMF_FF_ENCODER_H
 
 #include "c_module.h"
+#include "bmf_av_packet.h"
 extern "C" {
 #include <libavutil/imgutils.h>
 #include <libavutil/samplefmt.h>
@@ -46,6 +47,12 @@ typedef struct OutputStream {
     std::shared_ptr<AVStream> input_stream;
     int64_t filter_in_rescale_delta_last;
 } OutputStream;
+
+typedef struct CurrentImage2Buffer {
+    unsigned char *buf;
+    size_t size;
+    unsigned int room;
+} CurrentImage2Buffer;
 
 class CFFEncoder : public Module {
     JsonParam input_option_;
@@ -108,6 +115,15 @@ class CFFEncoder : public Module {
     AVRational input_video_frame_rate_ = {0,0};
     AVRational input_sample_aspect_ratio_ = {0,0};
     OutputStream ost_[2];
+    int avio_buffer_size_ = 4 * 4096;
+    int current_index_ = 0;
+    int64_t current_frame_pts_;
+    int64_t current_offset_ = 0;
+    int current_whence_ = 0;
+    Task* current_task_ptr_ = nullptr;
+    bool full_image_buf_flag_ = true;
+    CurrentImage2Buffer current_image_buffer_ = {0};
+
 public:
     CFFEncoder(int node_id, JsonParam option);
 
@@ -127,9 +143,11 @@ public:
 
     int init_stream();
 
-    static int write_output_data(void *opaque, uint8_t *buf, int buf_size);
+    int write_output_data(void *opaque, uint8_t *buf, int buf_size);
 
-    static int64_t seek_data(void *opaque, int64_t offset, int whence);
+    int write_current_packet_data(uint8_t *buf, int buf_size);
+
+    int64_t seek_output_data(void *opaque, int64_t offset, int whence);
 
     int init_codec(int idx, AVFrame *frame);
 

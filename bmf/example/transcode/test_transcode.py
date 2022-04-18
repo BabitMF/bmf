@@ -875,24 +875,99 @@ class TestTranscode(BaseTestCase):
         self.check_video_diff('./simple_00001.mp4', expect_result2)
 
     @timeout_decorator.timeout(seconds=120)
-    def test_encoder_push_output(self):
+    def test_encoder_push_output_mp4(self):
         input_video_path = "../files/img.mp4"
-        output_path = "./simple.mp4"
+        output_path = "../files/simple_%03d.jpg"
         graph = bmf.graph({'dump_graph':1})
         video = graph.decode({
             "input_path": input_video_path,
         })
-        (
+        result = (
             bmf.encode(
                 video['video'],
-                video['audio'],
+                None,
                 {
                     "output_path": output_path,
-                    "push_output": 1
+                    "push_output": 1,
+                    "vframes": 3,
+                    "video_params": {
+                        "codec": "jpg",
+                        "width": 640,
+                        "height": 480,
+                        "crf": 23,
+                        "preset": "veryfast"
+                    },
                 }
             )
-            .run()
+            .start()
         )
+        with open(output_path, "wb") as f:
+            for i, packet in enumerate(result):
+                avpacket = packet.get()
+                offset = avpacket.get_offset()
+                whence = avpacket.get_whence()
+                """
+                offset is file write pointer offset, whence is mode. whence == SEEK_SET, from begin; whence == SEEK_CUR, current;
+                whence == SEEK_END, from end, etc.
+                #define SEEK_SET	0	/* Seek from beginning of file.  */
+                #define SEEK_CUR	1	/* Seek from current position.  */
+                #define SEEK_END	2	/* Seek from end of file.  */
+                #define SEEK_DATA	3	/* Seek to next data.  */
+                #define SEEK_HOLE	4	/* Seek to next hole.  */
+
+                NOTICE: BMFAVPacket's data is uint8_t pointer, but sdk_py_get_data convert pointer into char pointer
+                so the result is wrong. please use cplusplus interface to instead.
+
+                boost::python::object sdk_py_BMFAVPacket::sdk_py_get_data() {
+                    void *data = this->get_data();
+                    boost::python::object
+                    pkt_data(boost::python::handle<>(PyMemoryView_FromMemory((char *)data, this->get_size(),
+                    PyBUF_WRITE)));
+                    return pkt_data;
+                }
+                """
+                data = avpacket.data_ptr()
+                if (offset > 0) :
+                    f.seek(offset, whence)
+                f.write(data)
+
+    @timeout_decorator.timeout(seconds=120)
+    def test_encoder_push_output_image2pipe(self):
+        input_video_path = "../files/img.mp4"
+        graph = bmf.graph({'dump_graph':1})
+        video = graph.decode({
+            "input_path": input_video_path,
+        })
+        vframes_num = 2
+        result = (
+            bmf.encode(
+                video['video'],
+                None,
+                {
+                    "push_output": 1,
+                    "vframes": vframes_num,
+                    "format": "image2pipe",
+                    "avio_buffer_size": 65536,#16*4096
+                    "video_params": {
+                        "codec": "jpg",
+                        "width": 640,
+                        "height": 480,
+                        "crf": 23,
+                        "preset": "veryfast"
+                    },
+                }
+            )
+            .start()
+        )
+        write_num = 0
+        for i, packet in enumerate(result):
+            avpacket = packet.get()
+            data = avpacket.data_ptr()
+            if write_num < vframes_num:
+                output_path = "../files/simple_image" + str(write_num)+ ".jpg"
+                write_num = write_num + 1
+                with open(output_path, "wb") as f:
+                    f.write(data)
 
 if __name__ == '__main__':
     unittest.main()

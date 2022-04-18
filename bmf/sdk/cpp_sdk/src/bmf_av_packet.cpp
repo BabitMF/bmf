@@ -58,7 +58,6 @@ int BMFAVPacket::nbytes() const
     return *this ? data().nbytes() : 0;
 }
 
-
 BMFAVPacket& BMFAVPacket::copy_props(const BMFAVPacket &from)
 {
     OpaqueDataSet::copy_props(from);
@@ -66,5 +65,20 @@ BMFAVPacket& BMFAVPacket::copy_props(const BMFAVPacket &from)
     return *this;
 }
 
+int64_t BMFAVPacket::get_offset() const {
+    return offset_;
+}
+
+void BMFAVPacket::set_offset(int64_t offset) {
+    offset_ = offset;
+}
+
+int BMFAVPacket::get_whence() const {
+    return whence_;
+}
+
+void BMFAVPacket::set_whence(int whence) {
+    whence_ = whence;
+}
 
 } //namespace

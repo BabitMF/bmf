@@ -102,8 +102,39 @@ public:
      * @return VideoFrame& 
      */
     BMFAVPacket& copy_props(const BMFAVPacket &from);
-};
 
+    /**
+     * @brief get the current data offset which is file write pointer offset
+     * 
+     * @return int64
+     */
+    int64_t get_offset() const;
+
+    /**
+     * @brief get the data whence which is mode. whence == SEEK_SET, from begin; whence == SEEK_CUR, current
+     * 
+     * @return int
+     */
+    int get_whence() const;
+
+    /**
+     * @brief set the current data offset which is file write pointer offset
+     * 
+     * @return void
+     */
+    void set_offset(int64_t offset);
+
+    /**
+     * @brief set the data whence which is mode. whence == SEEK_SET, from begin; whence == SEEK_CUR, current
+     * 
+     * @return void
+     */
+    void set_whence(int whence);
+
+    int64_t offset_;
+
+    int whence_;
+};
 
 } //namespace bmf_sdk
 

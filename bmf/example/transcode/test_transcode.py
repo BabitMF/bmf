@@ -877,7 +877,7 @@ class TestTranscode(BaseTestCase):
     @timeout_decorator.timeout(seconds=120)
     def test_encoder_push_output_mp4(self):
         input_video_path = "../files/img.mp4"
-        output_path = "../files/simple_%03d.jpg"
+        output_path = "./simple_%03d.jpg"
         graph = bmf.graph({'dump_graph':1})
         video = graph.decode({
             "input_path": input_video_path,
@@ -964,7 +964,7 @@ class TestTranscode(BaseTestCase):
             avpacket = packet.get()
             data = avpacket.data_ptr()
             if write_num < vframes_num:
-                output_path = "../files/simple_image" + str(write_num)+ ".jpg"
+                output_path = "./simple_image" + str(write_num)+ ".jpg"
                 write_num = write_num + 1
                 with open(output_path, "wb") as f:
                     f.write(data)

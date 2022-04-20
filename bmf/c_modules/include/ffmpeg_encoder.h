@@ -49,8 +49,9 @@ typedef struct OutputStream {
 } OutputStream;
 
 typedef struct CurrentImage2Buffer {
-    unsigned char *buf;
+    uint8_t *buf;
     size_t size;
+    bool is_packing;
     unsigned int room;
 } CurrentImage2Buffer;
 
@@ -121,7 +122,6 @@ class CFFEncoder : public Module {
     int64_t current_offset_ = 0;
     int current_whence_ = 0;
     Task* current_task_ptr_ = nullptr;
-    bool full_image_buf_flag_ = true;
     CurrentImage2Buffer current_image_buffer_ = {0};
 
 public:

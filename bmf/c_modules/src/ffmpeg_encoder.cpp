@@ -677,70 +677,43 @@ int CFFEncoder::write_current_packet_data(uint8_t *buf, int buf_size) {
 }
 
 int CFFEncoder::write_output_data(void *opaque, uint8_t *buf, int buf_size) {
-    int ret = 0;
-    if (oformat_ == "image2pipe") {
-        if (buf_size >= 4) {
-            uint8_t tmp[4] = {buf[0], buf[1], buf[buf_size - 2], buf[buf_size - 1]};
-            if (tmp[0] == 255 && tmp[1] == 216) { // oxff oxd8
-                if (!full_image_buf_flag_) {
-                    ret = write_current_packet_data(current_image_buffer_.buf, current_image_buffer_.size);
-                    current_image_buffer_.size = 0;
-                    full_image_buf_flag_ = true;
-                }
-                if (tmp[2] == 255 && tmp[3] == 217 && full_image_buf_flag_) { // oxff, oxd9
-                    return write_current_packet_data(buf, buf_size);
-                } else {
-                    if (current_image_buffer_.room - current_image_buffer_.size < buf_size) {
-                        current_image_buffer_.buf = (unsigned char*)av_fast_realloc(current_image_buffer_.buf, &current_image_buffer_.room,
-                                                                                    current_image_buffer_.size + buf_size);
-                    }
-                    memcpy(current_image_buffer_.buf + current_image_buffer_.size, buf, buf_size);
-                    current_image_buffer_.size += buf_size;
-                    full_image_buf_flag_ = false;
-                    return buf_size;
-                }
-            } else {
-                if (tmp[2] == 255 && tmp[3] == 217) {
-                    if (current_image_buffer_.room - current_image_buffer_.size < buf_size) {
-                        current_image_buffer_.buf = (unsigned char*)av_fast_realloc(current_image_buffer_.buf, &current_image_buffer_.room,
-                                                                                    current_image_buffer_.size + buf_size);
-                    }
-                    memcpy(current_image_buffer_.buf + current_image_buffer_.size, buf, buf_size);
-                    current_image_buffer_.size += buf_size;
-                    ret = write_current_packet_data(current_image_buffer_.buf, current_image_buffer_.size);
-                    current_image_buffer_.size = 0;
-                    full_image_buf_flag_ = true;
-                    return buf_size;
-                } else {
-                    if (current_image_buffer_.room - current_image_buffer_.size < buf_size) {
-                        current_image_buffer_.buf = (unsigned char*)av_fast_realloc(current_image_buffer_.buf, &current_image_buffer_.room,
-                                                                                    current_image_buffer_.size + buf_size);
-                    }
-                    memcpy(current_image_buffer_.buf + current_image_buffer_.size, buf, buf_size);
-                    current_image_buffer_.size += buf_size;
-                    full_image_buf_flag_ = false;
-                    return buf_size;
-                }
-            }
-        } else {
-            if (current_image_buffer_.room - current_image_buffer_.size < buf_size) {
-                current_image_buffer_.buf = (unsigned char*)av_fast_realloc(current_image_buffer_.buf, &current_image_buffer_.room,
-                                                                                current_image_buffer_.size + buf_size);
-            }
-            memcpy(current_image_buffer_.buf + current_image_buffer_.size, buf, buf_size);
-            current_image_buffer_.size += buf_size;
-            full_image_buf_flag_ = false;
-            if (current_image_buffer_.size < 4) return buf_size;
-            if (current_image_buffer_.buf[current_image_buffer_.size -2] == 255 && current_image_buffer_.buf[current_image_buffer_.size - 1] == 217) {
-                ret = write_current_packet_data(current_image_buffer_.buf, current_image_buffer_.size);
-                current_image_buffer_.size = 0;
-                full_image_buf_flag_ = true;
-                return ret;
+    if (oformat_ == "image2pipe" && codec_names_[0] == "mjpeg") {
+        bool has_header = buf_size >= 2 && buf[0] == 0xFF && buf[1] == 0xD8;
+        bool has_trailer = buf_size >= 2 && buf[buf_size - 2] == 0xFF && buf[buf_size - 1] == 0xD9;
+        if (!current_image_buffer_.is_packing && has_header && has_trailer)
+            return write_current_packet_data(buf, buf_size);
+
+        if (current_image_buffer_.room - current_image_buffer_.size < buf_size) {
+            current_image_buffer_.buf = (uint8_t*)av_fast_realloc(current_image_buffer_.buf,
+                                                                        &current_image_buffer_.room,
+                                                                        current_image_buffer_.size + buf_size);
+            if (!current_image_buffer_.buf) {
+                BMFLOG_NODE(BMF_ERROR, node_id_) << "Could realloc buffer for image2pipe output";
+               return AVERROR(ENOMEM);
             }
         }
-    } else {
+        memcpy(current_image_buffer_.buf + current_image_buffer_.size, buf, buf_size);
+        current_image_buffer_.size += buf_size;
+
+        if (current_image_buffer_.is_packing) {
+            uint8_t *buffer = current_image_buffer_.buf;
+            if (current_image_buffer_.size >= 4 &&
+                buffer[0] == 0xFF && buffer[1] == 0xD8 &&
+                buffer[current_image_buffer_.size - 2] == 0xFF &&
+                buffer[current_image_buffer_.size - 1] == 0xD9) {
+
+                write_current_packet_data(buffer, current_image_buffer_.size);
+                current_image_buffer_.is_packing = false;
+                current_image_buffer_.size = 0;
+                return buf_size;
+            }
+        } else {
+            current_image_buffer_.is_packing = true;
+            return buf_size;
+        }
+    } else
         return write_current_packet_data(buf, buf_size);
-    }
+
     return buf_size;
 }
 

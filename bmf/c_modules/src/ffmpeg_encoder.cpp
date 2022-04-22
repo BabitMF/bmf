@@ -673,6 +673,11 @@ int CFFEncoder::write_current_packet_data(uint8_t *buf, int buf_size) {
     packet.set_class_name("libbmf_module_sdk.BMFAVPacket");
     if (current_task_ptr_->get_outputs().find(current_index_) != current_task_ptr_->get_outputs().end())
         current_task_ptr_->get_outputs()[current_index_]->push(packet);
+    if (oformat_ != "image2pipe" && push_output_video_write_head_and_trailer_ >= 2) {
+        Packet pkt = Packet::generate_eof_packet();
+        assert(pkt.timestamp_ == BMF_EOF);
+        current_task_ptr_->get_outputs()[current_index_]->push(pkt);
+    }
     return buf_size;
 }
 
@@ -724,6 +729,7 @@ int64_t seek_data(void *opaque, int64_t offset, int whence) {
 int64_t CFFEncoder::seek_output_data(void *opaque, int64_t offset, int whence) {
     current_offset_ = offset;
     current_whence_ = whence;
+    push_output_video_write_head_and_trailer_ += 1;
     return 0;
 }
 
@@ -1660,10 +1666,10 @@ int CFFEncoder::process(Task &task) {
                     packet.set_data(data);
                     packet.set_timestamp(1);
                     task.get_outputs()[0]->push(packet);
-                } else {
-                    Packet packet = Packet::generate_eof_packet();
-                    assert(packet.timestamp_ == BMF_EOF);
-                    task.get_outputs()[0]->push(packet);
+                } else if (oformat_ == "image2pipe" && codec_names_[0] == "mjpeg") {
+                    Packet pkt = Packet::generate_eof_packet();
+                    assert(pkt.timestamp_ == BMF_EOF);
+                    current_task_ptr_->get_outputs()[current_index_]->push(pkt);
                 }
             }
             flush();

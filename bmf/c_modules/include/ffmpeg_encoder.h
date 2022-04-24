@@ -121,7 +121,6 @@ class CFFEncoder : public Module {
     int64_t current_frame_pts_;
     int64_t current_offset_ = 0;
     int current_whence_ = 0;
-    size_t push_output_video_write_head_and_trailer_ = 0;
     Task* current_task_ptr_ = nullptr;
     CurrentImage2Buffer current_image_buffer_ = {0};
 

@@ -969,5 +969,38 @@ class TestTranscode(BaseTestCase):
                 with open(output_path, "wb") as f:
                     f.write(data)
 
+    @timeout_decorator.timeout(seconds=120)
+    def test_encoder_push_output_audio_pcm_s16le(self):
+        input_video_path = "../files/img.mp4"
+        output_path = "./test_audio_simple_pcm_s16le.wav"
+        graph = bmf.graph({'dump_graph':1})
+        video = graph.decode({
+            "input_path": input_video_path,
+            #'audio_codec': "copy",
+        })
+        result = (
+            bmf.encode(
+                None,
+                video['audio'],
+                {
+                    "output_path": output_path,
+                    "format": "wav",
+                    "push_output": 1,
+                    "audio_params": {
+                        "codec": "pcm_s16le",
+                    },
+                }
+            )
+            .start()
+        )
+        with open(output_path, "wb") as f:
+            for i, packet in enumerate(result):
+                offset = packet.get_offset()
+                whence = packet.get_whence()
+                data = packet.get_data()
+                if offset > 0:
+                    f.seek(offset, whence)
+                f.write(data)
+
 if __name__ == '__main__':
     unittest.main()

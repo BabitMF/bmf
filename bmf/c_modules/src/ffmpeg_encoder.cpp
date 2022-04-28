@@ -671,8 +671,8 @@ int CFFEncoder::write_current_packet_data(uint8_t *buf, int buf_size) {
     packet.set_data_type(DATA_TYPE_C);
     packet.set_data_class_type(BMFAVPACKET_TYPE);
     packet.set_class_name("libbmf_module_sdk.BMFAVPacket");
-    if (current_task_ptr_->get_outputs().find(current_index_) != current_task_ptr_->get_outputs().end())
-        current_task_ptr_->get_outputs()[current_index_]->push(packet);
+    if (current_task_ptr_->get_outputs().find(0) != current_task_ptr_->get_outputs().end())
+        current_task_ptr_->get_outputs()[0]->push(packet);
     return buf_size;
 }
 
@@ -1536,7 +1536,6 @@ int CFFEncoder::process(Task &task) {
     while (((task.get_inputs().find(0) != task.get_inputs().end() && !task.get_inputs()[0]->empty()) ||
             (task.get_inputs().find(1) != task.get_inputs().end() && !task.get_inputs()[1]->empty())) && !b_eof_) {
         for (int index = 0; index < num_input_streams_; index++) {
-            current_index_ = index;
             if (task.get_inputs().find(index) == task.get_inputs().end())
                 continue;
             if (b_stream_eof_[index])

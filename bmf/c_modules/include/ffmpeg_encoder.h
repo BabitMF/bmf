@@ -117,7 +117,6 @@ class CFFEncoder : public Module {
     AVRational input_sample_aspect_ratio_ = {0,0};
     OutputStream ost_[2];
     int avio_buffer_size_ = 4 * 4096;
-    int current_index_ = 0;
     int64_t current_frame_pts_;
     int64_t current_offset_ = 0;
     int current_whence_ = 0;

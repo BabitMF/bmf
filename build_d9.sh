@@ -136,6 +136,7 @@ cp /usr/local/boost_1_68_0/stage/lib/libboost_numpy37.so.1.68.0* output/3rd_part
 cp /usr/local/boost_1_68_0/stage/lib/libboost_system.so.1.68.0* output/3rd_party/lib
 cp /usr/local/boost_1_68_0/stage/lib/libboost_python37.so.1.68.0* output/3rd_party/lib
 cp /usr/local/boost_1_68_0/stage/lib/libboost_filesystem.so.1.68.0* output/3rd_party/lib
+cp /usr/local/lib/libpython3.7* output/3rd_party/lib
 # others
 cp /usr/lib/x86_64-linux-gnu/libgflags.so.2.2* output/3rd_party/lib
 cp /usr/lib/x86_64-linux-gnu/libunwind.so.8* output/3rd_party/lib

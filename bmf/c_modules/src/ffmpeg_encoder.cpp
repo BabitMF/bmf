@@ -340,11 +340,14 @@ int CFFEncoder::clean() {
         if (ost_[idx].input_stream)
             ost_[idx].input_stream = NULL;
     }
-    if (push_output_ == 0 && output_fmt_ctx_ && !(output_fmt_ctx_->oformat->flags & AVFMT_NOFILE)) {
+    if (push_output_ == 0 && output_fmt_ctx_ && output_fmt_ctx_->oformat && !(output_fmt_ctx_->oformat->flags & AVFMT_NOFILE))
         avio_closep(&output_fmt_ctx_->pb);
+
+    if (output_fmt_ctx_){
         avformat_free_context(output_fmt_ctx_);
         output_fmt_ctx_ = NULL;
     }
+
     if (sws_ctx_) {
         sws_freeContext(sws_ctx_);
         sws_ctx_ = NULL;

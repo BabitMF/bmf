@@ -211,7 +211,6 @@ VideoFrame VideoFrame::to(const Device &device, bool non_blocking) const
     return vf;
 }
 
-
 VideoFrame VideoFrame::to(ScalarType dtype) const
 {
     VideoFrame vf;
@@ -235,6 +234,5 @@ VideoFrame& VideoFrame::copy_props(const VideoFrame &from)
     Future::copy_props(from);
     return *this;
 }
-
 
 } //namespace bmf_sdk

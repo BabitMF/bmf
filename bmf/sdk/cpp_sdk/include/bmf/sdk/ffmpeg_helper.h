@@ -237,14 +237,15 @@ static AVFramePtr make_avframe(int width, int height, int format, int align = 32
     return std::move(avf);
 }
 
-static SimpleFilterGraph init_reformat_filter(AVFrame *av_frame, const std::string &format) {
+static SimpleFilterGraph init_reformat_filter(AVFrame *av_frame, const std::string &format, std::string flags) {
     SimpleFilterGraph simple_filter_graph;
-    std::string filter_desc = "[i0_0]format=pix_fmts=" + format+"[o0_0]";
+    std::string filter_desc = flags.empty() ? "" : ("sws_flags=" + flags + ";");
+    filter_desc += "[i0_0]format=pix_fmts=" + format+"[o0_0]";
     simple_filter_graph.init(av_frame,filter_desc);
     return simple_filter_graph;
 }
 
-static VideoFrame reformat(const VideoFrame &vf,  const std::string &format_str, SimpleFilterGraph filter_graph = SimpleFilterGraph()) {
+static VideoFrame reformat(const VideoFrame &vf,  const std::string &format_str, std::string flags = "", SimpleFilterGraph filter_graph = SimpleFilterGraph()) {
     HMP_REQUIRE(vf.device().type() == kCPU, "ffmpeg::reformat only support CPU data")
     std::vector<AVFrame*> result_frames;
     AVFrame *av_frame;
@@ -275,7 +276,7 @@ static VideoFrame reformat(const VideoFrame &vf,  const std::string &format_str,
     }
 
     if (filter_graph.filter_graph_ == nullptr) {
-        filter_graph = init_reformat_filter(av_frame, format_str);
+        filter_graph = init_reformat_filter(av_frame, format_str, flags);
     }
 
     // allocate dest AVFrame
@@ -289,9 +290,9 @@ static VideoFrame reformat(const VideoFrame &vf,  const std::string &format_str,
     return dst_vf;
 }
 
-static VideoFrame reformat(const VideoFrame &vf, AVPixelFormat format, SimpleFilterGraph filter_graph = SimpleFilterGraph())
+static VideoFrame reformat(const VideoFrame &vf, AVPixelFormat format, std::string flags = "", SimpleFilterGraph filter_graph = SimpleFilterGraph())
 {
-    return reformat(vf, av_get_pix_fmt_name(format), filter_graph);
+    return reformat(vf, av_get_pix_fmt_name(format), flags, filter_graph);
 }
 /*
 static VideoFrame reformat(const VideoFrame &vf, AVPixelFormat format, void **context = nullptr)

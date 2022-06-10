@@ -101,6 +101,23 @@ public:
 
     int config_graph(std::string &graph_desc, std::map<int, FilterConfig> &config,
                      std::map<int, FilterConfig> &out_config) {
+
+        // prepend sws_flags if required, apply global sws flag only for scale or format filters
+        std::string flag_prefix = "sws_flags=";
+        if (getenv("BMF_SWS_FLAGS") && graph_desc.substr(0, flag_prefix.size()) != flag_prefix) {
+            bool use_global_flag = graph_desc.find("scale=") != std::string::npos;
+            if (!use_global_flag) {
+                size_t format_pos = graph_desc.find("format=", 0);
+                while (format_pos != std::string::npos && !use_global_flag) {
+                    if (format_pos > 0 && graph_desc[format_pos - 1] != 'a')
+                        use_global_flag = true;
+                    format_pos = graph_desc.find("format=", format_pos + 1);
+                }
+            }
+            if (use_global_flag)
+                graph_desc = flag_prefix + getenv("BMF_SWS_FLAGS") + ";" + graph_desc;
+        }
+
         graph_desc_ = graph_desc;
         in_configs_ = config;
         out_configs_ = out_config;

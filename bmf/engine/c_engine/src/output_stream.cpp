@@ -41,4 +41,10 @@ BEGIN_BMF_ENGINE_NS
         }
         return 0;
     }
+    int OutputStream::add_upstream_nodes(int node_id) {
+        for (auto &s:mirror_streams_) {
+            s.input_stream_manager_->add_upstream_nodes(node_id);
+        }
+        return 0;
+    }
 END_BMF_ENGINE_NS

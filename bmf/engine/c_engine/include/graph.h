@@ -139,6 +139,9 @@ BEGIN_BMF_ENGINE_NS
 //    std::map<std::string, InputStreams> input_streams_;
         std::vector<std::shared_ptr<InputStream>> orphan_streams_;
         bool py_init_flag_ = false;
+        std::condition_variable cond_close_;
+        std::mutex con_var_mutex_;
+        int32_t closed_count_ = 0;
     };
 
 END_BMF_ENGINE_NS

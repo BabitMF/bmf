@@ -40,6 +40,8 @@ BEGIN_BMF_ENGINE_NS
 
         int propagate_packets(std::shared_ptr<SafeQueue<Packet>> packets);
 
+        int add_upstream_nodes(int node_id);
+
         int stream_id_;
         std::string identifier_;
         std::string notify_;

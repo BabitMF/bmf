@@ -83,14 +83,20 @@ BEGIN_BMF_ENGINE_NS
             if (state_ == State::TERMINATING and queue_.empty() || exception_catch_flag_) {
                 break;
             }
-            BMF_TRACE(SCHEDULE, ("THREAD_" + std::to_string(id_) + "_WAIT").c_str(), START);
             {
                 std::unique_lock<std::mutex> lk(con_var_mutex_);
-                if (queue_.empty())
+                if (queue_.empty()) {
+                    wait_cnt_++;
+                    int64_t startts;
+                    BMF_TRACE(SCHEDULE, ("THREAD_" + std::to_string(id_) + "_WAIT" + "_" + std::to_string(wait_cnt_)).c_str(), START);
+                    startts = clock();
                     con_var_.wait(lk, [this] { return this->state_ == State::TERMINATING || !this->queue_.empty(); });
+                    wait_duration_ += (clock() - startts);
+                    BMF_TRACE(SCHEDULE, ("THREAD_" + std::to_string(id_) + "_WAIT"+ "_" + std::to_string(wait_cnt_)).c_str(), END);
+                }
             }
-            BMF_TRACE(SCHEDULE, ("THREAD_" + std::to_string(id_) + "_WAIT").c_str(), END);
             Item item;
+            //printf("DEBUG, schedule queue %d size %d\n", id_, queue_.size());
             while (queue_.pop(item)) {
                 try{
                     exec(item.task);
@@ -164,6 +170,8 @@ BEGIN_BMF_ENGINE_NS
             exec_thread_.join();
             state_ = State::TERMINATED;
         }
+        double duration = (double) wait_duration_ / CLOCKS_PER_SEC;
+        //BMFLOG(BMF_INFO) << "DEBUG, scheduler queue " << id_ << " wait time " << duration << ", wait cnt " << wait_cnt_;
         return 0;
     }
 

@@ -71,8 +71,8 @@ BEGIN_BMF_ENGINE_NS
                 BMFLOG_NODE(BMF_INFO, node_id_) << "eof received, add node to scheduler";
                 // add node to scheduler thread until this EOS is processed
                 // graph_output_stream may not have attribute node
-                if (throttled_cb_ != NULL) {
-                    throttled_cb_(node_id_, true);
+                if (node_id_ >= 0 && throttled_cb_ != NULL) {
+                    throttled_cb_(node_id_, false);
                 }
             }
             // wake up event
@@ -96,8 +96,8 @@ BEGIN_BMF_ENGINE_NS
         if (pkt.timestamp() == EOS or pkt.timestamp() == BMF_EOF) {
             // EOS is popped, remove node from scheduler thread
             BMFLOG_NODE(BMF_INFO, node_id_) << "eof processed, remove node from scheduler";
-            if (node_id_ >= 0)
-                throttled_cb_(node_id_, false);
+            //if (node_id_ >= 0)
+            //    throttled_cb_(node_id_, false);
         }
         return pkt;
     }
@@ -111,7 +111,7 @@ BEGIN_BMF_ENGINE_NS
             if (next_time_bounding_ == DONE)
                 break;
             if (node_id_ >= 0)
-                throttled_cb_(node_id_, true);
+                throttled_cb_(node_id_, false);//tobefix
             std::unique_lock<std::mutex> lk(stream_m_);
             stream_ept_.wait_for(lk, std::chrono::microseconds(40));
         }
@@ -133,8 +133,8 @@ BEGIN_BMF_ENGINE_NS
             if (pkt.timestamp() == EOS or pkt.timestamp() == BMF_EOF) {
                 // EOS is popped, remove node from scheduler thread
                 BMFLOG_NODE(BMF_INFO, node_id_) << "eof processed, remove node from scheduler";
-                if (node_id_ >= 0)
-                    throttled_cb_(node_id_, false);
+                //if (node_id_ >= 0)
+                //    throttled_cb_(node_id_, false);
             }
             return pkt;
         } else {
@@ -142,9 +142,13 @@ BEGIN_BMF_ENGINE_NS
             stream_ept_.notify_all();
 
             if (block) {
-                std::unique_lock<std::mutex> lk(mutex_);
-                fill_packet_event_.wait(lk);
+                while (queue_->empty()) {
+                    //fill_packet_event_.wait(lk);
+                    std::unique_lock<std::mutex> lk(mutex_);
+                    fill_packet_event_.wait_for(lk, std::chrono::milliseconds(5));
+                }
             }
+            queue_->pop(pkt);
         }
         return pkt;
     }

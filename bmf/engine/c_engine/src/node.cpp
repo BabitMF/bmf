@@ -48,7 +48,9 @@ BEGIN_BMF_ENGINE_NS
         // but haven't been executed, for source node, we need use this
         // value to control task filling speed
         pending_tasks_ = 0;
-        max_pending_tasks_ = 5;
+        //max_pending_tasks_ = 5;
+        max_pending_tasks_ = queue_size_limit_;
+        printf("debug queue size, node %d, queue size: %d\n", node_id, queue_size_limit_);
         task_processed_cnt_ = 0;
         is_premodule_ = false;
 
@@ -89,6 +91,7 @@ BEGIN_BMF_ENGINE_NS
         InputStreamManagerCallBack callback;
         callback.scheduler_cb = callback_.scheduler_cb;
         callback.throttled_cb = callback_.throttled_cb;
+        callback.sched_required = callback_.sched_required;
         callback.get_node_cb = callback_.get_node;
         callback.notify_cb = [this]() -> bool {
             return this->schedule_node();
@@ -162,7 +165,7 @@ BEGIN_BMF_ENGINE_NS
     int Node::close() {
         BMFLOG_NODE(BMF_INFO, id_) << "close node";
         mutex_.lock();
-        callback_.throttled_cb(id_, false);
+        //callback_.throttled_cb(id_, false);
 
         for (auto &input_stream:input_stream_manager_->input_streams_)
             if (input_stream.second->is_full())
@@ -171,6 +174,7 @@ BEGIN_BMF_ENGINE_NS
             module_->close();
         }
         state_ = NodeState::CLOSED;
+        callback_.sched_required(id_, true);
         mutex_.unlock();
         return 0;
     }
@@ -262,20 +266,6 @@ BEGIN_BMF_ENGINE_NS
         return pending_tasks_ >= max_pending_tasks_;
     }
 
-    void Node::check_node_pending() {
-        if (not is_source()) {
-            if (state_ == NodeState::RUNNING && any_of_input_queue_full()) {
-                state_ = NodeState::PENDING;
-                BMFLOG_NODE(BMF_INFO, id_) << "enter pending, add node to scheduler";
-                callback_.throttled_cb(id_, true);
-            } else if (state_ == NodeState::PENDING && not any_of_input_queue_full()) {
-                state_ = NodeState::RUNNING;
-                BMFLOG_NODE(BMF_INFO, id_) << "quit pending, remove node from scheduler";
-                callback_.throttled_cb(id_, false);
-            }
-        }
-    }
-
     int Node::all_downstream_nodes_closed() {
         for (auto &output_stream:output_stream_manager_->output_streams_) {
             for (auto &mirror_stream : output_stream.second->mirror_streams_) {
@@ -326,7 +316,8 @@ BEGIN_BMF_ENGINE_NS
             // become source node
             set_source(true);
             // add to scheduler
-            callback_.throttled_cb(id_, true);
+            //callback_.throttled_cb(id_, true);
+            //callback_.sched_required(id_, false);
         }
             // used only for SERVER mode
             // receive eos means that the node is ready to close
@@ -393,11 +384,7 @@ BEGIN_BMF_ENGINE_NS
             return 0;
         }
 
-        // check if node should enter pending
-        // to avoid race condition with schedule_node on pending check, add lock here
-        mutex_.lock();
-        check_node_pending();
-        mutex_.unlock();
+        callback_.sched_required(id_, false);
 
         return 0;
     }
@@ -433,18 +420,7 @@ There are two cases which will run into schedule_node, so we need a mutex here
                 return false;
             }
         }
-        // check if node should enter pending
-        check_node_pending();
 
-        // if any of downstream node is full, we need skip this call
-        // because if we produce some output packets, we can't
-        // add them to all the downstream node
-        // and we don't need to schedule node if too many tasks in the scheduler queue either
-        //
-        if (too_many_tasks_pending() || any_of_downstream_full()) {
-            mutex_.unlock();
-            return false;
-        }
         bool result = false;
         if (is_source()) {
             Task task = Task(id_, input_stream_manager_->stream_id_list_, output_stream_manager_->get_stream_id_list());

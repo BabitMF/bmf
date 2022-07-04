@@ -33,7 +33,7 @@ BEGIN_BMF_ENGINE_NS
             : node_id_(node_id), callback_(callback), output_stream_id_list_(output_stream_id_list) {
         for (auto i = 0; i < input_streams.size(); ++i) {
             input_stream_names_.push_back(input_streams[i].get_identifier());
-            input_streams_[i] = std::make_shared<InputStream>(i, input_streams[i], node_id, callback.throttled_cb,
+            input_streams_[i] = std::make_shared<InputStream>(i, input_streams[i], node_id, callback.sched_required,
                                                               max_queue_size);
             stream_id_list_.push_back(i);
         }
@@ -57,7 +57,7 @@ BEGIN_BMF_ENGINE_NS
 
         int max_queue_size = 5;
         input_streams_[stream_id] = std::make_shared<InputStream>(stream_id, name, "", "", id,
-                                                                  callback_.throttled_cb, max_queue_size);
+                                                                  callback_.sched_required, max_queue_size);
         //list add to ensure the queue can be picked up into the task
         stream_id_list_.push_back(stream_id);
 
@@ -123,9 +123,12 @@ BEGIN_BMF_ENGINE_NS
         if (packets->size() == 0)
             return;
         if (input_streams_.count(stream_id) > 0) {
+            //bool is_empty = input_streams_[stream_id]->is_empty();
             input_streams_[stream_id]->add_packets(packets);
             if (callback_.notify_cb != NULL) {
-                callback_.notify_cb();
+                //if (this->type() != "Immediate" || (this->type() == "Immediate" && is_empty))
+                    //callback_.notify_cb();
+                    callback_.sched_required(node_id_, false);
             }
         }
     }
@@ -135,6 +138,11 @@ BEGIN_BMF_ENGINE_NS
             auto stream = input_streams_[stream_id];
             return stream->pop_next_packet(block);
         } else return Packet(0);
+    }
+
+    int InputStreamManager::add_upstream_nodes(int node_id) {
+        upstream_nodes_.push_back(node_id);
+        return 0;
     }
 
     ImmediateInputStreamManager::ImmediateInputStreamManager(int node_id, std::vector<StreamConfig> &input_streams,
@@ -166,6 +174,7 @@ BEGIN_BMF_ENGINE_NS
     }
 
     bool ImmediateInputStreamManager::fill_task_input(Task &task) {
+        bool task_filled = false;
         for (auto & input_stream : input_streams_) {
             if (input_stream.second->is_empty()) {
 //            task.fill_input_packet(iter->second->get_id(), Packet());
@@ -183,13 +192,14 @@ BEGIN_BMF_ENGINE_NS
                         stream_done_[input_stream.first] = 1;
                 }
                 task.fill_input_packet(input_stream.second->get_id(), pkt);
+                task_filled = true;
             }
         }
 
         if (stream_done_.size() == input_streams_.size()) {
             task.set_timestamp(BMF_EOF);
         }
-        return true;
+        return task_filled;
     }
 
     DefaultInputManager::DefaultInputManager(int node_id, std::vector<StreamConfig> &input_streams,

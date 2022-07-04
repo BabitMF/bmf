@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#pragma GCC optimize(2)
+
 #ifndef BMF_ENGINE_COMMON_H
 #define BMF_ENGINE_COMMON_H
 

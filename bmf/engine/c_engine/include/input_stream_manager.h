@@ -41,6 +41,7 @@ BEGIN_BMF_ENGINE_NS
         std::function<void(Task &)> scheduler_cb = NULL;
         std::function<bool()> notify_cb = NULL;
         std::function<void(int, bool)> throttled_cb = NULL;
+        std::function<void(int, bool)> sched_required = NULL;
         std::function<bool()> node_is_closed_cb = NULL;
         std::function<int(int, std::shared_ptr<Node> &)> get_node_cb = NULL;
     };
@@ -71,6 +72,8 @@ BEGIN_BMF_ENGINE_NS
 
         void add_packets(int stream_id, std::shared_ptr<SafeQueue<Packet> > packets);
 
+        int add_upstream_nodes(int node_id);
+
         int node_id_;
         std::map<int, std::shared_ptr<InputStream> > input_streams_;
         InputStreamManagerCallBack callback_;
@@ -81,6 +84,7 @@ BEGIN_BMF_ENGINE_NS
         std::map<int, int> stream_done_;
         int max_id_;
         std::mutex mtx_;
+        std::vector<int> upstream_nodes_;
     };
 
     class DefaultInputManager : public InputStreamManager {

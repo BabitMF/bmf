@@ -37,6 +37,7 @@ BEGIN_BMF_ENGINE_NS
     class SchedulerCallBack {
     public:
         std::function<int(int, std::shared_ptr<Node> &)> get_node_;
+        std::function<int(int)> close_report_;
     };
 
     class Scheduler {
@@ -54,6 +55,7 @@ BEGIN_BMF_ENGINE_NS
         int close();
 
         int add_or_remove_node(int node_id, bool is_add);
+        int sched_required(int node_id, bool is_closed);
 
         bool choose_node_schedule(int64_t start_time, std::shared_ptr<Node> &node);
 
@@ -63,15 +65,20 @@ BEGIN_BMF_ENGINE_NS
 
         int clear_task(int node_id, int scheduler_queue_id);
 
+        int to_schedule_queue(std::shared_ptr<Node> node);
+
         bool paused_ = false;
         std::vector<std::shared_ptr<SchedulerQueue> > scheduler_queues_;
         std::map<int, NodeItem> nodes_to_schedule_;
         std::thread exec_thread_;
         bool thread_quit_ = 0;
+        int64_t cond_wait_num_ = 0;
         std::recursive_mutex node_mutex_;
+        std::mutex sched_mutex_;
         std::exception_ptr eptr_;
         int64_t last_schedule_success_time_;
         SchedulerCallBack callback_;
+        SafeQueue<std::shared_ptr<Node>> sched_nodes_;
     };
 
 END_BMF_ENGINE_NS

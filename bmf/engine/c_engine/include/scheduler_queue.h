@@ -98,6 +98,8 @@ BEGIN_BMF_ENGINE_NS
         bool exception_catch_flag_ = false;
         std::exception_ptr eptr_ ;
         int64_t start_time_; //TODO: unused
+        int64_t wait_duration_ = 0;
+        int64_t wait_cnt_ = 0;
         SchedulerQueueCallBack callback_;
         // TODO:
         SafePriorityQueue<Item> queue_;

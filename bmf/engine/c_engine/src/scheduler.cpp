@@ -42,13 +42,6 @@ BEGIN_BMF_ENGINE_NS
     }
 
     int Scheduler::start() {
-        exec_thread_ = std::thread(&Scheduler::scheduling_thread, this);
-        auto handle = exec_thread_.native_handle();
-#if __APPLE__
-        pthread_setname_np("scheduler");
-#else
-        pthread_setname_np(handle,"scheduler");
-#endif
         for (int i = 0; i < scheduler_queues_.size(); i++) {
             scheduler_queues_[i]->start();
         }
@@ -56,15 +49,10 @@ BEGIN_BMF_ENGINE_NS
     }
 
     int Scheduler::close() {
-        if (exec_thread_.joinable()){
-            thread_quit_ = true;
-            BMFLOG(BMF_INFO) << "closing the scheduling thread";
-            exec_thread_.join();
-            for (int i = 0; i < scheduler_queues_.size(); i++) {
-                scheduler_queues_[i]->close();
-            }
-            BMFLOG(BMF_INFO) << "all scheduling threads were joint";
+        for (int i = 0; i < scheduler_queues_.size(); i++) {
+            scheduler_queues_[i]->close();
         }
+        BMFLOG(BMF_INFO) << "all scheduling threads were joint";
         return 0;
     }
 
@@ -82,30 +70,79 @@ BEGIN_BMF_ENGINE_NS
 
     int Scheduler::add_or_remove_node(int node_id, bool is_add) {
         node_mutex_.lock();
+        bool notify_needed = false;
+        if (nodes_to_schedule_.size() == 0)
+            notify_needed = true;
 //    BMFLOG(BMF_INFO)<<"add or remove node :"<<node_id<<" add flag:"<<is_add;
         std::shared_ptr<Node> node = NULL;
         callback_.get_node_(node_id, node);
         if (node != NULL) {
             if (is_add) {
-
                 if (nodes_to_schedule_.count(node_id) > 0) {
                     nodes_to_schedule_[node_id].nodes_ref_cnt_++;
                 } else {
                     nodes_to_schedule_[node_id] = NodeItem(node);
                     nodes_to_schedule_[node_id].nodes_ref_cnt_++;
                 }
+                //printf("DEBUG, node %d refcnt is: %d\n", node_id, nodes_to_schedule_[node_id].nodes_ref_cnt_);
             } else {
                 if (nodes_to_schedule_.count(node_id) > 0) {
                     if (nodes_to_schedule_[node_id].nodes_ref_cnt_ > 0) {
                         nodes_to_schedule_[node_id].nodes_ref_cnt_--;
                     }
+                    //printf("DEBUG, node %d refcnt is: %d\n", node_id, nodes_to_schedule_[node_id].nodes_ref_cnt_);
                     if (nodes_to_schedule_[node_id].nodes_ref_cnt_ == 0) {
                         nodes_to_schedule_.erase(node_id);
                     }
                 }
             }
         }
+        //printf("DEBUG: nodes to scheduler size: %d\n", nodes_to_schedule_.size());
+
+        if (is_add) {
+            int64_t start_time = clock();
+            std::shared_ptr<Node> sched_node = NULL;
+            choose_node_schedule(start_time, sched_node);
+            if (sched_node &&
+                ((sched_node->is_source() && !sched_node->any_of_downstream_full()) ||
+                 (!sched_node->is_source() && !sched_node->too_many_tasks_pending()))) {
+                //if (nodes_to_schedule_.size() > 0 && notify_needed) {
+                //printf("DEBUG: add node %d and notify all, sched list size: %d\n", sched_node->get_id(), nodes_to_schedule_.size());
+                sched_node->pre_sched_num_++;
+                //sched_nodes_.push(sched_node);
+                to_schedule_queue(sched_node);
+                //std::lock_guard<std::mutex> lk(sched_mutex_);
+                //sched_needed_.notify_one();
+                //}
+            }
+        }
         node_mutex_.unlock();
+        return 0;
+    }
+
+    int Scheduler::sched_required(int node_id, bool is_closed) {
+        NodeItem final_node_item = NodeItem();
+        bool got_node = false; 
+        std::shared_ptr<Node> node = NULL;
+
+        callback_.get_node_(node_id, node);
+        if (!node) {
+            BMFLOG(BMF_ERROR) << "node id incorrect in schedule:" << node_id;
+            return -1;
+        }
+        if (is_closed) { // closed node report
+            callback_.close_report_(node_id);
+        } else {
+            std::shared_ptr<InputStreamManager> input_stream_manager;
+            node->get_input_stream_manager(input_stream_manager);
+            for (auto &node_id:input_stream_manager->upstream_nodes_)
+                sched_required(node_id, false);
+
+            if (!node->too_many_tasks_pending() && !node->any_of_downstream_full()) {
+                node->pre_sched_num_++;
+                to_schedule_queue(node);
+            }
+        }
         return 0;
     }
 
@@ -114,6 +151,23 @@ BEGIN_BMF_ENGINE_NS
         NodeItem final_node_item = NodeItem();
         int node_id = -1;
         for (auto node_item:nodes_to_schedule_) {
+            //if (node_item.second.node_->pre_sched_num_ <= 4) {
+                if (node_item.second.node_->is_source() && node_item.second.node_->any_of_downstream_full() && node_item.second.node_->too_many_tasks_pending()) {
+                    if (node_item.second.node_->any_of_downstream_full())
+                        printf("DEBUG, node %d, choose the source node which is downstream full\n", node_item.first);
+                    if (node_item.second.node_->too_many_tasks_pending())
+                        printf("DEBUG, node %d, choose the source node which is pending full\n", node_item.first);
+                    node_id = -1;
+                    continue;
+                }
+                if (!node_item.second.node_->is_source() && node_item.second.node_->too_many_tasks_pending() && node_item.second.node_->all_input_queue_empty()) {
+                    node_id = -1;
+                    continue;
+                }
+            //} else {
+            //    printf("DEBUG, node %d pre sched number is full\n", node_item.first);
+            //    continue;
+            //}
             if (node_item.second.last_scheduled_time_ <= start_time) {
                 if (final_node_item.node_ == NULL) {
                     final_node_item = node_item.second;
@@ -129,7 +183,7 @@ BEGIN_BMF_ENGINE_NS
 
         if (node_id != -1) {
             nodes_to_schedule_[node_id].last_scheduled_time_ = clock();
-//        final_node_item.last_scheduled_time_ = clock();
+            final_node_item.last_scheduled_time_ = clock();
             node = final_node_item.node_;
             node_mutex_.unlock();
             return true;
@@ -138,55 +192,18 @@ BEGIN_BMF_ENGINE_NS
         return false;
     }
 
-    int Scheduler::scheduling_thread() {
-        bool schedule_success = false;
-        bool scheduler_queue_exception_catch_flag_ = false;
-        while (not thread_quit_) {
-            for(auto scheduler_queue:scheduler_queues_){
-                if (scheduler_queue->exception_catch_flag_){
-                    scheduler_queue_exception_catch_flag_ = true;
-                    break;
-                }
-            }
-            if (scheduler_queue_exception_catch_flag_)
-                break;
-            if (paused_)
-                usleep(1000);
-            schedule_success = false;
-            int64_t start_time = clock();
-            int node_id = -1;
-            while (true) {
-                if (paused_)
-                    break;
-                std::shared_ptr<Node> node = NULL;
-                bool result = choose_node_schedule(start_time, node);
-                if (node && node->wait_pause_) {
-                    schedule_success = true;
-                    break;
-                }
-                if (result) {
-                    if ((node->is_source() && node->is_hungry()) || (not node->is_source())) {
-                        if (node->schedule_node()) {
-                            schedule_success = true;
-                            last_schedule_success_time_ = clock();
-                        }
-                        break;
-                    }
-                } else {
-                    break;
-                }
-            }
-            if (not schedule_success) {
-                usleep(1000);
+    int Scheduler::to_schedule_queue(std::shared_ptr<Node> node) {
+
+        if (node && node->wait_pause_) {
+            //break;
+            return 0;
+        }
+        if (node) {
+            node->pre_sched_num_--;
+            if (node->schedule_node()) {
+                last_schedule_success_time_ = clock();
             }
         }
-        for(auto scheduler_queue:scheduler_queues_){
-            if (scheduler_queue->eptr_){
-                this->eptr_ = scheduler_queue->eptr_;
-                break;
-            }
-        }
-        BMFLOG(BMF_INFO) << "exit the scheduling thread";
         return 0;
     }
 

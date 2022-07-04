@@ -122,6 +122,7 @@ class CFFDecoder : public Module {
     std::string hwaccel_str_;
     int hwaccel_check_ = 0;
     AVDictionary *dec_opts_ = NULL;
+    bool copy_ts_ = false;
 
     //use when input is bmf_avpacket
     bool packets_handle_all_ = false;

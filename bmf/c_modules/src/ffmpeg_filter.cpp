@@ -146,7 +146,7 @@ int CFFFilter::graph_descr(JsonParam &option, std::string &result) {
 
     if (!option.has_key("filters")) {
         //Log: No filter config
-        BMFLOG_NODE(BMF_INFO, node_id_) << "No filter config";
+        BMFLOG_NODE(BMF_ERROR, node_id_) << "No filter config";
         return -1;
     }
     std::vector<JsonParam> filters_param;
@@ -168,6 +168,9 @@ int CFFFilter::init_filtergraph() {
     AVRational time_base;
     AVRational frame_rate;
 
+    ret = graph_descr(option_, g_desc_);
+    if (ret < 0)
+        return ret;
     for (auto it = input_cache_.begin(); it != input_cache_.end(); it++) {
         AVFrame *frm = it->second.front();
         if (!frm)

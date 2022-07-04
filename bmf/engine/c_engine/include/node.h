@@ -48,6 +48,7 @@ BEGIN_BMF_ENGINE_NS
         std::function<void(Task &)> scheduler_cb;
         std::function<void(int, int)> clear_cb;
         std::function<void(int, bool)> throttled_cb;
+        std::function<void(int, bool)> sched_required;
         std::function<int(int, std::shared_ptr<Node> &)> get_node;
     };
 
@@ -136,6 +137,8 @@ BEGIN_BMF_ENGINE_NS
         long long dur;
 
         bool wait_pause_;
+
+        int64_t pre_sched_num_ = 0;
     private:
         // visible to monitor
         friend class RunningInfoCollector;

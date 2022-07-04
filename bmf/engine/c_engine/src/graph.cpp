@@ -70,6 +70,15 @@ BEGIN_BMF_ENGINE_NS
         scheduler_callback.get_node_ = [this](int node_id, std::shared_ptr<Node> &node) -> int {
             return this->get_node(node_id, node);
         };
+        scheduler_callback.close_report_ = [this](int node_id) -> int {
+            std::lock_guard<std::mutex> _(this->con_var_mutex_);
+            this->closed_count_++;
+            if (this->closed_count_ == this->nodes_.size())
+                this->cond_close_.notify_one();
+            //if (this->all_nodes_done())
+            //    this->cond_close_.notify_one();
+            return 0;
+        };
         scheduler_ = std::make_shared<Scheduler>(scheduler_callback, scheduler_count_);
         BMFLOG(BMF_INFO) << "scheduler count" << scheduler_count_;
 
@@ -132,6 +141,9 @@ BEGIN_BMF_ENGINE_NS
         callback.throttled_cb = [this](int node_id, bool is_add) -> int {
             return this->scheduler_->add_or_remove_node(node_id, is_add);
         };
+        callback.sched_required = [this](int node_id, bool is_add) -> int {
+            return this->scheduler_->sched_required(node_id, is_add);
+        };
         callback.scheduler_cb = [this](Task &task) -> int {
             return this->scheduler_->schedule_node(task);
         };
@@ -178,7 +190,12 @@ BEGIN_BMF_ENGINE_NS
                 add_all_mirrors_for_output_stream(output_stream.second);
             }
         }
-
+        for (auto &node_iter:nodes_) {
+            std::map<int, std::shared_ptr<OutputStream>> output_streams;
+            node_iter.second->get_output_streams(output_streams);
+            for (auto &output_stream:output_streams)
+                output_stream.second->add_upstream_nodes(node_iter.first);
+        }
         // create graph output streams
         for (auto &graph_output_stream:graph_config_.output_streams) {
             for (auto &node:graph_config_.nodes) {
@@ -612,9 +629,11 @@ BEGIN_BMF_ENGINE_NS
     }
 
     int Graph::close() {
-        while (not unlikely(all_nodes_done()) && !scheduler_->eptr_) {
-            usleep(1000);
-        }
+        std::unique_lock<std::mutex> lk(con_var_mutex_);
+        //if (not all_nodes_done())
+        if (closed_count_ != nodes_.size())
+            cond_close_.wait(lk);
+
         scheduler_->close();
         g_ptr.clear();
         if (scheduler_->eptr_){

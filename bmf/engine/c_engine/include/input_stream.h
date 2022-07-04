@@ -23,6 +23,7 @@
 
 #include <queue>
 #include <condition_variable>
+#include <thread>
 
 BEGIN_BMF_ENGINE_NS
     USE_BMF_SDK_NS
@@ -85,6 +86,7 @@ BEGIN_BMF_ENGINE_NS
         int node_id_;
         std::string stream_manager_name_;
         int64_t next_time_bounding_;
+        int64_t pop_number_ = 0;
         mutable std::mutex mutex_;
         std::condition_variable fill_packet_event_;
         std::mutex stream_m_;

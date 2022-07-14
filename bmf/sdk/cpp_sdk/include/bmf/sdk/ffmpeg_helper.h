@@ -245,7 +245,7 @@ static SimpleFilterGraph init_reformat_filter(AVFrame *av_frame, const std::stri
     return simple_filter_graph;
 }
 
-static VideoFrame reformat(const VideoFrame &vf,  const std::string &format_str, std::string flags = "", SimpleFilterGraph filter_graph = SimpleFilterGraph()) {
+static VideoFrame reformat(const VideoFrame &vf,  const std::string &format_str, SimpleFilterGraph filter_graph = SimpleFilterGraph(), std::string flags = "") {
     HMP_REQUIRE(vf.device().type() == kCPU, "ffmpeg::reformat only support CPU data")
     std::vector<AVFrame*> result_frames;
     AVFrame *av_frame;
@@ -290,9 +290,9 @@ static VideoFrame reformat(const VideoFrame &vf,  const std::string &format_str,
     return dst_vf;
 }
 
-static VideoFrame reformat(const VideoFrame &vf, AVPixelFormat format, std::string flags = "", SimpleFilterGraph filter_graph = SimpleFilterGraph())
+static VideoFrame reformat(const VideoFrame &vf, AVPixelFormat format, SimpleFilterGraph filter_graph = SimpleFilterGraph(), std::string flags = "")
 {
-    return reformat(vf, av_get_pix_fmt_name(format), flags, filter_graph);
+    return reformat(vf, av_get_pix_fmt_name(format), filter_graph, flags);
 }
 /*
 static VideoFrame reformat(const VideoFrame &vf, AVPixelFormat format, void **context = nullptr)

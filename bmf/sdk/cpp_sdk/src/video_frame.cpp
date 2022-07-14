@@ -200,7 +200,6 @@ VideoFrame VideoFrame::to(const Device &device, bool non_blocking) const
     if(self->is_image){
         auto image = self->image.to(device, non_blocking);
         vf = VideoFrame(image);
-        
     }
     else{
         auto frame = self->frame.to(device, non_blocking);

@@ -80,15 +80,15 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
     stream_frame_number_ = 0;
 
     if (!LogBuffer::avlog_cb_set())
-        av_log_set_level(40);
+        av_log_set_level(AV_LOG_VERBOSE);
     /** @addtogroup DecM
      * @{
      * @arg loglevel: to set the loglevel of ffmpeg library
      * it can be "quiet","panic","fatal","error","warning","info","verbose","debug","trace"
      * @} */
-    if (input_option_.has_key("loglevel")) {
+    if (option.has_key("loglevel")) {
         std::string log_level = "";
-        input_option_.get_string("loglevel", log_level);
+        option.get_string("loglevel", log_level);
         if (!LogBuffer::avlog_cb_set()) {
             av_log_set_level(LogBuffer::infer_level(log_level));
             BMFLOG_NODE(BMF_INFO, node_id_) << "decode setting log level to: " << log_level;

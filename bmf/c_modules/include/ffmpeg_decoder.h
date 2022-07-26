@@ -61,7 +61,6 @@ typedef struct InputStream {
 } InputStream;
 
 class CFFDecoder : public Module {
-    JsonParam input_option_;
     JsonParam dec_params_;
     AVInputFormat *input_format_;
     AVFormatContext *input_fmt_ctx_;

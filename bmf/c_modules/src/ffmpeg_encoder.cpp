@@ -397,6 +397,10 @@ int CFFEncoder::handle_output(AVPacket *hpkt, int idx) {
         }
     }
 
+    //BMFLOG_NODE(BMF_INFO, node_id_) << "push out time stamp: " << pkt->pts;
+    if (push_output_)
+        current_frame_pts_ = pkt->pts;
+
     AVFormatContext *s = output_fmt_ctx_;
     AVStream *st = output_stream_[idx];
     OutputStream *ost = &ost_[idx];
@@ -574,8 +578,6 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_pack
             av_packet_free(&enc_pkt);
             return *got_packet;
         }
-
-        if (*got_packet == 0)
 
         if (!stream_inited_ && *got_packet == 0) {
             cache_.push_back(std::pair<AVPacket*, int>(enc_pkt, idx));

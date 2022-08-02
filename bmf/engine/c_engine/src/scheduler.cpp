@@ -123,14 +123,22 @@ BEGIN_BMF_ENGINE_NS
     int Scheduler::sched_required(int node_id, bool is_closed) {
         NodeItem final_node_item = NodeItem();
         bool got_node = false; 
+        int scheduler_queue_id;
         std::shared_ptr<Node> node = NULL;
+        std::shared_ptr<SchedulerQueue> scheduler_queue;
 
         callback_.get_node_(node_id, node);
         if (!node) {
             BMFLOG(BMF_ERROR) << "node id incorrect in schedule:" << node_id;
             return -1;
         }
-        if (is_closed) { // closed node report
+        scheduler_queue_id = node->get_scheduler_queue_id();
+        scheduler_queue = scheduler_queues_[scheduler_queue_id];
+        if (scheduler_queue->exception_catch_flag_) {
+            exception_flag_ = true;
+            eptr_ = scheduler_queue->eptr_;
+        }
+        if (is_closed || exception_flag_) { // closed node report
             callback_.close_report_(node_id);
         } else {
             std::shared_ptr<InputStreamManager> input_stream_manager;

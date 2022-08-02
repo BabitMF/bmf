@@ -76,6 +76,7 @@ BEGIN_BMF_ENGINE_NS
         std::recursive_mutex node_mutex_;
         std::mutex sched_mutex_;
         std::exception_ptr eptr_;
+        bool exception_flag_ = false;
         int64_t last_schedule_success_time_;
         SchedulerCallBack callback_;
         SafeQueue<std::shared_ptr<Node>> sched_nodes_;

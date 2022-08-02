@@ -96,7 +96,6 @@ BEGIN_BMF_ENGINE_NS
                 }
             }
             Item item;
-            //printf("DEBUG, schedule queue %d size %d\n", id_, queue_.size());
             while (queue_.pop(item)) {
                 try{
                     exec(item.task);
@@ -105,7 +104,6 @@ BEGIN_BMF_ENGINE_NS
                     const std::lock_guard<std::mutex> lock(exception_mutex_);
                     exception_catch_flag_ = true;
                     this->eptr_ = std::current_exception();
-                    break;
                 }
                 if (paused_)
                     internal_pause();

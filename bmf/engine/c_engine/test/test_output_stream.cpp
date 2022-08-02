@@ -37,12 +37,14 @@ std::shared_ptr<CallBackForTest> initInputStreamManager(std::shared_ptr<InputStr
     auto call_back = std::make_shared<CallBackForTest>();
     std::function<void(int, bool)> throttled_cb = call_back->callback_add_or_remove_node_;
     std::function<void(Task &)> scheduler_cb = call_back->callback_scheduler_to_schedule_node_;
+    std::function<void(int, bool)> sched_required = call_back->callback_add_or_remove_node_;
     std::function<bool()> notify_cb = call_back->callback_node_to_schedule_node_;
     std::function<bool()> node_is_closed_cb = call_back->callback_node_is_closed_cb_;
     InputStreamManagerCallBack callback;
     callback.scheduler_cb = scheduler_cb;
     callback.notify_cb = notify_cb;
     callback.throttled_cb = throttled_cb;
+    callback.sched_required = sched_required;
     callback.node_is_closed_cb = node_is_closed_cb;
     input_stream_manager = std::make_shared<ImmediateInputStreamManager>(node_id, input_stream_names,
                                                                          output_stream_id_list, 5, callback);

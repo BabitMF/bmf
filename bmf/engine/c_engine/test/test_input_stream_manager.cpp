@@ -35,6 +35,7 @@ TEST(input_stream_manager, schedule_node) {
     output_stream_id_list.push_back(0);
     CallBackForTest call_back;
     std::function<void(int, bool)> throttled_cb = call_back.callback_add_or_remove_node_;
+    std::function<void(int, bool)> sched_required = call_back.callback_add_or_remove_node_;
     std::function<void(Task &)> scheduler_cb = call_back.callback_scheduler_to_schedule_node_;
     std::function<bool()> notify_cb = call_back.callback_node_to_schedule_node_;
     std::function<bool()> node_is_closed_cb = call_back.callback_node_is_closed_cb_;
@@ -42,6 +43,7 @@ TEST(input_stream_manager, schedule_node) {
     callback.scheduler_cb = scheduler_cb;
     callback.notify_cb = notify_cb;
     callback.throttled_cb = throttled_cb;
+    callback.sched_required = sched_required;
     callback.node_is_closed_cb = node_is_closed_cb;
     ImmediateInputStreamManager immediate_input_stream_manager(node_id, input_stream_names, output_stream_id_list,
                                                                5, callback);

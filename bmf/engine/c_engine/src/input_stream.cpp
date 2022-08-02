@@ -69,11 +69,10 @@ BEGIN_BMF_ENGINE_NS
             if (pkt.timestamp() == EOS or pkt.timestamp() == BMF_EOF) {
                 next_time_bounding_ = DONE;
                 BMFLOG_NODE(BMF_INFO, node_id_) << "eof received";
-                // * removed previous logic
                 // add node to scheduler thread until this EOS is processed
                 // graph_output_stream may not have attribute node
-                //if (node_id_ >= 0 && throttled_cb_ != NULL) {
-                //    throttled_cb_(node_id_, false);
+                //if (node_id_ >= 0) {
+                //    throttled_cb_(node_id_, true);
                 //}
             }
             // wake up event

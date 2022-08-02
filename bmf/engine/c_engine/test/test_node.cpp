@@ -33,6 +33,7 @@ int init_node(std::shared_ptr<Node> &node) {
     NodeCallBack callback;
     callback.scheduler_cb = callback_for_test.callback_scheduler_to_schedule_node_;
     callback.throttled_cb = callback_for_test.callback_add_or_remove_node_;
+    callback.sched_required = callback_for_test.callback_add_or_remove_node_;
     std::shared_ptr<Module> pre_allocated_modules = NULL;
     BmfMode mode = BmfMode::NORMAL_MODE;
     node = std::make_shared<Node>(node_id, node_config, callback, pre_allocated_modules, mode, nullptr);

@@ -31,10 +31,10 @@ BEGIN_BMF_ENGINE_NS
                                            std::vector<int> &output_stream_id_list, uint32_t max_queue_size,
                                            InputStreamManagerCallBack &callback)
             : node_id_(node_id), callback_(callback), output_stream_id_list_(output_stream_id_list) {
+        std::function<void(int, bool)> empt;// no need to send callback to input streamer now
         for (auto i = 0; i < input_streams.size(); ++i) {
             input_stream_names_.push_back(input_streams[i].get_identifier());
-            input_streams_[i] = std::make_shared<InputStream>(i, input_streams[i], node_id, callback.sched_required,
-                                                              max_queue_size);
+            input_streams_[i] = std::make_shared<InputStream>(i, input_streams[i], node_id, empt, max_queue_size);
             stream_id_list_.push_back(i);
         }
         max_id_ = input_streams.size() - 1;

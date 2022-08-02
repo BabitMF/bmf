@@ -138,7 +138,8 @@ BEGIN_BMF_ENGINE_NS
             for (auto &node_id:input_stream_manager->upstream_nodes_)
                 sched_required(node_id, false);
 
-            if (!node->too_many_tasks_pending() && !node->any_of_downstream_full()) {
+            std::lock_guard<std::mutex> lk(node->sched_mutex_);
+            if ((!node->too_many_tasks_pending() && !node->any_of_downstream_full())) {
                 node->pre_sched_num_++;
                 to_schedule_queue(node);
             }

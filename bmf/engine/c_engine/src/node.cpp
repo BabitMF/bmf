@@ -185,11 +185,6 @@ BEGIN_BMF_ENGINE_NS
         module_->reset();
         // remove from source nodes
         set_source(false);
-        // remove from nodes_to_schedule if all inputs empty
-        if (all_input_queue_empty()) {
-            BMFLOG_NODE(BMF_INFO, id_) << "reset node, remove node from scheduler";
-            callback_.throttled_cb(id_, false);
-        }
 
         // clear remaining node task from schedule queue
         callback_.clear_cb(id_, get_scheduler_queue_id());
@@ -199,6 +194,12 @@ BEGIN_BMF_ENGINE_NS
             if (input_stream.second->get_block()) {
                 input_stream.second->set_block(false);
             }
+        }
+
+        if (!all_input_queue_empty()) {//in some case such as server mode previous blocked
+            int res = input_stream_manager_->schedule_node();
+            if (res)
+                schedule_node_success_cnt_++;
         }
 
         mutex_.unlock();
@@ -384,7 +385,19 @@ BEGIN_BMF_ENGINE_NS
             return 0;
         }
 
-        callback_.sched_required(id_, false);
+        bool is_blocked = false;
+        if (mode_ == BmfMode::SERVER_MODE && !is_source()) {
+            uint8_t blk_num = 0;
+            for (auto &input_stream : input_stream_manager_->input_streams_) {
+                if (input_stream.second->get_block()) {
+                    blk_num++;
+                }
+            }
+            if (blk_num == input_stream_manager_->input_streams_.size())
+                is_blocked = true;
+        }
+        if (!is_blocked)
+            callback_.sched_required(id_, false);
 
         return 0;
     }

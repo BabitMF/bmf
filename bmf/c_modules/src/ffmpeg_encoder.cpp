@@ -1654,7 +1654,7 @@ int CFFEncoder::process(Task &task) {
     if (b_eof_) {
         if (!null_output_) {
             if (task.get_outputs().size() > 0 && !b_flushed_) {
-                if (push_output_ == 0) {
+                if (push_output_ == 0) { //for server mode output
                     std::string data;
                     if (!output_dir_.empty())
                         data = output_dir_;

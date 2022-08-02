@@ -58,6 +58,9 @@ int CFFFilter::clean() {
     }
     num_input_streams_ = 0;
     num_output_streams_ = 0;
+    g_desc_ = "";
+    inpads_.clear();
+    outpads_.clear();
     reset_check_mutex_.unlock();
     return 0;
 }

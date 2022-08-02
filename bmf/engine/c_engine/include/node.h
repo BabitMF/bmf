@@ -139,6 +139,10 @@ BEGIN_BMF_ENGINE_NS
         bool wait_pause_;
 
         int64_t pre_sched_num_ = 0;
+
+        std::mutex sched_mutex_;
+
+        BmfMode mode_;
     private:
         // visible to monitor
         friend class RunningInfoCollector;
@@ -151,7 +155,6 @@ BEGIN_BMF_ENGINE_NS
         bool is_premodule_;
         NodeConfig node_config_;
         std::string type_;
-        BmfMode mode_;
         bool is_source_;
         int pending_tasks_ = 0;
         int max_pending_tasks_ = 5;

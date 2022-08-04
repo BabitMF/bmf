@@ -431,6 +431,21 @@ class TestSyncMode(BaseTestCase):
 
         self.check_video_diff(output_path, expect_result)
 
+    @timeout_decorator.timeout(seconds=120)
+    def test_eof_flush_data(self):
+        input_video_path = "../files/img.mp4"
+        output_path = "./videoframe.jpg"
+        expect_result = './videoframe.jpg|240|320|0.04|IMAGE2|950000|4750|mjpeg|' \
+                        '{"fps": "0.0"}'
+        self.remove_result_data(output_path)
+
+        # create decoder
+        decoder = bmf_sync.sync_module("c_ffmpeg_decoder", {"input_path": input_video_path}, [], [0])
+
+        frames, _ = bmf_sync.process(decoder, None)
+        print("get vframe number:", len(frames[0]))
+        frames, _ = bmf_sync.send_eof(decoder)
+        print("get vframe number after send eof:", len(frames[0]))
 
 if __name__ == '__main__':
     unittest.main()

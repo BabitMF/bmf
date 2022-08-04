@@ -152,3 +152,12 @@ def send_eof(module):
 
     # process eof task
     module.process(task)
+
+    # get task outputs
+    result_dict = {}
+    for (key, q) in task.get_outputs().items():
+        result_dict[key] = []
+        while not q.empty():
+            result_dict[key].append(q.get())
+
+    return result_dict, task.get_timestamp()

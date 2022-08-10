@@ -88,6 +88,7 @@ do
     cp /usr/lib/x86_64-linux-gnu/libgflags.so.2.2 output/bmf/3rd_party
     cp /usr/lib/x86_64-linux-gnu/libglog.so.0 output/bmf/3rd_party
     cp /usr/lib/x86_64-linux-gnu/libunwind.so.8 output/bmf/3rd_party
+    cp -r output/bmf/lib/. output/bmf/3rd_party
 
     # Patch rpath for dependencies
     cd output/bmf/3rd_party
@@ -100,7 +101,6 @@ do
     done
     cd ../../..
 
-    cp -r output/bmf/lib/. output/bmf/3rd_party
     cp /usr/local/lib/libpython"${python_versions[$i]}"* output/bmf/3rd_party
     mv output/bmf/3rd_party ../bmf/lib
     cp -r /usr/local/build/bin/. output/bmf/bin/
@@ -110,7 +110,16 @@ do
     cp -r ../3rd_party/json/include/. output/bmf/include/
     cp -r output/bmf/include ../bmf/include
 
+    # Package for specific python version
     cd ..
+    /usr/bin/python3.7 setup.py bdist_wheel
+        cd dist
+        for file in *.whl
+        do
+            echo "$file"
+            mv "$file" ../output/dist/"${file%-py3-none-any.whl}-cp${python_names[$i]}-none-linux_x86_64.whl"
+        done
+        cd ..
 
     # Only include example and test for the default package
     if [ "${python_versions[$i]}" == "3.7" ]

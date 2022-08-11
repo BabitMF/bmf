@@ -23,6 +23,6 @@ echo ${COMMAND}
 
 ${COMMAND}
 
-DEFINITELY_LOST_NUM=`grep -o 'definitely lost in' ${LOG_DIR}/${CASE_NAME}.log | wc -l`
+DEFINITELY_LOST_NUM=`grep -o 'definitely lost:.* bytes in .* blocks' ${LOG_DIR}/${CASE_NAME}.log | awk {'print $6'}`
 ADDITION_INFO="number of definitely_lost occurrences is : ${DEFINITELY_LOST_NUM}"
 echo ${ADDITION_INFO} >> ${LOG_DIR}/${CASE_NAME}.log

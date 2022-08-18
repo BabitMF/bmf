@@ -72,6 +72,8 @@ BEGIN_BMF_ENGINE_NS
         scheduler_callback.close_report_ = [this](int node_id) -> int {
             std::lock_guard<std::mutex> _(this->con_var_mutex_);
             this->closed_count_++;
+            BMFLOG(BMF_INFO) << "node " << node_id << " close report, closed count: "
+                             << this->closed_count_;
             if (this->closed_count_ == this->nodes_.size())
                 this->cond_close_.notify_one();
             //if (this->all_nodes_done())

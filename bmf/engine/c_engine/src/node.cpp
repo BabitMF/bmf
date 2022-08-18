@@ -163,10 +163,8 @@ BEGIN_BMF_ENGINE_NS
     }
 
     int Node::close() {
-        BMFLOG_NODE(BMF_INFO, id_) << "close node";
         mutex_.lock();
         //callback_.throttled_cb(id_, false);
-
         for (auto &input_stream:input_stream_manager_->input_streams_)
             if (input_stream.second->is_full())
                 input_stream.second->clear_queue();
@@ -174,6 +172,7 @@ BEGIN_BMF_ENGINE_NS
             module_->close();
         }
         state_ = NodeState::CLOSED;
+        BMFLOG_NODE(BMF_INFO, id_) << "close node";
         callback_.sched_required(id_, true);
         mutex_.unlock();
         return 0;
@@ -397,7 +396,8 @@ BEGIN_BMF_ENGINE_NS
                 is_blocked = true;
         }
         if (!is_blocked)
-            callback_.sched_required(id_, false);
+            if (state_ != NodeState::CLOSED)
+                callback_.sched_required(id_, false);
 
         return 0;
     }

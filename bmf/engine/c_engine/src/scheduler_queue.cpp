@@ -85,7 +85,7 @@ BEGIN_BMF_ENGINE_NS
             }
             {
                 std::unique_lock<std::mutex> lk(con_var_mutex_);
-                if (queue_.empty()) {
+                if (queue_.empty() and state_ != State::TERMINATING) {
                     wait_cnt_++;
                     int64_t startts;
                     BMF_TRACE(SCHEDULE, ("THREAD_" + std::to_string(id_) + "_WAIT" + "_" + std::to_string(wait_cnt_)).c_str(), START);
@@ -161,15 +161,20 @@ BEGIN_BMF_ENGINE_NS
     }
 
     int SchedulerQueue::close() {
-        if (exec_thread_.joinable()){
-            state_ = State::TERMINATING;
-            //con_var_ should notify ,otherwise it will block in con_var_.wait()
-            con_var_.notify_one();
+        BMFLOG(BMF_INFO) << "schedule queue " << id_ << " start to join thread";
+        if (exec_thread_.joinable()) {
+            {
+                std::lock_guard<std::mutex> guard(con_var_mutex_);
+                state_ = State::TERMINATING;
+                //con_var_ should notify ,otherwise it will block in con_var_.wait()
+                con_var_.notify_one();
+            }
             exec_thread_.join();
             state_ = State::TERMINATED;
         }
         double duration = (double) wait_duration_ / CLOCKS_PER_SEC;
         //BMFLOG(BMF_INFO) << "DEBUG, scheduler queue " << id_ << " wait time " << duration << ", wait cnt " << wait_cnt_;
+        BMFLOG(BMF_INFO) << "schedule queue " << id_ << " closed";
         return 0;
     }
 

@@ -16,7 +16,7 @@ namespace bmf::internal {
             InstanceMapping();
 
             uint32_t insert(std::shared_ptr<T> instance) {
-                std::lock_guard<std::mutex> _(lk_);
+                //std::lock_guard<std::mutex> _(lk_);
                 ++counting_;
                 mapping_[counting_] = instance;
                 ref_cnt_[counting_] = 1;
@@ -24,7 +24,7 @@ namespace bmf::internal {
             }
 
             bool ref(uint32_t idx) {
-                std::lock_guard<std::mutex> _(lk_);
+                //std::lock_guard<std::mutex> _(lk_);
                 if (mapping_.count(idx) == 0)
                     return false;
                 ++ref_cnt_[idx];
@@ -32,19 +32,19 @@ namespace bmf::internal {
             }
 
             std::shared_ptr<T> get(uint32_t idx) {
-                std::lock_guard<std::mutex> _(lk_);
+                //std::lock_guard<std::mutex> _(lk_);
                 if (mapping_.count(idx) == 0)
                     throw std::range_error("Instance not existed.");
                 return mapping_[idx];
             }
 
             bool exist(uint32_t idx) {
-                std::lock_guard<std::mutex> _(lk_);
+                //std::lock_guard<std::mutex> _(lk_);
                 return mapping_.count(idx) != 0;
             }
 
             bool remove(uint32_t idx) {
-                std::lock_guard<std::mutex> _(lk_);
+                //std::lock_guard<std::mutex> _(lk_);
                 if (mapping_.count(idx) == 0)
                     return false;
                 --ref_cnt_[idx];

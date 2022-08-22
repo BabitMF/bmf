@@ -69,17 +69,19 @@ BEGIN_BMF_ENGINE_NS
         scheduler_callback.get_node_ = [this](int node_id, std::shared_ptr<Node> &node) -> int {
             return this->get_node(node_id, node);
         };
-        scheduler_callback.close_report_ = [this](int node_id) -> int {
+
+        scheduler_callback.close_report_ = [this](int node_id, bool is_exception) -> int {
             std::lock_guard<std::mutex> _(this->con_var_mutex_);
             this->closed_count_++;
-            BMFLOG(BMF_INFO) << "node " << node_id << " close report, closed count: "
-                             << this->closed_count_;
-            if (this->closed_count_ == this->nodes_.size())
+            if (is_exception)
+                BMFLOG(BMF_INFO) << "node " << node_id << " got exception, close directly";
+            else
+                BMFLOG(BMF_INFO) << "node " << node_id << " close report, closed count: " << this->closed_count_;
+            if (this->closed_count_ == this->nodes_.size() || is_exception)
                 this->cond_close_.notify_one();
-            //if (this->all_nodes_done())
-            //    this->cond_close_.notify_one();
             return 0;
         };
+
         scheduler_ = std::make_shared<Scheduler>(scheduler_callback, scheduler_count_);
         BMFLOG(BMF_INFO) << "scheduler count" << scheduler_count_;
 
@@ -630,11 +632,11 @@ BEGIN_BMF_ENGINE_NS
     }
 
     int Graph::close() {
-        std::unique_lock<std::mutex> lk(con_var_mutex_);
-        //if (not all_nodes_done())
-        if (closed_count_ != nodes_.size())
-            cond_close_.wait(lk);
-
+        {
+            std::unique_lock<std::mutex> lk(con_var_mutex_);
+            if (closed_count_ != nodes_.size())
+                cond_close_.wait(lk);
+        }
         scheduler_->close();
         g_ptr.clear();
         if (scheduler_->eptr_){

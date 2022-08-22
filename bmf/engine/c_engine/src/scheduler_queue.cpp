@@ -97,18 +97,18 @@ BEGIN_BMF_ENGINE_NS
             }
             Item item;
             while (queue_.pop(item)) {
-                try{
+                try {
                     exec(item.task);
-                }catch(...){
-                    std::mutex exception_mutex_;
-                    const std::lock_guard<std::mutex> lock(exception_mutex_);
+                } catch(...) {
                     exception_catch_flag_ = true;
                     this->eptr_ = std::current_exception();
+                    callback_.exception_(item.task.node_id_);
                 }
                 if (paused_)
                     internal_pause();
             }
         }
+        BMFLOG(BMF_INFO) << "schedule queue " << id_ << " thread quit";
         return 0;
     }
 
@@ -162,7 +162,7 @@ BEGIN_BMF_ENGINE_NS
 
     int SchedulerQueue::close() {
         BMFLOG(BMF_INFO) << "schedule queue " << id_ << " start to join thread";
-        if (exec_thread_.joinable()) {
+        if (state_ != State::TERMINATED and exec_thread_.joinable()) {
             {
                 std::lock_guard<std::mutex> guard(con_var_mutex_);
                 state_ = State::TERMINATING;

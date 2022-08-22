@@ -86,6 +86,7 @@ BEGIN_BMF_ENGINE_NS
     class SchedulerQueueCallBack {
     public:
         std::function<int(int, std::shared_ptr<Node> &)> get_node_;
+        std::function<int(int)> exception_;
     };
 
     class SchedulerQueue {

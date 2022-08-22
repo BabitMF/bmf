@@ -34,6 +34,27 @@ BEGIN_BMF_ENGINE_NS
         callback_ = callback;
         SchedulerQueueCallBack scheduler_queue_callback;
         scheduler_queue_callback.get_node_ = callback.get_node_;
+        scheduler_queue_callback.exception_ = [this](int node_id) -> int {
+            int scheduler_queue_id;
+            std::shared_ptr<Node> node = NULL;
+            std::shared_ptr<SchedulerQueue> scheduler_queue;
+            this->callback_.get_node_(node_id, node);
+            if (!node) {
+                BMFLOG(BMF_ERROR) << "node id incorrect in schedule:" << node_id;
+                return -1;
+            }
+            scheduler_queue_id = node->get_scheduler_queue_id();
+            scheduler_queue = this->scheduler_queues_[scheduler_queue_id];
+            if (scheduler_queue->exception_catch_flag_) {
+                exception_flag_ = true;
+                eptr_ = scheduler_queue->eptr_;
+            }
+            for (int i = 0; i < this->scheduler_queues_.size(); i++)
+                this->scheduler_queues_[i]->exception_catch_flag_ = true;
+
+            this->callback_.close_report_(node_id, true);
+            return 0;
+        };
         for (int i = 0; i < scheduler_cnt; i++) {
             std::shared_ptr<SchedulerQueue> scheduler_queue = std::make_shared<SchedulerQueue>(
                     i, scheduler_queue_callback);
@@ -122,7 +143,7 @@ BEGIN_BMF_ENGINE_NS
 
     int Scheduler::sched_required(int node_id, bool is_closed) {
         NodeItem final_node_item = NodeItem();
-        bool got_node = false; 
+        bool got_node = false;
         int scheduler_queue_id;
         std::shared_ptr<Node> node = NULL;
         std::shared_ptr<SchedulerQueue> scheduler_queue;
@@ -132,14 +153,10 @@ BEGIN_BMF_ENGINE_NS
             BMFLOG(BMF_ERROR) << "node id incorrect in schedule:" << node_id;
             return -1;
         }
-        scheduler_queue_id = node->get_scheduler_queue_id();
-        scheduler_queue = scheduler_queues_[scheduler_queue_id];
-        if (scheduler_queue->exception_catch_flag_) {
-            exception_flag_ = true;
-            eptr_ = scheduler_queue->eptr_;
-        }
-        if (is_closed || exception_flag_) { // closed node report
-            callback_.close_report_(node_id);
+        if (exception_flag_)
+            return 0;
+        if (is_closed) {
+            callback_.close_report_(node_id, false);
         } else {
             std::shared_ptr<InputStreamManager> input_stream_manager;
             node->get_input_stream_manager(input_stream_manager);

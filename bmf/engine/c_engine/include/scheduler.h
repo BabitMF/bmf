@@ -37,7 +37,7 @@ BEGIN_BMF_ENGINE_NS
     class SchedulerCallBack {
     public:
         std::function<int(int, std::shared_ptr<Node> &)> get_node_;
-        std::function<int(int)> close_report_;
+        std::function<int(int, bool)> close_report_;
     };
 
     class Scheduler {
@@ -55,11 +55,10 @@ BEGIN_BMF_ENGINE_NS
         int close();
 
         int add_or_remove_node(int node_id, bool is_add);
+
         int sched_required(int node_id, bool is_closed);
 
         bool choose_node_schedule(int64_t start_time, std::shared_ptr<Node> &node);
-
-        int scheduling_thread();
 
         int schedule_node(Task &task);
 

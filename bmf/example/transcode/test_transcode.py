@@ -4,6 +4,7 @@ import unittest
 
 sys.path.append("../../")
 import bmf
+import hmp
 import timeout_decorator
 
 sys.path.append("../")
@@ -903,7 +904,7 @@ class TestTranscode(BaseTestCase):
         )
         with open(output_path, "wb") as f:
             for i, packet in enumerate(result):
-                avpacket = packet.get()
+                avpacket = packet.get(bmf.BMFAVPacket)
                 offset = avpacket.get_offset()
                 whence = avpacket.get_whence()
                 """
@@ -926,7 +927,7 @@ class TestTranscode(BaseTestCase):
                     return pkt_data;
                 }
                 """
-                data = avpacket.data_ptr()
+                data = avpacket.data.numpy()
                 if (offset > 0) :
                     f.seek(offset, whence)
                 f.write(data)
@@ -961,8 +962,8 @@ class TestTranscode(BaseTestCase):
         )
         write_num = 0
         for i, packet in enumerate(result):
-            avpacket = packet.get()
-            data = avpacket.data_ptr()
+            avpacket = packet.get(bmf.BMFAVPacket)
+            data = avpacket.data.numpy()
             if write_num < vframes_num:
                 output_path = "./simple_image" + str(write_num)+ ".jpg"
                 write_num = write_num + 1
@@ -995,9 +996,10 @@ class TestTranscode(BaseTestCase):
         )
         with open(output_path, "wb") as f:
             for i, packet in enumerate(result):
-                offset = packet.get_offset()
-                whence = packet.get_whence()
-                data = packet.get_data()
+                avpacket = packet.get(bmf.BMFAVPacket)
+                data = avpacket.data.numpy()
+                offset = avpacket.get_offset()
+                whence = avpacket.get_whence()
                 if offset > 0:
                     f.seek(offset, whence)
                 f.write(data)

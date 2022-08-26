@@ -385,11 +385,10 @@ void module_sdk_bind(py::module &m)
         }))
         .def("defined", &BMFAVPacket::operator bool)
         .def_property_readonly("data", (Tensor&(BMFAVPacket::*)())&BMFAVPacket::data)
-        .def_property_readonly("data_ptr", (void*)&BMFAVPacket::data_ptr)
         .def_property_readonly("nbytes", &BMFAVPacket::nbytes)
         .def("copy_props", &BMFAVPacket::copy_props)
-        .def_property_readonly("get_offset", &BMFAVPacket::get_offset)
-        .def_property_readonly("get_whence", &BMFAVPacket::get_whence)
+        .def("get_offset", &BMFAVPacket::get_offset)
+        .def("get_whence", &BMFAVPacket::get_whence)
     ;
     PACKET_REGISTER_BMF_SDK_TYPE(BMFAVPacket)
 

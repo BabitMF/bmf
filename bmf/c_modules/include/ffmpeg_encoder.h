@@ -16,7 +16,6 @@
 #define BMF_FF_ENCODER_H
 
 #include "c_module.h"
-#include "bmf_av_packet.h"
 extern "C" {
 #include <libavutil/imgutils.h>
 #include <libavutil/samplefmt.h>

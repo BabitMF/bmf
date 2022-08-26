@@ -343,7 +343,7 @@ int CFFEncoder::clean() {
     if (push_output_ == 0 && output_fmt_ctx_ && output_fmt_ctx_->oformat && !(output_fmt_ctx_->oformat->flags & AVFMT_NOFILE))
         avio_closep(&output_fmt_ctx_->pb);
 
-    if (output_fmt_ctx_){
+    if (output_fmt_ctx_) {
         avformat_free_context(output_fmt_ctx_);
         output_fmt_ctx_ = NULL;
     }
@@ -661,8 +661,8 @@ int write_data(void *opaque, uint8_t *buf, int buf_size) {
 int CFFEncoder::write_current_packet_data(uint8_t *buf, int buf_size) {
     void* data = nullptr;
     AVPacket *avpkt = av_packet_alloc();
-    avpkt->size = buf_size;
     av_init_packet(avpkt);
+    av_new_packet(avpkt, buf_size);
     data = avpkt->data;
     BMFAVPacket bmf_avpkt = ffmpeg::to_bmf_av_packet(avpkt, true);
 
@@ -671,9 +671,9 @@ int CFFEncoder::write_current_packet_data(uint8_t *buf, int buf_size) {
     bmf_avpkt.set_whence(current_whence_);
     auto packet = Packet(bmf_avpkt);
     packet.set_timestamp(current_frame_pts_);
-    packet.set_data_type(DATA_TYPE_C);
-    packet.set_data_class_type(BMFAVPACKET_TYPE);
-    packet.set_class_name("libbmf_module_sdk.BMFAVPacket");
+    //packet.set_data_type(DATA_TYPE_C);
+    //packet.set_data_class_type(BMFAVPACKET_TYPE);
+    //packet.set_class_name("libbmf_module_sdk.BMFAVPacket");
     if (current_task_ptr_->get_outputs().find(0) != current_task_ptr_->get_outputs().end())
         current_task_ptr_->get_outputs()[0]->push(packet);
     return buf_size;
@@ -1653,19 +1653,18 @@ int CFFEncoder::process(Task &task) {
         if (!null_output_) {
             if (task.get_outputs().size() > 0 && !b_flushed_) {
                 if (push_output_ == 0) {
-                    Packet packet;
                     std::string data;
                     if (!output_dir_.empty())
                         data = output_dir_;
                     else
                         data = output_path_;
-                    packet.set_data(data);
+                    auto packet = Packet(data);
                     packet.set_timestamp(1);
                     task.get_outputs()[0]->push(packet);
                 }
             }
             flush();
-            if (task.get_outputs().size() > 0 || push_output_ > 0) {
+            if (push_output_ > 0) { //for none IO mux output
                 Packet pkt = Packet::generate_eof_packet();
                 assert(pkt.timestamp_ == BMF_EOF);
                 task.get_outputs()[0]->push(pkt);

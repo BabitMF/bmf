@@ -214,6 +214,7 @@ static PixelFormatDesc::Private sPixelFormatMetas[]{
     PixelFormatDesc::Private{PixelFormat::PF_P010LE,  kUInt16, 2, {0x111, 0x222, 0x00, 0x0}}, //
     PixelFormatDesc::Private{PixelFormat::PF_P016LE,  kUInt16, 2, {0x111, 0x222, 0x00, 0x0}}, //
     PixelFormatDesc::Private{PixelFormat::PF_YUV422P10LE, kUInt16, 3, {0x111, 0x121, 0x121, 0x0}},
+    PixelFormatDesc::Private{PixelFormat::PF_YUV420P10LE, kUInt16, 3, {0x111, 0x221, 0x221, 0x0}},
 
     PixelFormatDesc::Private{PixelFormat::PF_GRAY8,  kUInt8, 1, {0x111, 0x00, 0x00, 0x0}}, //
     PixelFormatDesc::Private{PixelFormat::PF_YUVA420P,  kUInt8, 4, {0x111, 0x221, 0x221, 0x111}}, //

@@ -1004,5 +1004,37 @@ class TestTranscode(BaseTestCase):
                     f.seek(offset, whence)
                 f.write(data)
 
+    @timeout_decorator.timeout(seconds=120)
+    def test_skip_frame(self):
+        input_video_path = "../files/img.mp4"
+        output_path = "./test_skip_frame_videp.mp4"
+        expect_result = '../transcode/test_skip_frame_videp.mp4|1080|1920|7.574233|MOV,MP4,M4A,3GP,3G2,MJ2|1321859|1255038|h264|' \
+            '{"fps": "29.97"}'
+        # 创建BMF Graph
+        graph = bmf.graph()
+    
+        # 构建解码流
+        streams = graph.decode({
+            "input_path": input_video_path,
+            "skip_frame" : 32
+        })
+
+        (   
+            bmf.encode(
+                streams['video'],
+                None,
+                {
+                    "output_path": output_path,
+                    "video_params": {
+                        "codec": "h264",
+                        "crf": 23,
+                        "preset": "veryfast",
+                    }
+                }
+            )
+            .run()
+        )
+        self.check_video_diff(output_path, expect_result)
+
 if __name__ == '__main__':
     unittest.main()

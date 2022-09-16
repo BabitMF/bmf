@@ -85,18 +85,18 @@ PixelInfo::PixelInfo()
 {
 }
 
-PixelInfo::PixelInfo(PixelFormat format, ColorModel color_model)
-    : format_(format), color_model_(color_model)
+PixelInfo::PixelInfo(PixelFormat format, ColorModel color_model, int align)
+    : format_(format), color_model_(color_model), align_(align)
 {
 }
 
-PixelInfo::PixelInfo(PixelFormat format, ColorSpace cs, ColorRange cr)
-    : format_(format), color_model_(cs, infer_color_range(format, cr))
+PixelInfo::PixelInfo(PixelFormat format, ColorSpace cs, ColorRange cr, int align)
+    : format_(format), color_model_(cs, infer_color_range(format, cr)), align_(align)
 {
 }
 
-PixelInfo::PixelInfo(PixelFormat format, ColorPrimaries cp, ColorTransferCharacteristic ctc)
-    : format_(format), color_model_(CS_UNSPECIFIED, infer_color_range(format), cp, ctc)
+PixelInfo::PixelInfo(PixelFormat format, ColorPrimaries cp, ColorTransferCharacteristic ctc, int align)
+    : format_(format), color_model_(CS_UNSPECIFIED, infer_color_range(format), cp, ctc), align_(align)
 {
 }
 

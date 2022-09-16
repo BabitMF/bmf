@@ -209,11 +209,27 @@ static AVBufferRef* av_hw_frames_ctx_from_device(const Device &device,
 
 #endif
 
-
     HMP_REQUIRE(false, "hwframe with device type {} is not supported", device.type());
     return nullptr;
 }
 
+static AVFrame* hw_avframe_from_device(const Device &device, int width, int height,
+    PixelInfo &pix_info, AVBufferRef* hw_frame_ctx = nullptr, AVBufferRef* hw_device_ctx = nullptr)
+{
+    AVFrame* avfrm = av_frame_alloc();
+    HMP_REQUIRE(avfrm, "to_audio_frame: alloc AVFrame failed");
+    avfrm->width = width;
+    avfrm->height = height;
+    assign_pixel_info(*avfrm, pix_info);
+    auto ret = av_frame_get_buffer(avfrm, 32);//pix_info.alignment());
+    HMP_REQUIRE(ret == 0, "get frame buffer failed={}", ret);
+    auto hw_frames_ctx = av_hw_frames_ctx_from_device(kCUDA, width, height, (AVPixelFormat)pix_info.format());
+    ret = av_hwframe_get_buffer(hw_frames_ctx, avfrm, 0);
+    HMP_REQUIRE(ret == 0, "get hwframe buffer failed={}", ret);
+    avfrm->format = ((AVHWFramesContext*)(hw_frames_ctx->data))->format;
+    avfrm->hw_frames_ctx = av_buffer_ref(hw_frames_ctx);
+    return avfrm;
+}
 
 static bool is_video_frame(const AVFrame *avf)
 {

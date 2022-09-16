@@ -192,9 +192,9 @@ class HMP_API PixelInfo
 {
 public:
     PixelInfo();
-    PixelInfo(PixelFormat format, ColorModel color_model = {});
-    PixelInfo(PixelFormat format, ColorSpace cs, ColorRange cr = CR_UNSPECIFIED);
-    PixelInfo(PixelFormat format, ColorPrimaries cp, ColorTransferCharacteristic ctc = CTC_UNSPECIFIED);
+    PixelInfo(PixelFormat format, ColorModel color_model = {}, int align = 16);
+    PixelInfo(PixelFormat format, ColorSpace cs, ColorRange cr = CR_UNSPECIFIED, int align = 16);
+    PixelInfo(PixelFormat format, ColorPrimaries cp, ColorTransferCharacteristic ctc = CTC_UNSPECIFIED, int align = 16);
 
     PixelFormat format() const { return format_; }
     ColorSpace space() const { return color_model_.space(); }
@@ -216,9 +216,12 @@ public:
 
     bool is_rgbx() const;
 
+    const int &alignment() const { return align_; }
+
 private:
     PixelFormat format_;
     ColorModel color_model_;
+    int align_ = 16;
 };
 
 HMP_API std::string stringfy(const PixelInfo &pix_info);

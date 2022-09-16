@@ -157,10 +157,18 @@ int CFFEncoder::init() {
      * @endcode
      * @} */
     if (input_option_.has_key("push_output")) {
-        int tmp;
-        input_option_.get_int("push_output", tmp);
-        if (tmp == 1)
-            push_output_ = 1;
+        input_option_.get_int("push_output", push_output_);
+    }
+
+    /** @addtogroup EncM
+     * @{
+     * @arg push_encoded_output: output the muxed result to the output queue, otherwise output the AVPacket before muxing. Default is 1.
+     * @code
+            "push_encoded_output": 0
+     * @endcode
+     * @} */
+    if (input_option_.has_key("push_encoded_output")) {
+        input_option_.get_int("push_encoded_output", push_encoded_output_);
     }
 
     /** @addtogroup EncM
@@ -579,23 +587,49 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_pack
             return *got_packet;
         }
 
-        if (!stream_inited_ && *got_packet == 0) {
-            cache_.push_back(std::pair<AVPacket*, int>(enc_pkt, idx));
-            continue;
-        }
-        while (cache_.size()) {
-            auto tmp = cache_.front();
-            cache_.erase(cache_.begin());
-            ret = handle_output(tmp.first, tmp.second);
-            av_packet_free(&tmp.first);
-            if (ret < 0)
-                return ret;
-        }
+        if (push_output_ > 0 && push_encoded_output_ == 0){
+            if (first_packet_[idx]){
+                Packet packet;
+                auto stream = std::make_shared<AVStream>();
+                *stream = *(output_stream_[idx]);
+                stream->codecpar = avcodec_parameters_alloc();
+                avcodec_parameters_copy(stream->codecpar, output_stream_[idx]->codecpar);
+                packet.set_data(stream);
+                packet.set_data_type(DATA_TYPE_C);
+                packet.set_class_name("AVStream");
+                if (current_task_ptr_->get_outputs().find(idx) != current_task_ptr_->get_outputs().end())
+                    current_task_ptr_->get_outputs()[idx]->push(packet);
+                first_packet_[idx] = false;
+            }
 
-        ret = handle_output(enc_pkt, idx);
-        if (ret != 0) {
-            av_packet_free(&enc_pkt);
-            return ret;
+            BMFAVPacket packet_tmp = BMFAVPacket(enc_pkt);
+            Packet packet;
+            packet.set_data(packet_tmp);
+            packet.set_timestamp(enc_pkt->pts * av_q2d(output_stream_[idx]->time_base) * 1000000);
+            packet.set_data_type(DATA_TYPE_C);
+            packet.set_data_class_type(BMFAVPACKET_TYPE);
+            packet.set_class_name("libbmf_module_sdk.BMFAVPacket");
+            if (current_task_ptr_->get_outputs().find(idx) != current_task_ptr_->get_outputs().end())
+                current_task_ptr_->get_outputs()[idx]->push(packet);
+        }else{
+            if (!stream_inited_ && *got_packet == 0) {
+                cache_.push_back(std::pair<AVPacket*, int>(enc_pkt, idx));
+                continue;
+            }
+            while (cache_.size()) {
+                auto tmp = cache_.front();
+                cache_.erase(cache_.begin());
+                ret = handle_output(tmp.first, tmp.second);
+                av_packet_free(&tmp.first);
+                if (ret < 0)
+                    return ret;
+            }
+
+            ret = handle_output(enc_pkt, idx);
+            if (ret != 0) {
+                av_packet_free(&enc_pkt);
+                return ret;
+            }
         }
 
         av_packet_free(&enc_pkt);
@@ -616,36 +650,38 @@ int CFFEncoder::init_stream() {
         }
     }
 
-    AVDictionary *opts = NULL;
-    std::vector<std::pair<std::string, std::string>> params;
-    mux_params_.get_iterated(params);
-    for (int i = 0; i < params.size(); i++) {
-        av_dict_set(&opts, params[i].first.c_str(), params[i].second.c_str(), 0);
-    }
-    {
+    if (push_encoded_output_ > 0){
+        AVDictionary *opts = NULL;
         std::vector<std::pair<std::string, std::string>> params;
-        metadata_params_.get_iterated(params);
+        mux_params_.get_iterated(params);
         for (int i = 0; i < params.size(); i++) {
-            av_dict_set(&output_fmt_ctx_->metadata, params[i].first.c_str(), params[i].second.c_str(), 0);
+            av_dict_set(&opts, params[i].first.c_str(), params[i].second.c_str(), 0);
         }
-    }
-    ret = avformat_write_header(output_fmt_ctx_, &opts);
-    if (ret < 0) {
-        BMFLOG_NODE(BMF_ERROR, node_id_) << "Error occurred when opening output file";
-        return ret;
-    } else if (av_dict_count(opts) > 0) {
-        AVDictionaryEntry *t = NULL;
-        std::string err_msg = "Encoder mux_params contains incorrect key :";
-        while ((t = av_dict_get(opts, "", t, AV_DICT_IGNORE_SUFFIX))) {
-            err_msg.append(" ");
-            err_msg.append(t->key);
+        {
+            std::vector<std::pair<std::string, std::string>> params;
+            metadata_params_.get_iterated(params);
+            for (int i = 0; i < params.size(); i++) {
+                av_dict_set(&output_fmt_ctx_->metadata, params[i].first.c_str(), params[i].second.c_str(), 0);
+            }
+        }
+        ret = avformat_write_header(output_fmt_ctx_, &opts);
+        if (ret < 0) {
+            BMFLOG_NODE(BMF_ERROR, node_id_) << "Error occurred when opening output file";
+            return ret;
+        } else if (av_dict_count(opts) > 0) {
+            AVDictionaryEntry *t = NULL;
+            std::string err_msg = "Encoder mux_params contains incorrect key :";
+            while ((t = av_dict_get(opts, "", t, AV_DICT_IGNORE_SUFFIX))) {
+                err_msg.append(" ");
+                err_msg.append(t->key);
+            }
+            av_dict_free(&opts);
+            BMFLOG_NODE(BMF_ERROR, node_id_) << err_msg;
         }
         av_dict_free(&opts);
-        BMFLOG_NODE(BMF_ERROR, node_id_) << err_msg;
-    }
-    av_dict_free(&opts);
 
-    av_dump_format(output_fmt_ctx_, 0, output_path_.c_str(), 1);
+        av_dump_format(output_fmt_ctx_, 0, output_path_.c_str(), 1);
+    }
 
     if (video_first_pts_ < audio_first_pts_) {
         first_pts_ = video_first_pts_;
@@ -1312,7 +1348,7 @@ int CFFEncoder::flush() {
     }
 
     b_flushed_ = true;
-    if (output_fmt_ctx_)
+    if (output_fmt_ctx_ && push_encoded_output_ > 0)
         ret = av_write_trailer(output_fmt_ctx_);
 
     return ret;

@@ -97,6 +97,7 @@ class CFFEncoder : public Module {
     bool b_init_ = false;
     bool null_output_;
     int push_output_ = 0;
+    int push_encoded_output_ = 1;
     int64_t time_ = 0;
     int64_t audio_first_pts_ = LLONG_MAX;
     int64_t video_first_pts_ = LLONG_MAX;
@@ -120,6 +121,7 @@ class CFFEncoder : public Module {
     int64_t current_offset_ = 0;
     int current_whence_ = 0;
     Task* current_task_ptr_ = nullptr;
+    bool first_packet_[2] = {true, true};
     CurrentImage2Buffer current_image_buffer_ = {0};
 
 public:

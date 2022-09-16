@@ -239,6 +239,28 @@ TEST(video_frame, async_execution)
     EXPECT_TRUE(check_pixel_value<uint8_t>(vf2, 3));
 }
 
+TEST(video_frame, from_hardware_avframe)
+{
+    int width = 1920, height = 1080;
+
+    auto NV12 = PixelInfo(hmp::PF_NV12, hmp::CS_BT709);
+    AVFrame* avfrm = av_frame_alloc();
+    avfrm->width = width;
+    avfrm->height = height;
+    hmp::ffmpeg::assign_pixel_info(*avfrm, NV12);
+    av_frame_get_buffer(avfrm, 32);
+    auto hw_frames_ctx = hmp::ffmpeg::av_hw_frames_ctx_from_device(kCUDA, width, height, AV_PIX_FMT_NV12);
+    av_hwframe_get_buffer(hw_frames_ctx, avfrm, 0);
+    avfrm->format = ((AVHWFramesContext*)(hw_frames_ctx->data))->format;
+    avfrm->hw_frames_ctx = av_buffer_ref(hw_frames_ctx);
+
+    //AVFrame* avfrm = hmp::ffmpeg::hw_avframe_from_device(kCUDA, width, height, NV12);
+    VideoFrame vf = ffmpeg::to_video_frame(avfrm);
+    EXPECT_TRUE(vf.device() == kCUDA);
+    auto from_video_frame = ffmpeg::from_video_frame(vf);
+    EXPECT_TRUE(from_video_frame->hw_frames_ctx != NULL);
+}
+
 #endif
 
 

@@ -60,7 +60,7 @@ TEST(cpp_sync_mode, sync_videoframe) {
     graph.Close(scale);
     graph.Close(encoder);
 
-    BMF_CPP_FILE_CHECK(output_file, "./videoframe.jpg|240|320|0.04|IMAGE2|950000|4750|mjpeg|{\"fps\": \"0.0\"}");
+    BMF_CPP_FILE_CHECK(output_file, "./videoframe.jpg|240|320|0.04|IMAGE2|950000|4750|mjpeg|{\"fps\": \"25.0\"}");
 }
 
 TEST(cpp_sync_mode, sync_audioframe) {
@@ -104,7 +104,7 @@ TEST(cpp_sync_mode, sync_audioframe) {
     // send eof to encoder
     encoder.SendEOF();
 
-    BMF_CPP_FILE_CHECK(output_file, "./audioframe.mp4|0|0|0.047|MOV,MP4,M4A,3GP,3G2,MJ2|135319|795||{}");
+    BMF_CPP_FILE_CHECK(output_file, "./audioframe.mp4|0|0|0.024|MOV,MP4,M4A,3GP,3G2,MJ2|271000|795||{}");
 }
 
 TEST(cpp_sync_mode, sync_video) {

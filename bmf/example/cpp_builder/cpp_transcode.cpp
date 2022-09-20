@@ -165,7 +165,7 @@ TEST(cpp_transcode, transcode_image) {
 
     BMF_CPP_FILE_CHECK(
         output_file, 
-        "image.jpg|240|320|0.040000|IMAGE2|975400|4877|mjpeg|{\"fps\": \"0\"}"
+        "image.jpg|240|320|0.040000|IMAGE2|975400|4877|mjpeg|{\"fps\": \"25.0\"}"
     );
 }
 

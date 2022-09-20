@@ -18,7 +18,7 @@ class TestSyncMode(BaseTestCase):
         input_video_path = "../files/overlay.png"
         output_path = "./videoframe.jpg"
         expect_result = './videoframe.jpg|240|320|0.04|IMAGE2|950000|4750|mjpeg|' \
-                        '{"fps": "0.0"}'
+                        '{"fps": "25.0"}'
         self.remove_result_data(output_path)
 
         # create decoder
@@ -80,7 +80,7 @@ class TestSyncMode(BaseTestCase):
         input_video_path = "../files/overlay.png"
         output_path = "./videoframe_by_graph.jpg"
         expect_result = './videoframe_by_graph.jpg|240|320|0.04|IMAGE2|950000|4750|mjpeg|' \
-                        '{"fps": "0.0"}'
+                        '{"fps": "25.0"}'
         self.remove_result_data(output_path)
 
         graph = bmf.graph()
@@ -123,7 +123,7 @@ class TestSyncMode(BaseTestCase):
     def test_audioframe(self):
         input_video_path = "../files/img.mp4"
         output_path = "./audioframe.mp4"
-        expect_result = './audioframe.mp4|0|0|0.047|MOV,MP4,M4A,3GP,3G2,MJ2|135319|795||{}'
+        expect_result = './audioframe.mp4|0|0|0.024|MOV,MP4,M4A,3GP,3G2,MJ2|271000|795||{}'
         self.remove_result_data(output_path)
 
         # create decoder
@@ -158,7 +158,7 @@ class TestSyncMode(BaseTestCase):
     def test_audioframe_by_graph(self):
         input_video_path = "../files/img.mp4"
         output_path = "./audioframe_by_graph.mp4"
-        expect_result = './audioframe_by_graph.mp4|0|0|0.047|MOV,MP4,M4A,3GP,3G2,MJ2|135319|795||{}'
+        expect_result = './audioframe_by_graph.mp4|0|0|0.024|MOV,MP4,M4A,3GP,3G2,MJ2|271000|795||{}'
         self.remove_result_data(output_path)
 
         graph = bmf.graph()

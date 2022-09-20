@@ -49,7 +49,7 @@ class TestVideoCModule(BaseTestCase):
     def test_image(self):
         input_video_path = "../files/overlay.png"
         output_path = "output.jpg"
-        expect_result = 'output.jpg|240|320|0.040000|IMAGE2|975400|4877|mjpeg|{"fps": "0"}'
+        expect_result = 'output.jpg|240|320|0.040000|IMAGE2|975400|4877|mjpeg|{"fps": "25.0"}'
         self.remove_result_data(output_path)
         c_module_path = './libcopy_module.so'
         c_module_entry = 'copy_module:CopyModule'

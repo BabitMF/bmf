@@ -1033,6 +1033,54 @@ class TestTranscode(BaseTestCase):
                 }
             )
             .run()
+
+    @timeout_decorator.timeout(seconds=120)
+    def test_encoder_push_unmuxed_output_mp4(self):
+        input_video_path = "../files/img.mp4"
+        output_path = "./unmuxed_output.mp4"
+        expect_result = '../transcode/unmuxed_output.mp4|240|320|7.574233|MOV,MP4,M4A,3GP,3G2,MJ2|404941|384340|h264|' \
+                        '{"fps": "29.97002997"}'
+        self.remove_result_data(output_path)
+
+        # create graph
+        graph = bmf.graph()
+
+        # decode
+        video = graph.decode({ #BmfStream
+            "input_path": input_video_path
+        })
+
+        encoded_video = bmf.encode( #BmfStream
+                video['video'],
+                video['audio'],
+                {
+                    "output_path": output_path,
+                    "push_output": 2,
+                    "video_params": {
+                        "codec": "h264",
+                        "width": 320,
+                        "height": 240,
+                        "crf": 23,
+                        "preset": "veryfast"
+                    },
+                    "audio_params": {
+                        "codec": "aac",
+                        "bit_rate": 128000,
+                        "sample_rate": 44100,
+                        "channels": 2
+                    }
+                }
+            )
+
+        (
+            bmf.encode(
+                encoded_video['video'],
+                encoded_video['audio'],
+                {
+                    "output_path": output_path,
+                }
+            )
+                .run()
         )
         self.check_video_diff(output_path, expect_result)
 

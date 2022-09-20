@@ -162,17 +162,6 @@ int CFFEncoder::init() {
 
     /** @addtogroup EncM
      * @{
-     * @arg push_encoded_output: output the muxed result to the output queue, otherwise output the AVPacket before muxing. Default is 1.
-     * @code
-            "push_encoded_output": 0
-     * @endcode
-     * @} */
-    if (input_option_.has_key("push_encoded_output")) {
-        input_option_.get_int("push_encoded_output", push_encoded_output_);
-    }
-
-    /** @addtogroup EncM
-     * @{
      * @arg avio_buffer_size: set avio buffer size, when oformat is image2pipe, this paramter is useful, exp.
      * @code
             "avio_buffer_size": 16384
@@ -348,7 +337,7 @@ int CFFEncoder::clean() {
         if (ost_[idx].input_stream)
             ost_[idx].input_stream = NULL;
     }
-    if (push_output_ == 0 && output_fmt_ctx_ && output_fmt_ctx_->oformat && !(output_fmt_ctx_->oformat->flags & AVFMT_NOFILE))
+    if (push_output_ == OutputMode::OUTPUT_NOTHING && output_fmt_ctx_ && output_fmt_ctx_->oformat && !(output_fmt_ctx_->oformat->flags & AVFMT_NOFILE))
         avio_closep(&output_fmt_ctx_->pb);
 
     if (output_fmt_ctx_) {
@@ -587,8 +576,8 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_pack
             return *got_packet;
         }
 
-        if (push_output_ > 0 && push_encoded_output_ == 0){
-            if (first_packet_[idx]){
+        if (push_output_ == OutputMode::OUTPUT_UNMUX_PACKET) {
+            if (first_packet_[idx]) {
                 Packet packet;
                 auto stream = std::make_shared<AVStream>();
                 *stream = *(output_stream_[idx]);
@@ -611,7 +600,7 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_pack
             packet.set_class_name("libbmf_module_sdk.BMFAVPacket");
             if (current_task_ptr_->get_outputs().find(idx) != current_task_ptr_->get_outputs().end())
                 current_task_ptr_->get_outputs()[idx]->push(packet);
-        }else{
+        } else {
             if (!stream_inited_ && *got_packet == 0) {
                 cache_.push_back(std::pair<AVPacket*, int>(enc_pkt, idx));
                 continue;
@@ -642,7 +631,7 @@ int CFFEncoder::init_stream() {
     int ret = 0;
     if (!output_fmt_ctx_)
         return 0;
-    if (push_output_ == 0 && !(output_fmt_ctx_->oformat->flags & AVFMT_NOFILE)) {
+    if (push_output_ == OutputMode::OUTPUT_NOTHING && !(output_fmt_ctx_->oformat->flags & AVFMT_NOFILE)) {
         ret = avio_open(&output_fmt_ctx_->pb, output_path_.c_str(), AVIO_FLAG_WRITE);
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Could not open output file '%s'", output_path_.c_str());
@@ -650,7 +639,7 @@ int CFFEncoder::init_stream() {
         }
     }
 
-    if (push_encoded_output_ > 0){
+    if (push_output_ == OutputMode::OUTPUT_NOTHING or push_output_ == OutputMode::OUTPUT_MUXED_PACKET) {
         AVDictionary *opts = NULL;
         std::vector<std::pair<std::string, std::string>> params;
         mux_params_.get_iterated(params);
@@ -783,12 +772,12 @@ int CFFEncoder::init_codec(int idx, AVFrame* frame) {
 
     if (!output_fmt_ctx_) {
         avformat_alloc_output_context2(&output_fmt_ctx_, NULL, (oformat_ != "" ? oformat_.c_str() : NULL),
-                                           push_output_ == 0 ? output_path_.c_str() : NULL);
+                                           push_output_ == OutputMode::OUTPUT_NOTHING ? output_path_.c_str() : NULL);
         if (!output_fmt_ctx_) {
             BMFLOG_NODE(BMF_ERROR, node_id_) << "Could not create output context";
             return AVERROR_UNKNOWN;
         }
-        if (push_output_ > 0) {
+        if (push_output_ == OutputMode::OUTPUT_MUXED_PACKET) {
             unsigned char *avio_ctx_buffer;
             size_t avio_ctx_buffer_size = avio_buffer_size_;
             avio_ctx_buffer = (unsigned char*)av_malloc(avio_ctx_buffer_size);
@@ -1348,7 +1337,7 @@ int CFFEncoder::flush() {
     }
 
     b_flushed_ = true;
-    if (output_fmt_ctx_ && push_encoded_output_ > 0)
+    if (output_fmt_ctx_ && (push_output_ == OutputMode::OUTPUT_NOTHING or push_output_ == OutputMode::OUTPUT_MUXED_PACKET))
         ret = av_write_trailer(output_fmt_ctx_);
 
     return ret;
@@ -1690,7 +1679,8 @@ int CFFEncoder::process(Task &task) {
     if (b_eof_) {
         if (!null_output_) {
             if (task.get_outputs().size() > 0 && !b_flushed_) {
-                if (push_output_ == 0) { //for server mode output
+                if (push_output_ == OutputMode::OUTPUT_NOTHING) {
+                    Packet packet;
                     std::string data;
                     if (!output_dir_.empty())
                         data = output_dir_;
@@ -1702,10 +1692,12 @@ int CFFEncoder::process(Task &task) {
                 }
             }
             flush();
-            if (push_output_ > 0) { //for none IO mux output
-                Packet pkt = Packet::generate_eof_packet();
-                assert(pkt.timestamp() == BMF_EOF);
-                task.get_outputs()[0]->push(pkt);
+            if (push_output_ != OutputMode::OUTPUT_NOTHING) {
+                for (int i = 0; i < task.get_outputs().size(); i++){
+                    Packet pkt = Packet::generate_eof_packet();
+                    assert(pkt.timestamp_ == BMF_EOF);
+                    task.get_outputs()[i]->push(pkt);
+                }
             }
         }
         task.set_timestamp(DONE);

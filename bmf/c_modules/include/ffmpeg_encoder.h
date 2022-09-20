@@ -36,6 +36,12 @@ extern "C" {
 #include "av_common_utils.h"
 #include <bmf/sdk/filter_graph.h>
 
+typedef enum OutputMode {
+    OUTPUT_NOTHING,
+    OUTPUT_MUXED_PACKET,
+    OUTPUT_UNMUX_PACKET,
+} OutputMode;
+
 typedef struct OutputStream {
     int64_t last_mux_dts;
     int64_t data_size;
@@ -97,7 +103,6 @@ class CFFEncoder : public Module {
     bool b_init_ = false;
     bool null_output_;
     int push_output_ = 0;
-    int push_encoded_output_ = 1;
     int64_t time_ = 0;
     int64_t audio_first_pts_ = LLONG_MAX;
     int64_t video_first_pts_ = LLONG_MAX;

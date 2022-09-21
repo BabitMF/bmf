@@ -151,7 +151,7 @@ int CFFEncoder::init() {
 
     /** @addtogroup EncM
      * @{
-     * @arg push_output: output the result to the output queue instead of write to disk, exp.
+     * @arg push_output: decide whether to mux the result and where to output the results, available value is 0/1/2. 0: write muxed result to disk, 1: write muxed result to the output queue, 2: write unmuxed result to the output queue.
      * @code
             "push_output": 1
      * @endcode
@@ -1692,10 +1692,10 @@ int CFFEncoder::process(Task &task) {
                 }
             }
             flush();
-            if (push_output_ != OutputMode::OUTPUT_NOTHING) {
+            if (task.get_outputs().size() > 0 || push_output_ != OutputMode::OUTPUT_NOTHING) {
+                Packet pkt = Packet::generate_eof_packet();
+                assert(pkt.timestamp_ == BMF_EOF);
                 for (int i = 0; i < task.get_outputs().size(); i++){
-                    Packet pkt = Packet::generate_eof_packet();
-                    assert(pkt.timestamp_ == BMF_EOF);
                     task.get_outputs()[i]->push(pkt);
                 }
             }

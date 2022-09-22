@@ -82,7 +82,13 @@ class BmfGraph:
         if BmfGraph.logbuffer_ is not None:
             BmfGraph.logbuffer_.close()
 
+    ## @ingroup pyAPI
+    ## @ingroup grphClass
+    ###@{
+    #  set new graph options before run
+    #  @param option: the option patch for the graph
     def set_option(self, option=None):
+    ###@}
         if option is None:
             return
 

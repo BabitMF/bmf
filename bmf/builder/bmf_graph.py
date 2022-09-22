@@ -82,6 +82,14 @@ class BmfGraph:
         if BmfGraph.logbuffer_ is not None:
             BmfGraph.logbuffer_.close()
 
+    def set_option(self, option=None):
+        if option is None:
+            return
+
+        for key in option:
+            self.option_[key] = option[key]
+
+
     ## @ingroup pyAPI
     ## @ingroup grphClass
     ###@{

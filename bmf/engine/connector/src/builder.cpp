@@ -351,6 +351,9 @@ namespace bmf::builder {
             return info;
         }
 
+        void RealGraph::SetOption(const bmf_sdk::JsonParam& optionPatch) {
+            graphOption_.merge_patch(optionPatch);
+        }
     }
 
     std::string GetVersion() {
@@ -614,7 +617,7 @@ namespace bmf::builder {
     bmf::BMFGraph Graph::Instantiate(bool dumpGraph, bool needMerge) {
         auto graph_config = graph_->Dump().dump(4);
         if (dumpGraph ||
-            (graph_->graphOption_.json_value_.count("dump_graph") && graph_->graphOption_.json_value_["dump_graph"])) {
+            (graph_->graphOption_.json_value_.count("dump_graph") && graph_->graphOption_.json_value_["dump_graph"] == 1)) {
             std::ofstream graph_file("graph.json", std::ios::app);
             graph_file << graph_config;
             graph_file.close();
@@ -633,7 +636,7 @@ namespace bmf::builder {
     int Graph::Run(bool dumpGraph, bool needMerge) {
         auto graph_config = graph_->Dump().dump(4);
         if (dumpGraph ||
-            (graph_->graphOption_.json_value_.count("dump_graph") && graph_->graphOption_.json_value_["dump_graph"])) {
+            (graph_->graphOption_.json_value_.count("dump_graph") && graph_->graphOption_.json_value_["dump_graph"] == 1)) {
             std::ofstream graph_file("graph.json", std::ios::app);
             graph_file << graph_config;
             graph_file.close();
@@ -647,7 +650,7 @@ namespace bmf::builder {
     void Graph::Start(bool dumpGraph, bool needMerge) {
         auto graph_config = graph_->Dump().dump(4);
         if (dumpGraph ||
-            (graph_->graphOption_.json_value_.count("dump_graph") && graph_->graphOption_.json_value_["dump_graph"])) {
+            (graph_->graphOption_.json_value_.count("dump_graph") && graph_->graphOption_.json_value_["dump_graph"] == 1)) {
             std::ofstream graph_file("graph.json", std::ios::app);
             graph_file << graph_config;
             graph_file.close();
@@ -879,6 +882,10 @@ namespace bmf::builder {
             task.fill_input_packet(id, Packet::generate_eof_packet());
         }
         module.moduleInstance->process(task);
+    }
+
+    void Graph::SetOption(const bmf_sdk::JsonParam& optionPatch) {
+        graph_->SetOption(optionPatch);
     }
 
     void SyncPackets::Insert(int streamId, std::vector<Packet> frames) {

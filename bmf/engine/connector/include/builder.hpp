@@ -224,6 +224,8 @@ namespace bmf::builder {
 
             std::shared_ptr<RealStream> NewPlaceholderStream();
 
+            void SetOption(const bmf_sdk::JsonParam& optionPatch);
+
         private:
             friend bmf::builder::Graph;
             friend bmf::builder::Node;
@@ -692,6 +694,7 @@ namespace bmf::builder {
 
         BMF_FUNC_VIS void SendEOF(SyncModule module);
 
+        BMF_FUNC_VIS void SetOption(const bmf_sdk::JsonParam& optionPatch);
     private:
         BMF_FUNC_VIS Node NewNode(std::string const &alias, const bmf_sdk::JsonParam& option, const std::vector<Stream>& inputStreams,
                                   std::string const &moduleName, ModuleType moduleType, std::string const &modulePath,

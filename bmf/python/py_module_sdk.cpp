@@ -411,6 +411,9 @@ void module_sdk_bind(py::module &m)
         .def("get_timestamp", &Packet::timestamp)
         .def("set_timestamp", &Packet::set_timestamp)
         .def_property("timestamp", &Packet::timestamp, &Packet::set_timestamp)
+        .def("get_time", &Packet::time)
+        .def("set_time", &Packet::set_time)
+        .def_property("time", &Packet::time, &Packet::set_time)
         .def_property_readonly("class_name", [](const Packet &pkt){
             return pkt.type_info().name;
         })

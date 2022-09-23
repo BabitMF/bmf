@@ -1,6 +1,6 @@
 #include "builder.hpp"
 #include <unistd.h>
-#include "nlohmann/json.hpp"
+#include "bmf_nlohmann/json.hpp"
 
 #include "cpp_test_helper.h"
 
@@ -11,12 +11,12 @@ TEST(cpp_set_option, set_option) {
     std::string output_file = "./output.mp4";
     BMF_CPP_FILE_REMOVE(output_file);
 
-    nlohmann::json graph_para = {
+    bmf_nlohmann::json graph_para = {
         {"dump_graph", 0}
     };
     auto graph = bmf::builder::Graph(bmf::builder::NormalMode, bmf_sdk::JsonParam(graph_para));
 
-    nlohmann::json decode_para = {
+    bmf_nlohmann::json decode_para = {
         {"input_path", "../../example/files/img.mp4"}
     };
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
@@ -31,7 +31,7 @@ TEST(cpp_set_option, set_option) {
         "copy_module:CopyModule"
     );
 
-    nlohmann::json encode_para = {
+    bmf_nlohmann::json encode_para = {
         {"output_path", output_file},
         {"video_params", {
             {"vsync", "vfr"},
@@ -43,7 +43,7 @@ TEST(cpp_set_option, set_option) {
     };
     graph.Encode(video_2, video["audio"], bmf_sdk::JsonParam(encode_para));
 
-    nlohmann::json option_patch = {
+    bmf_nlohmann::json option_patch = {
         {"dump_graph", 1}
     };
     graph.SetOption(bmf_sdk::JsonParam(option_patch));

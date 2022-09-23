@@ -17,6 +17,7 @@ class BMF_API PacketImpl : public RefObject
     void *obj_ = nullptr;
     const TypeInfo *type_info_ = nullptr;
     int64_t timestamp_ = Timestamp::UNSET;
+    double time_ = 0;
 public:
     PacketImpl() = delete;
     PacketImpl(const PacketImpl&) = delete;
@@ -61,6 +62,16 @@ public:
     int64_t timestamp() const
     {
         return timestamp_;
+    }
+
+    void set_time(double time)
+    {
+        time_ = time;
+    }
+
+    double time() const
+    {
+        return time_;
     }
 
 protected:
@@ -119,6 +130,10 @@ public:
     void set_timestamp(int64_t timestamp);
     int64_t timestamp() const;
 
+    //
+    void set_time(double time);
+    double time() const;
+    
     PacketImpl* unsafe_self();
     const PacketImpl* unsafe_self() const;
 

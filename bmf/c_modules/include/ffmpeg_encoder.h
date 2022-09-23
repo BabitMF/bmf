@@ -35,6 +35,7 @@ extern "C" {
 #include "video_sync.h"
 #include "av_common_utils.h"
 #include <bmf/sdk/filter_graph.h>
+#include <list>
 
 typedef enum OutputMode {
     OUTPUT_NOTHING,
@@ -124,6 +125,8 @@ class CFFEncoder : public Module {
     OutputStream ost_[2];
     int avio_buffer_size_ = 4 * 4096;
     int64_t current_frame_pts_;
+    double orig_pts_time_;
+    std::list<double> orig_pts_time_list_;
     int64_t current_offset_ = 0;
     int current_whence_ = 0;
     Task* current_task_ptr_ = nullptr;

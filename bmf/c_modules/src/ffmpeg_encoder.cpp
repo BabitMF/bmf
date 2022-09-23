@@ -401,8 +401,14 @@ int CFFEncoder::handle_output(AVPacket *hpkt, int idx) {
     }
 
     //BMFLOG_NODE(BMF_INFO, node_id_) << "push out time stamp: " << pkt->pts;
-    if (push_output_)
+    if (push_output_) {
         current_frame_pts_ = pkt->pts;
+        orig_pts_time_ = -1;
+        if (orig_pts_time_list_.size() > 0) {
+            orig_pts_time_ = orig_pts_time_list_.front();
+            orig_pts_time_list_.pop_front();
+        }
+    }
 
     AVFormatContext *s = output_fmt_ctx_;
     AVStream *st = output_stream_[idx];
@@ -584,26 +590,24 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_pack
 
         if (push_output_ == OutputMode::OUTPUT_UNMUX_PACKET) {
             if (first_packet_[idx]) {
-                Packet packet;
                 auto stream = std::make_shared<AVStream>();
                 *stream = *(output_stream_[idx]);
                 stream->codecpar = avcodec_parameters_alloc();
                 avcodec_parameters_copy(stream->codecpar, output_stream_[idx]->codecpar);
-                packet.set_data(stream);
-                packet.set_data_type(DATA_TYPE_C);
-                packet.set_class_name("AVStream");
+                auto packet = Packet(stream);
+                //packet.set_data_type(DATA_TYPE_C);
+                //packet.set_class_name("AVStream");
                 if (current_task_ptr_->get_outputs().find(idx) != current_task_ptr_->get_outputs().end())
                     current_task_ptr_->get_outputs()[idx]->push(packet);
                 first_packet_[idx] = false;
             }
 
-            BMFAVPacket packet_tmp = BMFAVPacket(enc_pkt);
-            Packet packet;
-            packet.set_data(packet_tmp);
+            BMFAVPacket packet_tmp = ffmpeg::to_bmf_av_packet(enc_pkt, true);
+            auto packet = Packet(packet_tmp);
             packet.set_timestamp(enc_pkt->pts * av_q2d(output_stream_[idx]->time_base) * 1000000);
-            packet.set_data_type(DATA_TYPE_C);
-            packet.set_data_class_type(BMFAVPACKET_TYPE);
-            packet.set_class_name("libbmf_module_sdk.BMFAVPacket");
+            //packet.set_data_type(DATA_TYPE_C);
+            //packet.set_data_class_type(BMFAVPACKET_TYPE);
+            //packet.set_class_name("libbmf_module_sdk.BMFAVPacket");
             if (current_task_ptr_->get_outputs().find(idx) != current_task_ptr_->get_outputs().end())
                 current_task_ptr_->get_outputs()[idx]->push(packet);
         } else {
@@ -704,6 +708,8 @@ int CFFEncoder::write_current_packet_data(uint8_t *buf, int buf_size) {
     bmf_avpkt.set_whence(current_whence_);
     auto packet = Packet(bmf_avpkt);
     packet.set_timestamp(current_frame_pts_);
+    packet.set_time(orig_pts_time_);
+    //packet.set_data(packet_tmp);
     //packet.set_data_type(DATA_TYPE_C);
     //packet.set_data_class_type(BMFAVPACKET_TYPE);
     //packet.set_class_name("libbmf_module_sdk.BMFAVPacket");
@@ -1633,7 +1639,22 @@ int CFFEncoder::process(Task &task) {
 
             if (index == 0) {
                 auto video_frame = packet.get<VideoFrame>();
-                frame = ffmpeg::from_video_frame(video_frame, false);
+                frame = av_frame_clone(ffmpeg::from_video_frame(video_frame, true));
+
+                if (oformat_ == "image2pipe" && push_output_) { //only support to carry orig pts time for images
+                    std::string stime = "";
+                    if (frame->metadata) {
+                        AVDictionaryEntry *tag = NULL;
+                        while ((tag = av_dict_get(frame->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
+                            if (!strcmp(tag->key, "orig_pts_time")) {
+                                stime = tag->value;
+                                break;
+                            }
+                        }
+                    }
+                    if (stime != "")
+                        orig_pts_time_list_.push_back(std::stod(stime));
+                }
             }
             if (index == 1) {
                 auto audio_frame = packet.get<AudioFrame>();
@@ -1686,7 +1707,6 @@ int CFFEncoder::process(Task &task) {
         if (!null_output_) {
             if (task.get_outputs().size() > 0 && !b_flushed_) {
                 if (push_output_ == OutputMode::OUTPUT_NOTHING) {
-                    Packet packet;
                     std::string data;
                     if (!output_dir_.empty())
                         data = output_dir_;

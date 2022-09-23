@@ -158,6 +158,9 @@ class CFFDecoder : public Module {
     int push_audio_channels_;
     int push_audio_sample_rate_;
     int push_audio_sample_fmt_;
+
+    int orig_pts_time_ = 0;
+
     int process_raw_stream_packet(Task &task, BMFAVPacket &bmf_pkt, bool eof);
 
     int process_input_bmf_av_packet(Task &task);

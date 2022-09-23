@@ -406,6 +406,13 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
     if (option.has_key("sample_fmt"))
         option.get_int("sample_fmt", push_audio_sample_fmt_);
 
+    /** @addtogroup DecM
+     * @{
+     * @arg orig_pts_time: keep the original pts time of inputstream in the frame
+     * @} */
+    if (option.has_key("orig_pts_time"))
+        option.get_int("orig_pts_time", orig_pts_time_);
+
     return;
 }
 
@@ -743,11 +750,28 @@ Packet CFFDecoder::generate_video_packet(AVFrame *frame)
     else if (video_stream_)
         out_tb = video_stream_->time_base;
 
+
     if (!push_raw_stream_) {
         std::string s_tb = std::to_string(out_tb.num) + "," + std::to_string(out_tb.den);
         av_dict_set(&frame->metadata, "time_base", s_tb.c_str(), 0);
     } else
         av_dict_set(&frame->metadata, "time_base", video_time_base_string_.c_str(), 0);
+
+    if (orig_pts_time_) {
+        AVRational orig_tb;
+        if (!push_raw_stream_)
+            orig_tb = out_tb;
+        else {
+            int pos = video_time_base_string_.find(",");
+            if (pos > 0) {
+                orig_tb.num = stoi(video_time_base_string_.substr(0, pos));
+                orig_tb.den = stoi(video_time_base_string_.substr(pos + 1));
+            }
+        }
+        std::string pts_time = std::to_string(frame->pts * av_q2d(orig_tb));
+        av_dict_set(&frame->metadata, "orig_pts_time", pts_time.c_str(), 0);
+    }
+
     frame->pict_type = AV_PICTURE_TYPE_NONE;
 
     AVRational frame_rate;

@@ -266,6 +266,12 @@ Packet CFFFilter::convert_avframe_to_packet(AVFrame *frame, int index) {
             st = std::to_string(stream_first_dts_);
             av_dict_set(&frame->metadata, "first_dts", st.c_str(), 0);
         }
+        if (orig_pts_time_cache_.size() > 0) {
+            if (orig_pts_time_cache_.count(frame->coded_picture_number) > 0) {
+                av_dict_set(&frame->metadata, "orig_pts_time", orig_pts_time_cache_[frame->coded_picture_number].c_str(), 0);
+                orig_pts_time_cache_.erase(frame->coded_picture_number);
+            }
+        }
     }
 
     if (frame->width > 0) {
@@ -285,20 +291,21 @@ Packet CFFFilter::convert_avframe_to_packet(AVFrame *frame, int index) {
     }
 }
 
-int64_t get_meta_info(AVFrame *temp_frame, std::string key, int64_t default_value) {
+std::string get_meta_info(AVFrame *temp_frame, std::string key) {
     if (temp_frame != NULL) {
         if (temp_frame->metadata) {
             AVDictionaryEntry *tag = NULL;
             while ((tag = av_dict_get(temp_frame->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
                 if (!strcmp(tag->key, key.c_str())) {
                     std::string svalue = tag->value;
-                    int64_t stream_frame_number = stol(svalue);
-                    return stream_frame_number;
+                    //int64_t stream_frame_number = stol(svalue);
+                    //return stream_frame_number;
+                    return svalue;
                 }
             }
         }
     }
-    return default_value;
+    return "";
 }
 
 int CFFFilter::get_cache_frame(int index, AVFrame *&frame, int &choose_index) {
@@ -322,11 +329,16 @@ int CFFFilter::get_cache_frame(int index, AVFrame *&frame, int &choose_index) {
             int same_node_index = input_stream_node.first;
             if (input_cache_[same_node_index].size() > 0) {
                 AVFrame *temp_frame = input_cache_[same_node_index].front();
-                int64_t stream_frame_number = get_meta_info(temp_frame, "stream_frame_number", -1);
+                std::string svalue = get_meta_info(temp_frame, "stream_frame_number");
+                int64_t stream_frame_number = svalue != "" ? stol(svalue) : -1;
                 if (stream_frame_number != -1 && stream_frame_number < choose_node_frame_number) {
                     choose_node_frame_number = stream_frame_number;
                     choose_index = same_node_index;
                 }
+
+                svalue = get_meta_info(temp_frame, "orig_pts_time");
+                if (svalue != "")
+                    orig_pts_time_cache_[temp_frame->coded_picture_number] = svalue;
             }
         }
     }

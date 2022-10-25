@@ -229,6 +229,12 @@ int CFFEncoder::init() {
     if (input_option_.has_key("aframes"))
         input_option_.get_long("aframes", ost_[1].max_frames);
     assert(ost_[0].max_frames >= 0 && ost_[1].max_frames >= 0);
+    /** @addtogroup EncM
+     * @{
+     * @arg min_frames: set the min number of output video frames
+     * @} */
+    if (input_option_.has_key("min_frames"))
+        input_option_.get_long("min_frames", ost_[0].min_frames);
 
     /** @addtogroup EncM
      * @{
@@ -1461,7 +1467,7 @@ int CFFEncoder::handle_video_frame(AVFrame *frame, bool is_flushing, int index) 
     for (int i=0; i < filter_frames.size(); i++) {
         AVFrame* filter_frame = filter_frames[i];
         if (video_sync_ == NULL) {
-            video_sync_ = std::make_shared<VideoSync>(in_stream_tbs_[0], enc_ctxs_[0]->time_base, input_video_frame_rate_, video_frame_rate_, stream_start_time_, stream_first_dts_, vsync_method_, ost_[0].max_frames);
+            video_sync_ = std::make_shared<VideoSync>(in_stream_tbs_[0], enc_ctxs_[0]->time_base, input_video_frame_rate_, video_frame_rate_, stream_start_time_, stream_first_dts_, vsync_method_, ost_[0].max_frames, ost_[0].min_frames);
         }
 
         video_sync_->process_video_frame(filter_frame, sync_frames, ost_[0].frame_number);

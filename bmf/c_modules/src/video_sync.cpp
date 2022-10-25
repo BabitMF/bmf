@@ -30,7 +30,7 @@ static inline av_const int mid_pred(int a, int b, int c)
     return b;
 }
 
-VideoSync::VideoSync(AVRational input_stream_time_base, AVRational encode_time_base, AVRational filter_in_frame_rate, AVRational video_frame_rate, int64_t stream_start_time, int64_t stream_first_dts, int sync_method, int64_t max_frames)
+VideoSync::VideoSync(AVRational input_stream_time_base, AVRational encode_time_base, AVRational filter_in_frame_rate, AVRational video_frame_rate, int64_t stream_start_time, int64_t stream_first_dts, int sync_method, int64_t max_frames, int64_t min_frames)
 {
     input_stream_time_base_ = input_stream_time_base;
     encode_time_base_ = encode_time_base;
@@ -41,6 +41,7 @@ VideoSync::VideoSync(AVRational input_stream_time_base, AVRational encode_time_b
     stream_start_time_ = stream_start_time;
     stream_first_dts_ = stream_first_dts;
     max_frames_ = max_frames > 0 ? max_frames : INT64_MAX;
+    min_frames_ = min_frames;
 }
 
 VideoSync::~VideoSync()
@@ -63,6 +64,8 @@ int VideoSync::process_video_frame(AVFrame *frame, std::vector<AVFrame *> &outpu
 
     if (!frame) {
         nb0_frames = nb_frames = mid_pred(last_nb0_frames_[0], last_nb0_frames_[1], last_nb0_frames_[2]);
+        if (min_frames_ > 0 && frame_number <= min_frames_)
+            nb0_frames = nb_frames = min_frames_ - frame_number;
     } else {
         nb0_frames = 0;
         nb_frames = 1;

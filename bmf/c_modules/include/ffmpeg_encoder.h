@@ -47,6 +47,7 @@ typedef struct OutputStream {
     int64_t data_size;
     int64_t packets_written;
     int64_t max_frames;
+    int64_t min_frames;
     int64_t frame_number;
     bool encoding_needed;
     std::shared_ptr<AVStream> input_stream;

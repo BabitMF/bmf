@@ -31,7 +31,7 @@ CFFFilter::CFFFilter(int node_id, JsonParam option) {
     stream_start_time_ = AV_NOPTS_VALUE;
     stream_first_dts_ = AV_NOPTS_VALUE;
 
-    graph_descr(option, g_desc_);
+    option_ = option;
     avfilter_register_all();
 }
 

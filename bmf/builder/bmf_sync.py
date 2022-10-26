@@ -3,7 +3,6 @@ import bmf
 from bmf import Task, Packet
 from _bmf import engine
 
-
 ## @ingroup pyAPI
 ## @defgroup syncMd SyncModule
 ###@{
@@ -12,6 +11,7 @@ from _bmf import engine
 
 
 class SyncModule(object):
+
     def __init__(self, mod, input_streams, output_streams):
         self.mod = mod
         self.input_streams = input_streams
@@ -28,7 +28,6 @@ class SyncModule(object):
 
     def process(self, task):
         self.mod.process(task)
-
 
     def process_pkts(self, pkts_dict):
         # create task
@@ -77,7 +76,7 @@ class SyncModule(object):
 #  @param name: the output stream id list for the module
 #  @return a syncModule object which contains a C++ module inside
 def sync_module(name, option, input_streams, output_streams):
-###@}
+    ###@}
     # convert module option for filter module
     if name == "c_ffmpeg_filter":
         # construct node config
@@ -85,11 +84,11 @@ def sync_module(name, option, input_streams, output_streams):
         node_config["option"] = option
         node_config["input_streams"] = []
         for index in input_streams:
-            input_stream = {"identifier": name+str(index)}
+            input_stream = {"identifier": name + str(index)}
             node_config["input_streams"].append(input_stream)
         node_config["output_streams"] = []
         for index in output_streams:
-            output_stream = {"identifier": name+str(index)}
+            output_stream = {"identifier": name + str(index)}
             node_config["output_streams"].append(output_stream)
 
         # convert filter option
@@ -111,7 +110,7 @@ def sync_module(name, option, input_streams, output_streams):
 #  @return a dict which contains result data packet
 #  @return task timestamp
 def process(module, pkts_dict):
-###@}
+    ###@}
     # create task
     task = Task(0, module.get_input_streams(), module.get_output_streams())
 
@@ -142,7 +141,7 @@ def process(module, pkts_dict):
 #  Module process a task with eof packet
 #  @param module: corresponding syncModule object
 def send_eof(module):
-###@}
+    ###@}
     # create task
     task = Task(0, module.get_input_streams(), module.get_output_streams())
 
@@ -160,4 +159,4 @@ def send_eof(module):
         while not q.empty():
             result_dict[key].append(q.get())
 
-    return result_dict, task.get_timestamp()
+    return result_dict, task.timestamp

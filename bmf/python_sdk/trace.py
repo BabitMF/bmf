@@ -1,6 +1,6 @@
 import inspect
 from enum import IntEnum
-from _bmf import engine
+from bmf.lib._bmf import engine
 
 # BMF Trace utilities
 

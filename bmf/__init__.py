@@ -7,8 +7,8 @@ sys.setdlopenflags(flags | ctypes.RTLD_GLOBAL)
 # import hmp types
 import hmp as mp
 # import bmf_sdk types
-from _bmf.sdk import VideoFrame, AudioFrame, Packet, BMFAVPacket
-from _bmf.sdk import Task
+from bmf.lib._bmf.sdk import VideoFrame, AudioFrame, Packet, BMFAVPacket
+from bmf.lib._bmf.sdk import Task
 
 #
 from .ffmpeg_engine import FFmpegEngine

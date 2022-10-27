@@ -1,6 +1,6 @@
 
 import hmp
-from _bmf import sdk
+from bmf.lib._bmf import sdk
 
 ProcessDone = sdk.ProcessDone
 

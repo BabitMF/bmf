@@ -1,5 +1,5 @@
 import json
-from _bmf import engine
+from bmf.lib._bmf import engine
 from .bmf_graph import BmfGraph
 
 ## @ingroup pyAPI

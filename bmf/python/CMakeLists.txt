@@ -1,6 +1,6 @@
 file(GLOB PY_SRCS *.cpp *.h)
 
-pybind11_add_module(_bmf SHARED ${PY_SRCS})
+pybind11_add_module(_bmf MODULE ${PY_SRCS})
 
 target_link_libraries(_bmf PRIVATE nlohmann bmf_module_sdk engine)
 

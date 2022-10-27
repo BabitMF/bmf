@@ -1,7 +1,7 @@
 import json
 import bmf
 from bmf import Task, Packet
-from _bmf import engine
+from bmf.lib._bmf import engine
 
 ## @ingroup pyAPI
 ## @defgroup syncMd SyncModule

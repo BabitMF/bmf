@@ -1,9 +1,8 @@
-
 import pytest
-import _hmp as mp
+import bmf.lib._hmp as mp
 from hml_fixtures import device_type, dtype
 try:
-	import torch
+    import torch
 except ImportError:
     torch = None
 
@@ -20,7 +19,7 @@ def test_torch_interop(device_type, dtype):
         pytest.skip("torch not support")
 
     a = mp.arange(48, device=device_type).to(dtype).reshape((2, 6, 4))
-    b = a.slice(1, 0, 6, 2) # non-contiguous
+    b = a.slice(1, 0, 6, 2)  # non-contiguous
 
     # to torch tensor
     c = b.torch()
@@ -35,16 +34,7 @@ def test_torch_interop(device_type, dtype):
     np_c = c.cpu().numpy()
     np_d = d.cpu().numpy()
 
-    assert((np_b == np_c).all())
-    assert((np_b == np_d).all())
-    assert((np_b == np_a[:, ::2, :]).all())
-    assert((np_b == 111).all())
-
-
-
-
-
-
-
-
-
+    assert ((np_b == np_c).all())
+    assert ((np_b == np_d).all())
+    assert ((np_b == np_a[:, ::2, :]).all())
+    assert ((np_b == 111).all())

@@ -1,8 +1,8 @@
 import os, time
 from fractions import Fraction
 import logging
-from _bmf import engine
-import _bmf
+from bmf.lib._bmf import engine
+import bmf.lib._bmf
 
 ## @ingroup pyAPI
 ## @defgroup pyAPIVer version

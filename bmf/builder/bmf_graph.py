@@ -3,7 +3,7 @@ import os
 import sys
 import threading
 import time
-from _bmf import engine
+from bmf.lib._bmf import engine
 from .bmf_modules import bmf_modules
 from .bmf_node import BmfNode, BmfEdge
 from .bmf_stream import BmfStream

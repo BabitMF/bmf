@@ -179,7 +179,7 @@ class BmfNode:
         self.graph_.run()
 
     def add_user_callback(self, key, cb):
-        from _bmf import engine
+        from bmf.lib._bmf import engine
         callback = engine.Callback(cb)
         self.user_callbacks[key] = (callback.uid(), callback)
 
@@ -190,7 +190,7 @@ class BmfNode:
         print('no output stream')
 
     def create_sync_module(self):
-        from _bmf import engine
+        from bmf.lib._bmf import engine
         node_option = json.dumps(self.option_)
 
         # convert node option for filter

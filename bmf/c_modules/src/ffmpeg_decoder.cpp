@@ -908,7 +908,7 @@ int CFFDecoder::handle_output_data(Task &task, int index, AVPacket *pkt, bool eo
     if (ist->frame_number >= ist->max_frames) {
         index == 0 ? video_end_ = true : audio_end_ = true;
         Packet packet = Packet::generate_eof_packet();
-        assert(packet.timestamp_ == BMF_EOF);
+        assert(packet.timestamp() == BMF_EOF);
         if (task.get_outputs().find(index) != task.get_outputs().end() && file_list_.size() == 0)
             task.get_outputs()[index]->push(packet);
 
@@ -1021,7 +1021,7 @@ int CFFDecoder::handle_output_data(Task &task, int index, AVPacket *pkt, bool eo
                         if (idx_dur_ >= durations_.size()) {
                             index == 0 ? video_end_ = true : audio_end_ = true;
                             Packet packet = Packet::generate_eof_packet();
-                            assert(packet.timestamp_ == BMF_EOF);
+                            assert(packet.timestamp() == BMF_EOF);
                             if (task.get_outputs().find(index) != task.get_outputs().end() && file_list_.size() == 0)
                                 task.get_outputs()[index]->push(packet);
                         } else {

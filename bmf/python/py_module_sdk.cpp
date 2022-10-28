@@ -73,17 +73,17 @@ py::object packet_get(bmf_sdk::Packet &pkt, const py::object &cls)
 {
     std::string cls_name;
     if(cls.is_none()){
-        cls_name = "_bmf.sdk.PythonObject";
+        cls_name = "bmf.lib._bmf.sdk.PythonObject";
     }
     else{
         cls_name = get_py_class_name(cls);
         if(s_packet_casters.find(cls_name) == s_packet_casters.end()){
-            cls_name = "_bmf.sdk.PythonObject";
+            cls_name = "bmf.lib._bmf.sdk.PythonObject";
         }
     }
 
     auto obj = s_packet_casters.at(cls_name).from(pkt);
-    if(cls_name == "_bmf.sdk.PythonObject"){
+    if(cls_name == "bmf.lib._bmf.sdk.PythonObject"){
         obj = obj.cast<bmf_sdk::PythonObject>().obj();
         if(cls.is_none() || obj.get_type().is(cls)){
             return obj;
@@ -144,7 +144,7 @@ bmf_sdk::Packet packet_init(py::object &obj)
 
 
 #define PACKET_REGISTER_BMF_SDK_TYPE(T)         \
-    PACKET_REGISTER_TYPE("_bmf.sdk." #T, T)
+    PACKET_REGISTER_TYPE("bmf.lib._bmf.sdk." #T, T)
 
 
 

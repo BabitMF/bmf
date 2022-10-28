@@ -1668,7 +1668,7 @@ int CFFEncoder::process(Task &task) {
             flush();
             if (push_output_ > 0) { //for none IO mux output
                 Packet pkt = Packet::generate_eof_packet();
-                assert(pkt.timestamp_ == BMF_EOF);
+                assert(pkt.timestamp() == BMF_EOF);
                 task.get_outputs()[0]->push(pkt);
             }
         }

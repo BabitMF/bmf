@@ -95,7 +95,7 @@ class BmfGraph:
     def get_av_log_buffer(self, level = 'info'):
     ###@}
         # ffmpeg log config
-        from _bmf.sdk import LogBuffer
+        from bmf.lib._bmf.sdk import LogBuffer
         BmfGraph.av_log_list_.clear()
         BmfGraph.logbuffer_ = LogBuffer(BmfGraph.av_log_list_, level)
         return BmfGraph.av_log_list_

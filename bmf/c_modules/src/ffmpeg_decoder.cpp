@@ -1395,6 +1395,19 @@ int CFFDecoder::decode_send_packet(Task &task, AVPacket *pkt, int *got_frame) {
         av_packet.set_time_base({stream->time_base.num, stream->time_base.den});
 
         auto packet = Packet(av_packet);
+
+        int64_t e_time = (index == 0) ? end_video_time_ : end_audio_time_;
+        if (e_time <= av_rescale_q(ist->pts, AV_TIME_BASE_Q, stream->time_base)) {
+            if (e_time < 0)
+                BMFLOG_NODE(BMF_ERROR, node_id_)
+                    << "Error of end time in stream copy, which is shorter than the start offset";
+            AVPacket ept;
+            av_init_packet(&ept);
+            ept.data = NULL;
+            ept.size = 0;
+            ept.stream_index = (index == 0) ? video_stream_index_ : audio_stream_index_;
+            return decode_send_packet(task, &ept, got_frame);
+        }
         packet.set_timestamp(pkt->pts * av_q2d(stream->time_base) * 1000000);
         if (task.get_outputs().find(index) != task.get_outputs().end())
             task.get_outputs()[index]->push(packet);

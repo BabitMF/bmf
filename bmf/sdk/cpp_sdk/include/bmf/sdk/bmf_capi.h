@@ -168,6 +168,9 @@ BMF_API int bmf_packet_is_bmfavpacket(const bmf_Packet pkt);
 
 BMF_API bmf_Packet bmf_packet_from_json_param(const bmf_JsonParam json);
 BMF_API bmf_JsonParam bmf_packet_get_json_param(const bmf_Packet pkt);
+
+BMF_API bmf_Packet bmf_packet_from_string_param(char *const str);
+BMF_API char *const bmf_packet_get_string_param(const bmf_Packet pkt);
 BMF_API int bmf_packet_is_json_param(const bmf_Packet pkt);
 
 

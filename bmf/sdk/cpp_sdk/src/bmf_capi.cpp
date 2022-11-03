@@ -657,6 +657,23 @@ bmf_JsonParam bmf_packet_get_json_param(const bmf_Packet pkt)
 
 }
 
+bmf_Packet bmf_packet_from_string_param(char *const str)
+{
+    BMF_PROTECT(
+        std::string string_value(str);
+        return new Packet(string_value);
+    )
+    return nullptr;
+}
+
+char * const bmf_packet_get_string_param(const bmf_Packet pkt)
+{
+    BMF_PROTECT(
+        return bmf_strdup(pkt->get<std::string>().c_str()); 
+    )
+    return nullptr;
+}
+
 int bmf_packet_is_json_param(const bmf_Packet pkt)
 {
     return pkt->is<JsonParam>();

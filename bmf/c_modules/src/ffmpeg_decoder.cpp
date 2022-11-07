@@ -261,6 +261,13 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
 
     /** @addtogroup DecM
      * @{
+     * @arg copyts: copy timestamps
+     * @} */
+    if (option.has_key("copyts"))
+        copy_ts_ = true;
+
+    /** @addtogroup DecM
+     * @{
      * @arg hwaccel: hardware accelete exp. cuda.
      * @arg extract_frames: support extract frames with given fps and device.
      * @} */
@@ -563,11 +570,12 @@ int CFFDecoder::init_filtergraph(int index, AVFrame *frame) {
     double ts_offset = 0;
     double current_duration = 0;
 
-    //if (copy_ts) {
-    //    tsoffset = f->start_time == AV_NOPTS_VALUE ? 0 : f->start_time;
-    //    if (!start_at_zero && f->ctx->start_time != AV_NOPTS_VALUE)
-    //        tsoffset += f->ctx->start_time;
-    //}
+    if (copy_ts_) {
+        //tsoffset = f->start_time == AV_NOPTS_VALUE ? 0 : f->start_time; //input file start time not supported
+        //if (!start_at_zero &&
+        if (input_fmt_ctx_->start_time != AV_NOPTS_VALUE)
+            ts_offset += input_fmt_ctx_->start_time;
+    }
     if (durations_.size() > 0) {
         current_duration = (durations_[idx_dur_ + 1] - durations_[idx_dur_]);
         if (idx_dur_ > 0) {
@@ -712,12 +720,12 @@ int CFFDecoder::init_input(AVDictionary *options) {
                    input_path_.c_str(), (double)timestamp / AV_TIME_BASE);
         }
     }
-    ts_offset_ = -timestamp;
+    ts_offset_ = copy_ts_ ? 0 : -timestamp;
 
     if (codec_context(&video_stream_index_, &video_decode_ctx_, input_fmt_ctx_, AVMEDIA_TYPE_VIDEO) >= 0) {
         video_stream_ = input_fmt_ctx_->streams[video_stream_index_];
         if (end_time_ > 0 && !encrypted_) {
-            end_video_time_ = av_rescale_q((end_time_ + ts_offset_), AV_TIME_BASE_Q, video_stream_->time_base);
+            end_video_time_ = av_rescale_q(end_time_, AV_TIME_BASE_Q, video_stream_->time_base);
         }
         video_decode_ctx_->skip_frame = skip_frame_;
     }
@@ -727,7 +735,7 @@ int CFFDecoder::init_input(AVDictionary *options) {
     if (codec_context(&audio_stream_index_, &audio_decode_ctx_, input_fmt_ctx_, AVMEDIA_TYPE_AUDIO) >= 0) {
         audio_stream_ = input_fmt_ctx_->streams[audio_stream_index_];
         if (end_time_ > 0 && !encrypted_) {
-            end_audio_time_ = av_rescale_q((end_time_ + ts_offset_), AV_TIME_BASE_Q, audio_stream_->time_base);
+            end_audio_time_ = av_rescale_q(end_time_, AV_TIME_BASE_Q, audio_stream_->time_base);
         }
     }
     ist_[1].next_dts = AV_NOPTS_VALUE;
@@ -1186,9 +1194,9 @@ int CFFDecoder::pkt_ts(AVPacket *pkt, int index) {
                                                 << new_start_time - input_fmt_ctx_->start_time;
                 ts_offset_ = -new_start_time;
                 if (end_time_ > 0) {
-                    end_video_time_ = av_rescale_q((end_time_ + ts_offset_), AV_TIME_BASE_Q,
+                    end_video_time_ = av_rescale_q(end_time_, AV_TIME_BASE_Q,
                                                    input_fmt_ctx_->streams[video_stream_index_]->time_base);
-                    end_audio_time_ = av_rescale_q((end_time_ + ts_offset_), AV_TIME_BASE_Q,
+                    end_audio_time_ = av_rescale_q(end_time_, AV_TIME_BASE_Q,
                                                    input_fmt_ctx_->streams[audio_stream_index_]->time_base);
                 }
             }
@@ -1223,7 +1231,7 @@ int CFFDecoder::pkt_ts(AVPacket *pkt, int index) {
                                 AV_TIME_BASE_Q, (enum AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
     if (pkt_dts != AV_NOPTS_VALUE &&
         ist->next_dts == AV_NOPTS_VALUE &&
-        //!copy_ts &&
+        !copy_ts_ &&
         (input_fmt_ctx_->iformat->flags & AVFMT_TS_DISCONT) &&
         last_ts_ != AV_NOPTS_VALUE
         //!force_dts_monotonicity
@@ -1253,8 +1261,8 @@ int CFFDecoder::pkt_ts(AVPacket *pkt, int index) {
 
     pkt_dts = av_rescale_q_rnd(pkt->dts, stream->time_base,
                                 AV_TIME_BASE_Q, (enum AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
-    if (pkt_dts != AV_NOPTS_VALUE && ist->next_dts != AV_NOPTS_VALUE
-        //!copy_ts &&
+    if (pkt_dts != AV_NOPTS_VALUE && ist->next_dts != AV_NOPTS_VALUE &&
+        !copy_ts_
         //!force_dts_monotonicity
     ) {
         int64_t delta   = pkt_dts - ist->next_dts;

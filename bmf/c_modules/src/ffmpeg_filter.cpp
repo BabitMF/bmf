@@ -26,6 +26,7 @@ CFFFilter::CFFFilter(int node_id, JsonParam option) {
     b_graph_inited_ = false;
     filter_graph_ = NULL;
     is_inf_ = false;
+    copy_ts_ = false;
     all_input_eof_ = false;
     all_output_eof_ = false;
     stream_start_time_ = AV_NOPTS_VALUE;
@@ -223,6 +224,8 @@ int CFFFilter::init_filtergraph() {
                     std::string svalue = tag->value;
                     input_stream_node_[it->first] = stoi(svalue);
                 }
+                if (!strcmp(tag->key, "copyts"))
+                    copy_ts_ = true;
             }
         }
     }
@@ -273,6 +276,8 @@ Packet CFFFilter::convert_avframe_to_packet(AVFrame *frame, int index) {
             }
         }
     }
+    if (copy_ts_)
+        av_dict_set(&frame->metadata, "copyts", "1", 0);
 
     if (frame->width > 0) {
 	    auto video_frame = ffmpeg::to_video_frame(frame);

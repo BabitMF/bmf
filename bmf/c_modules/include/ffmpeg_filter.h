@@ -34,6 +34,7 @@ class CFFFilter : public Module {
     bool is_inf_;
     bool all_input_eof_;
     bool all_output_eof_;
+    bool copy_ts_;
     std::vector<bool> in_eof_;
     std::vector<bool> out_eof_;
     std::map<int, FilterConfig> config_;

@@ -103,13 +103,13 @@ int VideoSync::process_video_frame(AVFrame *frame, std::vector<AVFrame *> &outpu
         }
 
         switch (sync_method_) {
-        //case VSYNC_VSCFR:
-        //    if (ost->frame_number == 0 && delta0 >= 0.5) {
-        //        av_log(NULL, AV_LOG_DEBUG, "Not duplicating %d initial frames\n", (int)lrintf(delta0));
-        //        delta = duration;
-        //        delta0 = 0;
-        //        ost->sync_opts = lrint(sync_ipts);
-        //    }
+        case VSYNC_VSCFR:
+            if (frame_number == 0 && delta0 >= 0.5) {
+                BMFLOG(BMF_DEBUG) << "Not duplicating " << (int)lrintf(delta0)  << "initial frames";
+                delta = duration;
+                delta0 = 0;
+                sync_opts_ = lrint(float_pts);
+            }
         case VSYNC_CFR:
             //if (frame_drop_threshold && delta < frame_drop_threshold && ost->frame_number)
             if (delta < -1.1)

@@ -968,6 +968,9 @@ int CFFEncoder::init_codec(int idx, AVFrame* frame) {
                     std::string svalue = tag->value;
                     stream_first_dts_ = stol(svalue);
                 }
+
+                if (!strcmp(tag->key, "copyts"))
+                    copy_ts_ = true;
             }
         }
         /** @addtogroup EncM
@@ -1078,9 +1081,8 @@ int CFFEncoder::init_codec(int idx, AVFrame* frame) {
             //    && input_files[ist->file_index]->input_ts_offset == 0) {
             //    vsync_method_ = VSYNC_VSCFR;
             //}
-            //if (vsync_method_ == VSYNC_CFR && copy_ts) {
-            //    vsync_method_ = VSYNC_VSCFR;
-            //}
+            if (vsync_method_ == VSYNC_CFR && copy_ts_)
+                vsync_method_ = VSYNC_VSCFR;
         }
 
         if (video_frame_rate_.num == 0) {

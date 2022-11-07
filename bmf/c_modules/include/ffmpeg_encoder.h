@@ -132,6 +132,7 @@ class CFFEncoder : public Module {
     Task* current_task_ptr_ = nullptr;
     bool first_packet_[2] = {true, true};
     CurrentImage2Buffer current_image_buffer_ = {0};
+    bool copy_ts_ = false;
 
 public:
     CFFEncoder(int node_id, JsonParam option);

@@ -708,6 +708,10 @@ int CFFEncoder::write_current_packet_data(uint8_t *buf, int buf_size) {
     bmf_avpkt.set_whence(current_whence_);
     auto packet = Packet(bmf_avpkt);
     packet.set_timestamp(current_frame_pts_);
+    if (orig_pts_time_ == -1)
+        orig_pts_time_ = last_orig_pts_time_ + last_orig_duration_ + 0.001;//to estimat;
+    last_orig_duration_ = orig_pts_time_ - last_orig_pts_time_;
+    last_orig_pts_time_ = orig_pts_time_;
     packet.set_time(orig_pts_time_);
     //packet.set_data(packet_tmp);
     //packet.set_data_type(DATA_TYPE_C);
@@ -715,6 +719,7 @@ int CFFEncoder::write_current_packet_data(uint8_t *buf, int buf_size) {
     //packet.set_class_name("libbmf_module_sdk.BMFAVPacket");
     if (current_task_ptr_->get_outputs().find(0) != current_task_ptr_->get_outputs().end())
         current_task_ptr_->get_outputs()[0]->push(packet);
+
     return buf_size;
 }
 

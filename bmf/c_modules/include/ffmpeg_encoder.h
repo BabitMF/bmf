@@ -126,6 +126,8 @@ class CFFEncoder : public Module {
     int avio_buffer_size_ = 4 * 4096;
     int64_t current_frame_pts_;
     double orig_pts_time_;
+    double last_orig_pts_time_ = 0.0;
+    double last_orig_duration_ = 0.0;
     std::list<double> orig_pts_time_list_;
     int64_t current_offset_ = 0;
     int current_whence_ = 0;

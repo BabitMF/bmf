@@ -74,16 +74,26 @@ BEGIN_BMF_ENGINE_NS
         scheduler_callback.close_report_ = [this](int node_id, bool is_exception) -> int {
             std::lock_guard<std::mutex> _(this->con_var_mutex_);
             this->closed_count_++;
-            if (is_exception)
-                BMFLOG(BMF_INFO) << "node " << node_id << " got exception, close directly";
-            else
+            if (is_exception) {
+                if (node_id == -1) {
+                    this->except_not_from_node_ = true;
+                    BMFLOG(BMF_INFO) << "got exception not from any node, close directly";
+                } else
+                    BMFLOG(BMF_INFO) << "node " << node_id << " got exception, close directly";
+            } else
                 BMFLOG(BMF_INFO) << "node " << node_id << " close report, closed count: " << this->closed_count_;
             if (this->closed_count_ == this->nodes_.size() || is_exception)
                 this->cond_close_.notify_one();
             return 0;
         };
 
-        scheduler_ = std::make_shared<Scheduler>(scheduler_callback, scheduler_count_);
+        double time_out = 0;
+        if (graph_config.get_option().json_value_.count("time_out")) {
+            time_out = graph_config.get_option().json_value_.at("time_out").get<double>();
+            BMFLOG(BMF_INFO) << "scheduler time out: " << time_out << " seconds";
+        }
+
+        scheduler_ = std::make_shared<Scheduler>(scheduler_callback, scheduler_count_, time_out);
         BMFLOG(BMF_INFO) << "scheduler count" << scheduler_count_;
 
         // create all nodes and output streams
@@ -672,9 +682,17 @@ BEGIN_BMF_ENGINE_NS
             if (closed_count_ != nodes_.size())
                 cond_close_.wait(lk);
         }
-        scheduler_->close();
+
+        if (not except_not_from_node_)
+            scheduler_->close();
+        else
+            std::cerr << "!!Coredump may occured due to unfinished schedule threads and node process, please refer the detail information to debug or optimze the graph..." << std::endl;
+
         g_ptr.clear();
-        if (scheduler_->eptr_){
+        if (scheduler_->eptr_) {
+            auto graph_info = status();
+            std::cerr << "Graph status when exception occured: " << graph_info.jsonify().dump()
+                      << std::endl;
             std::rethrow_exception(scheduler_->eptr_);
         }
         return 0;
@@ -776,7 +794,8 @@ BEGIN_BMF_ENGINE_NS
     }
 
     Graph::~Graph() {
-        scheduler_->close();
+        if (not except_not_from_node_)
+            scheduler_->close();
     }
 
     bmf::GraphRunningInfo Graph::status() {

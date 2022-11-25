@@ -29,7 +29,7 @@ BEGIN_BMF_ENGINE_NS
         nodes_ref_cnt_ = 0;
     }
 
-    Scheduler::Scheduler(SchedulerCallBack callback, int scheduler_cnt) {
+    Scheduler::Scheduler(SchedulerCallBack callback, int scheduler_cnt, double time_out) {
         thread_quit_ = false;
         callback_ = callback;
         SchedulerQueueCallBack scheduler_queue_callback;
@@ -60,12 +60,16 @@ BEGIN_BMF_ENGINE_NS
                     i, scheduler_queue_callback);
             scheduler_queues_.push_back(scheduler_queue);
         }
+        time_out_ = time_out;
     }
 
     int Scheduler::start() {
         for (int i = 0; i < scheduler_queues_.size(); i++) {
             scheduler_queues_[i]->start();
         }
+        if (time_out_ > 0)
+            guard_thread_ = std::thread(&Scheduler::alive_watch, this);
+
         return 0;
     }
 
@@ -73,6 +77,11 @@ BEGIN_BMF_ENGINE_NS
         for (int i = 0; i < scheduler_queues_.size(); i++) {
             scheduler_queues_[i]->close();
         }
+        if (time_out_ > 0) {
+            thread_quit_ = true;
+            guard_thread_.join();
+        }
+
         BMFLOG(BMF_INFO) << "all scheduling threads were joint";
         return 0;
     }
@@ -228,6 +237,8 @@ BEGIN_BMF_ENGINE_NS
             node->pre_sched_num_--;
             if (node->schedule_node()) {
                 last_schedule_success_time_ = clock();
+                last_schedule_clk_ = std::chrono::steady_clock::now();
+                std::cout << "node -> schedule_node" << std::endl;
             }
         }
         return 0;
@@ -249,6 +260,29 @@ BEGIN_BMF_ENGINE_NS
     int Scheduler::clear_task(int node_id, int scheduler_queue_id) {
         std::shared_ptr<SchedulerQueue> scheduler_queue = scheduler_queues_[scheduler_queue_id];
         scheduler_queue->remove_node_task(node_id);
+        return 0;
+    }
+
+    int Scheduler::alive_watch() {
+        std::chrono::duration<double> time_span;
+        while (1) {
+            if (!thread_quit_) {
+                time_span = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::steady_clock::now() - last_schedule_clk_);
+                if (time_span.count() >= time_out_) {
+                    try {
+                        BMF_Error(BMF_StsTimeOut, "No more task to be scheduled during 5 seconds");
+                    } catch (...) {
+                        eptr_ = std::current_exception();
+                        for (int i = 0; i < scheduler_queues_.size(); i++)
+                            scheduler_queues_[i]->exception_catch_flag_ = true;
+                        callback_.close_report_(-1, true);
+                        break;
+                    }
+                }
+                usleep(100000);
+            } else
+                break;
+        }
         return 0;
     }
 END_BMF_ENGINE_NS

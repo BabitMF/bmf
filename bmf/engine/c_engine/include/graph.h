@@ -142,6 +142,7 @@ BEGIN_BMF_ENGINE_NS
         std::condition_variable cond_close_;
         std::mutex con_var_mutex_;
         int32_t closed_count_ = 0;
+        bool except_not_from_node_ = false;
     };
 
 END_BMF_ENGINE_NS

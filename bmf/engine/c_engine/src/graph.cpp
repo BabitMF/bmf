@@ -76,7 +76,7 @@ BEGIN_BMF_ENGINE_NS
             this->closed_count_++;
             if (is_exception) {
                 if (node_id == -1) {
-                    this->except_not_from_node_ = true;
+                    this->exception_from_scheduler_ = true;
                     BMFLOG(BMF_INFO) << "got exception not from any node, close directly";
                 } else
                     BMFLOG(BMF_INFO) << "node " << node_id << " got exception, close directly";
@@ -683,7 +683,7 @@ BEGIN_BMF_ENGINE_NS
                 cond_close_.wait(lk);
         }
 
-        if (not except_not_from_node_)
+        if (not exception_from_scheduler_)
             scheduler_->close();
         else
             std::cerr << "!!Coredump may occured due to unfinished schedule threads and node process, please refer the detail information to debug or optimze the graph..." << std::endl;
@@ -794,7 +794,7 @@ BEGIN_BMF_ENGINE_NS
     }
 
     Graph::~Graph() {
-        if (not except_not_from_node_)
+        if (not exception_from_scheduler_)
             scheduler_->close();
     }
 

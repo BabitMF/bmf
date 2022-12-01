@@ -238,7 +238,6 @@ BEGIN_BMF_ENGINE_NS
             if (node->schedule_node()) {
                 last_schedule_success_time_ = clock();
                 last_schedule_clk_ = std::chrono::steady_clock::now();
-                std::cout << "node -> schedule_node" << std::endl;
             }
         }
         return 0;

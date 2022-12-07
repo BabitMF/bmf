@@ -776,7 +776,14 @@ Packet CFFDecoder::generate_video_packet(AVFrame *frame)
                 orig_tb.den = stoi(video_time_base_string_.substr(pos + 1));
             }
         }
-        std::string pts_time = std::to_string(frame->pts * av_q2d(orig_tb));
+
+        int64_t orig_pts;
+        if (start_time_ != AV_NOPTS_VALUE && !copy_ts_)
+            orig_pts = frame->pts + av_rescale_q(start_time_, AV_TIME_BASE_Q, video_stream_->time_base);
+        else
+            orig_pts = frame->pts;
+
+        std::string pts_time = std::to_string(orig_pts * av_q2d(orig_tb));
         av_dict_set(&frame->metadata, "orig_pts_time", pts_time.c_str(), 0);
     }
 

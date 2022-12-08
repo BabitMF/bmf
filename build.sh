@@ -63,7 +63,15 @@ mkdir -p output
 # Generate BMF version
 source ./version.sh
 
-if [ ! -d "3rd_party/json" ]
+# Extract FFMPEG from submodule
+if [ ! -d "3rd_party/ffmpeg_bin/linux/" ]
+then
+    git config --global http.sslVerify false
+    git submodule init "3rd_party/ffmpeg_bin"
+    git submodule update
+fi
+
+if [ "$USE_BMF_FFMPEG" = "1" ] && [ ! -d "3rd_party/ffmpeg_bin/linux/build" ]
 then
     echo "Extracting 3rd_party"
     cd 3rd_party/

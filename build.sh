@@ -94,6 +94,12 @@ else
     echo "Without ffmpeg"
 fi
 
+cp -a $PWD/3rd_party/ffmpeg_bin/linux/build/lib/. /usr/local/lib/
+cp -a $PWD/3rd_party/ffmpeg_bin/linux/build/include/. /usr/local/include/
+
+# Generate BMF version
+source ./version.sh
+
 # Handle SCM compilation for x86 multiple Python versions
 if [ "$SCRIPT_EXEC_MODE" == "x86" ]
 then

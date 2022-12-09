@@ -126,7 +126,7 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
         double opt;
         option.get_double("end_time", opt);
         end_time_ = (int64_t)(opt * AV_TIME_BASE);
-        if (!option.has_key("copyts"))
+        if (!option.has_key("copyts") && option.has_key("start_time"))
             end_time_ -= start_time_; //the pts will be offset by the start time
     }
     

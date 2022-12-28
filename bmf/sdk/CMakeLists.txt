@@ -38,6 +38,7 @@ target_link_libraries(bmf_module_sdk
     PUBLIC
         ${BMF_STD_DEPS}  
         hmp nlohmann
+        #        -pie -fPIE -Wl,--export-dynamic
 )
 
 if(NOT APPLE AND NOT ANDROID)

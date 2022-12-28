@@ -85,9 +85,23 @@ endif()
 
 include(cmake/dependencies.cmake)
 
+option(BMF_USE_MEDIACODEC
+
+"Build the project using mediacodec"
+
+OFF)
+
+IF(BMF_USE_MEDIACODEC)
+
+add_definitions("-DBMF_USE_MEDIACODEC")
+
+endif(USE_MEDIACODEC)
+
+
 ### 
 add_subdirectory(bmf)
 
+## set (CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGSa} -Wl,--export-dynamic")
 
 
 ### print build configurations

@@ -97,8 +97,8 @@ do
             -DBMF_PYENV=${PYTHON_VERSION} \
             -DANDROID_PLATFORM=${ANDROID_TARGET_PLATFORM} \
             -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
-            -DBMF_ENABLE_JNI=OFF \
-            -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ..
+            -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} \
+            -DBMF_USE_MEDIACODEC=ON ..
         #cmake --build .
         #ninja 
         make -j16

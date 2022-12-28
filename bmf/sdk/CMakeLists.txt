@@ -34,13 +34,20 @@ target_include_directories(bmf_module_sdk
         ${CMAKE_CURRENT_SOURCE_DIR}/cpp_sdk/src
 )
 
-target_link_libraries(bmf_module_sdk
-    PUBLIC
+if(${BMF_USE_MEDIACODEC})
+    target_link_libraries(bmf_module_sdk
+        PUBLIC
         ${BMF_STD_DEPS}  
         hmp nlohmann
-        if(BMF_USE_MEDIACODEC)
-            -pie -fPIE -Wl,--export-dynamic
-)
+        -pie -fPIE -Wl,--export-dynamic
+    )
+else()
+    target_link_libraries(bmf_module_sdk
+        PUBLIC
+        ${BMF_STD_DEPS}  
+        hmp nlohmann
+    )
+endif()
 
 if(NOT APPLE AND NOT ANDROID)
     set_target_properties(bmf_module_sdk PROPERTIES

@@ -2,6 +2,9 @@
 #include <iostream>
 #include <bmf_nlohmann/json.hpp>
 #include <bmf/sdk/compat/path.h>
+#ifdef BMF_USE_MEDIACODEC
+#include <jni.h>
+#endif
 
 #include "common.h"
 #include "graph_config.h"
@@ -62,3 +65,32 @@ int main(int argc, char ** argv) {
 
     return 0;
 }
+#ifdef BMF_USE_MEDIACODEC
+extern "C" JNIEXPORT void InitializeSignalChain() {
+
+}
+
+extern "C" JNIEXPORT void ClaimSignalChain() {
+
+}
+
+extern "C" JNIEXPORT void UnclaimSignalChain() {
+
+}
+
+extern "C" JNIEXPORT void InvokeUserSignalHandler() {
+
+}
+
+extern "C" JNIEXPORT void EnsureFrontOfChain() {
+
+}
+
+extern "C" JNIEXPORT void AddSpecialSignalHandlerFn() {
+
+}
+
+extern "C" JNIEXPORT void RemoveSpecialSignalHandlerFn() {
+
+}
+#endif

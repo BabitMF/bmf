@@ -484,6 +484,45 @@ int copy_simple_frame(AVFrame* frame) {
     return 0;
 }
 
+#ifdef BMF_USE_MEDIACODEC
+static enum AVPixelFormat hw_pix_fmt_;
+int CFFDecoder::init_android_vm(){
+    static JavaVM *vm = NULL;
+    static JNIEnv *env = NULL;
+    int status = init_jvm(&vm, &env);
+    if (status != 0) {
+        BMFLOG_NODE(BMF_WARNING, node_id_) << "Initialization failure (" << status << ":" << dlerror();
+        return -1;
+    }
+    av_jni_set_java_vm(vm, 0);
+    return 0;
+}
+
+static AVPixelFormat get_hw_format(AVCodecContext *ctx, const enum AVPixelFormat *pix_fmts){
+    const enum AVPixelFormat *p;
+
+    for (p = pix_fmts; *p != -1; p++) {
+        if (*p == hw_pix_fmt_)
+            return *p;
+    }
+
+    return AV_PIX_FMT_NONE;
+} 
+
+int CFFDecoder::hw_decoder_init(AVCodecContext **dec_ctx, const enum AVHWDeviceType type){
+    int err = 0;
+
+    if ((err = av_hwdevice_ctx_create(&hw_device_ctx, type,
+                                      NULL, NULL, 0)) < 0) {
+        BMFLOG_NODE(BMF_WARNING, node_id_) << "Failed to create specified HW device.";
+        return err;
+    }
+    (*dec_ctx)->hw_device_ctx = av_buffer_ref(hw_device_ctx);
+
+    return err;
+}
+
+#endif
 
 int CFFDecoder::codec_context(int *stream_idx,
                               AVCodecContext **dec_ctx, AVFormatContext *fmt_ctx, enum AVMediaType type) {
@@ -523,12 +562,49 @@ int CFFDecoder::codec_context(int *stream_idx,
                 << "Failed to find " << av_get_media_type_string(type) << " codec";
             return AVERROR(EINVAL);
         }
+        #ifdef BMF_USE_MEDIACODEC
+        if (type == AVMEDIA_TYPE_VIDEO && (video_codec_name_.find("mediacodec")) != std::string::npos) {
+            use_mediacodec = true;
+        }
+        if (use_mediacodec && type == AVMEDIA_TYPE_VIDEO) {
+            init_android_vm();
+            hw_device_type_ = av_hwdevice_find_type_by_name("mediacodec"); 
+            if (hw_device_type_ == AV_HWDEVICE_TYPE_NONE) {
+                BMFLOG_NODE(BMF_ERROR, node_id_) << "Device type mediacodec is not supported.";
+                BMFLOG_NODE(BMF_ERROR, node_id_) << "Available device types:";
+                while((hw_device_type_ = av_hwdevice_iterate_types(hw_device_type_)) != AV_HWDEVICE_TYPE_NONE)
+                    BMFLOG_NODE(BMF_ERROR, node_id_) << av_hwdevice_get_type_name(hw_device_type_) << " ";
+                return AVERROR(EINVAL);
+            }
+            for (int i = 0;; i++) {
+                const AVCodecHWConfig *config = avcodec_get_hw_config(dec, i);
+                if (!config) {
+                    BMFLOG_NODE(BMF_ERROR, node_id_) << "Decoder " << dec->name << "does not support device type " <<  av_hwdevice_get_type_name(hw_device_type_);
+                    return AVERROR(EINVAL);
+                }
+                if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX &&
+                    config->device_type == hw_device_type_) {
+                    hw_pix_fmt_ = config->pix_fmt;
+                    break;
+                }
+            }
+        }
+        #endif
+
         *dec_ctx = avcodec_alloc_context3(dec);
         if (!*dec_ctx) {
             BMFLOG_NODE(BMF_ERROR, node_id_) 
                 << "Failed to allocate the " << av_get_media_type_string(type) << " codec context";
             return AVERROR(ENOMEM);
         }
+
+        #ifdef BMF_USE_MEDIACODEC
+        if (use_mediacodec && type == AVMEDIA_TYPE_VIDEO) {
+            (*dec_ctx)->get_format = get_hw_format;
+            if (hw_decoder_init(dec_ctx, hw_device_type_) < 0)
+                return AVERROR(EINVAL);
+        }
+        #endif
 
         // Copy codec parameters from input stream to output codec context
         if ((ret = avcodec_parameters_to_context(*dec_ctx, st->codecpar)) < 0) {

@@ -4,7 +4,8 @@ file(GLOB SRCS src/run_graph.cpp)
 
 add_executable(run_bmf_graph ${SRCS})
 
-if(${BMF_USE_MEDIACODEC})
+
+if(BMF_USE_MEDIACODEC)
     target_link_libraries(run_bmf_graph
         PRIVATE 
         nlohmann engine bmf_module_sdk

@@ -34,6 +34,14 @@ extern "C" {
 #include <libavutil/hwcontext.h>
 };
 
+#ifdef BMF_USE_MEDIACODEC
+extern "C" 
+{
+    #include "libavcodec/jni.h"
+}
+#include "c_android_vm.h"
+#endif
+
 typedef struct FilteringContext {
     AVFilterContext *buffersink_ctx;
     AVFilterContext *buffersrc_ctx;
@@ -182,6 +190,16 @@ class CFFDecoder : public Module {
     int process_task_output_packet(int index, Packet &packet);
     int64_t get_start_time();
     int extract_frames(AVFrame *frame, std::vector<AVFrame*> &output_frames);
+
+#ifdef BMF_USE_MEDIACODEC
+    enum AVPixelFormat hw_pix_fmt_;
+    enum AVHWDeviceType hw_device_type_;
+    AVBufferRef *hw_device_ctx;
+    bool use_mediacodec;
+    //bool mediacodec_send_flag;
+    int init_android_vm();
+    int hw_decoder_init(AVCodecContext **dec_ctx, const enum AVHWDeviceType type);
+#endif
 
 public:
     CFFDecoder(int node_id, JsonParam option);

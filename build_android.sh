@@ -98,7 +98,7 @@ do
             -DANDROID_PLATFORM=${ANDROID_TARGET_PLATFORM} \
             -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
             -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} \
-            -DBMF_USE_MEDIACODEC=ON ..
+            -DBMF_USE_MEDIACODEC=OFF ..
         #cmake --build .
         #ninja 
         make -j16

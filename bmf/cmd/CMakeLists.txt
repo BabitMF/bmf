@@ -7,7 +7,8 @@ add_executable(run_bmf_graph ${SRCS})
 target_link_libraries(run_bmf_graph
     PRIVATE 
     nlohmann engine bmf_module_sdk
-    -pie -fPIE -Wl,--export-dynamic
+    if(BMF_USE_MEDIACODEC)
+        -pie -fPIE -Wl,--export-dynamic
 )
 
 # Trace format log tool

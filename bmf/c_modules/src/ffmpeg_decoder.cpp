@@ -489,6 +489,11 @@ static enum AVPixelFormat hw_pix_fmt_;
 int CFFDecoder::init_android_vm(){
     static JavaVM *vm = NULL;
     static JNIEnv *env = NULL;
+    BMFLOG_NODE(BMF_INFO, node_id_) << "vm = " << vm << "env = " << env;
+    if (vm) {
+        BMFLOG_NODE(BMF_ERROR, node_id_) << "Java VM has been inited ever before!";
+        return 0;
+    }
     int status = init_jvm(&vm, &env);
     if (status != 0) {
         BMFLOG_NODE(BMF_WARNING, node_id_) << "Initialization failure (" << status << ":" << dlerror();
@@ -601,8 +606,10 @@ int CFFDecoder::codec_context(int *stream_idx,
         #ifdef BMF_USE_MEDIACODEC
         if (use_mediacodec && type == AVMEDIA_TYPE_VIDEO) {
             (*dec_ctx)->get_format = get_hw_format;
-            if (hw_decoder_init(dec_ctx, hw_device_type_) < 0)
+            if (hw_decoder_init(dec_ctx, hw_device_type_) < 0) {
+                BMFLOG_NODE(BMF_ERROR, node_id_) << "hw_decoder_init called Err!";
                 return AVERROR(EINVAL);
+            }
         }
         #endif
 

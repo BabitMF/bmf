@@ -1,6 +1,14 @@
 #ifdef BMF_USE_MEDIACODEC
 #include "../include/c_android_vm.h"
 
+#include "log.h"
+
+const int JniAllocErr = -1;
+const int NoCreateJavaVMSymbolErr = -2;
+const int NoRegisterNativesSymbolErr = -3;
+const int CreateJavaFuncErr = -4;
+const int RegisterNativesErr = -5;
+
 int init_jvm(JavaVM **p_vm, JNIEnv **p_env) {
   
   JavaVMOption opt[2];
@@ -25,15 +33,18 @@ int init_jvm(JavaVM **p_vm, JNIEnv **p_env) {
         JniInvocation_dtor &&
         JniInvocation_Init) {
         jni = calloc(1, 256);
-        if (!jni)
-            return -1;
+        if (!jni) {
+          BMFLOG(BMF_ERROR) << "cannot alloc Memory for JNI Invocation!";
+          return JniAllocErr;
+        }
         JniInvocation_ctor(jni);
         JniInvocation_Init(jni, NULL);
   }
   JNI_CreateJavaVM_t JNI_CreateJavaVM;
   JNI_CreateJavaVM = (JNI_CreateJavaVM_t) dlsym(libandroid_runtime_dso, "JNI_CreateJavaVM");
   if (!JNI_CreateJavaVM) {
-    return -2;
+    BMFLOG(BMF_ERROR) << "cannot Find CreateJavaVM Symbol!";
+    return NoCreateJavaVMSymbolErr;
   }
 
   registerNatives_t registerNatives;
@@ -42,16 +53,19 @@ int init_jvm(JavaVM **p_vm, JNIEnv **p_env) {
     // Attempt non-legacy version
     registerNatives = (registerNatives_t) dlsym(libandroid_runtime_dso2, "registerFrameworkNatives");
     if(!registerNatives) {
-      return -3;
+      BMFLOG(BMF_ERROR) << "cannot Find RegisterNatives Symbol!";
+      return NoRegisterNativesSymbolErr;
     }
   }
 
   if (JNI_CreateJavaVM(&(*p_vm), &(*p_env), &args)) {
-    return -4;
+    BMFLOG(BMF_ERROR) << "Call JNI_CreateJavaVM Func Err!";
+    return CreateJavaFuncErr;
   }
 
   if (registerNatives(*p_env, 0)) {
-    return -5;
+    BMFLOG(BMF_ERROR) << "Call registerNatives Func Err!";
+    return RegisterNativesErr;
   }
 
   return 0;

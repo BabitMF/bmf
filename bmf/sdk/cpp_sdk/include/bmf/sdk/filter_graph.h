@@ -84,6 +84,12 @@ public:
             b_init_ = false;
             return -1;
         }
+        char* threads_env= getenv("BMF_FILTERGRAPH_THREADS");
+        if (threads_env) {
+            std::string threads_str = threads_env;
+            BMFLOG(BMF_INFO) << "env BMF_FILTERGRAPH_THREADS: " << threads_str;
+            filter_graph_->nb_threads = std::stoi(threads_str);
+        }
         return 0;
     };
 

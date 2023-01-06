@@ -84,6 +84,11 @@ public:
             b_init_ = false;
             return -1;
         }
+
+        /** @addtogroup FilterGraph
+        * @{
+        * @env BMF_FILTERGRAPH_THREADS: set nb_threads of ffmpeg filter_graph, for example, BMF_FILTERGRAPH_THREADS=1
+        * @} */
         char* threads_env= getenv("BMF_FILTERGRAPH_THREADS");
         if (threads_env) {
             std::string threads_str = threads_env;

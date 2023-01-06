@@ -192,13 +192,7 @@ class CFFDecoder : public Module {
     int extract_frames(AVFrame *frame, std::vector<AVFrame*> &output_frames);
 
 #ifdef BMF_USE_MEDIACODEC
-    enum AVPixelFormat hw_pix_fmt_;
-    enum AVHWDeviceType hw_device_type_;
-    AVBufferRef *hw_device_ctx;
-    bool use_mediacodec;
-    //bool mediacodec_send_flag;
     int init_android_vm();
-    int hw_decoder_init(AVCodecContext **dec_ctx, const enum AVHWDeviceType type);
 #endif
 
 public:

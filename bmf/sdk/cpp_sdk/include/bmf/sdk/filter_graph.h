@@ -85,7 +85,7 @@ public:
             return -1;
         }
 
-        /** @addtogroup FilterGraph
+        /** @addtogroup FiltM
         * @{
         * @env BMF_FILTERGRAPH_THREADS: set nb_threads of ffmpeg filter_graph, for example, BMF_FILTERGRAPH_THREADS=1
         * @} */

@@ -109,6 +109,9 @@ BEGIN_BMF_ENGINE_NS
         // input streams that are not connected
         find_orphan_input_streams();
 
+        // delete useless orphan output stream to avoid graph build issue
+        delete_orphan_output_streams();
+
         for (auto &node:source_nodes_)
             scheduler_->add_or_remove_node(node->get_id(), true);
     }
@@ -283,6 +286,29 @@ BEGIN_BMF_ENGINE_NS
                 if (not input_stream.second->is_connected()) {
                     orphan_streams_.push_back(input_stream.second);
                 }
+            }
+        }
+        return 0;
+    }
+
+    int Graph::delete_orphan_output_streams() {
+        for (auto &node_iter:nodes_) {
+            std::shared_ptr<OutputStreamManager> output_stream_manager;
+            std::map<int, std::shared_ptr<OutputStream>> output_streams;
+            node_iter.second->get_output_stream_manager(output_stream_manager);
+            node_iter.second->get_output_streams(output_streams);
+            std::vector<int> rm_streams_id;
+            for (auto &output_stream:output_streams) {
+                if (output_stream.second->mirror_streams_.size() == 0) {//orphan output stream
+                    BMFLOG(BMF_INFO) << "node:" << node_iter.second->get_type() << " "
+                                     << node_iter.second->get_id()
+                                     << " will delete orphan output stream which is useless: "
+                                     << output_stream.second->identifier_;
+                    rm_streams_id.push_back(output_stream.first);
+                }
+            }
+            for (auto streams_id:rm_streams_id) {
+                output_stream_manager->remove_stream(streams_id, -1);
             }
         }
         return 0;

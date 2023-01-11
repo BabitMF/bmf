@@ -87,6 +87,8 @@ BEGIN_BMF_ENGINE_NS
 
         int find_orphan_input_streams();
 
+        int delete_orphan_output_streams();
+
         int start();
 
         int update(GraphConfig update_config);

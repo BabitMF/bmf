@@ -92,7 +92,7 @@ public:
         char* threads_env= getenv("BMF_FILTERGRAPH_THREADS");
         if (threads_env) {
             std::string threads_str = threads_env;
-            BMFLOG(BMF_INFO) << "env BMF_FILTERGRAPH_THREADS: " << threads_str;
+            BMFLOG(BMF_DEBUG) << "env BMF_FILTERGRAPH_THREADS: " << threads_str;
             filter_graph_->nb_threads = std::stoi(threads_str);
         }
         return 0;
@@ -142,10 +142,10 @@ public:
         enum AVPixelFormat pix_fmts[] = {AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE};
 
         if (!b_init_) {
-            BMFLOG(BMF_INFO) << "FilterGraph is not inited";
+            BMFLOG(BMF_DEBUG) << "FilterGraph is not inited";
             return -1;
         }
-        BMFLOG(BMF_INFO) << "graph desc: " << graph_desc;
+        BMFLOG(BMF_DEBUG) << "graph desc: " << graph_desc;
         if ((ret = avfilter_graph_parse2(filter_graph_, graph_desc.c_str(),
                                         &inputs_, &outputs_)) < 0) {
             BMFLOG(BMF_ERROR) << "Graph parse2 error: " << graph_desc;
@@ -201,7 +201,7 @@ public:
                 if (input_config.frame_rate.num != 0)
                     av_bprintf(&args, ":frame_rate=%d/%d", input_config.frame_rate.num, input_config.frame_rate.den);
 
-                BMFLOG(BMF_INFO) << "ffmpeg_filter video args: " << args.str;
+                BMFLOG(BMF_DEBUG) << "ffmpeg_filter video args: " << args.str;
             } else {
                 buffersrc = avfilter_get_by_name("abuffer");
 
@@ -215,7 +215,7 @@ public:
                         input_config.tb.num, input_config.tb.den, input_config.sample_rate,
                         av_get_sample_fmt_name((enum AVSampleFormat) input_config.format),
                         input_config.channel_layout);
-                BMFLOG(BMF_INFO) << "ffmpeg_filter audio args: " << args.str;
+                BMFLOG(BMF_DEBUG) << "ffmpeg_filter audio args: " << args.str;
             }
 
             AVFilterContext *buffersrc_ctx;
@@ -264,7 +264,7 @@ public:
                                 av_get_sample_fmt_name((enum AVSampleFormat) output_config.format),
                                 output_config.channel_layout);
                         out_arg_str = out_args.str;
-                        BMFLOG(BMF_INFO) << "ffmpeg_filter buffer sink for audio args: " << out_arg_str;
+                        BMFLOG(BMF_DEBUG) << "ffmpeg_filter buffer sink for audio args: " << out_arg_str;
 
                         std::string fname = "format_" + std::to_string(st);
                         ret = avfilter_graph_create_filter(&format_ctx, format, fname.c_str(),

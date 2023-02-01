@@ -270,6 +270,20 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
 
     /** @addtogroup DecM
      * @{
+     * @arg max_width_height: set the max width or height limitation of input frame. Once it's
+     * enabled, frame will be dropped by default or it will throw exp according to "limit_hits"
+     * @} */
+    if (option.has_key("max_width_height"))
+        option.get_int("max_width_height", max_wh_);
+    /** @addtogroup DecM
+     * @{
+     * @arg max_limit_hits: set the max number of limit hits, once exceeded the exp will be threw
+     * @} */
+    if (option.has_key("max_limit_hits"))
+        option.get_int("max_limit_hits", max_limit_hits_);
+
+    /** @addtogroup DecM
+     * @{
      * @arg hwaccel: hardware accelete exp. cuda.
      * @arg extract_frames: support extract frames with given fps and device.
      * @} */
@@ -756,6 +770,13 @@ int CFFDecoder::init_input(AVDictionary *options) {
             end_video_time_ = av_rescale_q(end_time_, AV_TIME_BASE_Q, video_stream_->time_base);
         }
         video_decode_ctx_->skip_frame = skip_frame_;
+        if (max_wh_) {
+            parser_ = av_parser_init(video_decode_ctx_->codec_id);
+            if (!parser_) {
+                BMFLOG_NODE(BMF_ERROR, node_id_) << "Parser not found";
+                return -1;
+            }
+        }
     }
     ist_[0].next_dts = AV_NOPTS_VALUE;
     ist_[0].next_pts = AV_NOPTS_VALUE;
@@ -1671,6 +1692,10 @@ int CFFDecoder::clean() {
         avcodec_free_context(&audio_decode_ctx_);
         audio_decode_ctx_ = NULL;
     }
+    if (parser_) {
+        av_parser_close(parser_);
+        parser_ = NULL;
+    }
     if (input_fmt_ctx_) {
         avformat_close_input(&input_fmt_ctx_);
         input_fmt_ctx_ = NULL;
@@ -1757,6 +1782,29 @@ int CFFDecoder::init_av_codec() {
 
 bool CFFDecoder::check_valid_packet(AVPacket *pkt, Task &task) {
     if (pkt->stream_index == video_stream_index_ && !video_end_ && task.get_outputs().count(0) > 0) {
+        if (max_wh_ > 0 && video_decode_ctx_) {
+            int ret;
+            AVPacket opkt;
+            av_init_packet(&opkt);
+            ret = av_parser_parse2(parser_, video_decode_ctx_, &opkt.data, &opkt.size, pkt->data, pkt->size,
+                                   AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
+            if (ret < 0) {
+                BMFLOG_NODE(BMF_ERROR, node_id_) << "Error while parsing";
+                return false;
+            }
+            if (parser_->coded_width >= max_wh_ || parser_->coded_height >= max_wh_) {
+                BMFLOG_NODE(BMF_INFO, node_id_) << "the input stream width or height "
+                                                << parser_->coded_width << "x"
+                                                << parser_->coded_height << " is limited by "
+                                                << max_wh_;
+                if (max_limit_hits_ > 0) { // enabled limit hits
+                    if (--max_limit_hits_ == 0)
+                        BMF_Error(BMF_TranscodeError,
+                                  "max number of limited resolution frames exceeded");
+                }
+                return false;
+            }
+        }
         return true;
     }
     if (pkt->stream_index == audio_stream_index_ && !audio_end_ && task.get_outputs().count(1) > 0) {

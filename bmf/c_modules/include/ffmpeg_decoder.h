@@ -159,6 +159,10 @@ class CFFDecoder : public Module {
     float max_error_rate_ = 2.0/3;
     int64_t decode_error_[2] = {0};
     int64_t stream_frame_number_ = 0;
+
+    AVCodecParserContext *parser_ = NULL;
+    int max_wh_ = 0;
+    int max_limit_hits_ = -1;
     std::mutex mutex_;
 
     //for raw stream input

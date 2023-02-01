@@ -1084,5 +1084,49 @@ class TestTranscode(BaseTestCase):
         )
         self.check_video_diff(output_path, expect_result)
 
+    @timeout_decorator.timeout(seconds=120)
+    def test_resolution_limit(self):
+        input_video_path = "../files/resolution_change.mp4"
+        output_path = "./simple.mp4"
+
+        graph = bmf.graph({'dump_graph':1})
+
+        video = graph.decode({
+            "input_path": input_video_path,
+            "max_width_height": 5000,
+            "max_limit_hits": 3 # will throw the exception when exceeded the number of frames
+        })
+
+        try:
+            (
+                bmf.encode(
+                    video['video'],
+                    video['audio'],
+                    {
+                        "output_path": output_path,
+                        "min_frames": 300,
+                        "video_params": {
+                            "codec": "h264",
+                            "width": 640,
+                            "height": 480,
+                            "crf": 23,
+                            "preset": "veryfast"
+                        },
+                        "audio_params": {
+                            "codec": "aac",
+                            "bit_rate": 128000,
+                            "sample_rate": 44100,
+                            "channels": 2
+                        }
+                    }
+                )
+                .run()
+            )
+        except Exception as e:
+            print(e)
+            return
+
+        raise Exception("shouldn't be here, max limit hits exception should be occured and catched")
+
 if __name__ == '__main__':
     unittest.main()

@@ -62,10 +62,10 @@ else
     export SCRIPT_EXEC_MODE=osx
     export EXACT_PYTHON_TARGET=1
     export OSX_XCOMPILE_ROOT=/usr/local
-    export OSX_XCOMPILE_TARGET=x86_64-apple-darwin19
+    export OSX_XCOMPILE_TARGET=x86_64-apple-darwin20.4
     export OSX_XCOMPILE_TOOLS=$OSX_XCOMPILE_ROOT/osxcross
-    export OSX_XCOMPILE_TOOL_PREFIX=$OSX_XCOMPILE_TOOLS/target/bin/x86_64-apple-darwin19
-    export INSTALL_NAME_TOOL_PATH=$OSX_XCOMPILE_TOOLS/target/bin/x86_64-apple-darwin19-install_name_tool
+    export OSX_XCOMPILE_TOOL_PREFIX=$OSX_XCOMPILE_TOOLS/target/bin/x86_64-apple-darwin20.4
+    export INSTALL_NAME_TOOL_PATH=$OSX_XCOMPILE_TOOLS/target/bin/x86_64-apple-darwin20.4-install_name_tool
 
     # Set the output directory
     mkdir output

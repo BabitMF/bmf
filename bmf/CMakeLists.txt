@@ -67,21 +67,24 @@ if(ANDROID)
         POST_BUILD
             COMMAND ${ANDROID_TOOLCHAIN_PREFIX}strip $<TARGET_FILE:hmp> 
     )
-
-    add_custom_command(TARGET bmf_assem
-        POST_BUILD
-            COMMAND ${ANDROID_TOOLCHAIN_PREFIX}strip $<TARGET_FILE:_jhmp> 
-    )
+    if(BMF_ENABLE_JNI)
+        add_custom_command(TARGET bmf_assem
+            POST_BUILD
+                COMMAND ${ANDROID_TOOLCHAIN_PREFIX}strip $<TARGET_FILE:_jhmp> 
+        )
+    endif()
 
     add_custom_command(TARGET bmf_assem
         POST_BUILD
             COMMAND ${ANDROID_TOOLCHAIN_PREFIX}strip $<TARGET_FILE:bmf_module_sdk> 
     )
 
-    add_custom_command(TARGET bmf_assem
-        POST_BUILD
-            COMMAND ${ANDROID_TOOLCHAIN_PREFIX}strip $<TARGET_FILE:_jbmf> 
-    )
+    if(BMF_ENABLE_JNI)
+        add_custom_command(TARGET bmf_assem
+            POST_BUILD
+                COMMAND ${ANDROID_TOOLCHAIN_PREFIX}strip $<TARGET_FILE:_jbmf> 
+        )
+    endif()
 endif()
 
 

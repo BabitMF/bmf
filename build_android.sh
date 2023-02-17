@@ -9,7 +9,7 @@ ARCH_X86=2
 ARCH_X86_64=3
 
 # ENABLE ARCH
-ENABLED_ARCHITECTURES=(1 1 0 0)
+ENABLED_ARCHITECTURES=(0 1 0 0)
 
 # ARCH ABIs
 ANDROID_ABIS=("armeabi-v7a" "arm64-v8a" "x86" "x86_64")
@@ -17,7 +17,7 @@ ANDROID_PROCESSORS=("armv7-a" "aarch64" "i686" "x86_64")
 ANDROID_ARCHS=("arm" "arm64" "x86" "x86_64")
 
 # USING API LEVEL > 21
-export ANDROID_API=16
+export ANDROID_API=21
 
 # Default build type - Release
 BUILD_TYPE="Release"
@@ -76,32 +76,37 @@ do
         export GLOG_ROOT_PATH=${ANDROID_ROOTFS_PATH}
         export FFMPEG_ROOT_PATH=${ANDROID_ROOTFS_PATH}
 
-        if [[ -z ${Python_LIBRARY} ]]
-        then
-            export Python_LIBRARY=${ANDROID_ROOTFS_PATH}/lib/libpython3.9.a
-            export Python_INCLUDE_DIR=${ANDROID_ROOTFS_PATH}/include/python3.9
-        fi
+        # if [[ -z ${Python_LIBRARY} ]]
+        # then
+        #     export Python_LIBRARY=${ANDROID_ROOTFS_PATH}/lib/libpython3.9.a
+        #     export Python_INCLUDE_DIR=${ANDROID_ROOTFS_PATH}/include/python3.9
+        # fi
+        export Python_LIBRARY=${ANDROID_ROOTFS_PATH}/lib/libpython3.9.a
+        export Python_INCLUDE_DIRS=${ANDROID_ROOTFS_PATH}/include/python3.9
 
         echo -e "\nBuilding ${ANDROID_ABIS[$run_arch]} on API ${ANDROID_API}\n"
-
+        echo $ANDROID_ROOTFS_PATH
+        echo $Python_LIBRARY
+        echo $Python_INCLUDE_DIR
         # Build
         mkdir -p build_android
         cd build_android
-        cmake -GNinja               \
-            -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-            -DBMF_ENABLE_MOBILE=ON  \
-            -DBMF_ENABLE_PYTHON=OFF \
+        cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+            -DBMF_ENABLE_MOBILE=OFF \
+            -DBMF_ENABLE_PYTHON=ON \
             -DBMF_ENABLE_GLOG=OFF \
+            -DCMAKE_FIND_ROOT_PATH=${ANDROID_ROOTFS_PATH} \
             -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_ROOT}/build/cmake/android.toolchain.cmake \
             -DANDROID_STL=c++_shared \
             -DANDROID_ABI="${ANDROID_ABIS[$run_arch]}" \
             -DBMF_PYENV=3.9 \
             -DANDROID_PLATFORM=${ANDROID_TARGET_PLATFORM} \
             -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
+            -DBMF_ENABLE_JNI=OFF \
             -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ..
         #cmake --build .
-        ninja 
-
+        #ninja 
+        make -j16
         mkdir -p ../output/${ANDROID_ABIS[$run_arch]}
         rm -rf ../output/${ANDROID_ABIS[$run_arch]}/*
         cp -rf output/bmf output/hmp ../output/${ANDROID_ABIS[$run_arch]}/

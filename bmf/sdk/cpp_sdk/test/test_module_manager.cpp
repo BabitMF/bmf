@@ -4,7 +4,6 @@
 #include <bmf/sdk/compat/path.h>
 
 using namespace bmf_sdk;
-
 namespace{
 
 class InAppModuleDemo : public Module
@@ -85,9 +84,9 @@ TEST(module_manager, resolve_module_info)
     {
         std::string dst_dir = "/opt/tiger/bmf_mods/Module_online_module";
         if (!fs::exists(dst_dir))
-            fs::create_directories(dst_dir);
+            std::filesystem::create_directories(dst_dir);
         if (!fs::exists(dst_dir + "/meta.info"))
-            fs::copy_file("../files/meta.info", dst_dir + "/meta.info");
+            std::filesystem::copy_file("../files/meta.info", dst_dir + "/meta.info");
         auto info = M.resolve_module_info("online_module");
         ASSERT_TRUE(info != nullptr);
         EXPECT_EQ(info->module_type, "python");

@@ -1,9 +1,10 @@
 
 
-## python
+# python
+
 if(BMF_ENABLE_PYTHON)
     if(CMAKE_SYSTEM_NAME STREQUAL "Android")
-        find_package(Python ${BMF_PYENV} COMPONENTS Development) # python dist
+        find_package(Python ${BMF_PYENV} EXACT REQUIRED COMPONENTS Development) # python dist
     else()
         find_package(Python ${BMF_PYENV} COMPONENTS Interpreter Development) # python dist
     endif()

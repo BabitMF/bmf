@@ -58,6 +58,7 @@ DETECTED_NDK_VERSION=$(grep -Eo Revision.* ${ANDROID_NDK_ROOT}/source.properties
 # Configuration
 export SCRIPT_EXEC_MODE=android
 export EXACT_PYTHON_TARGET=1
+export PYTHON_VERSION=3.9
 
 # Set the output directory
 mkdir output
@@ -76,13 +77,8 @@ do
         export GLOG_ROOT_PATH=${ANDROID_ROOTFS_PATH}
         export FFMPEG_ROOT_PATH=${ANDROID_ROOTFS_PATH}
 
-        # if [[ -z ${Python_LIBRARY} ]]
-        # then
-        #     export Python_LIBRARY=${ANDROID_ROOTFS_PATH}/lib/libpython3.9.a
-        #     export Python_INCLUDE_DIR=${ANDROID_ROOTFS_PATH}/include/python3.9
-        # fi
-        export Python_LIBRARY=${ANDROID_ROOTFS_PATH}/lib/libpython3.9.a
-        export Python_INCLUDE_DIRS=${ANDROID_ROOTFS_PATH}/include/python3.9
+        export Python_LIBRARY=${ANDROID_ROOTFS_PATH}/lib/libpython${PYTHON_VERSION}.a
+        export Python_INCLUDE_DIRS=${ANDROID_ROOTFS_PATH}/include/python${PYTHON_VERSION}
 
         echo -e "\nBuilding ${ANDROID_ABIS[$run_arch]} on API ${ANDROID_API}\n"
         echo $ANDROID_ROOTFS_PATH
@@ -99,7 +95,7 @@ do
             -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_ROOT}/build/cmake/android.toolchain.cmake \
             -DANDROID_STL=c++_shared \
             -DANDROID_ABI="${ANDROID_ABIS[$run_arch]}" \
-            -DBMF_PYENV=3.9 \
+            -DBMF_PYENV=${PYTHON_VERSION} \
             -DANDROID_PLATFORM=${ANDROID_TARGET_PLATFORM} \
             -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
             -DBMF_ENABLE_JNI=OFF \

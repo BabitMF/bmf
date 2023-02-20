@@ -54,7 +54,6 @@ then
 fi
 
 DETECTED_NDK_VERSION=$(grep -Eo Revision.* ${ANDROID_NDK_ROOT}/source.properties | sed 's/Revision//g;s/=//g;s/ //g')
-
 # Configuration
 export SCRIPT_EXEC_MODE=android
 export EXACT_PYTHON_TARGET=1
@@ -107,6 +106,16 @@ do
         rm -rf ../output/${ANDROID_ABIS[$run_arch]}/*
         cp -rf output/bmf output/hmp ../output/${ANDROID_ABIS[$run_arch]}/
         cd ..
+
+    if [ ! -d "3rd_party/bmf_android_python" ]
+    then
+        echo "Extracting bmf_android_python"
+        cd 3rd_party/
+        tar xzvf bmf_android_python.tar.gz
+        cd -
+    fi
+
+	cp -r 3rd_party/bmf_android_python/python/* output/${ANDROID_ABIS[$run_arch]}/bmf/
         #rm -rf build_android
     fi
 done

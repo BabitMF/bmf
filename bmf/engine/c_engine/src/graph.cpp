@@ -18,6 +18,7 @@
 #include "../include/graph.h"
 #include "../include/module_factory.h"
 #include "../include/running_info_collector.h"
+#include "../../c_engine/include/optimizer.h"
 
 #include <bmf/sdk/log.h>
 #include <bmf/sdk/trace.h>
@@ -292,6 +293,11 @@ BEGIN_BMF_ENGINE_NS
     }
 
     int Graph::update(GraphConfig update_config) {
+        // convert filter para to new format
+        bmf_engine::Optimizer::convert_filter_para_for_graph(update_config.nodes);
+        // replace stream name with stream id in filter option
+        bmf_engine::Optimizer::replace_stream_name_for_graph(update_config.nodes);
+
         JsonParam option = update_config.get_option();
         std::vector<JsonParam> nodes_opt;
         option.get_object_list("nodes", nodes_opt);
@@ -618,6 +624,7 @@ BEGIN_BMF_ENGINE_NS
                 reset_node->need_opt_reset(node_config.get_option());
             }
         }
+        BMFLOG(BMF_INFO) << "..........debug dynamic update done.................";
 
         return 0;
     }

@@ -334,6 +334,9 @@ BEGIN_BMF_ENGINE_NS
                 callback.scheduler_cb = std::bind(&Scheduler::schedule_node, scheduler_, std::placeholders::_1);
                 callback.clear_cb = std::bind(&Scheduler::clear_task, scheduler_, std::placeholders::_1,
                                         std::placeholders::_2);
+
+                callback.sched_required = std::bind(&Scheduler::sched_required, scheduler_, std::placeholders::_1, std::placeholders::_2);
+
                 if (!callback_bindings_.count(node_id))
                     callback_bindings_[node_id] = std::make_shared<ModuleCallbackLayer>();
                 node = std::make_shared<Node>(node_id, node_config, callback, module_pre_allocated, mode_,

@@ -104,6 +104,7 @@ int CFFEncoder::init() {
     width_ = 0;
     height_ = 0;
     last_pts_ = -1;
+    recorded_pts_ = -1;
     fps_ = 0;
     n_resample_out_ = 0;
     pix_fmt_ = AV_PIX_FMT_YUV420P;
@@ -400,7 +401,6 @@ int CFFEncoder::handle_output(AVPacket *hpkt, int idx) {
         }
     }
 
-    //BMFLOG_NODE(BMF_INFO, node_id_) << "push out time stamp: " << pkt->pts;
     if (push_output_) {
         current_frame_pts_ = pkt->pts;
         orig_pts_time_ = -1;
@@ -557,6 +557,32 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_pack
         ++last_pts_;
     }
 
+    if (av_index == 0 && frame && oformat_ == "image2pipe" && push_output_) { //only support to carry orig pts time for images
+        std::string stime = "";
+        if (frame->metadata) {
+            AVDictionaryEntry *tag = NULL;
+            while ((tag = av_dict_get(frame->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
+                if (!strcmp(tag->key, "orig_pts_time")) {
+                    stime = tag->value;
+                    break;
+                }
+            }
+        }
+        if (stime != "") {
+            orig_pts_time_list_.push_back(std::stod(stime));
+            recorded_pts_ = frame->pts;
+            last_orig_pts_time_ = std::stod(stime);
+        } else {
+            if (recorded_pts_ >= 0)
+                estimated_time_ = last_orig_pts_time_ +
+                                (frame->pts - recorded_pts_) * av_q2d(enc_ctxs_[idx]->time_base);
+            else
+                estimated_time_ += 0.001;
+
+            orig_pts_time_list_.push_back(estimated_time_);
+        }
+    }
+
     if(frame && enc_ctxs_[idx])
         frame->quality = enc_ctxs_[idx]->global_quality;
 
@@ -708,10 +734,6 @@ int CFFEncoder::write_current_packet_data(uint8_t *buf, int buf_size) {
     bmf_avpkt.set_whence(current_whence_);
     auto packet = Packet(bmf_avpkt);
     packet.set_timestamp(current_frame_pts_);
-    if (orig_pts_time_ == -1)
-        orig_pts_time_ = last_orig_pts_time_ + last_orig_duration_ + 0.001;//to estimat;
-    last_orig_duration_ = orig_pts_time_ - last_orig_pts_time_;
-    last_orig_pts_time_ = orig_pts_time_;
     packet.set_time(orig_pts_time_);
     //packet.set_data(packet_tmp);
     //packet.set_data_type(DATA_TYPE_C);

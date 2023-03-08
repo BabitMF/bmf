@@ -293,6 +293,7 @@ BEGIN_BMF_ENGINE_NS
     }
 
     int Graph::update(GraphConfig update_config) {
+        BMFLOG(BMF_INFO) << "..........debug dynamic update start.................: " << update_config.to_json().dump(); 
         // convert filter para to new format
         bmf_engine::Optimizer::convert_filter_para_for_graph(update_config.nodes);
         // replace stream name with stream id in filter option
@@ -367,14 +368,19 @@ BEGIN_BMF_ENGINE_NS
                 for (auto &output_stream:output_streams) {
                     bool b_matched;
                     b_matched = false;
-                    for (auto node_iter:added_nodes) {
-                        if (not node_iter.second->is_source()) {
+                    for (auto node_iter_other:added_nodes) {
+                        if (not node_iter_other.second->is_source()) {
                             std::shared_ptr<InputStreamManager> input_stream_manager;
-                            node_iter.second->get_input_stream_manager(input_stream_manager);
+                            node_iter_other.second->get_input_stream_manager(input_stream_manager);
                             for (auto input_stream:input_stream_manager->input_streams_) {
                                 if (output_stream.second->identifier_ == input_stream.second->identifier_) {
                                     output_stream.second->add_mirror_stream(input_stream_manager,
                                                                             input_stream.first);
+
+                                    if (!input_stream_manager->find_upstream_nodes(node_iter.second->get_id())) {
+                                        input_stream_manager->add_upstream_nodes(node_iter.second->get_id());
+                                    }
+
                                     input_stream.second->set_connected(true);
                                     b_matched = true;
                                     break;
@@ -398,7 +404,14 @@ BEGIN_BMF_ENGINE_NS
                                                                                  node.second->get_id());
                                     output_stream.second->add_mirror_stream(input_stream_manager,
                                                                             new_id);
+                                    if (!input_stream_manager->find_upstream_nodes(node_iter.second->get_id())){
+                                        input_stream_manager->add_upstream_nodes(node_iter.second->get_id());
+                                        BMFLOG(BMF_INFO) << "node: " << node.second->get_id() << " add upstream node: " << node_iter.second->get_id();
+                                    }
+
+
                                     input_stream_manager->input_streams_[new_id]->set_connected(true);
+
                                     BMFLOG(BMF_INFO) << "adding node " << node_iter.second->get_type()
                                                      << ", downstream: "<< prefix_name
                                                      << ", as input of " << output_stream.second->identifier_;
@@ -429,6 +442,12 @@ BEGIN_BMF_ENGINE_NS
                                 input_stream_manager->input_streams_[input_stream.second->get_id()]->
                                                       set_connected(true);
                                 node.second->set_outputstream_updated(true);
+
+                                //set upstream nodes
+                                if (!input_stream_manager->find_upstream_nodes(node.second->get_id())) {
+                                    input_stream_manager->add_upstream_nodes(node.second->get_id());
+                                }
+
                                 //b_matched = true;
                                 BMFLOG(BMF_INFO) << "adding node " << node_iter.second->get_type()
                                                  << ", upstream: "<< prefix_name << ", as output of "
@@ -568,6 +587,12 @@ BEGIN_BMF_ENGINE_NS
                     if (get_node(ds_nodes_id[i], nd) == 0) {
                         nd->wait_paused();
                         paused_ds_nodes.push_back(nd);
+
+                        //remove upstream_nodes_
+                        std::shared_ptr<InputStreamManager> input_stream_manager;
+                        nd->get_input_stream_manager(input_stream_manager);
+                        input_stream_manager->remove_upstream_nodes(id_of_rm_node);
+
                     } else {
                         BMFLOG(BMF_ERROR) << "down stream node can't be got: " << i;
                         return -1;

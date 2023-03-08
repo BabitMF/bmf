@@ -288,6 +288,7 @@ BEGIN_BMF_ENGINE_NS
         opt_reset_mutex_.lock();
         need_opt_reset_ = true;
         reset_option_ = reset_opt;
+        BMFLOG(BMF_INFO) << "need_opt_reset option: " << reset_opt.dump();
         opt_reset_mutex_.unlock();
         return 0;
     }
@@ -341,10 +342,12 @@ BEGIN_BMF_ENGINE_NS
 
         int result = 0;
         try {
+            opt_reset_mutex_.lock();
             if (need_opt_reset_) {
                 module_->dynamic_reset(reset_option_);
                 need_opt_reset_ = false;
             }
+            opt_reset_mutex_.unlock();
 
             BMF_TRACE_PROCESS(module_name_.c_str(), "process", START);
             result = module_->process(task);
@@ -395,6 +398,9 @@ BEGIN_BMF_ENGINE_NS
             if (blk_num == input_stream_manager_->input_streams_.size())
                 is_blocked = true;
         }
+
+        //BMFLOG_NODE(BMF_INFO, id_) << "block: " << is_blocked << "state: " << get_status();
+
         if (!is_blocked)
             if (state_ != NodeState::CLOSED)
                 callback_.sched_required(id_, false);

@@ -73,6 +73,8 @@ BEGIN_BMF_ENGINE_NS
         void add_packets(int stream_id, std::shared_ptr<SafeQueue<Packet> > packets);
 
         int add_upstream_nodes(int node_id);
+        void remove_upstream_nodes(int node_id);
+        bool find_upstream_nodes(int node_id);
 
         int node_id_;
         std::map<int, std::shared_ptr<InputStream> > input_streams_;
@@ -84,7 +86,7 @@ BEGIN_BMF_ENGINE_NS
         std::map<int, int> stream_done_;
         int max_id_;
         std::mutex mtx_;
-        std::vector<int> upstream_nodes_;
+        std::set<int> upstream_nodes_;
     };
 
     class DefaultInputManager : public InputStreamManager {

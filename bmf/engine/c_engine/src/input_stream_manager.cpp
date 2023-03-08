@@ -125,7 +125,8 @@ BEGIN_BMF_ENGINE_NS
         if (input_streams_.count(stream_id) > 0) {
             //bool is_empty = input_streams_[stream_id]->is_empty();
             input_streams_[stream_id]->add_packets(packets);
-            if (callback_.notify_cb != NULL) {
+            //if (callback_.notify_cb != NULL) {
+            if (callback_.sched_required != NULL) {
                 //if (this->type() != "Immediate" || (this->type() == "Immediate" && is_empty))
                     //callback_.notify_cb();
                     callback_.sched_required(node_id_, false);
@@ -141,8 +142,16 @@ BEGIN_BMF_ENGINE_NS
     }
 
     int InputStreamManager::add_upstream_nodes(int node_id) {
-        upstream_nodes_.push_back(node_id);
+        upstream_nodes_.insert(node_id);
         return 0;
+    }
+
+    void InputStreamManager::remove_upstream_nodes(int node_id) {
+        upstream_nodes_.erase(node_id);
+    }
+
+    bool InputStreamManager::find_upstream_nodes(int node_id) {
+        return upstream_nodes_.find(node_id) != upstream_nodes_.end();
     }
 
     ImmediateInputStreamManager::ImmediateInputStreamManager(int node_id, std::vector<StreamConfig> &input_streams,

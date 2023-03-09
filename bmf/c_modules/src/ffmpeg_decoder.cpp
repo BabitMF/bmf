@@ -832,6 +832,7 @@ Packet CFFDecoder::generate_video_packet(AVFrame *frame)
         else
             orig_pts = frame->pts;
 
+        packet.set_time(orig_pts * av_q2d(orig_tb));
         std::string pts_time = std::to_string(orig_pts * av_q2d(orig_tb));
         av_dict_set(&frame->metadata, "orig_pts_time", pts_time.c_str(), 0);
     }

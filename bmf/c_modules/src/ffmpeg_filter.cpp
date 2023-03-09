@@ -272,6 +272,7 @@ Packet CFFFilter::convert_avframe_to_packet(AVFrame *frame, int index) {
         if (orig_pts_time_cache_.size() > 0) {
             if (orig_pts_time_cache_.count(frame->coded_picture_number) > 0) {
                 av_dict_set(&frame->metadata, "orig_pts_time", orig_pts_time_cache_[frame->coded_picture_number].c_str(), 0);
+                packet.set_time(std::stod(orig_pts_time_cache_[frame->coded_picture_number]));
                 orig_pts_time_cache_.erase(frame->coded_picture_number);
             }
         }

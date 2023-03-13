@@ -293,7 +293,7 @@ BEGIN_BMF_ENGINE_NS
     }
 
     int Graph::update(GraphConfig update_config) {
-        BMFLOG(BMF_INFO) << "..........debug dynamic update start.................: " << update_config.to_json().dump(); 
+        BMFLOG(BMF_INFO) << "dynamic update start: " << update_config.to_json().dump(); 
         // convert filter para to new format
         bmf_engine::Optimizer::convert_filter_para_for_graph(update_config.nodes);
         // replace stream name with stream id in filter option
@@ -652,7 +652,7 @@ BEGIN_BMF_ENGINE_NS
                 reset_node->need_opt_reset(node_config.get_option());
             }
         }
-        BMFLOG(BMF_INFO) << "..........debug dynamic update done.................";
+        BMFLOG(BMF_INFO) << "dynamic update done";
 
         return 0;
     }

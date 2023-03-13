@@ -399,8 +399,6 @@ BEGIN_BMF_ENGINE_NS
                 is_blocked = true;
         }
 
-        //BMFLOG_NODE(BMF_INFO, id_) << "block: " << is_blocked << "state: " << get_status();
-
         if (!is_blocked)
             if (state_ != NodeState::CLOSED)
                 callback_.sched_required(id_, false);

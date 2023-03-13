@@ -125,7 +125,6 @@ BEGIN_BMF_ENGINE_NS
         if (input_streams_.count(stream_id) > 0) {
             //bool is_empty = input_streams_[stream_id]->is_empty();
             input_streams_[stream_id]->add_packets(packets);
-            //if (callback_.notify_cb != NULL) {
             if (callback_.sched_required != NULL) {
                 //if (this->type() != "Immediate" || (this->type() == "Immediate" && is_empty))
                     //callback_.notify_cb();

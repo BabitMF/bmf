@@ -60,6 +60,8 @@ BEGIN_BMF_ENGINE_NS
 
         void poll_packet(Packet &packet, bool block = true);
 
+        void inject_packet(Packet &packet, int index = -1);
+
         std::shared_ptr<InputStreamManager> input_manager_;
     };
 

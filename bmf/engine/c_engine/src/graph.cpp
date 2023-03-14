@@ -80,6 +80,13 @@ BEGIN_BMF_ENGINE_NS
                     BMFLOG(BMF_INFO) << "got exception not from any node, close directly";
                 } else
                     BMFLOG(BMF_INFO) << "node " << node_id << " got exception, close directly";
+
+                if (this->output_streams_.size() > 0) {
+                    for (auto &outputs:this->output_streams_) {
+                        Packet eof_pkt = Packet::generate_eof_packet();
+                        outputs.second->inject_packet(eof_pkt);
+                    }
+                }
             } else
                 BMFLOG(BMF_INFO) << "node " << node_id << " close report, closed count: " << this->closed_count_;
             if (this->closed_count_ == this->nodes_.size() || is_exception)
@@ -705,7 +712,7 @@ BEGIN_BMF_ENGINE_NS
     int Graph::close() {
         {
             std::unique_lock<std::mutex> lk(con_var_mutex_);
-            if (closed_count_ != nodes_.size())
+            if (closed_count_ != nodes_.size() && !scheduler_->eptr_)
                 cond_close_.wait(lk);
         }
 
@@ -844,6 +851,17 @@ BEGIN_BMF_ENGINE_NS
 
     void GraphOutputStream::poll_packet(Packet &packet, bool block) {
         packet = input_manager_->pop_next_packet(0, block);
+    }
+
+    void GraphOutputStream::inject_packet(Packet &packet, int index) {
+        std::shared_ptr<SafeQueue<Packet>> packets = std::make_shared<SafeQueue<Packet>>();
+        packets->push(packet);
+        if (index < 0) {
+            for (auto &input_stream:input_manager_->input_streams_) {
+                input_manager_->add_packets(input_stream.first, packets);
+            }
+        } else
+            input_manager_->add_packets(index, packets);
     }
 
 END_BMF_ENGINE_NS

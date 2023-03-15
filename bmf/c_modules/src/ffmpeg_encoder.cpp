@@ -593,6 +593,19 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_pack
         return ret;
     }
 
+    auto flush_cache = [this] () -> int {
+        int ret = 0;
+        while (cache_.size()) {
+            auto tmp = cache_.front();
+            cache_.erase(cache_.begin());
+            ret = handle_output(tmp.first, tmp.second);
+            av_packet_free(&tmp.first);
+            if (ret < 0)
+                return ret;
+        }
+        return ret;
+    };
+
     while (1) {
         AVPacket *enc_pkt = av_packet_alloc();
         if (!enc_pkt) {
@@ -605,6 +618,9 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_pack
         *got_packet = avcodec_receive_packet(enc_ctxs_[idx], enc_pkt);
         if (*got_packet == AVERROR(EAGAIN) || *got_packet == AVERROR_EOF) {
             av_packet_free(&enc_pkt);
+            if (*got_packet == AVERROR_EOF)
+                if (ret = flush_cache(); ret < 0)
+                    return ret;
             ret = 0;
             break;
         }
@@ -641,14 +657,8 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_pack
                 cache_.push_back(std::pair<AVPacket*, int>(enc_pkt, idx));
                 continue;
             }
-            while (cache_.size()) {
-                auto tmp = cache_.front();
-                cache_.erase(cache_.begin());
-                ret = handle_output(tmp.first, tmp.second);
-                av_packet_free(&tmp.first);
-                if (ret < 0)
-                    return ret;
-            }
+            if (ret = flush_cache(); ret < 0)
+                return ret;
 
             ret = handle_output(enc_pkt, idx);
             if (ret != 0) {

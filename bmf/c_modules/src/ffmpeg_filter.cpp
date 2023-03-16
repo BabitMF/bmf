@@ -269,13 +269,6 @@ Packet CFFFilter::convert_avframe_to_packet(AVFrame *frame, int index) {
             st = std::to_string(stream_first_dts_);
             av_dict_set(&frame->metadata, "first_dts", st.c_str(), 0);
         }
-        if (orig_pts_time_cache_.size() > 0) {
-            if (orig_pts_time_cache_.count(frame->coded_picture_number) > 0) {
-                av_dict_set(&frame->metadata, "orig_pts_time", orig_pts_time_cache_[frame->coded_picture_number].c_str(), 0);
-                packet.set_time(std::stod(orig_pts_time_cache_[frame->coded_picture_number]));
-                orig_pts_time_cache_.erase(frame->coded_picture_number);
-            }
-        }
     }
     if (copy_ts_)
         av_dict_set(&frame->metadata, "copyts", "1", 0);
@@ -285,6 +278,13 @@ Packet CFFFilter::convert_avframe_to_packet(AVFrame *frame, int index) {
         video_frame.set_time_base(Rational(tb.num, tb.den));
         video_frame.set_pts(frame->pts);
         auto packet = Packet(video_frame);
+        if (orig_pts_time_cache_.size() > 0) {
+            if (orig_pts_time_cache_.count(frame->coded_picture_number) > 0) {
+                av_dict_set(&frame->metadata, "orig_pts_time", orig_pts_time_cache_[frame->coded_picture_number].c_str(), 0);
+                packet.set_time(std::stod(orig_pts_time_cache_[frame->coded_picture_number]));
+                orig_pts_time_cache_.erase(frame->coded_picture_number);
+            }
+        }
         packet.set_timestamp(frame->pts * av_q2d(tb) * 1000000);
         return packet;
     } else {

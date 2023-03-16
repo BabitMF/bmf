@@ -37,7 +37,6 @@ namespace hmp{
     }
 
 #define HMP_SLOG_IF(condition, level, tag) \
-        static_cast<void>(0),             \
         !(condition) ? (void) 0 : hmp::logging::LogMessageVoidify() \
         & hmp::logging::StreamLogger(level, tag).stream()
 
@@ -140,3 +139,4 @@ private:
 
 } //namespace logging
 } //namespace hmp
+

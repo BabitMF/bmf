@@ -79,6 +79,11 @@ namespace bmf::builder {
             return info;
         }
 
+        void RealStream::Start() {
+            auto node = node_.lock();
+            node->graph_.lock()->Start(shared_from_this(), false, true);
+        }
+
         RealNode::ModuleMetaInfo::ModuleMetaInfo(std::string moduleName, ModuleType moduleType,
                                                  std::string modulePath, std::string moduleEntry)
                 : moduleName_(std::move(moduleName)), moduleType_(moduleType), modulePath_(std::move(modulePath)),
@@ -114,7 +119,9 @@ namespace bmf::builder {
             info["premodule_id"] = preModuleUID_;
             info["callback_bindings"] = bmf_nlohmann::json::object();
             for (auto &kv:callbackBinding_)
+            {
                 info["callback_bindings"][kv.first] = kv.second;
+            }
 
             return info;
         }
@@ -326,19 +333,19 @@ namespace bmf::builder {
             info["option"] = graphOption_.json_value_;
             switch (mode_) {
                 case NormalMode:
-                    info["mode"] = "normal";
+                    info["mode"] = "Normal";
                     break;
                 case ServerMode:
-                    info["mode"] = "server";
+                    info["mode"] = "Server";
                     break;
                 case GeneratorMode:
-                    info["mode"] = "generator";
+                    info["mode"] = "Generator";
                     break;
                 case SubGraphMode:
-                    info["mode"] = "subgraph";
+                    info["mode"] = "Subgraph";
                     break;
                 case UpdateMode:
-                    info["mode"] = "update";
+                    info["mode"] = "Update";
                     break;
             }
             for (auto &nd:nodes_)
@@ -354,6 +361,67 @@ namespace bmf::builder {
         void RealGraph::SetOption(const bmf_sdk::JsonParam& optionPatch) {
             graphOption_.merge_patch(optionPatch);
         }
+
+        void RealGraph::Start(bool dumpGraph, bool needMerge) {
+            auto graph_config = Dump().dump(4);
+            BMFLOG(BMF_INFO) << graph_config << std::endl;
+            if (dumpGraph ||
+                BMFLOG(BMF_INFO) << "tby graph_config writed" << std::endl;
+                (graphOption_.json_value_.count("dump_graph") && graphOption_.json_value_["dump_graph"] == 1)) {
+                std::ofstream graph_file("graph.json", std::ios::app);
+                BMFLOG(BMF_INFO) << graph_config << std::endl;
+                graph_file << graph_config;
+                graph_file.close();
+            }
+            if (graphInstance_ == nullptr)
+                graphInstance_ = std::make_shared<bmf::BMFGraph>(graph_config, false, needMerge);
+            graphInstance_->start();
+        }
+
+        int RealGraph::Run(bool dumpGraph, bool needMerge) {
+            auto graph_config = Dump().dump(4);
+            if (dumpGraph ||
+                (graphOption_.json_value_.count("dump_graph") && graphOption_.json_value_["dump_graph"] == 1)) {
+                std::ofstream graph_file("graph.json", std::ios::app);
+                graph_file << graph_config;
+                graph_file.close();
+            }
+            if (graphInstance_ == nullptr)
+                graphInstance_ = std::make_shared<bmf::BMFGraph>(graph_config, false, needMerge);
+            graphInstance_->start();
+            return graphInstance_->close();
+        }
+
+        void RealGraph::Start(const std::shared_ptr<internal::RealStream>& stream, bool dumpGraph, bool needMerge) {
+            outputStreams_.emplace_back(stream);
+            generatorStreamName = stream->name_;
+            Start(dumpGraph, needMerge);
+        }   
+
+        bmf::BMFGraph RealGraph::Instantiate(bool dumpGraph, bool needMerge) {
+            auto graph_config = Dump().dump(4);
+            if (dumpGraph ||
+                (graphOption_.json_value_.count("dump_graph") && graphOption_.json_value_["dump_graph"] == 1)) {
+                std::ofstream graph_file("graph.json", std::ios::app);
+                graph_file << graph_config;
+                graph_file.close();
+            }
+            if (graphInstance_ == nullptr)
+                graphInstance_ = std::make_shared<bmf::BMFGraph>(graph_config, false, needMerge);
+            return *graphInstance_;
+        }
+
+        bmf::BMFGraph RealGraph::Instance() {
+            if (graphInstance_ == nullptr)
+                throw std::logic_error("trying to get graph instance before instantiated.");
+            return *graphInstance_;
+        }
+
+        Packet RealGraph::generate() {
+            Packet pkt = graphInstance_->poll_output_stream_packet(generatorStreamName, true);
+            return pkt;
+        }   
+
     }
 
     std::string GetVersion() {
@@ -400,6 +468,10 @@ namespace bmf::builder {
 
     void Stream::SetAlias(std::string const &alias) {
         baseP_->SetAlias(alias);
+    }
+
+    void Stream::Start() {
+        baseP_->Start();
     }
 
     Node Stream::Module(const std::vector<Stream> &inStreams, std::string const &moduleName, ModuleType moduleType,
@@ -485,7 +557,7 @@ namespace bmf::builder {
     }
 
     Node::Node(std::shared_ptr<internal::RealNode> baseP) : baseP_(std::move(baseP)) {}
-
+    
     class Stream Node::operator[](int index) {
         return Stream(index);
     }
@@ -525,6 +597,10 @@ namespace bmf::builder {
     void Node::AddCallback(long long key, const bmf::BMFCallback &callbackInstance) {
         baseP_->AddCallback(key, callbackInstance);
     }
+
+	void Node::Start() {
+        Stream(0).Start();
+	}
 
     Node Node::Module(const std::vector<class Stream> &inStreams, std::string const &moduleName, ModuleType moduleType,
                       const bmf_sdk::JsonParam &option, std::string const &alias, std::string const &modulePath,
@@ -615,49 +691,23 @@ namespace bmf::builder {
             : graph_(std::make_shared<internal::RealGraph>(runMode, bmf_sdk::JsonParam(graphOption))) {}
 
     bmf::BMFGraph Graph::Instantiate(bool dumpGraph, bool needMerge) {
-        auto graph_config = graph_->Dump().dump(4);
-        if (dumpGraph ||
-            (graph_->graphOption_.json_value_.count("dump_graph") && graph_->graphOption_.json_value_["dump_graph"] == 1)) {
-            std::ofstream graph_file("graph.json", std::ios::app);
-            graph_file << graph_config;
-            graph_file.close();
-        }
-        if (graphInstance_ == nullptr)
-            graphInstance_ = std::make_shared<bmf::BMFGraph>(graph_config, false, needMerge);
-        return *graphInstance_;
+        return graph_->Instantiate(dumpGraph, needMerge);
     }
 
     bmf::BMFGraph Graph::Instance() {
-        if (graphInstance_ == nullptr)
-            throw std::logic_error("trying to get graph instance before instantiated.");
-        return *graphInstance_;
+        return graph_->Instance();
     }
 
     int Graph::Run(bool dumpGraph, bool needMerge) {
-        auto graph_config = graph_->Dump().dump(4);
-        if (dumpGraph ||
-            (graph_->graphOption_.json_value_.count("dump_graph") && graph_->graphOption_.json_value_["dump_graph"] == 1)) {
-            std::ofstream graph_file("graph.json", std::ios::app);
-            graph_file << graph_config;
-            graph_file.close();
-        }
-        if (graphInstance_ == nullptr)
-            graphInstance_ = std::make_shared<bmf::BMFGraph>(graph_config, false, needMerge);
-        graphInstance_->start();
-        return graphInstance_->close();
+        return graph_->Run(dumpGraph, needMerge);
     }
 
     void Graph::Start(bool dumpGraph, bool needMerge) {
-        auto graph_config = graph_->Dump().dump(4);
-        if (dumpGraph ||
-            (graph_->graphOption_.json_value_.count("dump_graph") && graph_->graphOption_.json_value_["dump_graph"] == 1)) {
-            std::ofstream graph_file("graph.json", std::ios::app);
-            graph_file << graph_config;
-            graph_file.close();
-        }
-        if (graphInstance_ == nullptr)
-            graphInstance_ = std::make_shared<bmf::BMFGraph>(graph_config, false, needMerge);
-        graphInstance_->start();
+        graph_->Start(dumpGraph, needMerge);
+    }
+
+    Packet Graph::generate() {
+        return graph_->generate();
     }
 
     void Graph::SetTotalThreadNum(int num) {
@@ -727,6 +777,7 @@ namespace bmf::builder {
                   std::string const &alias) {
         return NewNode(alias, encodePara, {std::move(videoStream), std::move(audioStream)}, "c_ffmpeg_encoder", CPP, "",
                        "", Immediate, 1);
+
     }
 
     Node

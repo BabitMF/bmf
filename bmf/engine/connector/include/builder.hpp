@@ -88,6 +88,7 @@ namespace bmf::builder {
             void SetNotify(std::string const &notify);
 
             void SetAlias(std::string const &alias);
+            void Start();
 
             bmf_nlohmann::json Dump();
 
@@ -225,7 +226,12 @@ namespace bmf::builder {
             std::shared_ptr<RealStream> NewPlaceholderStream();
 
             void SetOption(const bmf_sdk::JsonParam& optionPatch);
-
+            bmf::BMFGraph Instantiate(bool dumpGraph, bool needMerge);
+            bmf::BMFGraph Instance();
+            void Start(bool dumpGraph, bool needMerge);
+            void Start(const std::shared_ptr<internal::RealStream>& stream, bool dumpGraph, bool needMerge);
+            int Run(bool dumpGraph, bool needMerge);
+            Packet generate();
         private:
             friend bmf::builder::Graph;
             friend bmf::builder::Node;
@@ -240,6 +246,8 @@ namespace bmf::builder {
             bmf_sdk::JsonParam graphOption_;
 
             std::shared_ptr<RealNode> placeholderNode_;
+            std::shared_ptr<bmf::BMFGraph> graphInstance_ = nullptr;
+            std::string generatorStreamName;
             std::map<std::string, std::shared_ptr<RealStream> > existedStreamAlias_;
             std::map<std::string, std::shared_ptr<RealNode> > existedNodeAlias_;
         };
@@ -265,18 +273,17 @@ namespace bmf::builder {
 
         BMF_FUNC_VIS Stream(Stream &&) = default;
 
-
     private:
         friend Node;
         friend Graph;
 
         BMF_FUNC_VIS explicit Stream(std::shared_ptr<internal::RealStream> baseP);
-
         std::shared_ptr<internal::RealStream> baseP_;
     public:
         BMF_FUNC_VIS void SetNotify(std::string const &notify);
 
         BMF_FUNC_VIS void SetAlias(std::string const &alias);
+        BMF_FUNC_VIS void Start();
 
         BMF_FUNC_VIS Node Module(const std::vector<Stream>& inStreams, std::string const &moduleName, ModuleType moduleType,
                                  const bmf_sdk::JsonParam& option, std::string const &alias = "",
@@ -392,7 +399,6 @@ namespace bmf::builder {
         friend Graph;
 
         BMF_FUNC_VIS explicit Node(std::shared_ptr<internal::RealNode> baseP);
-
         std::shared_ptr<internal::RealNode> baseP_;
     public:
         BMF_FUNC_VIS class Stream operator[](int index);
@@ -414,6 +420,8 @@ namespace bmf::builder {
         BMF_FUNC_VIS void SetPreModule(const bmf::BMFModule& preModuleInstance);
 
         BMF_FUNC_VIS void AddCallback(long long key, const bmf::BMFCallback& callbackInstance);
+
+        BMF_FUNC_VIS void Start();
 
         BMF_FUNC_VIS Node
         Module(const std::vector<class Stream>& inStreams, std::string const &moduleName, ModuleType moduleType,
@@ -556,7 +564,6 @@ namespace bmf::builder {
 
         std::shared_ptr<internal::RealGraph> graph_;
 
-        std::shared_ptr<bmf::BMFGraph> graphInstance_ = nullptr;
     public:
         BMF_FUNC_VIS void SetTotalThreadNum(int num);
 
@@ -695,11 +702,11 @@ namespace bmf::builder {
         BMF_FUNC_VIS void SendEOF(SyncModule module);
 
         BMF_FUNC_VIS void SetOption(const bmf_sdk::JsonParam& optionPatch);
+        BMF_FUNC_VIS Packet generate();
     private:
         BMF_FUNC_VIS Node NewNode(std::string const &alias, const bmf_sdk::JsonParam& option, const std::vector<Stream>& inputStreams,
                                   std::string const &moduleName, ModuleType moduleType, std::string const &modulePath,
                                   std::string const &moduleEntry, InputManagerType inputStreamManager, int scheduler);
-
         BMF_FUNC_VIS Node InternalFFMpegFilter(const std::vector<Stream>& inStreams, std::string const &filterName,
                                                const bmf_sdk::JsonParam& filterPara, std::string const &alias = "");
     };

@@ -802,6 +802,8 @@ int CFFDecoder::init_input(AVDictionary *options) {
 Packet CFFDecoder::generate_video_packet(AVFrame *frame)
 {
     AVRational out_tb;
+    AVRational orig_tb;
+    int64_t orig_pts;
     if (filter_graph_[0])
         out_tb = av_buffersink_get_time_base(filter_graph_[0]->buffer_sink_ctx_[0]);
     else if (video_stream_)
@@ -815,7 +817,6 @@ Packet CFFDecoder::generate_video_packet(AVFrame *frame)
         av_dict_set(&frame->metadata, "time_base", video_time_base_string_.c_str(), 0);
 
     if (orig_pts_time_) {
-        AVRational orig_tb;
         if (!push_raw_stream_)
             orig_tb = out_tb;
         else {
@@ -826,13 +827,11 @@ Packet CFFDecoder::generate_video_packet(AVFrame *frame)
             }
         }
 
-        int64_t orig_pts;
         if (start_time_ != AV_NOPTS_VALUE && !copy_ts_)
             orig_pts = frame->pts + av_rescale_q(start_time_, AV_TIME_BASE_Q, video_stream_->time_base);
         else
             orig_pts = frame->pts;
 
-        packet.set_time(orig_pts * av_q2d(orig_tb));
         std::string pts_time = std::to_string(orig_pts * av_q2d(orig_tb));
         av_dict_set(&frame->metadata, "orig_pts_time", pts_time.c_str(), 0);
     }
@@ -877,6 +876,9 @@ Packet CFFDecoder::generate_video_packet(AVFrame *frame)
     }
     
     auto packet = Packet(video_frame);
+    if (orig_pts_time_) {
+        packet.set_time(orig_pts * av_q2d(orig_tb));
+    }
     if (!push_raw_stream_)
         packet.set_timestamp(frame->pts * av_q2d(video_stream_->time_base) * 1000000);
     else

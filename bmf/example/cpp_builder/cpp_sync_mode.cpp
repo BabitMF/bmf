@@ -107,8 +107,8 @@ TEST(cpp_sync_mode, sync_audioframe) {
     BMF_CPP_FILE_CHECK(output_file, "./audioframe.mp4|0|0|0.024|MOV,MP4,M4A,3GP,3G2,MJ2|271000|795||{}");
 }
 
-TEST(cpp_sync_mode, sync_video) {
-    std::string output_file = "./video.mp4";
+TEST(cpp_sync_mode, sync_video_by_pkts) {
+    std::string output_file = "./video_simple_interface.mp4";
     BMF_CPP_FILE_REMOVE(output_file);
 
     bmf::builder::Graph graph = bmf::builder::Graph(bmf::builder::NormalMode);
@@ -180,7 +180,7 @@ TEST(cpp_sync_mode, sync_video) {
     graph.Close(volume);
     graph.Close(encoder);
 
-    BMF_CPP_FILE_CHECK(output_file, "./video.mp4|250|320|7.617|MOV,MP4,M4A,3GP,3G2,MJ2|418486|398451|h264|{\"fps\": \"30\"}");
+    BMF_CPP_FILE_CHECK(output_file, "./video_simple_interface.mp4|250|320|7.617|MOV,MP4,M4A,3GP,3G2,MJ2|418486|398451|h264|{\"fps\": \"30\"}");
 }
 
 TEST(cpp_sync_mode, sync_audio) {
@@ -224,4 +224,100 @@ TEST(cpp_sync_mode, sync_audio) {
     }
 
     BMF_CPP_FILE_CHECK(output_file, "./audio.mp4|0|0|7.617|MOV,MP4,M4A,3GP,3G2,MJ2|131882|125569||{}");
+}
+
+TEST(cpp_sync_mode, sync_video) {
+    std::string output_file = "./video_simple_interface.mp4";
+    BMF_CPP_FILE_REMOVE(output_file);
+
+    bmf::builder::Graph graph = bmf::builder::Graph(bmf::builder::NormalMode);
+
+    // create sync modules
+    bmf_nlohmann::json decoder_option = {
+        {"input_path", "../../example/files/img.mp4"}
+    };
+    auto decoder = graph.Sync(std::vector<int> {}, std::vector<int> {0,1}, decoder_option, "c_ffmpeg_decoder");
+
+    bmf_nlohmann::json scale_option = {
+        {"name", "scale"},
+        {"para", "320:250"}
+    };
+    auto scale = graph.Sync(std::vector<int> {0}, std::vector<int> {0}, 
+        bmf_sdk::JsonParam(scale_option), "c_ffmpeg_filter");
+
+    bmf_nlohmann::json volume_option = {
+        {"name", "volume"},
+        {"para", "volume=3"}
+    };
+    auto volume = graph.Sync(std::vector<int> {0}, std::vector<int> {0}, volume_option, "c_ffmpeg_filter");
+
+    bmf_nlohmann::json encoder_option = {
+        {"output_path", output_file}
+    };
+    auto encoder = graph.Sync(std::vector<int> {0,1}, std::vector<int> {}, encoder_option, "c_ffmpeg_encoder");
+
+    // call init if necessary, otherwise we skip this step
+    graph.Init(decoder);
+    graph.Init(scale);
+    graph.Init(volume);
+    graph.Init(encoder);
+
+    // process video/audio by sync mode
+    while (1) {
+        auto decoded_frames = graph.Process(decoder, bmf::builder::SyncPackets());
+        bool has_next = false;
+        for (const auto &stream : decoded_frames.packets) {
+            if (!stream.second.empty()) {
+                has_next = true;
+                if (stream.first == 0) {
+                    bmf::builder::SyncPackets input_scale;
+                    input_scale.Insert(0, decoded_frames[0]);
+                    auto scaled_frames = graph.Process(scale, input_scale);
+
+                    bmf::builder::SyncPackets input_encoder;
+                    input_encoder.Insert(0, scaled_frames[0]);
+                    graph.Process(encoder, input_encoder);
+                    //encoder.ProcessPkts(input_encoder);
+                } else if (stream.first == 1) {
+                    bmf::builder::SyncPackets input_volume;
+                    input_volume.Insert(0, decoded_frames[1]);
+                    auto volume_frames = graph.Process(volume, input_volume);
+                    //auto volume_frames = volume.ProcessPkts(input_volume);
+
+                    bmf::builder::SyncPackets input_encoder;
+                    input_encoder.Insert(1, volume_frames[0]);
+                    graph.Process(encoder, input_encoder);
+                    //encoder.ProcessPkts(input_encoder);
+                }
+            }
+        }
+        if (!has_next) {
+            break;
+        }
+    }
+
+    // call close if necessary, otherwise we skip this step
+    graph.Close(decoder);
+    graph.Close(scale);
+    graph.Close(volume);
+    graph.Close(encoder);
+
+    BMF_CPP_FILE_CHECK(output_file, "./video_simple_interface.mp4|250|320|7.617|MOV,MP4,M4A,3GP,3G2,MJ2|418486|398451|h264|{\"fps\": \"30\"}");
+}
+
+TEST(cpp_sync_mode, sync_eof_flush_data) {
+    bmf::builder::Graph graph = bmf::builder::Graph(bmf::builder::NormalMode);
+
+    // create decoder
+    bmf_nlohmann::json decoder_option = {
+        {"input_path", "../../example/files/img.mp4"}
+    };
+    auto decoder = graph.Sync(std::vector<int> {}, std::vector<int> {0}, 
+        bmf_sdk::JsonParam(decoder_option), "c_ffmpeg_decoder");
+
+    auto decoded_frames = graph.Process(decoder, bmf::builder::SyncPackets());
+    std::cout<< "get vframe number:" << decoded_frames.packets.size() << std::endl;
+    decoder.SendEOF();
+    std::cout<< "get vframe number after send eof:" << decoded_frames.packets.size() << std::endl;
+    graph.Close(decoder);
 }

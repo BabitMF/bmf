@@ -488,15 +488,15 @@ BEGIN_BMF_ENGINE_NS
         json_graph_config["option"] = option.json_value_;
 
         if (mode == BmfMode::NORMAL_MODE){
-            json_graph_config["mode"] = "normal";
+            json_graph_config["mode"] = "Normal";
         }else if (mode == BmfMode::SERVER_MODE){
-            json_graph_config["mode"] = "server";
+            json_graph_config["mode"] = "Server";
         }else if (mode == BmfMode::GENERATOR_MODE){
-            json_graph_config["mode"] = "generator";
+            json_graph_config["mode"] = "Generator";
         }else if (mode == BmfMode::SUBGRAPH_MODE){
-            json_graph_config["mode"] = "subgraph";
+            json_graph_config["mode"] = "Subgraph";
         }else if (mode == BmfMode::PUSHDATA_MODE){
-            json_graph_config["mode"] = "pushdata";
+            json_graph_config["mode"] = "Pushdata";
         }
 
         json_graph_config["input_streams"] = bmf_nlohmann::json(std::vector<bmf_nlohmann::json>());

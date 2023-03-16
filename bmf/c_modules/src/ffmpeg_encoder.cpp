@@ -618,9 +618,15 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_pack
         *got_packet = avcodec_receive_packet(enc_ctxs_[idx], enc_pkt);
         if (*got_packet == AVERROR(EAGAIN) || *got_packet == AVERROR_EOF) {
             av_packet_free(&enc_pkt);
-            if (*got_packet == AVERROR_EOF)
+            if (*got_packet == AVERROR_EOF) {
+                if (!stream_inited_) {
+                    BMFLOG_NODE(BMF_WARNING, node_id_) << "The stream at index:" << idx << " ends, "
+                        "but not all streams are initialized, all packets may be dropped.";
+                    return 0;
+                }
                 if (ret = flush_cache(); ret < 0)
                     return ret;
+            }
             ret = 0;
             break;
         }

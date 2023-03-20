@@ -187,6 +187,6 @@ def test_dynamical_graph_cb():
     main_graph.force_close()
 
 if __name__ == '__main__':
-    #test_dynmaical_graph()
+    test_dynmaical_graph()
     test_dynamical_graph_cb()
-    #test_dynmaical_reset()
+    test_dynmaical_reset()

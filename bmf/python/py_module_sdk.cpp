@@ -408,6 +408,8 @@ void module_sdk_bind(py::module &m)
         .def("get", [](Packet &self, py::object& cls){
             return packet_get(self, cls);
         })
+        .def("get_timestamp", &Packet::timestamp)
+        .def("set_timestamp", &Packet::set_timestamp)
         .def_property("timestamp", &Packet::timestamp, &Packet::set_timestamp)
         .def_property_readonly("class_name", [](const Packet &pkt){
             return pkt.type_info().name;
@@ -441,6 +443,8 @@ void module_sdk_bind(py::module &m)
             py::arg("input_stream_id_list") = std::vector<int>{},
             py::arg("input_stream_id_list") = std::vector<int>{})
         .def_property("timestamp", &Task::timestamp, &Task::set_timestamp)
+        .def("get_timestamp", &Task::timestamp)
+        .def("set_timestamp", &Task::set_timestamp)
         .def("fill_input_packet", &Task::fill_input_packet,
             py::arg("stream_id"), py::arg("packet"))
         .def("fill_output_packet", &Task::fill_output_packet,

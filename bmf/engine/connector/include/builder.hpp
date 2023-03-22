@@ -231,7 +231,7 @@ namespace bmf::builder {
             void Start(bool dumpGraph, bool needMerge);
             void Start(const std::shared_ptr<internal::RealStream>& stream, bool dumpGraph, bool needMerge);
             int Run(bool dumpGraph, bool needMerge);
-            Packet generate();
+            Packet Generate();
         private:
             friend bmf::builder::Graph;
             friend bmf::builder::Node;
@@ -702,7 +702,7 @@ namespace bmf::builder {
         BMF_FUNC_VIS void SendEOF(SyncModule module);
 
         BMF_FUNC_VIS void SetOption(const bmf_sdk::JsonParam& optionPatch);
-        BMF_FUNC_VIS Packet generate();
+        BMF_FUNC_VIS Packet Generate();
     private:
         BMF_FUNC_VIS Node NewNode(std::string const &alias, const bmf_sdk::JsonParam& option, const std::vector<Stream>& inputStreams,
                                   std::string const &moduleName, ModuleType moduleType, std::string const &modulePath,

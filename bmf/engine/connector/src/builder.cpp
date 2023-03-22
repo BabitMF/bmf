@@ -366,8 +366,8 @@ namespace bmf::builder {
             auto graph_config = Dump().dump(4);
             BMFLOG(BMF_INFO) << graph_config << std::endl;
             if (dumpGraph ||
-                BMFLOG(BMF_INFO) << "tby graph_config writed" << std::endl;
                 (graphOption_.json_value_.count("dump_graph") && graphOption_.json_value_["dump_graph"] == 1)) {
+                BMFLOG(BMF_INFO) << "graph_config dump" << std::endl;
                 std::ofstream graph_file("graph.json", std::ios::app);
                 BMFLOG(BMF_INFO) << graph_config << std::endl;
                 graph_file << graph_config;
@@ -417,7 +417,7 @@ namespace bmf::builder {
             return *graphInstance_;
         }
 
-        Packet RealGraph::generate() {
+        Packet RealGraph::Generate() {
             Packet pkt = graphInstance_->poll_output_stream_packet(generatorStreamName, true);
             return pkt;
         }   
@@ -706,8 +706,8 @@ namespace bmf::builder {
         graph_->Start(dumpGraph, needMerge);
     }
 
-    Packet Graph::generate() {
-        return graph_->generate();
+    Packet Graph::Generate() {
+        return graph_->Generate();
     }
 
     void Graph::SetTotalThreadNum(int num) {

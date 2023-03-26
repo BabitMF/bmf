@@ -1,0 +1,1 @@
+{"name":"ies_vfi","revision":"v1.0.1","type":"python3","entry":"vfi_module:VFIModule","dependencies":[{"type":"apt","name":"","revision":"","lib":"libunwind8","version":""},{"type":"apt","name":"","revision":"","lib":"procps","version":""}],"envs":{"LD_LIBRARY_PATH":"/bmf_mods/Module_ies_vfi/libs:/opt/tiger/bmf_mods/Module_ies_vfi/libs"}}

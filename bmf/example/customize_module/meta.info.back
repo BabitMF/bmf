@@ -1,0 +1,6 @@
+{
+	"name": "test_python_module",
+	"revision": "v1.0.1",
+	"type": "python3",
+	"entry": "my_module.my_module"
+}

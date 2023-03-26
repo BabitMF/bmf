@@ -1,0 +1,8 @@
+build*
+!build.gradle
+output
+.DS_Store
+setup.py
+include/hmp/config.h
+setup.py
+cmake/hml-config.cmake

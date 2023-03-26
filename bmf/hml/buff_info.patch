@@ -1,0 +1,249 @@
+diff --git a/3rd_party/ffmpeg_bin b/3rd_party/ffmpeg_bin
+--- a/3rd_party/ffmpeg_bin
++++ b/3rd_party/ffmpeg_bin
+@@ -1 +1 @@
+-Subproject commit e23a539cba3c6cc9447d7d91e3241f15f3791b9a
++Subproject commit e23a539cba3c6cc9447d7d91e3241f15f3791b9a-dirty
+diff --git a/bmf/c_modules/src/ffmpeg_decoder.cpp b/bmf/c_modules/src/ffmpeg_decoder.cpp
+index 50a078a5..69aa9aa8 100644
+--- a/bmf/c_modules/src/ffmpeg_decoder.cpp
++++ b/bmf/c_modules/src/ffmpeg_decoder.cpp
+@@ -1620,7 +1620,7 @@ int CFFDecoder::read_packet(uint8_t *buf, int buf_size) {
+         int current_packet_valid_size = packet.nbytes() - current_packet_loc_;
+         int need_size = buf_size - valid_size;
+         int got_size = FFMIN(need_size, current_packet_valid_size);
+-        memcpy(buf + valid_size, (unsigned char *) (packet.data_ptr()) + current_packet_loc_, got_size);
++        memcpy(buf + valid_size, (unsigned char *) (packet.data_ptr_c()) + current_packet_loc_, got_size);
+         valid_size += got_size;
+ 
+         if (current_packet_loc_ + got_size >= packet.nbytes()) {
+diff --git a/bmf/c_modules/src/ffmpeg_encoder.cpp b/bmf/c_modules/src/ffmpeg_encoder.cpp
+index f85ceeec..58feadec 100644
+--- a/bmf/c_modules/src/ffmpeg_encoder.cpp
++++ b/bmf/c_modules/src/ffmpeg_encoder.cpp
+@@ -651,8 +651,8 @@ int write_data(void *opaque, uint8_t *buf, int buf_size) {
+ int CFFEncoder::write_current_packet_data(uint8_t *buf, int buf_size) {
+     void* data = nullptr;
+     AVPacket *avpkt = av_packet_alloc();
+-    avpkt->size = buf_size;
+     av_init_packet(avpkt);
++    av_new_packet(avpkt, buf_size);
+     data = avpkt->data;
+     BMFAVPacket bmf_avpkt = ffmpeg::to_bmf_av_packet(avpkt, true);
+ 
+diff --git a/bmf/example/transcode/test_transcode.py b/bmf/example/transcode/test_transcode.py
+index c0f2f8a6..3b2e5760 100644
+--- a/bmf/example/transcode/test_transcode.py
++++ b/bmf/example/transcode/test_transcode.py
+@@ -4,6 +4,7 @@ import unittest
+ 
+ sys.path.append("../../")
+ import bmf
++import hmp
+ import timeout_decorator
+ 
+ sys.path.append("../")
+@@ -997,8 +998,9 @@ class TestTranscode(BaseTestCase):
+         )
+         write_num = 0
+         for i, packet in enumerate(result):
+-            avpacket = packet.get()
+-            data = avpacket.data_ptr()
++            avpacket = packet.get(bmf.BMFAVPacket)
++            #data = avpacket.data_ptr()
++            data = avpacket.data().numpy()
+             if write_num < vframes_num:
+                 output_path = "./simple_image" + str(write_num)+ ".jpg"
+                 write_num = write_num + 1
+diff --git a/bmf/hml/py/py_hmp.cpp b/bmf/hml/py/py_hmp.cpp
+index a5fa9667..29d9a0ce 100644
+--- a/bmf/hml/py/py_hmp.cpp
++++ b/bmf/hml/py/py_hmp.cpp
+@@ -74,4 +74,4 @@ PYBIND11_MODULE(_hmp, m)
+     ffmpegBind(m);
+ 
+     cudaBind(m);
+-}
+\ No newline at end of file
++}
+diff --git a/bmf/hml/py/py_tensor.cpp b/bmf/hml/py/py_tensor.cpp
+index fe92d84e..90727530 100644
+--- a/bmf/hml/py/py_tensor.cpp
++++ b/bmf/hml/py/py_tensor.cpp
+@@ -248,4 +248,4 @@ void tensorBind(py::module &m)
+ 
+         .def("tofile", &Tensor::tofile, py::arg("fn"))
+       ;
+-}
+\ No newline at end of file
++}
+diff --git a/bmf/python/py_module_sdk.cpp b/bmf/python/py_module_sdk.cpp
+index 33181c5f..42b63862 100644
+--- a/bmf/python/py_module_sdk.cpp
++++ b/bmf/python/py_module_sdk.cpp
+@@ -203,6 +203,10 @@ struct PyPacketQueue
+     std::shared_ptr<std::queue<bmf_sdk::Packet>> q_;
+ };
+ 
++//py::bytes bmfavpacket_data_get(bmf_sdk::BMFAVPacket &pkt) {
++//    auto ptr = pkt.data_ptr_r();
++//    return py::bytes(ptr);
++//};
+ 
+ } //namespace
+ 
+@@ -385,7 +389,22 @@ void module_sdk_bind(py::module &m)
+         }))
+         .def("defined", &BMFAVPacket::operator bool)
+         .def_property_readonly("data", (Tensor&(BMFAVPacket::*)())&BMFAVPacket::data)
+-        .def_property_readonly("data_ptr", &BMFAVPacket::data_ptr)
++        //.def("data_ptr", &BMFAVPacket::data_ptr_r, py::return_value_policy::reference)
++        //.def("data_ptr", [](BMFAVPacket &self){
++        //        return bmfavpacket_data_get(self);
++        //})
++        .def("data_ptr", [](BMFAVPacket &self) -> py::buffer_info {
++        //.def("data_ptr", [](BMFAVPacket &self) -> numpy.array {
++                return py::buffer_info (
++                    self.data_ptr_r(),
++                    sizeof(uint8_t),
++                    py::format_descriptor<uint8_t>::format(),
++                    1,
++                    { self.nbytes()},
++                    { 1 }
++                    );
++        })
++        //.def("data_ptr", &BMFAVPacket::data_ptr, py::return_value_policy::reference)
+         .def_property_readonly("nbytes", &BMFAVPacket::nbytes)
+         .def("copy_props", &BMFAVPacket::copy_props)
+         .def_property_readonly("get_offset", &BMFAVPacket::get_offset)
+@@ -393,6 +412,22 @@ void module_sdk_bind(py::module &m)
+     ;
+     PACKET_REGISTER_BMF_SDK_TYPE(BMFAVPacket)
+ 
++    //PYBIND11_MODULE(bmf_tensor, m) {
++    //py::class_<Tensor>(m, "Tensor", py::buffer_protocol())
++    //    .def_buffer([](Tensor &im) -> py::buffer_info {
++    //        return py::buffer_info (
++    //            im.unsafe_data(),
++    //            sizeof(uint8_t),
++    //            py::format_descriptor<uint8_t>::format(),
++    //            1,//m.dim(),
++    //            { im.nbytes()},
++    //            { 1 }
++    //        );
++    //    })
++    //;
++    //}
++    //PACKET_REGISTER_BMF_SDK_TYPE(Tensor)
++
+     // PythonObject
+     py::class_<PythonObject>(m, "PythonObject"); //dummy object
+     PACKET_REGISTER_BMF_SDK_TYPE(PythonObject)
+diff --git a/bmf/sdk/cpp_sdk/include/bmf/sdk/bmf_av_packet.h b/bmf/sdk/cpp_sdk/include/bmf/sdk/bmf_av_packet.h
+index 1cb885a0..1e4ad840 100644
+--- a/bmf/sdk/cpp_sdk/include/bmf/sdk/bmf_av_packet.h
++++ b/bmf/sdk/cpp_sdk/include/bmf/sdk/bmf_av_packet.h
+@@ -76,16 +76,25 @@ public:
+     /**
+      * @brief return raw pointer of underlying data
+      * 
+-     * @return void* 
++     * @return std::unique_ptr<uint8_t> 
+      */
+-    void *data_ptr();
++    std::unique_ptr<uint8_t> data_ptr();
+     
++    uint8_t *data_ptr_r();
++
++    /**
++     * @brief 
++     * 
++     * @return void* 
++     */
++    void *data_ptr_c();
++
+     /**
+      * @brief 
+      * 
+      * @return const void* 
+      */
+-    //const void *data_ptr() const;
++    const void *data_ptr_c() const;
+ 
+     /**
+      * @brief number of bytes of underlying data
+diff --git a/bmf/sdk/cpp_sdk/include/bmf/sdk/bmf_capi.h b/bmf/sdk/cpp_sdk/include/bmf/sdk/bmf_capi.h
+index 69b1f7bb..2b21c1d4 100644
+--- a/bmf/sdk/cpp_sdk/include/bmf/sdk/bmf_capi.h
++++ b/bmf/sdk/cpp_sdk/include/bmf/sdk/bmf_capi.h
+@@ -202,4 +202,4 @@ BMF_API bmf_Packet* bmf_module_functor_fetch(bmf_ModuleFunctor mf, int index, in
+ 
+ #ifdef __cplusplus
+ } //extern "C"
+-#endif
+\ No newline at end of file
++#endif
+diff --git a/bmf/sdk/cpp_sdk/src/bmf_av_packet.cpp b/bmf/sdk/cpp_sdk/src/bmf_av_packet.cpp
+index 3cdacdfa..c07706fe 100644
+--- a/bmf/sdk/cpp_sdk/src/bmf_av_packet.cpp
++++ b/bmf/sdk/cpp_sdk/src/bmf_av_packet.cpp
+@@ -43,15 +43,27 @@ const Tensor& BMFAVPacket::data() const
+ }
+ 
+ 
+-void *BMFAVPacket::data_ptr()
++std::unique_ptr<uint8_t> BMFAVPacket::data_ptr()
+ {
+-    return *this ? data().unsafe_data() : nullptr;
++    uint8_t *ptr = static_cast<uint8_t *>(*this ? data().unsafe_data() : NULL);
++    return std::unique_ptr<uint8_t>(ptr);
+ }
+ 
+-//const void *BMFAVPacket::data_ptr() const
+-//{
+-//    return *this ? data().unsafe_data() : nullptr;
+-//}
++void *BMFAVPacket::data_ptr_c()
++{
++    return *this ? (void*)(data().unsafe_data()) : nullptr;
++}
++
++uint8_t *BMFAVPacket::data_ptr_r()
++{
++    //return *this ? reinterpret_cast<const int8_t*>(data().unsafe_data()) : nullptr;
++    return *this ? static_cast<uint8_t*>(data().unsafe_data()) : nullptr;
++}
++
++const void *BMFAVPacket::data_ptr_c() const
++{
++    return *this ? (void*)(data().unsafe_data()) : nullptr;
++}
+ 
+ int BMFAVPacket::nbytes() const
+ {
+diff --git a/bmf/sdk/cpp_sdk/src/bmf_capi.cpp b/bmf/sdk/cpp_sdk/src/bmf_capi.cpp
+index 21050e36..acb46eab 100644
+--- a/bmf/sdk/cpp_sdk/src/bmf_capi.cpp
++++ b/bmf/sdk/cpp_sdk/src/bmf_capi.cpp
+@@ -464,12 +464,12 @@ hmp_Tensor bmf_pkt_data(const bmf_BMFAVPacket pkt)
+ 
+ void* bmf_pkt_data_ptr(bmf_BMFAVPacket pkt)
+ {
+-    return pkt->data_ptr();
++    return pkt->data_ptr_c();
+ }
+ 
+ const void* bmf_pkt_data_const_ptr(const bmf_BMFAVPacket pkt)
+ {
+-    return pkt->data_ptr();
++    return pkt->data_ptr_c();
+ }
+ 
+ int bmf_pkt_nbytes(const bmf_BMFAVPacket pkt)
+@@ -893,4 +893,4 @@ bmf_Packet* bmf_module_functor_fetch(bmf_ModuleFunctor mf, int index, int *noutp
+     )
+ 
+     return nullptr;
+-}
+\ No newline at end of file
++}

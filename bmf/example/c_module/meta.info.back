@@ -1,0 +1,6 @@
+{
+	"name": "test_cpp_module",
+	"revision": "v1.0.1",
+	"type": "binary",
+	"entry": "libcopy_module.CopyModule"
+}

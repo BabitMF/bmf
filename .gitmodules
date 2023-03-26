@@ -1,0 +1,24 @@
+[submodule "3rd_party/glog"]
+	path = 3rd_party/glog
+[submodule "3rd_party/gtest"]
+	path = 3rd_party/gtest
+[submodule ".vbuild/trigger"]
+	path = .vbuild/trigger
+[submodule "bmf/hml/third_party/fmt"]
+	path = bmf/hml/third_party/fmt
+[submodule "bmf/hml/third_party/gtest"]
+	path = bmf/hml/third_party/gtest
+[submodule "bmf/hml/third_party/pybind11"]
+	path = bmf/hml/third_party/pybind11
+[submodule "bmf/hml/third_party/spdlog"]
+	path = bmf/hml/third_party/spdlog
+[submodule "bmf/hml/third_party/backward"]
+	path = bmf/hml/third_party/backward
+[submodule "bmf/hml/third_party/benchmark"]
+	path = bmf/hml/third_party/benchmark
+[submodule "bmf/hml/tests/data"]
+	path = bmf/hml/tests/data
+[submodule "3rd_party/ffmpeg_bin"]
+	path = 3rd_party/ffmpeg_bin
+[submodule "3rd_party/breakpad"]
+	path = 3rd_party/breakpad

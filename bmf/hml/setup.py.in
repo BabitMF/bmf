@@ -1,0 +1,71 @@
+import platform
+import os
+import shutil
+import argparse
+import glob
+from setuptools import Extension, Command, Distribution, setup, find_packages
+from setuptools.command import build_ext
+
+
+def wheel_name(**kwargs):
+    # https://stackoverflow.com/questions/51939257/how-do-you-get-the-filename-of-a-python-wheel-when-running-setup-py
+    # create a fake distribution from arguments
+    dist = Distribution(attrs=kwargs)
+    # finalize bdist_wheel command
+    bdist_wheel_cmd = dist.get_command_obj('bdist_wheel')
+    bdist_wheel_cmd.ensure_finalized()
+    # assemble wheel file name
+    distname = bdist_wheel_cmd.wheel_dist_name
+    tag = '-'.join(bdist_wheel_cmd.get_tag())
+    return f'{distname}-{tag}.whl'
+
+
+if __name__ == '__main__':
+    source_root = "@CMAKE_CURRENT_SOURCE_DIR@"
+    build_root = "@CMAKE_CURRENT_BINARY_DIR@"
+    libroot = os.path.join(build_root, "lib")
+
+    def full_libname(lib):
+        libname = "lib" + lib + ".so"
+        return os.path.join(libroot, libname)
+
+    def lib_path():
+        return "lib"
+    
+    dep_libs = ['hmp']
+    libs = [(lib_path(), [full_libname(lib) for lib in dep_libs])]
+
+    # find all headers
+    inc_dirs = ['include', 'third_party/spdlog/include', 'third_party/fmt/include']
+    incs = []
+    for inc in inc_dirs:
+        for root, _, _ in os.walk(os.path.join(source_root, inc)):
+            hdrs = glob.glob(os.path.join(root, "*.h"))
+            hdrs += glob.glob(os.path.join(root, "*.hpp"))
+            if len(hdrs):
+                rel_path = os.path.relpath(root, os.path.dirname(inc))
+                incs.append((rel_path, hdrs))
+    
+    #
+    cmake_module = [("lib/cmake/hml", [os.path.join(source_root, "cmake/hml-config.cmake")])]
+
+    class pre_build_ext(build_ext.build_ext):
+        def build_extension(self, ext):
+            pyd = self.get_ext_filename(ext.name)
+            pyd = os.path.join(libroot, pyd)
+            shutil.copyfile(pyd, self.get_ext_fullpath(ext.name))
+
+    setup_cfgs = {
+            "version": "@HMP_BUILD_VERSION@",
+            "description": "HML(Heterogeneous Media Process Library)",
+            "author": "Li Hong",
+            "author_email": "lihong.red@bytedance.com",
+            }
+
+    setup_cfgs["name"] = "hmp"
+    setup_cfgs["packages"] = find_packages()
+    setup_cfgs["package_dir"] = {"hmp": "hmp"}
+    setup_cfgs["data_files"] = libs + incs + cmake_module
+    setup_cfgs["cmdclass"] = {"build_ext": pre_build_ext}
+    setup_cfgs["ext_modules"] = [Extension("_hmp", sources=[])]
+    setup(**setup_cfgs)

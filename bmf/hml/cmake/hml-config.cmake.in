@@ -1,0 +1,37 @@
+
+# hml version information
+set(HMP_VERSION_MAJOR @HMP_VERSION_MAJOR@)
+set(HMP_VERSION_MINOR @HMP_VERSION_MINOR@)
+set(HMP_VERSION_PATCH @HMP_VERSION_PATCH@)
+set(HMP_VERSION "${HMP_VERSION_MAJOR}.${HMP_VERSION_MINOR}.${HMP_VERSION_PATCH}")
+
+# Compute the installation prefix relative to this file.
+get_filename_component(_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+get_filename_component(_IMPORT_PREFIX "${_IMPORT_PREFIX}" PATH)
+if(_IMPORT_PREFIX STREQUAL "/")
+  set(_IMPORT_PREFIX "")
+endif()
+
+
+# create imported target hml::hmp
+find_library(HMP_LIBRARY hmp HINTS ${_IMPORT_PREFIX}/lib)
+if(HMP_LIBRARY)
+    add_library(hml::hmp SHARED IMPORTED)
+    set_target_properties(hml::hmp PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
+        IMPORTED_LOCATION ${HMP_LIBRARY}
+    )
+
+    #
+    target_compile_definitions(hml::hmp 
+        INTERFACE -D_GLIBCXX_USE_CXX11_ABI=0)
+
+    message("-- HML found: ${HMP_LIBRARY}")
+    set(HML_TARGETS hml::hmp)
+    set(HML_FOUND TRUE)
+else()
+    message("-- HML not found")
+    set(HML_FOUND FALSE)
+endif()

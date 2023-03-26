@@ -1,0 +1,15 @@
+#pragma once
+
+//
+#cmakedefine HMP_ENABLE_CUDA
+#cmakedefine HMP_ENABLE_FFMPEG
+#cmakedefine HMP_ENABLE_OPENCV
+#cmakedefine HMP_ENABLE_NPP
+#cmakedefine HMP_ENABLE_OPENMP
+#cmakedefine HMP_ENABLE_TORCH
+#cmakedefine HMP_ENABLE_MOBILE
+
+//HMP_VERSION
+#define HMP_VERSION_MAJOR @HMP_VERSION_MAJOR@
+#define HMP_VERSION_MINOR @HMP_VERSION_MINOR@
+#define HMP_VERSION_PATCH @HMP_VERSION_PATCH@

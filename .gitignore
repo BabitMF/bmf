@@ -8,7 +8,7 @@
 .DS_Store
 *.o
 *.so
-build*
+build
 !build.gradle
 bmf/c_module_sdk/build
 bmf/c_module_sdk/cmake-build-debug

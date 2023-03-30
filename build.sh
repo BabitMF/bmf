@@ -63,18 +63,27 @@ mkdir -p output
 # Generate BMF version
 source ./version.sh
 
-# Extract FFMPEG from submodule
-if [ "$USE_BMF_FFMPEG" = "1" ] && [ ! -d "3rd_party/ffmpeg_bin/linux/build" ]
+if [ ! -d "3rd_party/json" ]
 then
-    echo "Extracting BMF's FFMPEG"
-    cd 3rd_party/ffmpeg_bin/linux/
-    tar xvf ffmpeg.tar.gz
-    cp -r build/lib/. /usr/local/lib/
-    cp -r build/include/. /usr/local/include/
-    cp -r build/bin/. /usr/local/bin/
-    cd ../../../
+    echo "Extracting 3rd_party"
+    cd 3rd_party/
+    tar xzvf 3rd_party.tar.gz
+    cd -
+fi
+
+if [ ! -d "bmf/hml/third_party/pybind11" ]
+then
+    echo "Extracting third_party"
+    cd bmf/hml/third_party/
+    tar xzvf third_party.tar.gz
+    cd -
+fi
+
+if [ "$USE_BMF_FFMPEG" = "1" ]
+then
+    echo "Using ffmpeg lib"
 else
-    echo "Skip extracting ffmpeg"
+    echo "Without ffmpeg"
 fi
 
 # Handle SCM compilation for x86 multiple Python versions

@@ -1,26 +1,27 @@
 [submodule "3rd_party/glog"]
-        path = 3rd_party/glog
-        url = https://github.com/google/glog.git
+	path = 3rd_party/glog
+	url = https://github.com/google/glog.git
 [submodule "3rd_party/gtest"]
-        path = 3rd_party/gtest
-        url = https://github.com/google/googletest.git
-[submodule ".vbuild/trigger"]
-	path = .vbuild/trigger
+	path = 3rd_party/gtest
+	url = https://github.com/google/googletest.git
 [submodule "bmf/hml/third_party/fmt"]
 	path = bmf/hml/third_party/fmt
+	url = https://github.com/fmtlib/fmt.git
 [submodule "bmf/hml/third_party/gtest"]
 	path = bmf/hml/third_party/gtest
+	url = https://github.com/google/googletest.git
 [submodule "bmf/hml/third_party/pybind11"]
 	path = bmf/hml/third_party/pybind11
+	url = https://github.com/pybind/pybind11.git
 [submodule "bmf/hml/third_party/spdlog"]
 	path = bmf/hml/third_party/spdlog
+	url = https://github.com/gabime/spdlog.git
 [submodule "bmf/hml/third_party/backward"]
 	path = bmf/hml/third_party/backward
+	url = https://github.com/bombela/backward-cpp.git
 [submodule "bmf/hml/third_party/benchmark"]
 	path = bmf/hml/third_party/benchmark
-[submodule "bmf/hml/tests/data"]
-	path = bmf/hml/tests/data
-[submodule "3rd_party/ffmpeg_bin"]
-	path = 3rd_party/ffmpeg_bin
+	url = https://github.com/google/benchmark.git
 [submodule "3rd_party/breakpad"]
 	path = 3rd_party/breakpad
+	url = https://github.com/google/breakpad.git

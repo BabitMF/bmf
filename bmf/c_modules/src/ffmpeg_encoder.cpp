@@ -1684,7 +1684,7 @@ int CFFEncoder::process(Task &task) {
 
             if (index == 0) {
                 auto video_frame = packet.get<VideoFrame>();
-                frame = av_frame_clone(ffmpeg::from_video_frame(video_frame, true));
+                frame = av_frame_clone(ffmpeg::from_video_frame(video_frame, false));
 
                 if (oformat_ == "image2pipe" && push_output_) { //only support to carry orig pts time for images
                     std::string stime = "";
@@ -1765,7 +1765,7 @@ int CFFEncoder::process(Task &task) {
             flush();
             if (task.get_outputs().size() > 0 || push_output_ != OutputMode::OUTPUT_NOTHING) {
                 Packet pkt = Packet::generate_eof_packet();
-                assert(pkt.timestamp_ == BMF_EOF);
+                assert(pkt.timestamp() == BMF_EOF);
                 for (int i = 0; i < task.get_outputs().size(); i++){
                     task.get_outputs()[i]->push(pkt);
                 }

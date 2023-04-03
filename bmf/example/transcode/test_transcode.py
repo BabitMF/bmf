@@ -1033,7 +1033,8 @@ class TestTranscode(BaseTestCase):
                 }
             )
             .run()
-
+        )
+        
     @timeout_decorator.timeout(seconds=120)
     def test_encoder_push_unmuxed_output_mp4(self):
         input_video_path = "../files/img.mp4"

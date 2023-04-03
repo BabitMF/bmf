@@ -47,6 +47,7 @@ BEGIN_BMF_ENGINE_NS
                  std::map<int, std::shared_ptr<ModuleCallbackLayer> > callback_bindings) {
         std::signal(SIGTERM, terminate);
         std::signal(SIGINT, interrupted);
+        configure_bmf_log();
         BMFLOG(BMF_INFO) << "BMF Version: " << BMF_VERSION;
         BMFLOG(BMF_INFO) << "BMF Commit: " << BMF_COMMIT;
         BMFLOG(BMF_INFO) << "start init graph";

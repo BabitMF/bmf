@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include "../include/connector.hpp"
 
 #include "../internal/env_init.h"
 #include "../internal/mapping.h"
@@ -28,6 +27,8 @@
 #include <bmf/sdk/cbytes.h>
 #include <bmf/sdk/json_param.h>
 #include <bmf/sdk/compat/path.h>
+#include "../include/connector.hpp"
+
 
 #include <bmf_nlohmann/json.hpp>
 

@@ -1,0 +1,59 @@
+{
+	"ffmpeg_decoder": {
+        "type": "c++",
+        "class": "CFFDecoder"
+    },
+	"ffmpeg_encoder": {
+        "type": "c++",
+        "class": "CFFEncoder"
+    },
+	"ffmpeg_filter": {
+        "type": "c++",
+        "class": "CFFFilter"
+    },
+	"c_ffmpeg_decoder": {
+        "type": "c++",
+        "class": "CFFDecoder"
+    },
+	"c_ffmpeg_encoder": {
+        "type": "c++",
+        "class": "CFFEncoder"
+    },
+	"c_ffmpeg_filter": {
+        "type": "c++",
+        "class": "CFFFilter"
+    },
+	"pass_through": {
+        "type": "c++",
+        "class": "PassThroughModule"
+    },
+	"PassThrough": {
+        "type": "c++",
+        "class": "PassThroughModule"
+    },
+	"download": {
+        "type": "python",
+        "class": "download"
+    },
+	"upload": {
+        "type": "python",
+        "class": "upload"
+    },
+	"MockDecoder": {
+        "type": "c++",
+        "class": "MockDecoder"
+    },
+	"GoMockDecoder": {
+        "type": "c++",
+        "class": "GoMockDecoder"
+    },
+	"Clock": {
+        "type": "c++",
+        "class": "ClockModule"
+    },
+	"terminator_download": {
+        "type": "python",
+        "class": "terminator_download"
+    }
+}
+

@@ -97,54 +97,6 @@ TEST(video_frame, frame_constructors)
 
 }
 
-
-
-//TODO delete
-//TEST(video_frame, image_constructors)
-//{
-//    int width = 1920, height = 1080;
-//
-//    //create with default TensorOptions
-//    auto vf0 = VideoFrame::make(width, height); //
-//    EXPECT_EQ(vf0.width(), width);
-//    EXPECT_EQ(vf0.height(), height);
-//    EXPECT_EQ(vf0.dtype(), kUInt8);
-//    EXPECT_TRUE(vf0.device() == kCPU);
-//    EXPECT_TRUE(vf0.is_image());
-//    EXPECT_THROW(vf0.frame(), std::runtime_error);
-//    EXPECT_NO_THROW(vf0.image());
-//    EXPECT_EQ(vf0.image().format(), kNCHW);
-//    EXPECT_EQ(vf0.image().nchannels(), 3);
-//
-//    // With dtype, channels, ChannelFormat specifed
-//    auto vf1 = VideoFrame::make(1920, 1080, 1, kNHWC, kUInt16); //
-//    EXPECT_EQ(vf1.dtype(), kUInt16);
-//    EXPECT_EQ(vf1.image().nchannels(), 1);
-//    EXPECT_EQ(vf1.image().format(), kNHWC);
-//
-//#ifdef HMP_ENABLE_CUDA
-//    //with type and device specifed
-//    auto vf2 = VideoFrame::make(1920, 1080, 3, kNHWC,
-//                                kHalf,
-//                                "cuda:0"   //cuda device 
-//                                );
-//    EXPECT_TRUE(vf2.device() == Device(kCUDA, 0));
-//    EXPECT_TRUE(vf2.dtype() == kHalf);
-//    EXPECT_EQ(vf2.image().format(), kNHWC);
-//
-//    auto vf3 = VideoFrame::make(1920, 1080, 3, kNHWC,
-//                                kFloat32,
-//                                true    //pinned_memory, cudaMallocHost
-//                                ); 
-//    EXPECT_TRUE(vf3.device() == Device(kCPU));
-//    EXPECT_TRUE(vf3.image().data().options().pinned_memory());
-//    EXPECT_EQ(vf3.image().format(), kNHWC);
-//    EXPECT_EQ(vf3.dtype(), kFloat32);
-//#endif
-//
-//}
-
-
 TEST(video_frame, crop_test)
 {
     int width = 1920, height = 1080;
@@ -384,8 +336,53 @@ TEST(video_frame, copy_props)
     EXPECT_EQ(vf1.time_base().num, 1);
 }
 
-#ifdef BMF_ENABLE_FFMPEG
 TEST(video_frame, reformat)
+{
+    auto ori_vf = decode_one_frame("../files/img.mp4");
+    ASSERT_EQ(ori_vf.frame().format(), hmp::PF_YUV420P);
+    EXPECT_EQ(ori_vf.height(), 1080);
+    EXPECT_EQ(ori_vf.width(), 1920);
+    ASSERT_FALSE(ori_vf.frame().pix_info().is_rgbx());
+    EXPECT_EQ(ori_vf.frame().nplanes(), 3);
+    EXPECT_EQ(ori_vf.frame().plane(0).stride(0), 1920);
+    EXPECT_EQ(ori_vf.frame().plane(1).stride(0), 1920 / 2);
+    EXPECT_EQ(ori_vf.frame().plane(2).stride(0), 1920 / 2);
+
+    //reformat yuv420p -> rgb
+    {
+        auto RGB = PixelInfo(hmp::PF_RGB24, hmp::CS_BT709);
+        auto rgb_vf = ori_vf.reformat(RGB);
+        EXPECT_EQ(rgb_vf.height(), 1080);
+        EXPECT_EQ(rgb_vf.width(), 1920);
+        EXPECT_EQ(rgb_vf.frame().nplanes(), 1);
+        EXPECT_EQ(rgb_vf.frame().height(), 1080);
+        EXPECT_EQ(rgb_vf.frame().width(), 1920);
+        ASSERT_EQ(rgb_vf.frame().format(), hmp::PF_RGB24);
+        ASSERT_TRUE(rgb_vf.frame().pix_info().is_rgbx());
+        EXPECT_EQ(rgb_vf.frame().plane(0).stride(0), 3 * 1920);
+    }
+
+    auto RGB = PixelInfo(hmp::PF_RGB24, hmp::CS_BT709);
+    auto img_vf = ori_vf.reformat(RGB);
+
+    {
+        auto H420 = PixelInfo(hmp::PF_YUV420P, hmp::CS_BT709);
+        auto yuv_vf = img_vf.reformat(H420);
+        EXPECT_EQ(yuv_vf.height(), 1080);
+        EXPECT_EQ(yuv_vf.width(), 1920);
+        EXPECT_EQ(yuv_vf.frame().nplanes(), 3);
+        EXPECT_EQ(yuv_vf.frame().height(), 1080);
+        EXPECT_EQ(yuv_vf.frame().width(), 1920);
+        ASSERT_EQ(yuv_vf.frame().format(), hmp::PF_YUV420P);
+        ASSERT_FALSE(yuv_vf.frame().pix_info().is_rgbx());
+        EXPECT_EQ(yuv_vf.frame().plane(0).stride(0), 1920);
+        EXPECT_EQ(yuv_vf.frame().plane(1).stride(0), 1920 / 2);
+        EXPECT_EQ(yuv_vf.frame().plane(2).stride(0), 1920 / 2);
+    }
+}
+
+#ifdef BMF_ENABLE_FFMPEG
+TEST(video_frame, reformat_by_ffmpeg)
 {
     auto ori_vf = decode_one_frame("../files/img.mp4");
     ASSERT_EQ(ori_vf.frame().format(), hmp::PF_YUV420P);
@@ -477,5 +474,6 @@ TEST(video_frame, reformat)
         EXPECT_EQ(yuv_vf.frame().plane(1).stride(0), 1920 / 2);
         EXPECT_EQ(yuv_vf.frame().plane(2).stride(0), 1920 / 2);
     }
+
 }
 #endif

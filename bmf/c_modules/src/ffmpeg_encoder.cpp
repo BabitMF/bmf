@@ -1806,8 +1806,11 @@ int CFFEncoder::process(Task &task) {
                 continue;
             }
 
-            if (ost_[index].frame_number >= ost_[index].max_frames)
+            if (ost_[index].frame_number >= ost_[index].max_frames) {
+                b_stream_eof_[index] = true;
+                b_eof_ = num_input_streams_ == 1 ? b_stream_eof_[0] : (b_stream_eof_[0] & b_stream_eof_[1]);
                 continue;
+            }
 
             if (packet.is<BMFAVPacket>()) {
                 BMFAVPacket av_packet = packet.get<BMFAVPacket>();

@@ -15,12 +15,13 @@
  */
 #include <gtest/gtest.h>
 #include <hmp/tensor.h>
+#include <hmp/imgproc.h>
+
+using namespace hmp;
 
 #ifdef HMP_ENABLE_FFMPEG
 
 #include <hmp/ffmpeg/ffmpeg.h>
-
-using namespace hmp;
 
 class ImageTest : public testing::Test
 {
@@ -129,6 +130,89 @@ TEST_F(ImageTest, AVFrameInterOp)
 #undef BUF_REFCOUNT
 
 }
-
-
 #endif //HMP_EANBLE_FFMPEG
+
+
+TEST(tensor_op, nhwc_to_nchw)
+{
+    auto pix_info = PixelInfo(PF_RGB24);
+    auto f = Frame(1920, 1080, pix_info);
+    auto t = f.plane(0);
+    EXPECT_EQ(t.dim(), 3);
+    //H
+    EXPECT_EQ(t.size(0), 1080);
+    //W
+    EXPECT_EQ(t.size(1), 1920);
+    //C
+    EXPECT_EQ(t.size(2), 3);
+
+    auto nchw = img::transfer(t, kNHWC, kNCHW);
+    EXPECT_EQ(nchw.dim(), 3);
+    //C
+    EXPECT_EQ(nchw.size(0), 3);
+    //H
+    EXPECT_EQ(nchw.size(1), 1080);
+    //W
+    EXPECT_EQ(nchw.size(2), 1920);
+}
+
+TEST(tensor_op, nchw_to_nhwc)
+{
+    //nchw
+    auto pix_info = PixelInfo(PF_RGB24);
+    auto f = Frame(1920, 1080, pix_info);
+    auto t = f.plane(0);
+    EXPECT_EQ(t.dim(), 3);
+    //H
+    EXPECT_EQ(t.size(0), 1080);
+    //W
+    EXPECT_EQ(t.size(1), 1920);
+    //C
+    EXPECT_EQ(t.size(2), 3);
+
+    auto nchw = img::transfer(t, kNHWC, kNCHW);
+    EXPECT_EQ(nchw.dim(), 3);
+    //C
+    EXPECT_EQ(nchw.size(0), 3);
+    //H
+    EXPECT_EQ(nchw.size(1), 1080);
+    //W
+    EXPECT_EQ(nchw.size(2), 1920);
+
+    auto nhwc = img::transfer(nchw, kNCHW, kNHWC);
+    EXPECT_EQ(nhwc.dim(), 3);
+    //H
+    EXPECT_EQ(nhwc.size(0), 1080);
+    //W
+    EXPECT_EQ(nhwc.size(1), 1920);
+    //C
+    EXPECT_EQ(nhwc.size(2), 3);
+}
+
+TEST(tensor_op, reformat_then_transfer)
+{
+    //nchw
+    auto pix_info = PixelInfo(PF_YUV420P);
+    auto f = Frame(1920, 1080, pix_info);
+    auto rgb = PixelInfo(PF_RGB24);
+    auto vf = f.reformat(rgb);
+
+    auto t = vf.plane(0);
+    EXPECT_EQ(t.dim(), 3);
+    //H
+    EXPECT_EQ(t.size(0), 1080);
+    //W
+    EXPECT_EQ(t.size(1), 1920);
+    //C
+    EXPECT_EQ(t.size(2), 3);
+
+    auto nchw = img::transfer(t, kNHWC, kNCHW);
+    EXPECT_EQ(nchw.dim(), 3);
+    //C
+    EXPECT_EQ(nchw.size(0), 3);
+    //H
+    EXPECT_EQ(nchw.size(1), 1080);
+    //W
+    EXPECT_EQ(nchw.size(2), 1920);
+}
+

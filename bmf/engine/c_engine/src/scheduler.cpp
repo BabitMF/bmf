@@ -173,12 +173,18 @@ int Scheduler::sched_required(int node_id, bool is_closed) {
     }
     if (exception_flag_)
         return 0;
+
+    std::shared_ptr<InputStreamManager> input_stream_manager;
+    node->get_input_stream_manager(input_stream_manager);
     if (is_closed) {
         callback_.close_report_(node_id, false);
+        for (auto &node_id:input_stream_manager->upstream_nodes_) {
+            std::shared_ptr<Node> node_upst;
+            callback_.get_node_(node_id, node_upst);
+            to_schedule_queue(node_upst);
+        }
     } else {
-        std::shared_ptr<InputStreamManager> input_stream_manager;
-        node->get_input_stream_manager(input_stream_manager);
-        for (auto &node_id : input_stream_manager->upstream_nodes_)
+        for (auto &node_id:input_stream_manager->upstream_nodes_)
             sched_required(node_id, false);
 
         std::lock_guard<std::mutex> lk(node->sched_mutex_);

@@ -32,7 +32,6 @@ CFFFilter::CFFFilter(int node_id, JsonParam option) {
     stream_first_dts_ = AV_NOPTS_VALUE;
 
     option_ = option;
-    avfilter_register_all();
 }
 
 CFFFilter::~CFFFilter() {

@@ -251,6 +251,34 @@ TEST(video_frame, from_hardware_avframe)
     EXPECT_TRUE(from_video_frame->hw_frames_ctx != NULL);
 }
 
+TEST(video_frame, hardware_avframe_csc_resize)
+{
+    int width = 1920, height = 1080;
+
+    auto NV12 = PixelInfo(hmp::PF_NV12, hmp::CS_BT470BG);
+    auto H420 = PixelInfo(hmp::PF_YUV420P, hmp::CS_BT709);
+    //auto RGB24 = PixelInfo(hmp::PF_BGR24, hmp::CS_BT709);
+    AVFrame* avfrm = hmp::ffmpeg::hw_avframe_from_device(kCUDA, width, height, NV12);
+    VideoFrame vf = ffmpeg::to_video_frame(avfrm);
+    EXPECT_TRUE(vf.device() == kCUDA);
+
+    auto vf_rgb = VideoFrame::make(width, height, 3, kNCHW, kCUDA);
+    Tensor t_img = vf_rgb.image().data();
+    hmp::img::yuv_to_rgb(t_img, vf.frame().data(), NV12);
+    EXPECT_TRUE(t_img.device() == kCUDA);
+
+    auto vf_yuv_from_rgb = VideoFrame::make(width, height, H420, kCUDA);
+    TensorList tl = vf_yuv_from_rgb.frame().data();
+    hmp::img::rgb_to_yuv(tl, vf_rgb.image().data(), H420);
+
+    auto vf_resize = VideoFrame::make(width / 2, height / 2, H420, kCUDA);
+    //TensorList &yuv_resize(TensorList &dst, const TensorList &src,
+    //                      PPixelFormat format, ImageFilterMode mode)
+    //HMP_API TensorList &yuv_resize(TensorList &dst, const TensorList &src,                                         const PixelInfo &pix_info, ImageFilterMode mode = ImageFilterMode::Bilinear);
+    TensorList tl_resize = vf_resize.frame().data();
+    hmp::img::yuv_resize(tl_resize, vf_yuv_from_rgb.frame().data(), H420);
+}
+
 #endif
 
 

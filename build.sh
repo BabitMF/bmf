@@ -191,6 +191,7 @@ else
         -DCOVERAGE=${COVERAGE_OPTION} \
         -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
         -DBMF_ENABLE_BREAKPAD=ON \
+        -DCMAKE_PREFIX_PATH=/bmf/libtorch \
         -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ..
     make -j8
 

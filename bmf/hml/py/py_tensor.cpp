@@ -77,6 +77,7 @@ TensorOptions parse_tensor_options(const py::kwargs &kwargs, const TensorOptions
 
 void tensorBind(py::module &m)
 {
+    using namespace py::literals;
     //
     m.def("from_numpy", [](const py::array& arr){
       return tensor_from_numpy(arr);
@@ -227,6 +228,7 @@ void tensorBind(py::module &m)
         .def("torch", [](const Tensor &self){
           return hmp::torch::tensor(self);
         })
+        .def(py::init(&hmp::torch::from_tensor), "tensor"_a)
 #endif
 
         // Unary ops

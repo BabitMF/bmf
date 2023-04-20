@@ -251,6 +251,17 @@ TEST(video_frame, from_hardware_avframe)
     EXPECT_TRUE(from_video_frame->hw_frames_ctx != NULL);
 }
 
+TEST(video_frame, gpu_frame_to_avframe)
+{
+    int width = 1920, height = 1080;
+
+    auto NV12 = PixelInfo(hmp::PF_NV12, hmp::CS_BT709);
+    auto vf_gpu = VideoFrame::make(width, height, NV12, kCUDA);
+    auto from_video_frame = ffmpeg::from_video_frame(vf_gpu, false);
+    EXPECT_TRUE(from_video_frame->hw_frames_ctx != NULL);
+}
+
+
 TEST(video_frame, hardware_avframe_csc_resize)
 {
     int width = 1920, height = 1080;

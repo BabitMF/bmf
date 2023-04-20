@@ -550,6 +550,11 @@ static AVFrame* to_video_frame(const Frame &frame,
     }
     else{
         hw_frames_ctx = avf_ref ? avf_ref->hw_frames_ctx : nullptr;
+        if (!hw_frames_ctx && frame.device().type() == kCUDA) {
+            hw_frames_ctx = av_hw_frames_ctx_from_device(kCUDA, frame.width(), frame.height(),
+                                                         (AVPixelFormat)frame.pix_info().format());
+            HMP_INF("created av context for the hardware frame");
+        }
         auto avf_device = av_hw_frames_ctx_to_device(hw_frames_ctx);
         if(frame.device().type() != kCPU){
             HMP_REQUIRE(avf_device == frame.device(), 

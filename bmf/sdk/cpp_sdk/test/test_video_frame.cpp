@@ -20,19 +20,22 @@ static bool check_pixel_value(const VideoFrame &vf, const T &v)
     //ASSERT_TRUE(vf.is_image());
     //ASSERT_TRUE(vf.device() == kCPU);
 
-    //RGB NHWC
+    //RGB HWC
     auto frame = vf.frame();
-    auto &data = frame.data()[0];
-    int64_t channels = data.size(2); //
-    int64_t w = data.size(1);
-    int64_t h = data.size(0);
+
+    //only one plane
+    auto &data = frame.plane(0);
+
+    int64_t channels = data.size(hmp::HWC_C); //
+    int64_t w = data.size(hmp::HWC_W);
+    int64_t h = data.size(hmp::HWC_H);
 
     const T* ptr = data.data<T>();
 
     for (int64_t c = 0; c < channels; ++c){
         for (int64_t y = 0; y < h; ++y){
             for (int64_t x = 0; x < w; ++x){
-                auto idx = c * data.stride(2) + y * data.stride(0) + x * data.stride(1);
+                auto idx = c * data.stride(hmp::HWC_C) + y * data.stride(hmp::HWC_H) + x * data.stride(hmp::HWC_W);
                 if(ptr[idx] != v){
                     return false;
                 }

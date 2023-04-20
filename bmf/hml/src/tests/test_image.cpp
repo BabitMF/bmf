@@ -16,6 +16,7 @@
 #include <gtest/gtest.h>
 #include <hmp/tensor.h>
 #include <hmp/imgproc.h>
+#include <hmp/imgproc/image_seq.h>
 
 using namespace hmp;
 
@@ -133,30 +134,30 @@ TEST_F(ImageTest, AVFrameInterOp)
 #endif //HMP_EANBLE_FFMPEG
 
 
-TEST(tensor_op, nhwc_to_nchw)
+TEST(tensor_op, hwc_to_chw)
 {
     auto pix_info = PixelInfo(PF_RGB24);
     auto f = Frame(1920, 1080, pix_info);
     auto t = f.plane(0);
     EXPECT_EQ(t.dim(), 3);
     //H
-    EXPECT_EQ(t.size(0), 1080);
+    EXPECT_EQ(t.size(HWC_H), 1080);
     //W
-    EXPECT_EQ(t.size(1), 1920);
+    EXPECT_EQ(t.size(HWC_W), 1920);
     //C
-    EXPECT_EQ(t.size(2), 3);
+    EXPECT_EQ(t.size(HWC_C), 3);
 
     auto nchw = img::transfer(t, kNHWC, kNCHW);
     EXPECT_EQ(nchw.dim(), 3);
     //C
-    EXPECT_EQ(nchw.size(0), 3);
+    EXPECT_EQ(nchw.size(CHW_C), 3);
     //H
-    EXPECT_EQ(nchw.size(1), 1080);
+    EXPECT_EQ(nchw.size(CHW_H), 1080);
     //W
-    EXPECT_EQ(nchw.size(2), 1920);
+    EXPECT_EQ(nchw.size(CHW_W), 1920);
 }
 
-TEST(tensor_op, nchw_to_nhwc)
+TEST(tensor_op, chw_to_hwc)
 {
     //nchw
     auto pix_info = PixelInfo(PF_RGB24);
@@ -164,29 +165,29 @@ TEST(tensor_op, nchw_to_nhwc)
     auto t = f.plane(0);
     EXPECT_EQ(t.dim(), 3);
     //H
-    EXPECT_EQ(t.size(0), 1080);
+    EXPECT_EQ(t.size(HWC_H), 1080);
     //W
-    EXPECT_EQ(t.size(1), 1920);
+    EXPECT_EQ(t.size(HWC_W), 1920);
     //C
-    EXPECT_EQ(t.size(2), 3);
+    EXPECT_EQ(t.size(HWC_C), 3);
 
     auto nchw = img::transfer(t, kNHWC, kNCHW);
     EXPECT_EQ(nchw.dim(), 3);
     //C
-    EXPECT_EQ(nchw.size(0), 3);
+    EXPECT_EQ(nchw.size(CHW_C), 3);
     //H
-    EXPECT_EQ(nchw.size(1), 1080);
+    EXPECT_EQ(nchw.size(CHW_H), 1080);
     //W
-    EXPECT_EQ(nchw.size(2), 1920);
+    EXPECT_EQ(nchw.size(CHW_W), 1920);
 
     auto nhwc = img::transfer(nchw, kNCHW, kNHWC);
     EXPECT_EQ(nhwc.dim(), 3);
     //H
-    EXPECT_EQ(nhwc.size(0), 1080);
+    EXPECT_EQ(nhwc.size(HWC_H), 1080);
     //W
-    EXPECT_EQ(nhwc.size(1), 1920);
+    EXPECT_EQ(nhwc.size(HWC_W), 1920);
     //C
-    EXPECT_EQ(nhwc.size(2), 3);
+    EXPECT_EQ(nhwc.size(HWC_C), 3);
 }
 
 TEST(tensor_op, reformat_then_transfer)
@@ -200,19 +201,80 @@ TEST(tensor_op, reformat_then_transfer)
     auto t = vf.plane(0);
     EXPECT_EQ(t.dim(), 3);
     //H
-    EXPECT_EQ(t.size(0), 1080);
+    EXPECT_EQ(t.size(HWC_H), 1080);
     //W
-    EXPECT_EQ(t.size(1), 1920);
+    EXPECT_EQ(t.size(HWC_W), 1920);
     //C
-    EXPECT_EQ(t.size(2), 3);
+    EXPECT_EQ(t.size(HWC_C), 3);
 
     auto nchw = img::transfer(t, kNHWC, kNCHW);
     EXPECT_EQ(nchw.dim(), 3);
     //C
-    EXPECT_EQ(nchw.size(0), 3);
+    EXPECT_EQ(nchw.size(CHW_C), 3);
     //H
-    EXPECT_EQ(nchw.size(1), 1080);
+    EXPECT_EQ(nchw.size(CHW_H), 1080);
     //W
-    EXPECT_EQ(nchw.size(2), 1920);
+    EXPECT_EQ(nchw.size(CHW_W), 1920);
 }
+
+TEST(tensor_op, nhwc_to_nchw)
+{
+    auto pix_info = PixelInfo(PF_RGB24);
+    auto f1 = Frame(1920, 1080, pix_info);
+    auto f2 = Frame(1920, 1080, pix_info);
+    FrameSeq fs = concat({f1, f2});
+
+    auto t = fs.plane(0);
+
+    //NHWC
+    EXPECT_EQ(t.dim(), 4);
+    //N
+    EXPECT_EQ(t.size(NHWC_N), 2);
+    //H
+    EXPECT_EQ(t.size(NHWC_H), 1080);
+    //W
+    EXPECT_EQ(t.size(NHWC_W), 1920);
+    //C
+    EXPECT_EQ(t.size(NHWC_C), 3);
+
+    auto nchw = img::transfer(t, kNHWC, kNCHW);
+    EXPECT_EQ(nchw.dim(), 4);
+    //N
+    EXPECT_EQ(nchw.size(NCHW_N), 2);
+    //C
+    EXPECT_EQ(nchw.size(NCHW_C), 3);
+    //H
+    EXPECT_EQ(nchw.size(NCHW_H), 1080);
+    //W
+    EXPECT_EQ(nchw.size(NCHW_W), 1920);
+}
+
+TEST(tensor_op, nchw_to_nhwc)
+{
+    //nchw
+    auto pix_info = PixelInfo(PF_RGB24);
+    auto f1 = Frame(1920, 1080, pix_info);
+    auto f2 = Frame(1920, 1080, pix_info);
+    FrameSeq fs = concat({f1, f2});
+
+    auto t = fs.plane(0);
+
+    auto nchw = img::transfer(t, kNHWC, kNCHW);
+
+    auto nhwc = img::transfer(nchw, kNCHW, kNHWC);
+
+    //NHWC
+    EXPECT_EQ(t.dim(), 4);
+    //N
+    EXPECT_EQ(nhwc.size(NHWC_N), 2);
+    //H
+    EXPECT_EQ(nhwc.size(NHWC_H), 1080);
+    //W
+    EXPECT_EQ(nhwc.size(NHWC_W), 1920);
+    //C
+    EXPECT_EQ(nhwc.size(NHWC_C), 3);
+
+}
+
+
 

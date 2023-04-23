@@ -757,13 +757,13 @@ int CFFEncoder::init_stream() {
             return ret;
         } else if (av_dict_count(opts) > 0) {
             AVDictionaryEntry *t = NULL;
-            std::string err_msg = "Encoder mux_params contains incorrect key :";
+            std::string warning_msg = "Encoder mux_params contains incorrect key :";
             while ((t = av_dict_get(opts, "", t, AV_DICT_IGNORE_SUFFIX))) {
-                err_msg.append(" ");
-                err_msg.append(t->key);
+                warning_msg.append(" ");
+                warning_msg.append(t->key);
             }
             av_dict_free(&opts);
-            BMFLOG_NODE(BMF_ERROR, node_id_) << err_msg;
+            BMFLOG_NODE(BMF_WARNING, node_id_) << warning_msg;
         }
         av_dict_free(&opts);
 
@@ -1409,17 +1409,17 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
         return ret;
     } else if (av_dict_count(enc_opts) > 0) {
         AVDictionaryEntry *t = NULL;
-        std::string err_msg;
+        std::string warning_msg;
         if (idx == 0)
-            err_msg = "Encoder video_params contains incorrect key :";
+            warning_msg = "Encoder video_params contains incorrect key :";
         else if (idx == 1)
-            err_msg = "Encoder audio_params contains incorrect key :";
+            warning_msg = "Encoder audio_params contains incorrect key :";
         while ((t = av_dict_get(enc_opts, "", t, AV_DICT_IGNORE_SUFFIX))) {
-            err_msg.append(" ");
-            err_msg.append(t->key);
+            warning_msg.append(" ");
+            warning_msg.append(t->key);
         }
         av_dict_free(&enc_opts);
-        BMFLOG_NODE(BMF_ERROR, node_id_) << err_msg;
+        BMFLOG_NODE(BMF_WARNING, node_id_) << warning_msg;
     }
     av_dict_free(&enc_opts);
 

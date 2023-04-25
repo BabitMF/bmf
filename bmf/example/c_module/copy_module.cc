@@ -27,13 +27,7 @@ int CopyModule::process(Task &task) {
             auto vframe = pkt.get<VideoFrame>();
 
             // Deep copy
-            VideoFrame vframe_out;
-            if(vframe.is_image()){
-                vframe_out = VideoFrame(vframe.image().clone());
-            }
-            else{
-                vframe_out = VideoFrame(vframe.frame().clone());
-            }
+            VideoFrame vframe_out = VideoFrame(vframe.frame().clone());
             vframe_out.copy_props(vframe);
 
             // Add output frame to output queue

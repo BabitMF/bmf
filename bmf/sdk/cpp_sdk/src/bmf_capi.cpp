@@ -72,15 +72,6 @@ void bmf_json_param_free(bmf_JsonParam json)
 
 ////////// VideoFrame ////////////
 
-bmf_VideoFrame bmf_vf_from_image(hmp_Image image)
-{
-    BMF_PROTECT(
-	    return new VideoFrame(*image);
-    )
-
-    return nullptr;
-}
-
 bmf_VideoFrame bmf_vf_from_frame(hmp_Frame frame)
 {
     BMF_PROTECT(
@@ -98,20 +89,6 @@ bmf_VideoFrame bmf_vf_make_frame(int width, int height,
     )
     return nullptr;
 }
-
-bmf_VideoFrame bmf_vf_make_image(int width, int height, int channels,
-				int format, int dtype, const char *device,
-				bool pinned_memory)
-{
-    BMF_PROTECT(
-        return new VideoFrame(width, height, channels,
-                 (ChannelFormat)format,
-                 TensorOptions((ScalarType)dtype)
-                    .device(Device(device)).pinned_memory(pinned_memory));
-    )
-    return nullptr;
-}
-
 
 void bmf_vf_free(bmf_VideoFrame vf)
 {
@@ -140,19 +117,6 @@ int bmf_vf_dtype(const bmf_VideoFrame vf)
     return (int)vf->dtype();
 }
 
-bool bmf_vf_is_image(const bmf_VideoFrame vf)
-{
-    return vf->is_image();
-}
-const hmp_Image bmf_vf_image(const bmf_VideoFrame vf)
-{
-    BMF_PROTECT(
-        return (const hmp_Image)&vf->image();
-    )
-
-    return nullptr;
-}
-
 const hmp_Frame bmf_vf_frame(const bmf_VideoFrame vf)
 {
     BMF_PROTECT(
@@ -161,27 +125,6 @@ const hmp_Frame bmf_vf_frame(const bmf_VideoFrame vf)
 
     return nullptr;
 }
-
-
-bmf_VideoFrame bmf_vf_to_image(const bmf_VideoFrame vf, int format, bool contiguous)
-{
-    BMF_PROTECT(
-        auto tmp = vf->to_image((ChannelFormat)format, contiguous);
-        return new VideoFrame(tmp);
-    )
-    return nullptr;
-}
-
-bmf_VideoFrame bmf_vf_to_frame(const bmf_VideoFrame vf, const hmp_PixelInfo pix_info)
-{
-    BMF_PROTECT(
-        auto tmp = vf->to_frame(*pix_info);
-        return new VideoFrame(tmp);
-    )
-
-    return nullptr;
-}
-
 
 bmf_VideoFrame bmf_vf_cpu(const bmf_VideoFrame vf, bool non_blocking)
 {
@@ -225,14 +168,6 @@ bmf_VideoFrame bmf_vf_to_device(const bmf_VideoFrame vf, const char *device, boo
     return nullptr;
 }
 
-bmf_VideoFrame bmf_vf_to_dtype(const bmf_VideoFrame vf, int dtype)
-{
-    BMF_PROTECT(
-        return new VideoFrame(vf->to((ScalarType)dtype));
-    )
-    return nullptr;
-}
-
 void bmf_vf_copy_props(bmf_VideoFrame vf, const bmf_VideoFrame from)
 {
     vf->copy_props(*from);
@@ -251,6 +186,14 @@ const bmf_JsonParam bmf_vf_private_get_json_param(const bmf_VideoFrame vf)
 void bmf_vf_private_attach_json_param(bmf_VideoFrame vf, const bmf_JsonParam json_param)
 {
     vf->private_attach<JsonParam>(json_param);
+}
+
+bmf_VideoFrame bmf_vf_reformat(const bmf_VideoFrame vf, const hmp_PixelInfo pix_info)
+{
+    BMF_PROTECT(
+        return new VideoFrame(vf->reformat(*pix_info));
+    )
+    return nullptr;
 }
 
 void bmf_vf_set_pts(bmf_VideoFrame vf, int64_t pts)

@@ -187,6 +187,8 @@ void imageBind(py::module &m)
              py::arg("planes"), py::arg("pix_info"))
         .def(py::init<TensorList, int, int, const PixelInfo&>(),
              py::arg("planes"), py::arg("width"), py::arg("height"), py::arg("pix_info"))
+        .def(py::init<Tensor,  const PixelInfo&>(),
+             py::arg("plane"), py::arg("pix_info"))
         .def(py::init([](int width, int height, const PixelInfo& pix_info, const py::object &obj){
             return Frame(width, height, pix_info, parse_device(obj));
         }), py::arg("width"), py::arg("height"), py::arg("pix_info"), py::arg("device")=kCPU)
@@ -209,9 +211,7 @@ void imageBind(py::module &m)
         .def("copy_", &Frame::copy_)
         .def("clone", &Frame::clone)
         .def("crop", &Frame::crop, py::arg("left"), py::arg("top"), py::arg("width"), py::arg("height"))
-        .def("to_image", &Frame::to_image, py::arg("format")=kNCHW)
-        .def_static("from_image", &Frame::from_image,
-                 py::arg("image"), py::arg("pix_info"))
+        .def("reformat", &Frame::reformat, py::arg("pix_info"))
         .def("numpy", [](const Frame &frame){
             py::list arr_list;
             for(auto &tensor : frame.data()){
@@ -220,47 +220,6 @@ void imageBind(py::module &m)
             return arr_list;
         })
     ;
-
-    py::class_<Image>(m, "Image")
-        .def(py::init<Tensor, ChannelFormat, const ColorModel&>(),
-             py::arg("data"), py::arg("format"), py::arg("color_model"))
-        .def(py::init<Tensor, ChannelFormat>(),
-             py::arg("data"), py::arg("format"))
-        .def(py::init([](int width, int height, int channels, ChannelFormat format, const py::kwargs &kwargs){
-            return Image(width, height, channels, format, parse_tensor_options(kwargs));
-        }), py::arg("width"), py::arg("height"), py::arg("channels"), py::arg("format")=kNCHW)
-        .def("__repr__", (std::string(*)(const Image&))&stringfy)
-        .def("format", &Image::format)
-        .def("set_color_model", &Image::set_color_model)
-        .def("color_model", &Image::color_model)
-        .def("wdim", &Image::wdim)
-        .def("hdim", &Image::hdim)
-        .def("cdim", &Image::cdim)
-        .def("width", &Image::width)
-        .def("height", &Image::height)
-        .def("nchannels", &Image::nchannels)
-        .def("dtype", &Image::dtype)
-        .def("device", &Image::device)
-        .def("data", (Tensor&(Image::*)())&Image::data)
-        //
-        .def("to", (Image(Image::*)(const Device&, bool) const)&Image::to, py::arg("device"), py::arg("non_blocking")=false)
-        .def("to", (Image(Image::*)(DeviceType, bool) const)&Image::to, py::arg("device"), py::arg("non_blocking")=false)
-        .def("to", (Image(Image::*)(ScalarType) const)&Image::to)
-        .def("to", [](const Image &self, const std::string &device, bool non_blocking){
-            return self.to(device, non_blocking);
-        }, py::arg("device"), py::arg("non_blocking")=false)
-        .def("to", (Image(Image::*)(ChannelFormat, bool) const)&Image::to,
-             py::arg("format"), py::arg("contiguous")=true)
-        //
-        .def("copy_", &Image::copy_)
-        //
-        .def("crop", &Image::crop, py::arg("left"), py::arg("top"), py::arg("width"), py::arg("height"))
-        .def("select", &Image::select, py::arg("channel"))
-        .def("numpy", [](const Image &image){
-            return tensor_to_numpy(image.data());
-        })
-    ;
-
 
     py::class_<FrameSeq>(m, "FrameSeq")
         .def(py::init<TensorList, const PixelInfo&>())
@@ -284,64 +243,17 @@ void imageBind(py::module &m)
         .def("__getitem__", [](FrameSeq &self, int64_t index){ return self[index]; })
         .def("slice", &FrameSeq::slice, py::arg("start"), py::arg("end")=py::none())
         .def("crop", &FrameSeq::crop, py::arg("left"), py::arg("top"), py::arg("width"), py::arg("height"))
-        .def("to_rgb", &FrameSeq::to_rgb, py::arg("format")=kNCHW)
-        .def("to_image", &FrameSeq::to_image, py::arg("format")=kNCHW)
+        .def("reformat", &FrameSeq::reformat, py::arg("pix_info"))
         .def("resize", &FrameSeq::resize, 
             py::arg("width"), py::arg("height"), py::arg("mode")=ImageFilterMode::Bilinear)
         .def("rotate", &FrameSeq::rotate, py::arg("mode"))
         .def("mirror", &FrameSeq::mirror, py::arg("axis")=ImageAxis::Horizontal)
-        .def_static("from_rgb", &FrameSeq::from_rgb,
-                 py::arg("rgb"), py::arg("pix_info"),
-                 py::arg("cformat")=kNCHW)
-        .def_static("from_image", &FrameSeq::from_image,
-                 py::arg("images"), py::arg("pix_info"))
-    ;
-
-    py::class_<ImageSeq>(m, "ImageSeq")
-        .def(py::init<Tensor, ChannelFormat, const ColorModel&>(),
-            py::arg("data"), py::arg("format"), py::arg("color_model")=ColorModel())
-        .def("__repr__", (std::string(*)(const ImageSeq&))&stringfy)
-        .def("format", &ImageSeq::format)
-        .def("color_model", &ImageSeq::color_model)
-        .def("set_color_model", &ImageSeq::set_color_model)
-        .def("wdim", &ImageSeq::wdim)
-        .def("hdim", &ImageSeq::hdim)
-        .def("cdim", &ImageSeq::cdim)
-        .def("batch", &ImageSeq::batch)
-        .def("width", &ImageSeq::width)
-        .def("height", &ImageSeq::height)
-        .def("nchannels", &ImageSeq::nchannels)
-        .def("dtype", &ImageSeq::dtype)
-        .def("device", &ImageSeq::device)
-        .def("data", &ImageSeq::data)
-        //
-        .def("to", (ImageSeq(ImageSeq::*)(const Device&, bool) const)&ImageSeq::to, py::arg("device"), py::arg("non_blocking")=false)
-        .def("to", (ImageSeq(ImageSeq::*)(DeviceType, bool) const)&ImageSeq::to, py::arg("device"), py::arg("non_blocking")=false)
-        .def("to", (ImageSeq(ImageSeq::*)(ScalarType) const)&ImageSeq::to)
-        .def("to", [](const ImageSeq &self, const std::string &device, bool non_blocking){
-            return self.to(device, non_blocking);
-        }, py::arg("device"), py::arg("non_blocking")=false)
-        .def("to", (ImageSeq(ImageSeq::*)(ChannelFormat, bool) const)&ImageSeq::to,
-             py::arg("format"), py::arg("contiguous")=true)
-        //
-        .def("copy_", &ImageSeq::copy_)
-        //
-        .def("__getitem__", [](ImageSeq &self, int64_t index){ return self[index]; })
-        .def("slice", &ImageSeq::slice, py::arg("start"), py::arg("end")=py::none())
-        .def("crop", &ImageSeq::crop, py::arg("left"), py::arg("top"), py::arg("width"), py::arg("height"))
-        .def("select", &ImageSeq::select, py::arg("channel"))
-        .def("resize", &ImageSeq::resize, 
-            py::arg("width"), py::arg("height"), py::arg("mode")=ImageFilterMode::Bilinear)
-        .def("rotate", &ImageSeq::rotate, py::arg("mode"))
-        .def("mirror", &ImageSeq::mirror, py::arg("axis")=ImageAxis::Horizontal)
     ;
 
 
     //
     m.def("concat", (FrameSeq(*)(const std::vector<Frame>&))&concat);
     m.def("concat", (FrameSeq(*)(const std::vector<FrameSeq>&))&concat);
-    m.def("concat", (ImageSeq(*)(const std::vector<Image>&))&concat);
-    m.def("concat", (ImageSeq(*)(const std::vector<ImageSeq>&))&concat);
 
     //
     auto img = m.def_submodule("img");
@@ -484,6 +396,10 @@ void imageBind(py::module &m)
     img.def("overlay", 
         (Tensor(*)(const Tensor&, const Tensor&, const Tensor&))&img::overlay,
         py::arg("src0"), py::arg("src1"), py::arg("alpha"));
+
+    img.def("transfer", 
+        (Tensor(*)(const Tensor&, const ChannelFormat&, const ChannelFormat&))&img::transfer,
+        py::arg("src"), py::arg("src_format"), py::arg("dst_format"));
 
 }
 

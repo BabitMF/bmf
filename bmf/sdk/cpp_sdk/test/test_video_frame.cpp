@@ -20,14 +20,19 @@ static bool check_pixel_value(const VideoFrame &vf, const T &v)
     //ASSERT_TRUE(vf.is_image());
     //ASSERT_TRUE(vf.device() == kCPU);
 
-    auto image = vf.image().to(kNCHW); //convert to known layout
-    auto &data = image.data();
+    //RGB NHWC
+    auto frame = vf.frame();
+    auto &data = frame.data()[0];
+    int64_t channels = data.size(2); //
+    int64_t w = data.size(1);
+    int64_t h = data.size(0);
+
     const T* ptr = data.data<T>();
 
-    for (int64_t c = 0; c < image.nchannels(); ++c){
-        for (int64_t y = 0; y < image.height(); ++y){
-            for (int64_t x = 0; x < image.width(); ++x){
-                auto idx = c * data.stride(0) + y * data.stride(1) + x * data.stride(2);
+    for (int64_t c = 0; c < channels; ++c){
+        for (int64_t y = 0; y < h; ++y){
+            for (int64_t x = 0; x < w; ++x){
+                auto idx = c * data.stride(2) + y * data.stride(0) + x * data.stride(1);
                 if(ptr[idx] != v){
                     return false;
                 }
@@ -37,7 +42,6 @@ static bool check_pixel_value(const VideoFrame &vf, const T &v)
 
     return true;
 }
-
 
 static VideoFrame decode_one_frame(const std::string &path)
 {
@@ -50,8 +54,6 @@ static VideoFrame decode_one_frame(const std::string &path)
     std::tie(vf) = decoder();
     return vf;
 }
-
-
 
 TEST(video_frame, frame_constructors)
 {
@@ -68,9 +70,7 @@ TEST(video_frame, frame_constructors)
     EXPECT_EQ(vf0.height(), height);
     EXPECT_EQ(vf0.dtype(), kUInt8);
     EXPECT_TRUE(vf0.device() == kCPU);
-    EXPECT_FALSE(vf0.is_image());
     EXPECT_NO_THROW(vf0.frame());
-    EXPECT_THROW(vf0.image(), std::runtime_error);
     EXPECT_EQ(vf0.frame().format(), hmp::PF_YUV420P);
 
     // With dtype specified, not support
@@ -99,49 +99,50 @@ TEST(video_frame, frame_constructors)
 
 
 
-TEST(video_frame, image_constructors)
-{
-    int width = 1920, height = 1080;
-
-    //create with default TensorOptions
-    auto vf0 = VideoFrame::make(width, height); //
-    EXPECT_EQ(vf0.width(), width);
-    EXPECT_EQ(vf0.height(), height);
-    EXPECT_EQ(vf0.dtype(), kUInt8);
-    EXPECT_TRUE(vf0.device() == kCPU);
-    EXPECT_TRUE(vf0.is_image());
-    EXPECT_THROW(vf0.frame(), std::runtime_error);
-    EXPECT_NO_THROW(vf0.image());
-    EXPECT_EQ(vf0.image().format(), kNCHW);
-    EXPECT_EQ(vf0.image().nchannels(), 3);
-
-    // With dtype, channels, ChannelFormat specifed
-    auto vf1 = VideoFrame::make(1920, 1080, 1, kNHWC, kUInt16); //
-    EXPECT_EQ(vf1.dtype(), kUInt16);
-    EXPECT_EQ(vf1.image().nchannels(), 1);
-    EXPECT_EQ(vf1.image().format(), kNHWC);
-
-#ifdef HMP_ENABLE_CUDA
-    //with type and device specifed
-    auto vf2 = VideoFrame::make(1920, 1080, 3, kNHWC,
-                                kHalf,
-                                "cuda:0"   //cuda device 
-                                );
-    EXPECT_TRUE(vf2.device() == Device(kCUDA, 0));
-    EXPECT_TRUE(vf2.dtype() == kHalf);
-    EXPECT_EQ(vf2.image().format(), kNHWC);
-
-    auto vf3 = VideoFrame::make(1920, 1080, 3, kNHWC,
-                                kFloat32,
-                                true    //pinned_memory, cudaMallocHost
-                                ); 
-    EXPECT_TRUE(vf3.device() == Device(kCPU));
-    EXPECT_TRUE(vf3.image().data().options().pinned_memory());
-    EXPECT_EQ(vf3.image().format(), kNHWC);
-    EXPECT_EQ(vf3.dtype(), kFloat32);
-#endif
-
-}
+//TODO delete
+//TEST(video_frame, image_constructors)
+//{
+//    int width = 1920, height = 1080;
+//
+//    //create with default TensorOptions
+//    auto vf0 = VideoFrame::make(width, height); //
+//    EXPECT_EQ(vf0.width(), width);
+//    EXPECT_EQ(vf0.height(), height);
+//    EXPECT_EQ(vf0.dtype(), kUInt8);
+//    EXPECT_TRUE(vf0.device() == kCPU);
+//    EXPECT_TRUE(vf0.is_image());
+//    EXPECT_THROW(vf0.frame(), std::runtime_error);
+//    EXPECT_NO_THROW(vf0.image());
+//    EXPECT_EQ(vf0.image().format(), kNCHW);
+//    EXPECT_EQ(vf0.image().nchannels(), 3);
+//
+//    // With dtype, channels, ChannelFormat specifed
+//    auto vf1 = VideoFrame::make(1920, 1080, 1, kNHWC, kUInt16); //
+//    EXPECT_EQ(vf1.dtype(), kUInt16);
+//    EXPECT_EQ(vf1.image().nchannels(), 1);
+//    EXPECT_EQ(vf1.image().format(), kNHWC);
+//
+//#ifdef HMP_ENABLE_CUDA
+//    //with type and device specifed
+//    auto vf2 = VideoFrame::make(1920, 1080, 3, kNHWC,
+//                                kHalf,
+//                                "cuda:0"   //cuda device 
+//                                );
+//    EXPECT_TRUE(vf2.device() == Device(kCUDA, 0));
+//    EXPECT_TRUE(vf2.dtype() == kHalf);
+//    EXPECT_EQ(vf2.image().format(), kNHWC);
+//
+//    auto vf3 = VideoFrame::make(1920, 1080, 3, kNHWC,
+//                                kFloat32,
+//                                true    //pinned_memory, cudaMallocHost
+//                                ); 
+//    EXPECT_TRUE(vf3.device() == Device(kCPU));
+//    EXPECT_TRUE(vf3.image().data().options().pinned_memory());
+//    EXPECT_EQ(vf3.image().format(), kNHWC);
+//    EXPECT_EQ(vf3.dtype(), kFloat32);
+//#endif
+//
+//}
 
 
 TEST(video_frame, crop_test)
@@ -154,18 +155,8 @@ TEST(video_frame, crop_test)
     auto vf0_sub = vf0.crop(50, 100, 1280, 720);
     EXPECT_EQ(vf0_sub.width(), 1280);
     EXPECT_EQ(vf0_sub.height(), 720);
-    EXPECT_FALSE(vf0_sub.is_image());
     auto &vf0_sub_data = vf0_sub.frame().plane(0);
     EXPECT_EQ(vf0_sub_data.stride(0), 1920); //(H, W, 1) layout, stride(0) == line width
-
-    //image
-    auto vf1 = VideoFrame::make(width, height, 3, kNCHW); //
-    auto vf1_sub = vf1.crop(50, 100, 1280, 720);
-    EXPECT_EQ(vf1_sub.width(), 1280);
-    EXPECT_EQ(vf1_sub.height(), 720);
-    EXPECT_TRUE(vf1_sub.is_image());
-    auto &vf1_sub_data = vf1_sub.image().data();
-    EXPECT_EQ(vf1_sub_data.stride(1), 1920); //(C, H, W) layout, stride(2) == line width
 }
 
 
@@ -183,34 +174,18 @@ TEST(video_frame, copy_test)
     EXPECT_TRUE(vf0_cuda.device() == kCUDA);
     auto vf0_cpu = vf0_cuda.cpu();
     EXPECT_TRUE(vf0_cpu.device() == kCPU);
-
-
-    //image
-    auto vf1 = VideoFrame::make(width, height); //
-    EXPECT_TRUE(vf1.device() == kCPU);
-    auto vf1_cuda = vf0.cuda();
-    EXPECT_TRUE(vf1_cuda.device() == kCUDA);
-    auto vf1_cpu = vf0_cuda.cpu();
-    EXPECT_TRUE(vf1_cpu.device() == kCPU);
-
-    //inplace copy, support both frame and image
-    auto vf3 = VideoFrame::make(width, height, 3, kNCHW, kCUDA); //
-    auto vf4 = VideoFrame::make(width+100, height+200, 3, kNCHW, kCUDA); //
-    auto vf4_sub = vf4.crop(100, 200, width, height);
-    EXPECT_NO_THROW(vf4_sub.copy_(vf3));
-
 }
-
 
 TEST(video_frame, async_execution)
 {
     int width = 1920, height = 1080;
-    auto vf0 = VideoFrame::make(width, height, 3, kNCHW, kCPU, true); //allocate pinned memory
-    auto vf1 = VideoFrame::make(width, height, 3, kNCHW, kCUDA); 
+    auto RGB = PixelInfo(hmp::PF_RGB24, hmp::CS_BT709);
+    auto vf0 = VideoFrame::make(width, height, RGB, kCPU); //
+    auto vf1 = VideoFrame::make(width, height, RGB, kCUDA); 
+    
     VideoFrame vf2;
-
     //
-    auto data = vf0.image().data(); //shadow copy, remove const
+    auto data = vf0.frame().data()[0]; //shadow copy, remove const
     data.fill_(1); //(1, 1, 1, 1, .....)
 
     //with cuda stream support
@@ -221,7 +196,7 @@ TEST(video_frame, async_execution)
 
         vf1.copy_(vf0);
 
-        auto data = vf1.image().data();
+        auto data = vf1.frame().data()[0];
         data += 2; // (3, 3, 3, 3, ....)
 
         vf2 = vf1.cpu(true); //async copy to cpu 
@@ -273,14 +248,16 @@ TEST(video_frame, hardware_avframe_csc_resize)
     VideoFrame vf = ffmpeg::to_video_frame(avfrm);
     EXPECT_TRUE(vf.device() == kCUDA);
 
-    auto vf_rgb = VideoFrame::make(width, height, 3, kNCHW, kCUDA);
-    Tensor t_img = vf_rgb.image().data();
-    hmp::img::yuv_to_rgb(t_img, vf.frame().data(), NV12);
+    auto RGB = PixelInfo(hmp::PF_RGB24, hmp::CS_BT709);
+    auto vf_rgb = VideoFrame::make(width, height, RGB, kCUDA);
+
+    Tensor t_img = vf_rgb.frame().plane(0);
+    hmp::img::yuv_to_rgb(t_img, vf.frame().data(), NV12, kNHWC);
     EXPECT_TRUE(t_img.device() == kCUDA);
 
     auto vf_yuv_from_rgb = VideoFrame::make(width, height, H420, kCUDA);
     TensorList tl = vf_yuv_from_rgb.frame().data();
-    hmp::img::rgb_to_yuv(tl, vf_rgb.image().data(), H420);
+    hmp::img::rgb_to_yuv(tl, vf_rgb.frame().data()[0], H420, kNHWC);
 
     auto vf_resize = VideoFrame::make(width / 2, height / 2, H420, kCUDA);
     //TensorList &yuv_resize(TensorList &dst, const TensorList &src,
@@ -288,6 +265,8 @@ TEST(video_frame, hardware_avframe_csc_resize)
     //HMP_API TensorList &yuv_resize(TensorList &dst, const TensorList &src,                                         const PixelInfo &pix_info, ImageFilterMode mode = ImageFilterMode::Bilinear);
     TensorList tl_resize = vf_resize.frame().data();
     hmp::img::yuv_resize(tl_resize, vf_yuv_from_rgb.frame().data(), H420);
+    EXPECT_EQ(tl_resize.data()[0].size(0), height/2);
+    EXPECT_EQ(tl_resize.data()[0].size(1), width/2);
 }
 
 #endif
@@ -337,13 +316,14 @@ TEST(video_frame, private_data)
     {
         auto pri_data = new MockAVFrame(&valid);
         pri_data->value = 42;
-        auto vf0 = VideoFrame::make(width, height, 3, kNCHW, kCPU, false);
+        auto RGB = PixelInfo(hmp::PF_RGB24, hmp::CS_BT709);
+        auto vf0 = VideoFrame::make(width, height, RGB); //
         vf0.private_attach(pri_data); // vf0 will own pri_data
         EXPECT_EQ(vf0.private_get<MockAVFrame>()->value, 42);
         EXPECT_EQ(valid, true);
 
         //
-        auto vf1 = VideoFrame::make(width, height, 3, kNCHW, kCPU, false); 
+        auto vf1 = VideoFrame::make(width, height, RGB); //
         vf1.copy_(vf0);
         vf1.private_merge(vf0); // now, vf0 and vf1 will share the same private data
         EXPECT_EQ(vf1.private_get<MockAVFrame>()->value, 42);
@@ -369,7 +349,8 @@ TEST(video_frame, private_data)
 
 TEST(video_frame, private_data_json_param)
 {
-    auto vf = VideoFrame::make(1920, 1080, 3, kNCHW, kCPU, false); 
+    auto RGB = PixelInfo(hmp::PF_RGB24, hmp::CS_BT709);
+    auto vf = VideoFrame::make(1920, 1080, RGB); //
     auto json_sptr = vf.private_get<JsonParam>();
     EXPECT_FALSE(json_sptr);
 
@@ -384,37 +365,12 @@ TEST(video_frame, private_data_json_param)
 }
 
 
-
-
-TEST(video_frame, image_frame_convert)
-{
-    auto H420 = PixelInfo(hmp::PF_YUV420P, hmp::CS_BT709);
-    int width = 1920, height = 1080;
-    auto vf0 = VideoFrame::make(width, height, 3, kNCHW, kCPU, false); //Image type
-    auto vf1 = VideoFrame::make(width, height, H420); //Frame type
-
-    //Image layout convert
-    auto vf2 = vf0.to_image(kNHWC); 
-    EXPECT_TRUE(vf2.is_image());
-    EXPECT_EQ(vf2.image().format(), kNHWC);
-
-    //Convert Image to Frame
-    auto vf3 = vf0.to_frame(H420); 
-    EXPECT_FALSE(vf3.is_image());
-    EXPECT_EQ(vf3.frame().format(), hmp::PF_YUV420P);
-
-    //Convert Frame to Image with layout NCHW
-    auto vf4 = vf1.to_image(kNCHW);
-    EXPECT_TRUE(vf4.is_image());
-    EXPECT_EQ(vf4.image().format(), kNCHW);
-}
-
-
 TEST(video_frame, copy_props)
 {
     auto H420 = PixelInfo(hmp::PF_YUV420P, hmp::CS_BT709);
     int width = 1920, height = 1080;
-    auto vf0 = VideoFrame::make(width, height, 3, kNCHW, kCPU, false); //Image type
+    auto RGB = PixelInfo(hmp::PF_RGB24, hmp::CS_BT709);
+    auto vf0 = VideoFrame::make(width, height, RGB); //Image type
     auto vf1 = VideoFrame::make(width, height, H420); //Frame type
 
     vf0.set_stream(42);
@@ -432,7 +388,6 @@ TEST(video_frame, copy_props)
 TEST(video_frame, reformat)
 {
     auto ori_vf = decode_one_frame("../files/img.mp4");
-    ASSERT_FALSE(ori_vf.is_image());
     ASSERT_EQ(ori_vf.frame().format(), hmp::PF_YUV420P);
     EXPECT_EQ(ori_vf.height(), 1080);
     EXPECT_EQ(ori_vf.width(), 1920);
@@ -447,7 +402,6 @@ TEST(video_frame, reformat)
         auto rgb_vf = ffmpeg::reformat(ori_vf, "rgb24");
         EXPECT_EQ(rgb_vf.height(), 1080);
         EXPECT_EQ(rgb_vf.width(), 1920);
-        ASSERT_FALSE(rgb_vf.is_image());
         EXPECT_EQ(rgb_vf.frame().nplanes(), 1);
         EXPECT_EQ(rgb_vf.frame().height(), 1080);
         EXPECT_EQ(rgb_vf.frame().width(), 1920);
@@ -456,20 +410,12 @@ TEST(video_frame, reformat)
         EXPECT_EQ(rgb_vf.frame().plane(0).stride(0), 3 * 1920);
     }
 
-    auto img_vf = ori_vf.to_image(kNHWC);
-    EXPECT_EQ(img_vf.height(), 1080);
-    EXPECT_EQ(img_vf.width(), 1920);
-    EXPECT_TRUE(img_vf.is_image());
-    EXPECT_EQ(img_vf.image().height(), 1080);
-    EXPECT_EQ(img_vf.image().width(), 1920);
-    EXPECT_EQ(img_vf.image().nchannels(), 3);
+    auto img_vf = ffmpeg::reformat(ori_vf, "rgb24");
 
-    // Image reformat(gray)
     {
         auto gray_vf = ffmpeg::reformat(img_vf, "gray");
         EXPECT_EQ(gray_vf.height(), 1080);
         EXPECT_EQ(gray_vf.width(), 1920);
-        ASSERT_FALSE(gray_vf.is_image());
         EXPECT_EQ(gray_vf.frame().nplanes(), 1);
         EXPECT_EQ(gray_vf.frame().height(), 1080);
         EXPECT_EQ(gray_vf.frame().width(), 1920);
@@ -483,7 +429,6 @@ TEST(video_frame, reformat)
         auto gray_vf = ffmpeg::reformat(img_vf, "gray16");
         EXPECT_EQ(gray_vf.height(), 1080);
         EXPECT_EQ(gray_vf.width(), 1920);
-        ASSERT_FALSE(gray_vf.is_image());
         EXPECT_EQ(gray_vf.frame().nplanes(), 1);
         EXPECT_EQ(gray_vf.frame().height(), 1080);
         EXPECT_EQ(gray_vf.frame().width(), 1920);
@@ -496,7 +441,6 @@ TEST(video_frame, reformat)
         auto rgb_vf = ffmpeg::reformat(img_vf, "rgb24");
         EXPECT_EQ(rgb_vf.height(), 1080);
         EXPECT_EQ(rgb_vf.width(), 1920);
-        ASSERT_FALSE(rgb_vf.is_image());
         EXPECT_EQ(rgb_vf.frame().nplanes(), 1);
         EXPECT_EQ(rgb_vf.frame().height(), 1080);
         EXPECT_EQ(rgb_vf.frame().width(), 1920);
@@ -509,7 +453,6 @@ TEST(video_frame, reformat)
         auto yuv_vf = ffmpeg::reformat(img_vf, "yuv420p");
         EXPECT_EQ(yuv_vf.height(), 1080);
         EXPECT_EQ(yuv_vf.width(), 1920);
-        ASSERT_FALSE(yuv_vf.is_image());
         EXPECT_EQ(yuv_vf.frame().nplanes(), 3);
         EXPECT_EQ(yuv_vf.frame().height(), 1080);
         EXPECT_EQ(yuv_vf.frame().width(), 1920);
@@ -525,7 +468,6 @@ TEST(video_frame, reformat)
         auto yuv_vf = ffmpeg::reformat(ori_vf, "yuv420p");
         EXPECT_EQ(yuv_vf.height(), 1080);
         EXPECT_EQ(yuv_vf.width(), 1920);
-        ASSERT_FALSE(yuv_vf.is_image());
         EXPECT_EQ(yuv_vf.frame().nplanes(), 3);
         EXPECT_EQ(yuv_vf.frame().height(), 1080);
         EXPECT_EQ(yuv_vf.frame().width(), 1920);

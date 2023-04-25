@@ -42,8 +42,9 @@ TEST(go_module, module_loader)
 
     //fill inputs
     for(int i = 0; i < 10; ++i){
-        auto vf0 = VideoFrame::make(1920, 1080, 3);
-        auto vf1 = VideoFrame::make(1280, 720, 3);
+        auto rgb = hmp::PixelInfo(hmp::PF_RGB24);
+        auto vf0 = VideoFrame::make(1920, 1080, rgb);
+        auto vf1 = VideoFrame::make(1280, 720, rgb);
         auto pkt0 = Packet(vf0);
         pkt0.set_timestamp(i);
         auto pkt1 = Packet(vf1);

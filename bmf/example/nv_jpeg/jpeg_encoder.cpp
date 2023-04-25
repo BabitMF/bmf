@@ -142,13 +142,13 @@ public:
                     }
 
                     if (!vf_rgb)
-                        vf_rgb = VideoFrame::make(width, height, 3, kNCHW, kCUDA);
-                    Tensor t_img = vf_rgb.image().data();
-                    hmp::img::yuv_to_rgb(t_img, vf.frame().data(), NV12);
+                        vf_rgb = VideoFrame::make(width, height, RGB, kCUDA);
+                    Tensor t_img = vf_rgb.frame().plane(0);
+                    hmp::img::yuv_to_rgb(t_img, vf.frame().data(), NV12, kNHWC);
                     if (!vf_yuv_from_rgb)
                         vf_yuv_from_rgb = VideoFrame::make(width, height, H420, kCUDA);
                     TensorList tl = vf_yuv_from_rgb.frame().data();
-                    hmp::img::rgb_to_yuv(tl, vf_rgb.image().data(), H420);
+                    hmp::img::rgb_to_yuv(tl, vf_rgb.frame().plane(0), H420, kNHWC);
 
                     vf_final_p = &vf_yuv_from_rgb;
                 } else {
@@ -232,6 +232,7 @@ private:
 
     PixelInfo NV12 = PixelInfo(hmp::PF_NV12, hmp::CS_BT470BG);
     PixelInfo H420 = PixelInfo(hmp::PF_YUV420P, hmp::CS_BT709);
+    PixelInfo RGB = PixelInfo(hmp::PF_RGB24, hmp::CS_BT709);
 };
 
 REGISTER_MODULE_CLASS(jpeg_encoder)

@@ -18,8 +18,8 @@
 
 thread_local std::string s_hmp_last_error;
 
-#define HMP_PROTECT(...) 	            \
-	try{                                \
+#define HMP_PROTECT(...)                \
+    try{                                \
         __VA_ARGS__                              \
     } catch(const std::exception &e){   \
         s_hmp_last_error = e.what();    \
@@ -643,18 +643,10 @@ hmp_Frame hmp_frame_crop(const hmp_Frame frame, int left, int top, int width, in
     return nullptr;
 }
 
-hmp_Image hmp_frame_to_image(const hmp_Frame frame, int cformat)
+hmp_Frame hmp_frame_reformat(const hmp_Frame frame, const hmp_PixelInfo pix_info)
 {
     HMP_PROTECT(
-        return new Image(frame->to_image((ChannelFormat)cformat));
-    )
-    return nullptr;
-}
-
-hmp_Frame hmp_frame_from_image(const hmp_Image image, const hmp_PixelInfo pix_info)
-{
-    HMP_PROTECT(
-        return new Frame(Frame::from_image(*image, *pix_info));
+        return new Frame(frame->reformat(*pix_info));
     )
     return nullptr;
 }
@@ -665,166 +657,4 @@ const char* hmp_frame_stringfy(const hmp_Frame frame, int *size)
     s_frame_stringfy_str = stringfy(*frame);
     *size = s_frame_stringfy_str.size();
     return s_frame_stringfy_str.c_str();
-}
-
-
-/////////////////// hmp_Image /////////////////
-hmp_Image hmp_image_make(int width, int height, int channels, int cformat, 
-				int type, const char *device, bool pinned_memory)
-{
-    auto options = TensorOptions((ScalarType)type)
-                    .device(Device(device))
-                    .pinned_memory(pinned_memory);
-    HMP_PROTECT(
-        return new Image(width, height, channels, (ChannelFormat)cformat, options);
-    )
-    return nullptr;
-}
-
-hmp_Image hmp_image_from_data(const hmp_Tensor data, int cformat)
-{
-    HMP_PROTECT(
-        return new Image(*data, (ChannelFormat)cformat);
-    )
-    return nullptr;
-}
-
-hmp_Image hmp_image_from_data_v1(const hmp_Tensor data, int cformat, const hmp_ColorModel cm)
-{
-    HMP_PROTECT(
-        return new Image(*data, (ChannelFormat)cformat, *cm);
-    )
-    return nullptr;
-}
-
-void hmp_image_free(hmp_Image image)
-{
-    if(image){
-        delete image;
-    }
-}
-
-bool hmp_image_defined(const hmp_Image image)
-{
-    return *image;
-}
-
-int hmp_image_format(const hmp_Image image)
-{
-    return (int)image->format(); 
-}
-
-void hmp_image_set_color_model(hmp_Image image, const hmp_ColorModel cm)
-{
-    image->set_color_model(*cm);
-}
-
-const hmp_ColorModel hmp_image_color_model(const hmp_Image image)
-{
-    return (const hmp_ColorModel)&image->color_model();
-}
-
-int hmp_image_wdim(const hmp_Image image)
-{
-    return image->wdim();
-}
-
-int hmp_image_hdim(const hmp_Image image)
-{
-    return image->hdim();
-}
-
-int hmp_image_cdim(const hmp_Image image)
-{
-    return image->cdim();
-}
-
-int hmp_image_width(const hmp_Image image)
-{
-    return image->width();
-}
-
-int hmp_image_height(const hmp_Image image)
-{
-    return image->height();
-}
-
-int hmp_image_nchannels(const hmp_Image image)
-{
-    return image->nchannels();
-}
-
-int hmp_image_dtype(const hmp_Image image)
-{
-    return (int)image->dtype();
-}
-
-int hmp_image_device_type(const hmp_Image image)
-{
-    return (int)image->device().type();
-}
-
-int hmp_image_device_index(const hmp_Image image)
-{
-    return image->device().index();
-}
-
-const hmp_Tensor hmp_image_data(const hmp_Image image)
-{
-    return (const hmp_Tensor)&image->data();
-}
-
-hmp_Image hmp_image_to_device(const hmp_Image image, const char *device, bool non_blocking)
-{
-    HMP_PROTECT(
-        return new Image(image->to(Device(device), non_blocking));
-    )
-    return nullptr;
-}
-
-hmp_Image hmp_image_to_dtype(const hmp_Image image, int dtype)
-{
-    HMP_PROTECT(
-        return new Image(image->to((ScalarType)dtype));
-    )
-    return nullptr;
-}
-
-void hmp_image_copy_from(hmp_Image image, const hmp_Image from)
-{
-    HMP_PROTECT(
-        image->copy_(*from);
-    )
-}
-
-hmp_Image hmp_image_clone(const hmp_Image image)
-{
-    HMP_PROTECT(
-        return new Image(image->clone());
-    )
-    return nullptr;
-}
-
-hmp_Image hmp_image_crop(const hmp_Image image, int left, int top, int width, int height)
-{
-    HMP_PROTECT(
-        return new Image(image->crop(left, top, width, height));
-    )
-    return nullptr;
-}
-
-hmp_Image hmp_image_select(const hmp_Image image, int channel)
-{
-    HMP_PROTECT(
-        return new Image(image->select(channel));
-    )
-    return nullptr;
-}
-
-thread_local std::string s_image_stringfy_str;
-const char* hmp_image_stringfy(const hmp_Image image, int *size)
-{
-    s_image_stringfy_str = stringfy(*image);
-    *size = s_image_stringfy_str.size();
-    return s_image_stringfy_str.c_str();
 }

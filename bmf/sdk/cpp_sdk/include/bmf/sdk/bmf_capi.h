@@ -51,25 +51,16 @@ BMF_API bmf_JsonParam bmf_json_param_parse(const char* str);
 BMF_API void bmf_json_param_free(bmf_JsonParam json);
 
 ////////// VideoFrame ////////////
-BMF_API bmf_VideoFrame bmf_vf_from_image(hmp_Image image);
 BMF_API bmf_VideoFrame bmf_vf_from_frame(hmp_Frame frame);
 BMF_API bmf_VideoFrame bmf_vf_make_frame(int width, int height, 
 				const hmp_PixelInfo pix_info, const char *device);
-BMF_API bmf_VideoFrame bmf_vf_make_image(int width, int height, int channels,
-				int format, int dtype, const char *device,
-				bool pinned_memory);
 BMF_API void bmf_vf_free(bmf_VideoFrame vf);
 
 BMF_API bool bmf_vf_defined(const bmf_VideoFrame vf);
 BMF_API int bmf_vf_width(const bmf_VideoFrame vf);
 BMF_API int bmf_vf_height(const bmf_VideoFrame vf);
 BMF_API int bmf_vf_dtype(const bmf_VideoFrame vf);
-BMF_API bool bmf_vf_is_image(const bmf_VideoFrame vf);
-BMF_API const hmp_Image bmf_vf_image(const bmf_VideoFrame vf);
 BMF_API const hmp_Frame bmf_vf_frame(const bmf_VideoFrame vf);
-
-BMF_API bmf_VideoFrame bmf_vf_to_image(const bmf_VideoFrame vf, int format, bool contiguous);
-BMF_API bmf_VideoFrame bmf_vf_to_frame(const bmf_VideoFrame vf, const hmp_PixelInfo pix_info);
 
 BMF_API int bmf_vf_device_type(const bmf_VideoFrame vf);
 BMF_API int bmf_vf_device_index(const bmf_VideoFrame vf);
@@ -77,11 +68,12 @@ BMF_API bmf_VideoFrame bmf_vf_cpu(const bmf_VideoFrame vf, bool non_blocking);
 BMF_API bmf_VideoFrame bmf_vf_cuda(const bmf_VideoFrame vf);
 BMF_API void bmf_vf_copy_from(bmf_VideoFrame vf, const bmf_VideoFrame from);
 BMF_API bmf_VideoFrame bmf_vf_to_device(const bmf_VideoFrame vf, const char *device, bool non_blocking);
-BMF_API bmf_VideoFrame bmf_vf_to_dtype(const bmf_VideoFrame vf, int dtype);
 BMF_API void bmf_vf_copy_props(bmf_VideoFrame vf, const bmf_VideoFrame from);
 BMF_API void bmf_vf_private_merge(bmf_VideoFrame vf, const bmf_VideoFrame from);
 BMF_API const bmf_JsonParam bmf_vf_private_get_json_param(const bmf_VideoFrame vf);
 BMF_API void bmf_vf_private_attach_json_param(bmf_VideoFrame vf, const bmf_JsonParam json_param);
+
+BMF_API bmf_VideoFrame bmf_vf_reformat(const bmf_VideoFrame vf, const hmp_PixelInfo pix_info);
 
 BMF_API void bmf_vf_set_pts(bmf_VideoFrame vf, int64_t pts);
 BMF_API int64_t bmf_vf_pts(bmf_VideoFrame vf);

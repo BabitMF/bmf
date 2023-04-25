@@ -21,8 +21,6 @@
 
 namespace hmp{
 
-class ImageSeq;
-
 class HMP_API FrameSeq
 {
 public:
@@ -55,13 +53,7 @@ public:
     FrameSeq rotate(ImageRotationMode mode) const;
     FrameSeq mirror(ImageAxis axis = ImageAxis::Horizontal) const;
 
-    //
-    Tensor to_rgb(ChannelFormat cformat = ChannelFormat::NCHW) const;
-    ImageSeq to_image(ChannelFormat cformat = ChannelFormat::NCHW) const;
-
-    //
-    static FrameSeq from_rgb(const Tensor &rgb, const PixelInfo &pix_info, ChannelFormat cformat = ChannelFormat::NCHW);
-    static FrameSeq from_image(const ImageSeq &images, const PixelInfo &pix_info);
+    FrameSeq reformat(const PixelInfo &pix_info);
 
 private:
     PixelFormatDesc pix_desc_;
@@ -70,61 +62,10 @@ private:
 }; 
 
 
-class HMP_API ImageSeq
-{
-public:
-    ImageSeq() = default;
-    ImageSeq(const ImageSeq&) = default;
-    ImageSeq(const Tensor &data, ChannelFormat format, const ColorModel &cm = {});
-
-    operator bool() const;
-
-    //attribute
-    ChannelFormat format() const { return format_; }
-    int wdim() const { return format_ == ChannelFormat::NCHW ? 3 : 2; }
-    int hdim() const { return format_ == ChannelFormat::NCHW ? 2 : 1; }
-    int cdim() const { return format_ == ChannelFormat::NCHW ? 1 : 3; }
-    int batch() const { return data_.size(0); }
-    int width() const { return data_.size(wdim()); }
-    int height() const { return data_.size(hdim()); } 
-    int nchannels() const { return data_.size(cdim()); }
-    ScalarType dtype() const { return data_.dtype(); }
-    const Device &device() const { return data_.device(); }
-    const Tensor &data() const { return data_; }
-    const ColorModel &color_model() const { return cm_; }
-    void set_color_model(const ColorModel &cm) { cm_ = cm; }
-
-    //transform
-    ImageSeq to(const Device &device, bool non_blocking = false) const;
-    ImageSeq to(DeviceType device, bool non_blocking = false) const;
-    ImageSeq to(ScalarType dtype) const;
-    ImageSeq to(ChannelFormat format, bool contiguous=true) const;
-    ImageSeq &copy_(const ImageSeq &from);
-
-    Image operator[](int64_t index) const;
-    ImageSeq crop(int left, int top, int width, int height) const;
-    ImageSeq slice(int64_t start, optional<int64_t> end = nullopt) const;
-    ImageSeq select(int channel) const;
-
-    //Tensor to_yuv(const Scalar& scale=1, optional<ScalarType> dtype = nullopt);
-    ImageSeq resize(int width, int height, ImageFilterMode mode = ImageFilterMode::Bicubic) const;
-    ImageSeq rotate(ImageRotationMode mode) const;
-    ImageSeq mirror(ImageAxis axis = ImageAxis::Horizontal) const;
-
-private:
-    ColorModel cm_;
-    ChannelFormat format_;
-    Tensor data_;
-};
-
-
 HMP_API FrameSeq concat(const std::vector<Frame> &frames);
-HMP_API ImageSeq concat(const std::vector<Image> &images);
 HMP_API FrameSeq concat(const std::vector<FrameSeq> &frames);
-HMP_API ImageSeq concat(const std::vector<ImageSeq> &images);
 
 HMP_API std::string stringfy(const FrameSeq &frames);
-HMP_API std::string stringfy(const ImageSeq &images);
 
 
 } //namespace hmp

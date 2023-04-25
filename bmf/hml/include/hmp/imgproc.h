@@ -114,5 +114,7 @@ HMP_API Tensor& gaussian_blur(Tensor &dst, const Tensor &src, int kx, int ky,
 HMP_API Tensor &overlay(Tensor &dst, const Tensor &src0, const Tensor &src1, const Tensor &alpha);
 HMP_API Tensor overlay(const Tensor &src0, const Tensor &src1, const Tensor &alpha);
 
+HMP_API Tensor transfer(const Tensor &src, const ChannelFormat &src_format, const ChannelFormat &dst_format);
+
 
 }} //namespace hmp::img

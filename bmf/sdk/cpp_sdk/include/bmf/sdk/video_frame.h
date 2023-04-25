@@ -13,9 +13,8 @@ class BMF_API VideoFrame : public OpaqueDataSet,
 {
     struct Private;
 public:
-    using Image = hmp::Image; //RGB
-    using Frame = hmp::Frame; //YUV
-    
+    using Frame = hmp::Frame;
+
     /**
      * @brief Construct a undefined Video Frame object
      *  
@@ -53,13 +52,6 @@ public:
     VideoFrame(const Frame &frame);
 
     /**
-     * @brief Construct VideoFrame from Image object
-     * 
-     * @param image Dedicated to RGBx data, with unified shape
-     */
-    VideoFrame(const Image &image);
-
-    /**
      * @brief Construct VideoFrame(Frame) with given size (width, height), PixelInfo, 
      *  and device,
      *  for ease of use,  using factory function `VideoFrame::make(...)`
@@ -70,20 +62,6 @@ public:
      * @param device device
      */
     VideoFrame(int width, int height, const PixelInfo &pix_info, const Device &device = kCPU);
-
-    /**
-     * @brief Construct VideoFrame(Image) with give size (width, height), channels, ChannelFormat,
-     * and Storage options(a.k.a TensorOptions), 
-     * for ease of use, using factory functon `VideoFrame::make(...)`
-     * 
-     * @param width 
-     * @param height 
-     * @param channels 1 - Gray Image, 3 - RGB image, 4 - RGBA image
-     * (User should take care the order of channels, e.g. RGB, or BGR) 
-     * @param format (C, H, W) - kNCHW, (H, W, C) - kNHWC
-     * @param options  Storage options include Device, ScalarType, and pinned_memory
-     */
-    VideoFrame(int width, int height, int channels = 3, ChannelFormat format = kNCHW, const TensorOptions &options = kUInt8);
 
     /**
      * @brief Facotry function to construct VideoFrame(Frame)
@@ -121,51 +99,6 @@ public:
         return VideoFrame(width, height, pix_info, device); 
     }
 
-    template<typename...Options>
-    static VideoFrame make(int width, int height, int channels = 3, ChannelFormat format = kNCHW)
-    {
-        return VideoFrame(width, height, channels, format, 
-            TensorOptions(kUInt8)); 
-    }
-
-    /**
-     * @brief Factory function to construct VideoFrame(Image)
-     * 
-     * @ref test_video_frame.cpp for more details 
-     * 
-     * @code {.cpp}
-     * 
-     * //allocate VideoFrame with default options(CPU, uint8, 3 channels, kNCHW layout)
-     * auto vf = VideoFrame::make(1920, 1080);
-     * 
-     * //allocate VideoFrame on CUDA device with dtype float
-     * auto vf = VideoFrame::make(1920, 1080, 3, kNCHW, kCUDA, kFloat32);
-     * auto vf = VideoFrame::make(1920, 1080, 3, kNCHW, "cuda:0", kFloat32);
-     * auto vf = VideoFrame::make(1920, 1080, 3, kNCHW, Device(kCUDA, 0), kFloat32);
-     * 
-     * //allocate VideoFrame on CPU device with pinned_memory
-     * auto vf = VideoFrame::make(1920, 1080, 3, kNCHW, true);
-     * @endcode
-     * 
-     * @tparam Options 
-     *  const char*, string, Device - infer to Device option
-     *  ScalarType - infer to ScalarType option
-     *  bool - infer to pinned_memory option
-     * 
-     * @param width 
-     * @param height 
-     * @param channels 
-     * @param format 
-     * @param opts 
-     * @return VideoFrame 
-     */
-    template<typename...Options>
-    static VideoFrame make(int width, int height, int channels, ChannelFormat format, Options&&...opts)
-    {
-        return VideoFrame(width, height, channels, format, 
-            TensorOptions(kUInt8).options(std::forward<Options>(opts)...)); 
-    }
-
     /**
      * @brief check if VideoFrame is defined 
      * 
@@ -180,43 +113,20 @@ public:
     ScalarType dtype() const;
 
     /**
-     * @brief check if internal data is Image or Frame
-     * 
-     * @return true 
-     * @return false 
-     */
-    bool is_image() const;
-
-    /**
-     * @brief 
-     * 
-     * @return const Image& 
-     */
-    const Image &image() const;
-
-    /**
      * @brief 
      * 
      * @return const Frame& 
      */
     const Frame &frame() const;
 
-    /**
-     * @brief Convert Frame to Image, or Image ChannelFormat convert
-     * 
-     * @param format 
-     * @param contiguous ensure data storage is contiguous
-     * @return VideoFrame 
-     */
-    VideoFrame to_image(ChannelFormat format = kNCHW, bool contiguous=true) const;
 
     /**
-     * @brief Convert Image to Frame
+     * @brief Frame reformat, this only support rgb to yuv, or yuv to rgb
      * 
-     * @param format 
+     * @param pix_info
      * @return VideoFrame 
      */
-    VideoFrame to_frame(const PixelInfo &pix_info) const;
+    VideoFrame reformat(const PixelInfo &pix_info);
 
     /**
      * @brief Return the selected region which specified by (x, y, w, h)
@@ -254,20 +164,13 @@ public:
     VideoFrame to(const Device &device, bool non_blocking = false) const;
 
     /**
-     * @brief Convert to target dtype
-     * 
-     * @param dtype 
-     * @return VideoFrame 
-     */
-    VideoFrame to(ScalarType dtype) const;
-
-    /**
      * @brief copy all extra props(set by member func set_xxx) from `from`(deepcopy if needed), 
      * 
      * @param from 
      * @return VideoFrame& 
      */
     VideoFrame& copy_props(const VideoFrame &from);
+
 
 protected:
     VideoFrame(const std::shared_ptr<Private> &other);

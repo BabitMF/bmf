@@ -11,6 +11,10 @@
 #include <bmf/sdk/audio_frame.h>
 #include <bmf/sdk/bmf_av_packet.h>
 
+#ifdef BMF_ENABLE_FFMPEG
+#include <bmf/sdk/ffmpeg_helper.h>
+#endif
+
 namespace py = pybind11;
 
 
@@ -206,6 +210,17 @@ struct PyPacketQueue
 
 } //namespace
 
+#ifdef BMF_ENABLE_FFMPEG
+void bmf_ffmpeg_bind(py::module &m)
+{
+    using namespace bmf_sdk;
+    auto ff = m.def_submodule("ffmpeg");
+    ff.def("reformat", [](VideoFrame &vf, const std::string &format_str){
+           auto new_vf = ffmpeg::reformat(vf, format_str);
+           return py::cast(new_vf);
+    });
+}
+#endif
 
 
 void module_sdk_bind(py::module &m)
@@ -292,31 +307,22 @@ void module_sdk_bind(py::module &m)
     // VideoFrame
     py::class_<VideoFrame, OpaqueDataSet, SequenceData, Future>(m, "VideoFrame")
         .def(py::init<Frame>())
-        .def(py::init<Image>())
         .def(py::init([](int width, int height, const PixelInfo &pix_info, py::kwargs kwargs){
             auto opts = parse_tensor_options(kwargs, kUInt8);
             return VideoFrame(width, height, pix_info, opts.device());
         }), py::arg("width"), py::arg("height"), py::arg("pix_info"))
-        .def(py::init([](int width, int height, int channels, ChannelFormat format, py::kwargs kwargs){
-            auto opts = parse_tensor_options(kwargs, kUInt8);
-            return VideoFrame(width, height, channels, format, opts);
-        }), py::arg("width"), py::arg("height"), py::arg("channels")=3, py::arg("format")=kNCHW)
         .def("defined", &VideoFrame::operator bool)
         .def_property_readonly("width", &VideoFrame::width)
         .def_property_readonly("height", &VideoFrame::height)
         .def_property_readonly("dtype", &VideoFrame::dtype)
-        .def("is_image", &VideoFrame::is_image)
-        .def("image", &VideoFrame::image)
         .def("frame", &VideoFrame::frame)
-        .def("to_image", &VideoFrame::to_image, py::arg("format")=kNCHW, py::arg("contiguous")=true)
-        .def("to_frame", &VideoFrame::to_frame, py::arg("format"))
         .def("crop", &VideoFrame::crop, py::arg("x"), py::arg("y"), py::arg("w"), py::arg("h"))
         .def("cpu", &VideoFrame::cpu, py::arg("non_blocking")=false)
         .def("cuda", &VideoFrame::cuda)
         .def("copy_", &VideoFrame::copy_)
         .def("to", (VideoFrame(VideoFrame::*)(const Device&, bool) const)&VideoFrame::to, py::arg("device"), py::arg("non_blocking")=false)
-        .def("to", (VideoFrame(VideoFrame::*)(ScalarType) const)&VideoFrame::to, py::arg("dtype"))
         .def("copy_props", &VideoFrame::copy_props, py::arg("from"))
+        .def("reformat", &VideoFrame::reformat, py::arg("pix_info"))
     ;
     PACKET_REGISTER_BMF_SDK_TYPE(VideoFrame)
 

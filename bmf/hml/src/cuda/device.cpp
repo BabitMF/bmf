@@ -19,6 +19,7 @@
 #include <hmp/cuda/device.h>
 #include <hmp/core/device.h>
 #include <cuda_runtime.h>
+#include <cuda.h>
 
 namespace hmp{
 namespace cuda{
@@ -27,6 +28,25 @@ namespace cuda{
 class CUDADeviceManager : public impl::DeviceManager
 {
 public:
+    CUDADeviceManager()
+    {
+        initContext();
+    }
+    static void initContext()
+    {
+        cuInit(0);
+        CUdevice device;
+        const unsigned int flags = CU_CTX_SCHED_BLOCKING_SYNC;
+        int count;
+        HMP_CUDA_CHECK(cudaGetDeviceCount(&count));
+        for (int idx = 0; idx < count; idx++) {
+            auto ret = cuDeviceGet(&device, idx);
+            HMP_REQUIRE(ret == CUDA_SUCCESS, "get CUdevice {} failed={}", idx, ret);
+            ret = cuDevicePrimaryCtxSetFlags(device, flags);
+            HMP_REQUIRE(ret == CUDA_SUCCESS, "set device {} primary ctx flags failed={}", idx, ret);
+        }
+        return;
+    }
     void setCurrent(const Device &dev) override
     {
         HMP_CUDA_CHECK(cudaSetDevice(dev.index()));

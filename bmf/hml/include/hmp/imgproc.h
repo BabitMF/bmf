@@ -37,6 +37,11 @@ HMP_API TensorList &rgb_to_yuv(TensorList &dst, const Tensor &src,
 HMP_API TensorList rgb_to_yuv(const Tensor &src,
      const PixelInfo &pix_info, ChannelFormat cformat = kNCHW);
 
+HMP_API TensorList &yuv_to_yuv(TensorList &dst, const TensorList &src,
+     const PixelInfo &dst_pix_info, const PixelInfo &src_pix_info);
+HMP_API TensorList yuv_to_yuv(const TensorList &src,
+     const PixelInfo &dst_pix_info, const PixelInfo &src_pix_info);
+
 HMP_API TensorList &yuv_resize(TensorList &dst, const TensorList &src,
     const PixelInfo &pix_info, ImageFilterMode mode = ImageFilterMode::Bilinear);
 HMP_API TensorList &yuv_rotate(TensorList &dst, const TensorList &src,

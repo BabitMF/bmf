@@ -230,6 +230,20 @@ TensorList rgb_to_yuv(const Tensor &src, const PixelInfo &pix_info, ChannelForma
     return rgb_to_yuv(dst, src, pix_info, cformat);
 }
 
+TensorList &yuv_to_yuv(TensorList &dst, const TensorList &src,
+     const PixelInfo &dpix_info, const PixelInfo &spix_info)
+{
+    auto src_format = infer_ppixel_format(spix_info);
+    auto dst_format = infer_ppixel_format(dpix_info);
+    HMP_REQUIRE(src_format != dst_format, "yuv_to_yuv: src and dst format cannot be the same.");
+
+    return kernel::yuv_to_yuv(dst, src, dst_format, src_format);
+}
+
+TensorList yuv_to_yuv(const TensorList &src, const PixelInfo &dpix_info, const PixelInfo &spix_info)
+{
+
+}
 
 TensorList &yuv_resize(TensorList &dst, const TensorList &src,
                           const PixelInfo &pix_info, ImageFilterMode mode)

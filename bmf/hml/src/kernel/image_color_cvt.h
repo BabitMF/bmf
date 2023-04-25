@@ -128,4 +128,33 @@ struct RGB2YUV
     }
 };
 
+template<typename T, PPixelFormat dformat, PPixelFormat sformat>
+struct YUV2YUV
+{
+    // RGBIter<T, cformat> rgb_iter;
+    YUVIter<T, sformat> src_iter;
+    YUVIter<T, dformat> dst_iter;
+    using wtype = Vector<float, 3>;
+    using otype = Vector<T, 3>;
+    using cast_type = Vector<uint8_t, 3>; //FIXME
+
+    YUV2YUV(TensorList& dst, const TensorList &src)
+        : src_iter(src), dst_iter(dst)
+    {
+        HMP_REQUIRE(src_iter.width() == dst_iter.width() && src_iter.height() == dst_iter.height(),
+            "YUV2YUV: yuv and rgb image size are not matched, dst:{}, src:{}",
+            SizeArray{dst_iter.width(), dst_iter.height()}, 
+            SizeArray{src_iter.width(), src_iter.height()});
+    }
+
+    HMP_HOST_DEVICE inline void operator()(int batch, int w, int h)
+    {
+        wtype src = src_iter.get(batch, w, h);
+        wtype dst = src;
+
+        auto yuv_out = saturate_cast<cast_type>(dst);
+        dst_iter.set(batch, w, h, yuv_out);
+    }
+};
+
 }} //namespace hmp::kernel

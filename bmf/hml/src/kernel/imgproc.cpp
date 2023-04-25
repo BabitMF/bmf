@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include "imgproc.h"
 #include <hmp/imgproc.h>
 #include <kernel/kernel_utils.h>
 #include <kernel/imgproc.h>
@@ -38,6 +39,7 @@ namespace kernel{
 
 HMP_DEFINE_DISPATCH_STUB(yuv_to_rgb_stub)
 HMP_DEFINE_DISPATCH_STUB(rgb_to_yuv_stub)
+HMP_DEFINE_DISPATCH_STUB(yuv_to_yuv_stub)
 HMP_DEFINE_DISPATCH_STUB(yuv_resize_stub)
 HMP_DEFINE_DISPATCH_STUB(yuv_rotate_stub)
 HMP_DEFINE_DISPATCH_STUB(yuv_mirror_stub)
@@ -135,6 +137,17 @@ TensorList &rgb_to_yuv(TensorList &dst, const Tensor &src, PPixelFormat pformat,
 
     rgb_to_yuv_stub(stmp.device_type(), dtmp, stmp, pformat, cformat);
 
+    return dst;
+}
+
+TensorList &yuv_to_yuv(TensorList &dst, const TensorList &src, PPixelFormat dformat, PPixelFormat sformat)
+{
+    auto stmp = img::image_format(src, kNHWC);
+    auto dtmp = img::image_format(dst, kNHWC);
+    yuv_common_check(stmp, 0, "yuv_to_yuv");
+    yuv_common_check(dtmp, 0, "rgb_to_yuv");
+
+    yuv_to_yuv_stub(dtmp[0].device_type(), dtmp, stmp, dformat, sformat);
     return dst;
 }
 

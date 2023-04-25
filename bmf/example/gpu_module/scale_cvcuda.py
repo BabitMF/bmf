@@ -115,7 +115,7 @@ class scale_cvcuda(Module):
             videoframe_out = VideoFrame(frame_out)
             videoframe_out.pts = in_frame.pts
             videoframe_out.time_base = in_frame.time_base
-            out_pkt = Packet(videoframe_out.cpu())
+            out_pkt = Packet(videoframe_out)
             out_pkt.timestamp = videoframe_out.pts
             output_queue.put(out_pkt)
 

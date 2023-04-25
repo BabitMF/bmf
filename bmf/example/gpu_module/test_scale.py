@@ -29,8 +29,8 @@ def test():
                 "output_path": output_path,
                 "video_params": {
                     "codec": "hevc_nvenc",
-                    "width": 720,
-                    "height": 1280,
+                    # "width": 720,
+                    # "height": 1280,
                 }
             })
             .run()

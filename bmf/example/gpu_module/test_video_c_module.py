@@ -30,9 +30,9 @@ class TestVideoCModule(BaseTestCase):
                           .c_module('cvtcolor', c_module_path, c_module_entry)
         )
         # ffmpeg filter
-        video_3 = (
-            video_2['video'].ff_filter('format', 'nv12')
-        )
+        # video_3 = (
+        #     video_2['video'].ff_filter('format', 'nv12')
+        # )
 
         # encode
         # video_3.encode(
@@ -47,12 +47,15 @@ class TestVideoCModule(BaseTestCase):
         # )
         (
             bmf.encode(
-                video_3,  # video stream, set to None
+                video_2,  # video stream, set to None
                 video['audio'],
                 {"output_path": output_path,
                  "video_params": {
-                     "vsync": "vfr",
-                     "max_fr": 60
+                     "codec": "hevc_nvenc",
+                     "width": 1920,
+                     "height": 1080,
+                    #  "vsync": "vfr",
+                    #  "max_fr": 60
                  },
                  "audio_params": {"codec": "aac"}
                  }

@@ -60,7 +60,7 @@ int TestCvtColorModule::process(Task &task) {
             // Add output frame to output queue
             vframe_nv12.copy_props(vframe);
             vframe_out.copy_props(vframe);
-            auto output_pkt = Packet(vframe_nv12.cpu());
+            auto output_pkt = Packet(vframe_nv12);
 
             task.fill_output_packet(label, output_pkt);
         }

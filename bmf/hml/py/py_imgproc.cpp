@@ -359,6 +359,10 @@ void imageBind(py::module &m)
         (TensorList(*)(const Tensor&, const PixelInfo&, ChannelFormat))&img::rgb_to_yuv,
         py::arg("src"), py::arg("pix_info"), py::arg("cformat")=kNCHW);
 
+    img.def("yuv_to_yuv",
+        (TensorList&(*)(TensorList&, const TensorList&, const PixelInfo&, const PixelInfo&))&img::yuv_to_yuv,
+        py::arg("dst"), py::arg("src"), py::arg("src_pix_info"), py::arg("dst_pix_info"));
+
     img.def("yuv_resize", &img::yuv_resize);
     img.def("yuv_rotate", &img::yuv_rotate);
     img.def("yuv_mirror", &img::yuv_mirror);

@@ -6,9 +6,8 @@ from cuda import cuda
 import cvcuda
 import torch
 
-import pdb
 
-class scale_cvcuda(Module):
+class scale_gpu(Module):
     def __get_size(self, size_str):
         split = re.split('\*|x|,', size_str)
         w = int(split[0])
@@ -35,22 +34,14 @@ class scale_cvcuda(Module):
         if 'algo' in option.keys():
             self.algo = self.__get_algo(option['algo'])            
         self.uv_tensor_out = torch.empty((2, self.h // 2, self.w // 2), dtype=torch.uint8, device='cuda')
-        # if 'to_gpu' in option.keys():
-        #     self.trans_to_gpu_ = option['to_gpu']
-        # self.gpu_alloced_ = []
-        # self.init_context_flag_ = False
-        # self.ctx = None
+        self.i420info = hmp.PixelInfo(hmp.PixelFormat.kPF_YUV420P, hmp.ColorSpace.kCS_BT470BG, hmp.ColorRange.kCR_MPEG)
+        self.i420_out = hmp.Frame(self.w, self.h, self.i420info, device='cuda')
     
     def process(self, task):
 
         # get input and output packet queue
         input_queue = task.get_inputs()[0]
         output_queue = task.get_outputs()[0]
-
-        # if (not self.init_context_flag_):
-        #     self.init_context_flag_ = True
-        #     err, cuDevice = cuda.cuDeviceGet(0)
-        #     err, self.ctx = cuda.cuCtxCreate(0, cuDevice)
 
         # add all input frames into frame cache
         while not input_queue.empty():
@@ -66,11 +57,8 @@ class scale_cvcuda(Module):
             if (in_frame.frame().device() == hmp.Device('cpu')):
                 in_frame = in_frame.cuda()
             tensor_list = in_frame.frame().data()
-            torch_list = []
-            # pdb.set_trace()
             frame_out = hmp.Frame(self.w, self.h, in_frame.frame().pix_info(), device='cuda')
-            # videoframe_out = VideoFrame(self.w, self.h, in_frame.frame().pix_info(), device='cuda')
-            # frame_out = videoframe_out.frame()
+
             out_list = frame_out.data()
             stream = hmp.current_stream(hmp.kCUDA)
             cvstream = cvcuda.cuda.as_stream(stream.handle())
@@ -80,25 +68,17 @@ class scale_cvcuda(Module):
                 cvimg_batch = cvcuda.ImageBatchVarShape(3)
                 cvimg_batch_out = cvcuda.ImageBatchVarShape(3)
 
-                uv_tensor = tensor_list[1].torch().permute(2,0,1).contiguous()
-                ut = uv_tensor[0, :, :]
-                vt = uv_tensor[1, :, :]
-                yimg = cvcuda.as_image(tensor_list[0].torch())
-                uimg = cvcuda.as_image(ut)
-                vimg = cvcuda.as_image(vt)
-                cvimg_batch.pushback([yimg, uimg, vimg])
-
-                # uv_tensor_out = torch.empty((2, self.h // 2, self.w // 2), dtype=torch.uint8, device='cuda')
-                # uv_tensor_out = frame_out.plane(1).torch().permute(2, 1, 0).contiguous()
-                yimg_out = cvcuda.as_image(frame_out.plane(0).torch())
-                uimg_out = cvcuda.as_image(self.uv_tensor_out[0,:,:])
-                vimg_out = cvcuda.as_image(self.uv_tensor_out[1,:,:])
-                cvimg_batch_out.pushback([yimg_out, uimg_out, vimg_out])
+                self.i420_in = hmp.Frame(in_frame.width, in_frame.height, self.i420info, device='cuda')
+                hmp.img.yuv_to_yuv(self.i420_in.data(), in_frame.frame().data(), self.i420info, in_frame.frame().pix_info())
+                in_list = [x.torch() for x in self.i420_in.data()]
+                out_list = [x.torch() for x in self.i420_out.data()]
+                cvimg_batch.pushback([cvcuda.as_image(x) for x in in_list])
+                cvimg_batch_out.pushback([cvcuda.as_image(x) for x in out_list])
 
                 cvcuda.resize_into(cvimg_batch_out, cvimg_batch, self.algo, stream=cvstream)
 
-                uv_plane = frame_out.plane(1).torch()
-                uv_plane[:] = self.uv_tensor_out.permute(1,2,0)[:]
+                hmp.img.yuv_to_yuv(frame_out.data(), self.i420_out.data(), frame_out.pix_info(), self.i420_out.pix_info())
+
 
             # other pixel formats, e.g. yuv420, rgb
             else:
@@ -110,6 +90,7 @@ class scale_cvcuda(Module):
                     cvimg_out = cvcuda.as_image(f.torch())
                     cvimg_batch.pushback(cvimg)
                     cvimg_batch_out.pushback(cvimg_out)
+
                 cvcuda.resize_into(cvimg_batch_out, cvimg_batch, self.algo, stream=cvstream)
             
             videoframe_out = VideoFrame(frame_out)
@@ -124,6 +105,5 @@ class scale_cvcuda(Module):
             Log.log_node(LogLevel.DEBUG, self.node_,
                          'output stream', 'done')
             task.set_timestamp(Timestamp.DONE)
-            # if self.ctx is not None:
-            #     self.ctx.pop()
+
         return ProcessResult.OK

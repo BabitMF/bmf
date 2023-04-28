@@ -240,9 +240,39 @@ TensorList &yuv_to_yuv(TensorList &dst, const TensorList &src,
     return kernel::yuv_to_yuv(dst, src, dst_format, src_format);
 }
 
-TensorList yuv_to_yuv(const TensorList &src, const PixelInfo &dpix_info, const PixelInfo &spix_info)
+TensorList yuv_to_yuv(const TensorList &src, const PixelInfo &dpix_info, const PixelInfo &spix_info, ChannelFormat cformat)
 {
+    TensorList dst;
+    auto has_batch_dim = src[0].dim() == 4;
+    // auto pix_desc = PixelFormatDesc(spix_info.format());
+    // auto height = src[0].size(has_batch_dim ? 1 : 0);
+    // auto width = src[0].size(has_batch_dim ? 2 : 1);
+    auto wdim = infer_wdim(src[0], cformat);
+    auto hdim = wdim - 1;
+    auto width = src[0].size(wdim);
+    auto height = src[0].size(hdim);
+    int shift = 0;
+    if (dpix_info.format() == PF_NV12 && spix_info.format() == PF_YUV420P) {
+        shift = 0;
+    }
+    else if (dpix_info.format() == PF_YUV420P && spix_info.format() == PF_NV12) {
+        shift = 1;
+    }
+    else {
+        HMP_REQUIRE(false, "Unsupport PixelInfo");
+    }
+    if(has_batch_dim){
+        dst.push_back(empty({src[0].size(0), height, width, 1}, src[0].options()));
+        dst.push_back(empty({src[0].size(0), (height + 1) >> shift, (width + 1) >> shift, 1}, src[0].options()));
+        dst.push_back(empty({src[0].size(0), (height + 1) >> shift, (width + 1) >> shift, 1}, src[0].options()));
+    }
+    else {
+        dst.push_back(empty({height, width, 1}, src[0].options()));
+        dst.push_back(empty({(height + 1) >> shift, (width + 1) >> shift, 1}, src[0].options()));
+        dst.push_back(empty({(height + 1) >> shift, (width + 1) >> shift, 1}, src[0].options()));
+    }
 
+    return yuv_to_yuv(dst, src, dpix_info, spix_info);
 }
 
 TensorList &yuv_resize(TensorList &dst, const TensorList &src,

@@ -24,7 +24,7 @@ def test():
     })
     (
         video['video']
-            .module('scale_cvcuda', {"size": '720x1280', 'algo': 'cubic'})
+            .module('scale_gpu', {"size": '720x1280', 'algo': 'cubic'})
             .encode(None, {
                 "output_path": output_path,
                 "video_params": {

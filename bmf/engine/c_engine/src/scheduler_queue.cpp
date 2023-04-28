@@ -31,9 +31,8 @@ BEGIN_BMF_ENGINE_NS
         } else if (lhs.task.timestamp() == rhs.task.timestamp()) {
             if (lhs.task.node_id_ > rhs.task.node_id_)
                 return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     SchedulerQueue::SchedulerQueue(int id, SchedulerQueueCallBack callback)

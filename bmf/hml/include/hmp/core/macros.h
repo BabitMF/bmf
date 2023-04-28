@@ -92,7 +92,8 @@ namespace hmp{
 // version string
 #define HMP_VERSION_STR() HMP_STR(HMP_VERSION_MAJOR) "." HMP_STR(HMP_VERSION_MINOR) "." HMP_STR(HMP_VERSION_PATCH)
 #define HMP_DECLARE_TAG(VAR) extern "C" volatile void* VAR##Tag
-#define HMP_DEFINE_TAG(VAR) HMP_DECLARE_TAG(VAR) = (void*)&(VAR)
+//#define HMP_DEFINE_TAG(VAR) HMP_DECLARE_TAG(VAR) = (void*)&(VAR)
+#define HMP_DEFINE_TAG(VAR)
 
 // use in function to ref VAR and prevent compiler optimize out this tag
 #define HMP_IMPORT_TAG(VAR) HMP_DONT_TOUCH(VAR##Tag)

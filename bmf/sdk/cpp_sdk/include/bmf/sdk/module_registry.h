@@ -77,8 +77,8 @@ BEGIN_BMF_SDK_NS
     };
 
 #define REGISTER_MODULE_CONSTRUCTOR(module_name, constructor)\
-    static ::bmf_sdk::ModuleRegister r_constructor_##module_name(#module_name,BMF_SDK_VERSION,constructor); \
-    HMP_DEFINE_TAG(r_constructor_##module_name);
+    static ::bmf_sdk::ModuleRegister r_constructor_##module_name(#module_name,BMF_SDK_VERSION,constructor);
+    //HMP_DEFINE_TAG(r_constructor_##module_name);
 
 #define REGISTER_MODULE_CLASS(module_name)\
 std::shared_ptr<::bmf_sdk::Module> Constructor_##module_name##Module(int node_id, ::bmf_sdk::JsonParam json_param)\

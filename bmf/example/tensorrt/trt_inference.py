@@ -4,6 +4,7 @@ from cuda import cudart
 import tensorrt as trt
 import numpy as np
 import torch
+import importlib
 
 if sys.version_info.major == 2:
     from Queue import Queue
@@ -16,6 +17,7 @@ def to_scalar_types(trt_dtype):
         trt.float16: mp.kHalf,
         trt.int32: mp.kInt32,
         trt.int8: mp.kInt8,
+        trt.uint8: mp.kUInt8,
     }
     return dtype_map[trt_dtype]
      
@@ -36,17 +38,18 @@ class trt_inference(Module):
             self.input_shapes_ = option['input_shapes']
 
         if 'pre_process' in option.keys():
-            self.pre_process_ = option['pre_process']
+            mod_name, func_name = option['pre_process'].rsplit('.', 1)
+            mod = importlib.import_module(mod_name)
+            self.pre_process_ = getattr(mod, func_name)
         else:
             self.pre_process_ = self.default_pre_process
         
         if 'post_process' in option.keys():
-            self.post_process_ = option['post_process']
+            mod_name, func_name = option['post_process'].rsplit('.', 1)
+            mod = importlib.import_module(mod_name)
+            self.post_process_ = getattr(mod, func_name)
         else:
             self.post_process_ = self.default_post_process
-        
-        if 'batch_size' in option.keys():
-            self.batch_size_ = option['batch_size']
         
         if 'in_frame_num' in option.keys():
             self.in_frame_num_ = option['in_frame_num']
@@ -59,9 +62,11 @@ class trt_inference(Module):
         else:
             Log.log(LogLevel.INFO, "No out_frame_num keyword, set it 1 instead.")
             self.out_frame_num_ = 1
-        
+
         logger = trt.Logger(trt.Logger.ERROR)
-        self.engine_ = trt.Runtime(logger).deserialize_cuda_engine(self.model_path_)
+        with open(self.model_path_, 'rb') as f:
+            engine_buffer = f.read()
+        self.engine_ = trt.Runtime(logger).deserialize_cuda_engine(engine_buffer)
 
         if self.engine_ is None:
             Log.log(LogLevel.ERROR, "Failed building engine!")
@@ -83,7 +88,7 @@ class trt_inference(Module):
         
         self.output_dict_ = dict()
         for i in range(self.num_inputs_, self.num_io_tensors_):
-            self.output_dict_[self.tensor_names_[i]] = mp.empty(self.context_.get_tensor_shape[self.tensor_names_[i]],
+            self.output_dict_[self.tensor_names_[i]] = mp.empty(self.context_.get_tensor_shape(self.tensor_names_[i]),
                                                                 device=mp.kCUDA,
                                                                 dtype=to_scalar_types(self.engine_.get_tensor_dtype(self.tensor_names_[i])))
 
@@ -95,6 +100,7 @@ class trt_inference(Module):
     def default_pre_process(self, frame_cache, in_frame_num):
         assert len(self.num_inputs_) == 1, "default_pre_process can only be applied on the model with single input, \
                                             write a new customized process for your model."
+        input_dict = dict()
         frame_num = min(frame_cache, in_frame_num)
         input_frames = []
         input_torch_arrays = []
@@ -104,23 +110,25 @@ class trt_inference(Module):
                 vf = vf.cuda()
             input_frames.append(vf)
             vf_image = vf.to_image(mp.kNHWC)
-            input_torch_arrays.append(vf_image.torch())
+            input_torch_arrays.append(vf_image.image().data().torch())
         # for the last few frames, repeat the last frame
         for i in range(in_frame_num - frame_num):
             input_torch_arrays.append(input_torch_arrays[-1])
         
-        input_dict = dict()
         input_dict[self.tensor_names_[0]] = torch.stack(input_torch_arrays, 0).data_ptr()
 
         return input_dict
     
     # default_post_process just separate batched tensor into multiple frames
-    def default_post_process(self, output_dict, out_frame_num):
+    def default_post_process(self, frame_cache, output_dict, out_frame_num):
         assert len(self.num_outputs_) == 1, "default_post_process can only be applied on the model with single input, \
                                              write a new customized process for your model."
+        assert output_dict is not None, "output dict is None."
+
         output_tensor = output_dict[self.tensor_names_[1]]
 
         output_tensor_torch = output_tensor.torch()
+        output_tensor_torch = torch.split(output_tensor_torch, out_frame_num, dim=0)
         out_frames = []
 
         for i in range(out_frame_num):
@@ -128,10 +136,10 @@ class trt_inference(Module):
             image = mp.Image(mp.from_torch(output_tensor_torch[i], format=mp.kNHWC))
             out_frame = VideoFrame(image).to_frame(H420)
 
-            if self.frame_cache_.empty():
+            if frame_cache.empty():
                 break
 
-            input_frame = self.frame_cache_.get()
+            input_frame = frame_cache.get()
             out_frame.pts = input_frame.pts
             out_frame.time_base = input_frame.time_base
             out_frames.append(out_frame)
@@ -139,17 +147,17 @@ class trt_inference(Module):
         return out_frames
 
     def inference(self):
-        input_dict = self.pre_process_(self.frame_cache_, self.batch_size_)
+        input_dict = self.pre_process_(self.frame_cache_, self.in_frame_num_)
 
-        for i in range(self.num_inputs):
+        for i in range(self.num_inputs_):
             self.context_.set_tensor_address(self.tensor_names_[i], int(input_dict[self.tensor_names_[i]]))
         
         for i in range(self.num_inputs_, self.num_io_tensors_):
-            self.context_.set_tensor_address(self.tensor_names_[i], int(self.output_dict_[self.tensor_names[i]].torch().data_ptr()))
+            self.context_.set_tensor_address(self.tensor_names_[i], int(self.output_dict_[self.tensor_names_[i]].torch().data_ptr()))
         
         self.context_.execute_async_v3(self.stream_.handle())
 
-        return self.post_process_(self.output_dict_, self.out_frame_num_)
+        return self.post_process_(self.frame_cache_, self.output_dict_, self.out_frame_num_)
 
     def process(self, task):
         # get input and output packet queue

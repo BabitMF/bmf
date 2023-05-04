@@ -193,7 +193,6 @@ else
         -DBMF_ENABLE_BREAKPAD=ON \
         -DCMAKE_PREFIX_PATH=/bmf/libtorch \
         -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-        -DCMAKE_PREFIX_PATH=/home/scratch.jief_sw/mllibs/libtorch \
         -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ..
     make -j8
 

@@ -10,6 +10,9 @@ import bmf.hml.hmp as mp
 from bmf.lib._bmf.sdk import VideoFrame, AudioFrame, Packet, BMFAVPacket
 from bmf.lib._bmf.sdk import Task
 
+from bmf.lib._bmf import sdk
+
+
 #
 from .ffmpeg_engine import FFmpegEngine
 from .python_sdk import Module, LogLevel, Log, InputType, ProcessResult,  Timestamp, scale_av_pts, av_time_base, \

@@ -90,11 +90,12 @@ Tensor tensor_from_numpy(const py::array& arr)
         strides.push_back(static_cast<int64_t>(stride/itemsize));
     }
 
-    auto ptr = DataPtr(arr.request().ptr, [arr](void *ptr){
+    auto buf_info = std::make_shared<pybind11::buffer_info>(arr.request());
+    auto ptr = DataPtr(buf_info->ptr, [buf_info](void *ptr) mutable {
                               py::gil_scoped_acquire acquire;
-                              arr.dec_ref();
+                              //explict release in gil guard
+                              buf_info.reset();
                               }, kCPU);
-    arr.inc_ref();
 
     return from_buffer(
         std::move(ptr),

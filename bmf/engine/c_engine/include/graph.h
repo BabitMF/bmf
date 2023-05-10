@@ -60,6 +60,8 @@ BEGIN_BMF_ENGINE_NS
 
         void poll_packet(Packet &packet, bool block = true);
 
+        void inject_packet(Packet &packet, int index = -1);
+
         std::shared_ptr<InputStreamManager> input_manager_;
     };
 
@@ -86,6 +88,8 @@ BEGIN_BMF_ENGINE_NS
         int add_all_mirrors_for_output_stream(std::shared_ptr<OutputStream> &stream);
 
         int find_orphan_input_streams();
+
+        int delete_orphan_output_streams();
 
         int start();
 
@@ -142,6 +146,7 @@ BEGIN_BMF_ENGINE_NS
         std::condition_variable cond_close_;
         std::mutex con_var_mutex_;
         int32_t closed_count_ = 0;
+        bool exception_from_scheduler_ = false;
     };
 
 END_BMF_ENGINE_NS

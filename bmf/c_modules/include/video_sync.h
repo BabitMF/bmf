@@ -53,12 +53,13 @@ public:
     int64_t stream_start_time_;
     int64_t stream_first_dts_;
     int64_t max_frames_;
+    int64_t min_frames_;
     bool last_dropped_ = false;
     int nb_frames_drop_ = 0;
     int nb_frames_dup_ = 0;
     unsigned int dup_warning_ = 1000;
 public:
-    VideoSync(AVRational input_stream_time_base, AVRational encode_time_base, AVRational filter_in_frame_rate, AVRational video_frame_rate, int64_t stream_start_time, int64_t stream_first_dts, int sync_method, int64_t max_frames);
+    VideoSync(AVRational input_stream_time_base, AVRational encode_time_base, AVRational filter_in_frame_rate, AVRational video_frame_rate, int64_t stream_start_time, int64_t stream_first_dts, int sync_method, int64_t max_frames, int64_t min_frames = 0);
     ~VideoSync();
     int process_video_frame(AVFrame *frame, std::vector<AVFrame *> &output_frame, int64_t &frame_number);
 };

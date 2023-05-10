@@ -350,7 +350,9 @@ BEGIN_BMF_ENGINE_NS
             opt_reset_mutex_.unlock();
 
             BMF_TRACE_PROCESS(module_name_.c_str(), "process", START);
+            state_ = NodeState::RUNNING;
             result = module_->process(task);
+            state_ = NodeState::PENDING;
             BMF_TRACE_PROCESS(module_name_.c_str(), "process", END);
             if (result != 0)
                 BMF_Error_(BMF_StsBadArg, "[%s] Process result != 0.\n", node_name_.c_str());

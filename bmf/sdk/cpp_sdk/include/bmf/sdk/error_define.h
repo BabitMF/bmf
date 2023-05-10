@@ -55,6 +55,7 @@ enum {
     BMF_StsFilterStructContentErr = -29,  /**< incorrect filter structure content */
     BMF_StsKernelStructContentErr = -30,  /**< incorrect transform kernel content */
     BMF_StsFilterOffsetErr = -31,  /**< incorrect filter offset value */
+    BMF_StsTimeOut = -40, /**< should be a hang caused timeout schedule */
     BMF_StsBadSize = -201, /**< the input/output structure size is incorrect  */
     BMF_StsDivByZero = -202, /**< division by zero */
     BMF_StsInplaceNotSupported = -203, /**< in-place operation is not supported */

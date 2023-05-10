@@ -51,12 +51,13 @@ class ServerGateway:
 
             # currently, we think each work will produce only one result packet, which contains return value in its data
             if pkt is not None and pkt.defined():
-                # one more access result
-                self.result_id += 1
-                # save this result
-                self.result_dict[self.result_id] = pkt.get(str)
-                # allow process_work thread to return the result
-                self.event_dict[self.result_id].set()
+                if pkt.class_name == "std::string":
+                    # one more access result
+                    self.result_id += 1
+                    # save this result
+                    self.result_dict[self.result_id] = pkt.get(str)
+                    # allow process_work thread to return the result
+                    self.event_dict[self.result_id].set()
 
     def process_work(self, pkt):
         # use Lock to avoid concurrency process

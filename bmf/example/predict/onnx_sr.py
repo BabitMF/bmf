@@ -72,14 +72,17 @@ class onnx_sr(Module):
         for i in range(frame_num):
             vf = self.frame_cache_.queue[i]
             input_frames.append(vf)
-            vf_image = vf.to_image(mp.kNHWC) # to RGB24
-            input_nd_arrays.append(vf_image.image().data().numpy())
+
+            rgb = mp.PixelInfo(mp.kPF_RGB24)
+            np_vf = vf.reformat(rgb).frame().plane(0).numpy()
+            input_nd_arrays.append(np_vf)
         # for the last few frames, repeat the last frame
         for i in range(self.in_frame_num_ - frame_num):
             vf = input_frames[frame_num - 1]
             input_frames.append(vf)
-            vf_image = vf.to_image(mp.kNHWC) # to RGB24
-            input_nd_arrays.append(vf_image.image().data().numpy())
+            rgb = mp.PixelInfo(mp.kPF_RGB24)
+            np_vf = vf.reformat(rgb).frame().plane(0).numpy()
+            input_nd_arrays.append(np_vf)
 
         # combine 7 frames into one nd array as model input
         input_tensor = np.concatenate(input_nd_arrays, 2)
@@ -100,8 +103,10 @@ class onnx_sr(Module):
         for i in range(self.out_frame_num_):
             H420 = mp.PixelInfo(mp.kPF_YUV420P)
             # convert nd array to video frame and convert rgb to yuv
-            image = mp.Image(mp.from_numpy(output_tensor[i]), format=mp.kNHWC)
-            out_frame = VideoFrame(image).to_frame(H420)
+
+            rgb = mp.PixelInfo(mp.kPF_RGB24)
+            frame = mp.Frame(mp.from_numpy(output_tensor[i]), rgb)
+            out_frame = VideoFrame(frame).reformat(H420)
 
             if self.frame_cache_.empty():
                 break

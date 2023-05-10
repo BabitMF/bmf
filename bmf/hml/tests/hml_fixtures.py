@@ -31,9 +31,9 @@ def to_np_dtype(dtype):
 
 has_cuda = hasattr(mp, "cuda") and mp.device_count(mp.kCUDA) > 0
 
-has_ffmpeg = 'HMP_ENABLE_FFMPEG' in mp.__config__
+has_ffmpeg = mp.__config__.get('HMP_ENABLE_FFMPEG', 0)
 
-has_opencv = 'HMP_ENABLE_OPENCV' in mp.__config__
+has_opencv = mp.__config__.get('HMP_ENABLE_OPENCV', 0)
 
 
 @pytest.fixture(params=[

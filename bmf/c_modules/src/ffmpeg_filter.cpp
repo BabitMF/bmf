@@ -26,12 +26,15 @@ CFFFilter::CFFFilter(int node_id, JsonParam option) {
     b_graph_inited_ = false;
     filter_graph_ = NULL;
     is_inf_ = false;
+    copy_ts_ = false;
     all_input_eof_ = false;
     all_output_eof_ = false;
     stream_start_time_ = AV_NOPTS_VALUE;
     stream_first_dts_ = AV_NOPTS_VALUE;
 
     option_ = option;
+
+    //avfilter_register_all();
 }
 
 CFFFilter::~CFFFilter() {
@@ -222,6 +225,8 @@ int CFFFilter::init_filtergraph() {
                     std::string svalue = tag->value;
                     input_stream_node_[it->first] = stoi(svalue);
                 }
+                if (!strcmp(tag->key, "copyts"))
+                    copy_ts_ = true;
             }
         }
     }
@@ -266,12 +271,21 @@ Packet CFFFilter::convert_avframe_to_packet(AVFrame *frame, int index) {
             av_dict_set(&frame->metadata, "first_dts", st.c_str(), 0);
         }
     }
+    if (copy_ts_)
+        av_dict_set(&frame->metadata, "copyts", "1", 0);
 
     if (frame->width > 0) {
 	    auto video_frame = ffmpeg::to_video_frame(frame);
         video_frame.set_time_base(Rational(tb.num, tb.den));
         video_frame.set_pts(frame->pts);
         auto packet = Packet(video_frame);
+        if (orig_pts_time_cache_.size() > 0) {
+            if (orig_pts_time_cache_.count(frame->coded_picture_number) > 0) {
+                av_dict_set(&frame->metadata, "orig_pts_time", orig_pts_time_cache_[frame->coded_picture_number].c_str(), 0);
+                packet.set_time(std::stod(orig_pts_time_cache_[frame->coded_picture_number]));
+                orig_pts_time_cache_.erase(frame->coded_picture_number);
+            }
+        }
         packet.set_timestamp(frame->pts * av_q2d(tb) * 1000000);
         return packet;
     } else {
@@ -284,20 +298,21 @@ Packet CFFFilter::convert_avframe_to_packet(AVFrame *frame, int index) {
     }
 }
 
-int64_t get_meta_info(AVFrame *temp_frame, std::string key, int64_t default_value) {
+std::string get_meta_info(AVFrame *temp_frame, std::string key) {
     if (temp_frame != NULL) {
         if (temp_frame->metadata) {
             AVDictionaryEntry *tag = NULL;
             while ((tag = av_dict_get(temp_frame->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
                 if (!strcmp(tag->key, key.c_str())) {
                     std::string svalue = tag->value;
-                    int64_t stream_frame_number = stol(svalue);
-                    return stream_frame_number;
+                    //int64_t stream_frame_number = stol(svalue);
+                    //return stream_frame_number;
+                    return svalue;
                 }
             }
         }
     }
-    return default_value;
+    return "";
 }
 
 int CFFFilter::get_cache_frame(int index, AVFrame *&frame, int &choose_index) {
@@ -321,11 +336,16 @@ int CFFFilter::get_cache_frame(int index, AVFrame *&frame, int &choose_index) {
             int same_node_index = input_stream_node.first;
             if (input_cache_[same_node_index].size() > 0) {
                 AVFrame *temp_frame = input_cache_[same_node_index].front();
-                int64_t stream_frame_number = get_meta_info(temp_frame, "stream_frame_number", -1);
+                std::string svalue = get_meta_info(temp_frame, "stream_frame_number");
+                int64_t stream_frame_number = svalue != "" ? stol(svalue) : -1;
                 if (stream_frame_number != -1 && stream_frame_number < choose_node_frame_number) {
                     choose_node_frame_number = stream_frame_number;
                     choose_index = same_node_index;
                 }
+
+                svalue = get_meta_info(temp_frame, "orig_pts_time");
+                if (svalue != "")
+                    orig_pts_time_cache_[temp_frame->coded_picture_number] = svalue;
             }
         }
     }

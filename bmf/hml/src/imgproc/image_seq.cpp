@@ -117,25 +117,25 @@ FrameSeq FrameSeq::slice(int64_t start, optional<int64_t> end) const
 }
 
 
-Tensor FrameSeq::to_rgb(ChannelFormat cformat) const
-{
-    return to_image(cformat).data();
-}
+//Tensor FrameSeq::to_rgb(ChannelFormat cformat) const
+//{
+//    return to_image(cformat).data();
+//}
 
-ImageSeq FrameSeq::to_image(ChannelFormat cformat) const
-{
-    if(pix_info_.is_rgbx()){
-        HMP_REQUIRE(data_.size() == 1, "Internal error");
-        return ImageSeq(data_[0], kNHWC, pix_info_.color_model()).to(cformat);
-    }
-    else{
-        HMP_REQUIRE(pix_desc_.defined(),
-                    "FrameSeq::to_image: pixel format {} is not supported",
-                     pix_desc_.format());
-        auto data = img::yuv_to_rgb(data_, pix_info_, cformat);
-        return ImageSeq(data, cformat, pix_info_.color_model());
-    }
-}
+//ImageSeq FrameSeq::to_image(ChannelFormat cformat) const
+//{
+//    if(pix_info_.is_rgbx()){
+//        HMP_REQUIRE(data_.size() == 1, "Internal error");
+//        return ImageSeq(data_[0], kNHWC, pix_info_.color_model()).to(cformat);
+//    }
+//    else{
+//        HMP_REQUIRE(pix_desc_.defined(),
+//                    "FrameSeq::to_image: pixel format {} is not supported",
+//                     pix_desc_.format());
+//        auto data = img::yuv_to_rgb(data_, pix_info_, cformat);
+//        return ImageSeq(data, cformat, pix_info_.color_model());
+//    }
+//}
 
 
 FrameSeq FrameSeq::resize(int width, int height, ImageFilterMode mode) const
@@ -203,185 +203,18 @@ FrameSeq FrameSeq::mirror(ImageAxis axis) const
     }
 }
 
-
-FrameSeq FrameSeq::from_rgb(const Tensor &rgb, const PixelInfo &pix_info, ChannelFormat cformat)
+FrameSeq FrameSeq::reformat(const PixelInfo &pix_info)
 {
-    ImageSeq images(rgb, cformat, pix_info.color_model());
-    return from_image(images, pix_info);
-}
-
-FrameSeq FrameSeq::from_image(const ImageSeq &images, const PixelInfo &pix_info)
-{
-    if(pix_info.is_rgbx()){
-        auto pix_desc = PixelFormatDesc(pix_info.format());
-        HMP_REQUIRE(pix_desc.defined() && pix_desc.channels(0) == images.nchannels(), 
-            "FrameSeq::from_image: expect image has {} channels, got {}",
-            pix_desc.channels(), images.nchannels());
-        HMP_REQUIRE(images.format() == kNHWC, 
-            "FrameSeq::from_image: expect image has NHWC layout");
-        HMP_REQUIRE(images.dtype() == pix_desc.dtype(),
-            "FrameSeq:from_image: expect image has dtype {}, got {}",
-            pix_desc.dtype(), images.dtype());
-        return FrameSeq({images.data()}, pix_info);
-    }
-    else{
-        auto yuv = img::rgb_to_yuv(images.data(), pix_info, images.format());
+    if (pix_info_.format() == PF_RGB24) {
+        auto yuv = img::rgb_to_yuv(data_[0], pix_info, kNHWC);
         return FrameSeq(yuv, pix_info);
-    }
-}
 
-/////////////////////////////////// ImageSeq ///////////////////////////
-
-
-ImageSeq::ImageSeq(const Tensor &data, ChannelFormat format, const ColorModel &cm)
-    : cm_(cm)
-{
-    HMP_REQUIRE(data.dim() >= 3,
-        "ImageSeq: invalid ImageSeq data, got {}", data.dim());
-
-    if(data.dim() == 3){
-        if(format_ == kNCHW){
-            data_ = data.unsqueeze(1);
-        }
-        else{
-            data_ = data.unsqueeze(-1);
-        }
-    }
-    else{
-        data_ = data.alias();
+    } else if (pix_info.format() == PF_RGB24) {
+        auto rgb = img::yuv_to_rgb(data_, pix_info_, kNHWC);
+        return FrameSeq({rgb}, pix_info);
     }
 
-    format_ = format;
-}
-
-
-ImageSeq::operator bool() const
-{
-    return data_.defined();
-}
-
-ImageSeq ImageSeq::to(const Device &device, bool non_blocking) const
-{
-    auto data = data_.to(device, non_blocking);
-    return ImageSeq(data, format_, cm_);
-}
-
-ImageSeq ImageSeq::to(DeviceType device, bool non_blocking) const
-{
-    auto data = data_.to(device, non_blocking);
-    return ImageSeq(data, format_, cm_);
-}
-
-ImageSeq ImageSeq::to(ScalarType dtype) const
-{
-    auto data = data_.to(dtype);
-    return ImageSeq(data, format_, cm_);
-}
-
-ImageSeq ImageSeq::to(ChannelFormat format, bool contiguous) const
-{
-    Tensor data = data_;
-    if(format == ChannelFormat::NCHW && format_ == ChannelFormat::NHWC){
-        data = data_.permute({0, 3, 1, 2});
-    }
-    else if(format == ChannelFormat::NHWC && format_ == ChannelFormat::NCHW){
-        data = data_.permute({0, 2, 3, 1});
-    }
-
-    if(contiguous){
-        data = data.contiguous();
-    }
-    return ImageSeq(data, format, cm_);
-}
-
-ImageSeq& ImageSeq::copy_(const ImageSeq &from)
-{
-    HMP_REQUIRE(data().shape() == from.data().shape(), 
-        "ImageSeq: data shaped are not matched, expect {}, got {}",
-        data().shape(), from.data().shape());
-
-    copy(data_, from.data());
-    return *this;
-}
-
-
-ImageSeq ImageSeq::crop(int left, int top, int w, int h) const
-{
-    auto width = this->width();
-    auto height = this->height();
-    left = wrap_size(left, width);
-    top = wrap_size(top, height);
-
-    auto right = left + w;
-    auto bottom = top + h;
-    HMP_REQUIRE(left < right && right <= width, 
-        "ImageSeq::crop expect left({}) < right({}) and right <= {}", left, right, width);
-    HMP_REQUIRE(top < bottom && bottom <= height, 
-        "ImageSeq::crop expect top({}) < bottom({}) and bottom <= {}", top, bottom, height);
-
-    auto data = data_.slice(wdim(), left, right).slice(hdim(), top, bottom);
-    return ImageSeq(data, format_, cm_);
-}
-
-
-Image ImageSeq::operator[](int64_t index) const
-{
-    HMP_REQUIRE(index < batch(), "ImageSeq: index is out of range");
-    return Image(data_.select(0, index), format(), cm_);
-}
-
-
-ImageSeq ImageSeq::slice(int64_t start, optional<int64_t> end_) const
-{
-    auto end = end_.value_or(data_.size(0)); 
-    auto data = data_.slice(0, start, end);
-    return ImageSeq(data, format_, cm_);
-}
-
-
-ImageSeq ImageSeq::resize(int width, int height, ImageFilterMode mode) const
-{
-    auto shape = data_.shape();
-    shape[wdim()] = width;
-    shape[hdim()] = height;
-    auto data = empty(shape, data_.options());
-
-    img::resize(data, data_, mode, format_);
-
-    return ImageSeq(data, format_, cm_);
-}
-
-ImageSeq ImageSeq::select(int channel) const
-{
-    auto data = data_.slice(cdim(), channel, channel+1);
-    return ImageSeq(data, format_, cm_); 
-}
-
-ImageSeq ImageSeq::rotate(ImageRotationMode mode) const
-{
-    auto width = this->width();
-    auto height = this->height();
-    bool shapeChanged = mode == ImageRotationMode::Rotate90 || mode == ImageRotationMode::Rotate270;
-    if(shapeChanged){
-        std::swap(width, height);
-    }
-
-    auto shape = data_.shape();
-    shape[wdim()] = width;
-    shape[hdim()] = height;
-    auto data = empty(shape, data_.options());
-
-    img::rotate(data, data_, mode, format_);
-
-    return ImageSeq(data, format_, cm_);
-}
-
-
-ImageSeq ImageSeq::mirror(ImageAxis axis) const
-{
-    auto out = empty_like(data_, data_.options());
-    img::mirror(out, data_, axis, format_);
-    return ImageSeq(out, format_, cm_);
+    HMP_REQUIRE(false, "{} to {} not support", stringfy(pix_info_.format()), stringfy(pix_info.format()));
 }
 
 
@@ -414,34 +247,6 @@ FrameSeq concat(const std::vector<Frame> &frames)
     return FrameSeq(planes, frames[0].pix_info());
 }
 
-
-ImageSeq concat(const std::vector<Image> &images)
-{
-    //check
-    HMP_REQUIRE(images.size(), "Image::concat expect at least 1 image");
-    for(size_t i = 1; i < images.size(); ++i){
-        HMP_REQUIRE(images[i].format() == images[0].format(),
-            "Image::concat expect all images have same format {}, got {} at {}",
-            images[0].format(), images[i].format(), i);
-        HMP_REQUIRE(images[i].width() == images[0].width() 
-                   && images[i].height() == images[0].height() 
-                   && images[i].nchannels() == images[0].nchannels(),
-            "Image::concat expect all frame have same size {}, got {} at {}",
-            images[0], images[i], i);
-    }
-
-    //
-    TensorList tensors;
-    for(auto &im : images){
-        tensors.push_back(im.data().unsqueeze(0)); //add batch dim
-    }
-    auto data = hmp::concat(tensors, 0);
-
-
-    return ImageSeq(data, images[0].format(), images[0].color_model());
-}
-
-
 FrameSeq concat(const std::vector<FrameSeq> &frames)
 {
     HMP_REQUIRE(frames.size(), "FrameSeq::concat: require frames.size() > 0");
@@ -469,48 +274,11 @@ FrameSeq concat(const std::vector<FrameSeq> &frames)
     return FrameSeq(planes, frames[0].pix_info());
 }
 
-
-
-ImageSeq concat(const std::vector<ImageSeq> &images)
-{
-    //check
-    HMP_REQUIRE(images.size(), "ImageSeq::concat expect at least 1 image");
-    for(size_t i = 1; i < images.size(); ++i){
-        HMP_REQUIRE(images[i].format() == images[0].format(),
-            "ImageSeq::concat expect all images have same format {}, got {} at {}",
-            images[0].format(), images[i].format(), i);
-        HMP_REQUIRE(images[i].width() == images[0].width() 
-                   && images[i].height() == images[0].height() 
-                   && images[i].nchannels() == images[0].nchannels(),
-            "ImageSeq::concat expect all frame have same size {}, got {} at {}",
-            images[0], images[i], i);
-    }
-
-    //
-    TensorList tensors;
-    for(auto &im : images){
-        tensors.push_back(im.data());
-    }
-    auto data = hmp::concat(tensors);
-
-    return ImageSeq(data, images[0].format(), images[0].color_model());
-}
-
-
-
 std::string stringfy(const FrameSeq &frames)
 {
     return fmt::format("FrameSeq({}, {}, {}, ({}, {}, {}, {}))",
         frames.device(), frames.dtype(), frames.format(),
         frames.batch(), frames.nplanes(), frames.height(), frames.width());
 }
-
-std::string stringfy(const ImageSeq &images)
-{
-    return fmt::format("ImageSeq({}, {}, {}, {})",
-        images.device(), images.dtype(), images.format(),
-        images.data().shape());
-}
-
 
 } //

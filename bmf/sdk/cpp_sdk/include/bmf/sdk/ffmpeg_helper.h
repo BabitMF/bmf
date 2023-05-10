@@ -248,32 +248,8 @@ static SimpleFilterGraph init_reformat_filter(AVFrame *av_frame, const std::stri
 static VideoFrame reformat(const VideoFrame &vf,  const std::string &format_str, SimpleFilterGraph filter_graph = SimpleFilterGraph(), std::string flags = "") {
     HMP_REQUIRE(vf.device().type() == kCPU, "ffmpeg::reformat only support CPU data")
     std::vector<AVFrame*> result_frames;
-    AVFrame *av_frame;
 
-    if(vf.is_image()){
-        HMP_REQUIRE(vf.dtype() == kUInt8 || vf.dtype() == kUInt16,
-                 "ffmpeg::reformat only support Image with dtype kUInt8 or kUInt16")
-
-        // infer source AVPixFormat
-        int avformat = hmp::PF_NONE;
-        switch(vf.image().nchannels()){
-            case 1:
-                avformat = vf.dtype() == kUInt8 ? hmp::PF_GRAY8 : hmp::PF_GRAY16;
-                break;
-            case 3:
-                avformat = vf.dtype() == kUInt8 ? hmp::PF_RGB24 : hmp::PF_RGB48;
-                break;
-            case 4:
-                avformat = vf.dtype() == kUInt8 ? hmp::PF_RGBA32 : hmp::PF_RGBA64;
-                break;
-            default:
-                HMP_REQUIRE(false, "ffmpeg::reformat unsupported image chnanels {}", vf.image().nchannels());
-        }
-
-        av_frame = from_video_frame(vf.to_frame(PixelInfo((PixelFormat)avformat)), false);
-    } else {
-        av_frame = from_video_frame(vf, false);
-    }
+    AVFrame* av_frame = from_video_frame(vf, false);
 
     if (filter_graph.filter_graph_ == nullptr) {
         filter_graph = init_reformat_filter(av_frame, format_str, flags);
@@ -294,6 +270,7 @@ static VideoFrame reformat(const VideoFrame &vf, AVPixelFormat format, SimpleFil
 {
     return reformat(vf, av_get_pix_fmt_name(format), filter_graph, flags);
 }
+
 /*
 static VideoFrame reformat(const VideoFrame &vf, AVPixelFormat format, void **context = nullptr)
 {

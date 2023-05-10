@@ -1004,5 +1004,130 @@ class TestTranscode(BaseTestCase):
                     f.seek(offset, whence)
                 f.write(data)
 
+    @timeout_decorator.timeout(seconds=120)
+    def test_skip_frame(self):
+        input_video_path = "../files/img.mp4"
+        output_path = "./test_skip_frame_videp.mp4"
+        expect_result = '../transcode/test_skip_frame_videp.mp4|1080|1920|7.574233|MOV,MP4,M4A,3GP,3G2,MJ2|1321859|1255038|h264|' \
+            '{"fps": "29.97"}'
+        # 创建BMF Graph
+        graph = bmf.graph()
+    
+        # 构建解码流
+        streams = graph.decode({
+            "input_path": input_video_path,
+            "skip_frame" : 32
+        })
+
+        (   
+            bmf.encode(
+                streams['video'],
+                None,
+                {
+                    "output_path": output_path,
+                    "video_params": {
+                        "codec": "h264",
+                        "crf": 23,
+                        "preset": "veryfast",
+                    }
+                }
+            )
+            .run()
+        )
+        
+    @timeout_decorator.timeout(seconds=120)
+    def test_encoder_push_unmuxed_output_mp4(self):
+        input_video_path = "../files/img.mp4"
+        output_path = "./unmuxed_output.mp4"
+        expect_result = '../transcode/unmuxed_output.mp4|240|320|7.574233|MOV,MP4,M4A,3GP,3G2,MJ2|404941|384340|h264|' \
+                        '{"fps": "29.97002997"}'
+        self.remove_result_data(output_path)
+
+        # create graph
+        graph = bmf.graph()
+
+        # decode
+        video = graph.decode({ #BmfStream
+            "input_path": input_video_path
+        })
+
+        encoded_video = bmf.encode( #BmfStream
+                video['video'],
+                video['audio'],
+                {
+                    "output_path": output_path,
+                    "push_output": 2,
+                    "video_params": {
+                        "codec": "h264",
+                        "width": 320,
+                        "height": 240,
+                        "crf": 23,
+                        "preset": "veryfast"
+                    },
+                    "audio_params": {
+                        "codec": "aac",
+                        "bit_rate": 128000,
+                        "sample_rate": 44100,
+                        "channels": 2
+                    }
+                }
+            )
+
+        (
+            bmf.encode(
+                encoded_video['video'],
+                encoded_video['audio'],
+                {
+                    "output_path": output_path,
+                }
+            )
+                .run()
+        )
+        self.check_video_diff(output_path, expect_result)
+
+    @timeout_decorator.timeout(seconds=120)
+    def test_resolution_limit(self):
+        input_video_path = "../files/resolution_change.mp4"
+        output_path = "./simple.mp4"
+
+        graph = bmf.graph({'dump_graph':1})
+
+        video = graph.decode({
+            "input_path": input_video_path,
+            "max_width_height": 5000,
+            "max_limit_hits": 3 # will throw the exception when exceeded the number of frames
+        })
+
+        try:
+            (
+                bmf.encode(
+                    video['video'],
+                    video['audio'],
+                    {
+                        "output_path": output_path,
+                        "min_frames": 300,
+                        "video_params": {
+                            "codec": "h264",
+                            "width": 640,
+                            "height": 480,
+                            "crf": 23,
+                            "preset": "veryfast"
+                        },
+                        "audio_params": {
+                            "codec": "aac",
+                            "bit_rate": 128000,
+                            "sample_rate": 44100,
+                            "channels": 2
+                        }
+                    }
+                )
+                .run()
+            )
+        except Exception as e:
+            print(e)
+            return
+
+        raise Exception("shouldn't be here, max limit hits exception should be occured and catched")
+
 if __name__ == '__main__':
     unittest.main()

@@ -41,7 +41,6 @@ using hmp::ColorTransferCharacteristic;
 using hmp::PixelInfo;
 using hmp::ChannelFormat;
 
-using hmp::Image;
 using hmp::Frame;
 
 using hmp::kNCHW;

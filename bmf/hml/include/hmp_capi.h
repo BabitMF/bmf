@@ -34,7 +34,6 @@ typedef hmp::Scalar *hmp_Scalar;
 /// imgproc data structures
 typedef hmp::ColorModel* hmp_ColorModel;
 typedef hmp::PixelInfo* hmp_PixelInfo;
-typedef hmp::Image* hmp_Image;
 typedef hmp::Frame* hmp_Frame;
 
 
@@ -51,7 +50,6 @@ typedef void* hmp_StreamGuard;
 
 typedef void* hmp_ColorModel;
 typedef void* hmp_PixelInfo;
-typedef void* hmp_Image;
 typedef void* hmp_Frame;
 
 #endif //__cplusplus
@@ -168,38 +166,8 @@ HMP_API hmp_Frame hmp_frame_to_device(const hmp_Frame frame, const char *device,
 HMP_API void hmp_frame_copy_from(hmp_Frame self, const hmp_Frame from);
 HMP_API hmp_Frame hmp_frame_clone(const hmp_Frame frame);
 HMP_API hmp_Frame hmp_frame_crop(const hmp_Frame frame, int left, int top, int width, int height);
-HMP_API hmp_Image hmp_frame_to_image(const hmp_Frame frame, int cformat);
-HMP_API hmp_Frame hmp_frame_from_image(const hmp_Image image, const hmp_PixelInfo pix_info);
+hmp_Frame hmp_frame_reformat(const hmp_Frame frame, const hmp_PixelInfo pix_info);
 HMP_API const char* hmp_frame_stringfy(const hmp_Frame frame, int *size);
-
-/////////////////// hmp_Image /////////////////
-HMP_API hmp_Image hmp_image_make(int width, int height, int channels, int cformat, 
-				int type, const char *device, bool pinned_memory);
-HMP_API hmp_Image hmp_image_from_data(const hmp_Tensor data, int cformat);
-HMP_API hmp_Image hmp_image_from_data_v1(const hmp_Tensor data, int cformat, const hmp_ColorModel cm);
-HMP_API void hmp_image_free(hmp_Image image);
-
-HMP_API bool hmp_image_defined(const hmp_Image image);
-HMP_API int hmp_image_format(const hmp_Image image);
-HMP_API void hmp_image_set_color_model(hmp_Image image, const hmp_ColorModel cm);
-HMP_API const hmp_ColorModel hmp_image_color_model(const hmp_Image image);
-HMP_API int hmp_image_wdim(const hmp_Image image);
-HMP_API int hmp_image_hdim(const hmp_Image image);
-HMP_API int hmp_image_cdim(const hmp_Image image);
-HMP_API int hmp_image_width(const hmp_Image image);
-HMP_API int hmp_image_height(const hmp_Image image);
-HMP_API int hmp_image_nchannels(const hmp_Image image);
-HMP_API int hmp_image_dtype(const hmp_Image image);
-HMP_API int hmp_image_device_type(const hmp_Image image);
-HMP_API int hmp_image_device_index(const hmp_Image image);
-HMP_API const hmp_Tensor hmp_image_data(const hmp_Image image);
-HMP_API hmp_Image hmp_image_to_device(const hmp_Image image, const char *device, bool non_blocking);
-HMP_API hmp_Image hmp_image_to_dtype(const hmp_Image image, int dtype);
-HMP_API void hmp_image_copy_from(hmp_Image image, const hmp_Image from);
-HMP_API hmp_Image hmp_image_clone(const hmp_Image image);
-HMP_API hmp_Image hmp_image_crop(const hmp_Image image, int left, int top, int width, int height);
-HMP_API hmp_Image hmp_image_select(const hmp_Image image, int channel);
-HMP_API const char* hmp_image_stringfy(const hmp_Image image, int *size);
 
 #ifdef __cplusplus
 } //extern "C"

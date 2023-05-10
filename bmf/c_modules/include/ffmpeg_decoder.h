@@ -34,6 +34,14 @@ extern "C" {
 #include <libavutil/hwcontext.h>
 };
 
+#ifdef BMF_USE_MEDIACODEC
+extern "C" 
+{
+    #include "libavcodec/jni.h"
+}
+#include "c_android_vm.h"
+#endif
+
 typedef struct FilteringContext {
     AVFilterContext *buffersink_ctx;
     AVFilterContext *buffersrc_ctx;
@@ -151,6 +159,10 @@ class CFFDecoder : public Module {
     float max_error_rate_ = 2.0/3;
     int64_t decode_error_[2] = {0};
     int64_t stream_frame_number_ = 0;
+
+    AVCodecParserContext *parser_ = NULL;
+    int max_wh_ = 0;
+    int max_limit_hits_ = -1;
     std::mutex mutex_;
 
     //for raw stream input
@@ -158,6 +170,9 @@ class CFFDecoder : public Module {
     int push_audio_channels_;
     int push_audio_sample_rate_;
     int push_audio_sample_fmt_;
+
+    int orig_pts_time_ = 0;
+
     int process_raw_stream_packet(Task &task, BMFAVPacket &bmf_pkt, bool eof);
 
     int process_input_bmf_av_packet(Task &task);
@@ -179,6 +194,10 @@ class CFFDecoder : public Module {
     int process_task_output_packet(int index, Packet &packet);
     int64_t get_start_time();
     int extract_frames(AVFrame *frame, std::vector<AVFrame*> &output_frames);
+
+#ifdef BMF_USE_MEDIACODEC
+    int init_android_vm();
+#endif
 
 public:
     CFFDecoder(int node_id, JsonParam option);

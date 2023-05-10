@@ -85,6 +85,20 @@ class BmfGraph:
     ## @ingroup pyAPI
     ## @ingroup grphClass
     ###@{
+    #  set new graph options before run
+    #  @param option: the option patch for the graph
+    def set_option(self, option=None):
+    ###@}
+        if option is None:
+            return
+
+        for key in option:
+            self.option_[key] = option[key]
+
+
+    ## @ingroup pyAPI
+    ## @ingroup grphClass
+    ###@{
     #  To get a globalized effect buffer (list) which include all the log coming from ffmpeg libraries
     #
     #  @param level: ffmpeg av log level by default "info" level. it's optional, and also can be set:

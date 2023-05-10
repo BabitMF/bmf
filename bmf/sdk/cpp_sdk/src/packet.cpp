@@ -1,4 +1,3 @@
-
 #include <bmf/sdk/packet.h>
 
 namespace bmf_sdk{
@@ -43,11 +42,23 @@ void Packet::set_timestamp(int64_t timestamp)
     HMP_REQUIRE(*this, "Packet: null packet");
     self->set_timestamp(timestamp);
 }
+    //
+void Packet::set_time(double time)
+{
+    HMP_REQUIRE(*this, "Packet: null packet");
+    self->set_time(time);
+}
 
 int64_t Packet::timestamp() const
 {
     HMP_REQUIRE(*this, "Packet: null packet");
     return self->timestamp();
+}
+
+double Packet::time() const
+{
+    HMP_REQUIRE(*this, "Packet: null packet");
+    return self->time();
 }
 
 
@@ -74,3 +85,4 @@ std::size_t string_hash(const char *str)
 
 
 } //namespace bmf_sdk
+

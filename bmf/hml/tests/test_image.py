@@ -120,15 +120,15 @@ class TestFrame(object):
             d = tmp.plane(i).squeeze().numpy().reshape(ref.shape)
             assert(np.allclose(d, ref))
 
-        # image interop
-        image = frame.to_image(mp.kNHWC)
+        # rgb24
+        rgbformat = mp.PixelInfo(mp.kPF_RGB24)
+        image = frame.reformat(rgbformat)
         assert(image.width() == frame.width())
         assert(image.height() == frame.height())
-        assert(image.nchannels() == 3)
-        diff = np.abs(image.data().view(rgb.shape).numpy() - rgb.astype(np.float32))
+        diff = np.abs(image.plane(0).view(rgb.shape).numpy() - rgb.astype(np.float32))
         assert(np.max(diff) < 20) # only ensure almost equal
 
-        tmp = mp.Frame.from_image(image, pix_info)
+        tmp = image.reformat(pix_info)
         for i in range(tmp.nplanes()):
             d = tmp.plane(i).squeeze().numpy().reshape(yuv[i].shape)
             diff = np.abs(d.astype(np.float32) - yuv[i])
@@ -195,99 +195,70 @@ class TestFrame(object):
 class TestImage(object):
     @pytest.mark.skipif(not has_cuda, reason="need enable cuda")
     def test_image_make(self,):
-        image0 = mp.Image(1920, 1080, 3, mp.kNCHW, device="cuda:0", dtype=mp.uint16)
-        image1 = mp.Image(1920, 1080, 3, mp.kNHWC, device="cuda:0", dtype=mp.uint16)
+        rgbformat = mp.PixelInfo(mp.kPF_RGB48)
+        image = mp.Frame(1920, 1080, rgbformat, device="cuda:0")
 
-        assert(image0.width() == 1920)
-        assert(image0.height() == 1080)
-        assert(image0.nchannels() == 3)
-        assert(image0.format() == mp.kNCHW)
-        assert(image0.dtype() == mp.uint16)
-        assert(image0.device().type() == mp.kCUDA)
-
-        assert(image1.width() == 1920)
-        assert(image1.height() == 1080)
-        assert(image1.nchannels() == 3)
-        assert(image1.format() == mp.kNHWC)
-        assert(image1.dtype() == mp.uint16)
-        assert(image1.device().type() == mp.kCUDA)
+        assert(image.width() == 1920)
+        assert(image.height() == 1080)
+        assert(image.dtype() == mp.uint16)
+        assert(image.device().type() == mp.kCUDA)
 
 
     def test_image(self, yuv_rgb):
         fmt, yuv, _, rgb = yuv_rgb
         mp_rgb = mp.from_numpy(rgb)
 
-        image = mp.Image(mp_rgb, mp.kNHWC)
-        assert(image.format() == mp.kNHWC)
-        assert(image.wdim() == 1)
-        assert(image.hdim() == 0)
-        assert(image.cdim() == 2)
+        rgbformat = mp.PixelInfo(mp.kPF_RGB24)
+        image = mp.Frame(mp_rgb, rgbformat)
         assert(image.width() == rgb.shape[1])
         assert(image.height() == rgb.shape[0])
-        assert(image.nchannels() == rgb.shape[2])
         assert(image.device().type() == mp.kCPU)
 
         #
         if has_cuda:
             tmp = image.to(mp.kCUDA).to(mp.kCPU)
-            assert(np.allclose(rgb, image.data().numpy()))
+            assert(np.allclose(rgb, image.plane(0).numpy()))
 
         #
-        tmp = image.to(mp.kNCHW)
-        assert(tmp.wdim() == 2)
-        assert(tmp.hdim() == 1)
-        assert(tmp.cdim() == 0)
+        tmp_tensor = image.crop(100, 150, 200, 300).plane(0)
 
-        #
-        tmp = image.crop(100, 150, 200, 300).data()
-        assert(np.allclose(tmp.numpy(), rgb[150:450, 100:300]))
+        assert(np.allclose(tmp_tensor.numpy(), rgb[150:450, 100:300]))
 
-        for i in range(image.nchannels()):
+        for i in range(3):
             ref = rgb[:, :, i]
-            tmp = image.select(i).data().view(ref.shape).numpy()
+            tmp = image.plane(0).slice(2, i, i+1).view(ref.shape).numpy()
             assert(np.allclose(tmp, ref))
-
 
     def test_image_seq(self, yuv_rgb):
         fmt, yuv, _ ,rgb = yuv_rgb
 
         batch = 4
         rgbs = np.vstack([rgb[np.newaxis, ...] + i for i in range(batch)])
-        images = [mp.Image(mp.from_numpy(rgbs[i]), mp.kNHWC) for i in range(batch)]
+        rgbformat = mp.PixelInfo(mp.kPF_RGB24)
+        images = [mp.Frame(mp.from_numpy(rgbs[i]), rgbformat) for i in range(batch)]
         image_seq = mp.concat(images)
 
-        assert(image_seq.format() == mp.kNHWC)
-        assert(image_seq.wdim() == 2)
-        assert(image_seq.hdim() == 1)
-        assert(image_seq.cdim() == 3)
         assert(image_seq.width() == rgb.shape[1])
         assert(image_seq.height() == rgb.shape[0])
-        assert(image_seq.nchannels() == rgb.shape[2])
+        assert(image_seq.nplanes() == 1)
         assert(image_seq.device().type() == mp.kCPU)
 
         #
         if has_cuda:
             tmp = image_seq.to(mp.kCUDA).to(mp.kCPU)
-            assert(np.allclose(rgbs, image_seq.data().numpy()))
+            assert(np.allclose(rgbs, image_seq.plane(0).numpy()))
 
-        #
-        tmp = image_seq.to(mp.kNCHW)
-        assert(tmp.wdim() == 3)
-        assert(tmp.hdim() == 2)
-        assert(tmp.cdim() == 1)
-
-        #
-        tmp = image_seq.crop(100, 150, 200, 300).data()
+        tmp = image_seq.crop(100, 150, 200, 300).plane(0)
         assert(np.allclose(tmp.numpy(), rgbs[:, 150:450, 100:300]))
 
-        for i in range(image_seq.nchannels()):
+        for i in range(3):
             ref = rgbs[:, :, :, i]
-            tmp = image_seq.select(i).data().view(ref.shape).numpy()
+            tmp = image_seq.plane(0).slice(3, i, i+1).view(ref.shape).numpy()
             assert(np.allclose(tmp, ref))
 
         tmp = image_seq.slice(1, 3)
-        assert(np.allclose(tmp.data().numpy(), rgbs[1:3]))
+        assert(np.allclose(tmp.plane(0).numpy(), rgbs[1:3]))
 
         #
         tmp = image_seq[0]
-        assert(np.allclose(tmp.data().numpy(), rgbs[0]))
+        assert(np.allclose(tmp.plane(0).numpy(), rgbs[0]))

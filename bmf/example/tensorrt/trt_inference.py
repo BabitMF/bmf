@@ -94,13 +94,23 @@ class trt_inference(Module):
 
         self.frame_cache_ = Queue()
 
+        self.infer_args = {
+            "engine": self.engine_,
+            "context": self.context_,
+            "stream": self.stream_,
+            "frame_cache": self.frame_cache_,
+        }
+        self.infer_args.update(option)
+
         self.eof_received_ = False
     
     # default_pre_process just combines batch_size frames into one input tensor for tensorrt
-    def default_pre_process(self, frame_cache, in_frame_num):
+    def default_pre_process(self, infer_args):
         assert len(self.num_inputs_) == 1, "default_pre_process can only be applied on the model with single input, \
                                             write a new customized process for your model."
         input_dict = dict()
+        frame_cache = infer_args["frame_cache"]
+        in_frame_num = infer_args["in_frame_num"]
         frame_num = min(frame_cache, in_frame_num)
         input_frames = []
         input_torch_arrays = []
@@ -116,13 +126,15 @@ class trt_inference(Module):
             input_torch_arrays.append(input_torch_arrays[-1])
         
         input_dict[self.tensor_names_[0]] = torch.stack(input_torch_arrays, 0).data_ptr()
-
-        return input_dict
+        infer_args["input_dict"] = input_dict
     
     # default_post_process just separate batched tensor into multiple frames
-    def default_post_process(self, frame_cache, output_dict, out_frame_num):
+    def default_post_process(self, infer_args):
         assert len(self.num_outputs_) == 1, "default_post_process can only be applied on the model with single input, \
                                              write a new customized process for your model."
+        output_dict = infer_args["output_dict"]
+        frame_cache = infer_args["frame_cache"]
+        out_frame_num = infer_args["out_frame_num"]
         assert output_dict is not None, "output dict is None."
 
         output_tensor = output_dict[self.tensor_names_[1]]
@@ -146,18 +158,22 @@ class trt_inference(Module):
         
         return out_frames
 
-    def inference(self):
-        input_dict = self.pre_process_(self.frame_cache_, self.in_frame_num_)
+    def inference(self, infer_args):
+        self.pre_process_(infer_args)
+
+        inputs = infer_args["input_dict"]
 
         for i in range(self.num_inputs_):
-            self.context_.set_tensor_address(self.tensor_names_[i], int(input_dict[self.tensor_names_[i]]))
+            self.context_.set_tensor_address(self.tensor_names_[i], int(inputs[self.tensor_names_[i]]))
         
         for i in range(self.num_inputs_, self.num_io_tensors_):
             self.context_.set_tensor_address(self.tensor_names_[i], int(self.output_dict_[self.tensor_names_[i]].torch().data_ptr()))
         
         self.context_.execute_async_v3(self.stream_.handle())
 
-        return self.post_process_(self.frame_cache_, self.output_dict_, self.out_frame_num_)
+        infer_args["output_dict"] = self.output_dict_
+
+        return self.post_process_(infer_args)
 
     def process(self, task):
         # get input and output packet queue
@@ -175,7 +191,7 @@ class trt_inference(Module):
         while self.frame_cache_.qsize() >= self.in_frame_num_ or \
                 self.eof_received_:
             if self.frame_cache_.qsize() > 0:
-                out_frames = self.inference()
+                out_frames = self.inference(self.infer_args)
                 for frame in out_frames:
                     pkt = Packet(frame)
                     pkt.timestamp = frame.pts

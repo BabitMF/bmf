@@ -7,7 +7,9 @@ sys.path.append("../tensorrt/")
 import bmf
 import hmp as mp
 
-def trt_sr_pre_process(frame_cache, in_frame_num):
+def trt_sr_pre_process(infer_args):
+    frame_cache = infer_args["frame_cache"]
+    in_frame_num = infer_args["in_frame_num"]
     frame_num = min(frame_cache.qsize(), in_frame_num)
     input_frames = []
     input_torch_array = []
@@ -25,10 +27,13 @@ def trt_sr_pre_process(frame_cache, in_frame_num):
 
     input_dict = dict()
     input_dict["input:0"] = input_tensor.data_ptr()
+    infer_args["input_dict"] = input_dict
 
-    return input_dict
+def trt_sr_post_process(infer_args):
+    frame_cache = infer_args["frame_cache"]
+    out_frame_num = infer_args["out_frame_num"]
 
-def trt_sr_post_process(frame_cache, output_dict, out_frame_num):
+    output_dict = infer_args["output_dict"]
     output_tensor = output_dict["output:0"]
 
     output_tensor_torch = output_tensor.torch()

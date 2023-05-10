@@ -1682,7 +1682,7 @@ int CFFEncoder::process(Task &task) {
 
             if (index == 0) {
                 auto video_frame = packet.get<VideoFrame>();
-                frame = av_frame_clone(ffmpeg::from_video_frame(video_frame, false));
+                frame = ffmpeg::from_video_frame(video_frame, false);
 
                 if (oformat_ == "image2pipe" && push_output_) { //only support to carry orig pts time for images
                     std::string stime = "";

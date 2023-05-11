@@ -34,7 +34,9 @@ namespace hmp{
     _(H444)                         \
     _(NV12)                         \
     _(NV21)                         \
-    _(RGBA)                         
+    _(RGBA)                         \
+    _(NV12_BT709)                   \
+    _(NV21_BT709)
 
 //internal use only
 enum class PPixelFormat : uint8_t{

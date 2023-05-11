@@ -146,6 +146,10 @@ static PPixelFormat infer_ppixel_format(const PixelInfo &info)
                 return PPixelFormat::H422;
             case PF_YUV444P:
                 return PPixelFormat::H444;
+            case PF_NV12:
+                return PPixelFormat::NV12_BT709;
+            case PF_NV21:
+                return PPixelFormat::NV21_BT709;
             default:
                 HMP_REQUIRE(false, "Unsupport PixelInfo");
         }

@@ -49,7 +49,9 @@ struct YUV2RGB
 
         if(format == PPixelFormat::H420 ||
            format == PPixelFormat::H422 || 
-           format == PPixelFormat::H444){ //BT.709 limited range
+           format == PPixelFormat::H444 ||
+           format == PPixelFormat::NV21_BT709 ||
+           format == PPixelFormat::NV12_BT709) { //BT.709 limited range
             rgb[0] = yuv.dot(wtype{1.164384f, 0.f, 1.792741f});
             rgb[1] = yuv.dot(wtype{1.164384f, -0.213249f, -0.532909f});
             rgb[2] = yuv.dot(wtype{1.164384f, 2.112402f, 0.f});
@@ -99,7 +101,9 @@ struct RGB2YUV
 
         if(format == PPixelFormat::H420 ||
            format == PPixelFormat::H422 || 
-           format == PPixelFormat::H444){ //BT.709 limited range
+           format == PPixelFormat::H444 ||
+           format == PPixelFormat::NV21_BT709 ||
+           format == PPixelFormat::NV12_BT709) { //BT.709 limited range
             yuv[0] = rgb.dot(wtype{0.18258588f,  0.61423059f,  0.06200706f});
             yuv[1] = rgb.dot(wtype{-0.10064373f, -0.33857195f,  0.43921569f});
             yuv[2] = rgb.dot(wtype{0.43921569f, -0.39894216f, -0.04027352f});

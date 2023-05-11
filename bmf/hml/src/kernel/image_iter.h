@@ -388,7 +388,9 @@ struct YUVIter<T, format,
 template<typename T, PPixelFormat format>
 struct YUVIter<T, format, 
     std::enable_if_t<format==PPixelFormat::NV21 ||
-                     format==PPixelFormat::NV12
+                     format==PPixelFormat::NV12 ||
+                     format==PPixelFormat::NV21_BT709 || 
+                     format==PPixelFormat::NV12_BT709
                      >>
 {
     const static int wshift = 1;
@@ -417,7 +419,7 @@ struct YUVIter<T, format,
         T y = yiter.get(batch, w, h)[0];
         auto uv = uviter.get(batch, w>>wshift, h>>hshift);
 
-        if(format == PPixelFormat::NV12){
+        if(format == PPixelFormat::NV12 || format == PPixelFormat::NV12_BT709) {
             return Vector<T, 3>(y, uv[0], uv[1]);
         }
         else{
@@ -429,7 +431,7 @@ struct YUVIter<T, format,
     {
         yiter.set(batch, w, h, typename YIter::value_type(yuv[0]));
 
-        if(format == PPixelFormat::NV12){
+        if(format == PPixelFormat::NV12 || format == PPixelFormat::NV12_BT709) {
             uviter.set(batch, w>>wshift, h>>hshift,
                 typename UVIter::value_type(yuv[1], yuv[2]));
         }

@@ -85,11 +85,9 @@ endif()
 
 include(cmake/dependencies.cmake)
 
-IF(BMF_USE_MEDIACODEC)
-
-add_definitions("-DBMF_USE_MEDIACODEC")
-
-endif(USE_MEDIACODEC)
+if(BMF_USE_MEDIACODEC)
+    add_definitions("-DBMF_USE_MEDIACODEC")
+endif()
 
 
 ### 

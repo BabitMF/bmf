@@ -62,18 +62,19 @@ struct LogBufferPrivate
 
 void LogBuffer::register_av_log_set_callback(void *func)
 {
-    {
-        std::lock_guard l(self.mutex);
-        self.av_log_set_callback = decltype(self.av_log_set_callback)(func);
+    std::lock_guard l(self.mutex);
+    self.av_log_set_callback = decltype(self.av_log_set_callback)(func);
+
+    if (self.log_cb_hooks.size() > 0) {
+        set_av_log_callback();
     }
-    set_av_log_callback();
 }
 
 int LogBuffer::set_cb_hook(std::function<void(std::string const)> cb)
 {
+    std::lock_guard<std::mutex> _(self.mutex);
     if (!self.avlog_cb_set)
         set_av_log_callback();
-    std::lock_guard<std::mutex> _(self.mutex);
     self.log_cb_hooks[self.log_cb_idx] = std::move(cb);
     return self.log_cb_idx++;
 }
@@ -99,7 +100,7 @@ void LogBuffer::lb_callback(void *ptr, int level, const char *fmt, va_list vl)
 
 void LogBuffer::set_av_log_callback()
 {
-    std::lock_guard<std::mutex> _(self.mutex);
+    //std::lock_guard<std::mutex> _(self.mutex);
     if (!self.avlog_cb_set && self.av_log_set_callback != nullptr)
     {
         self.av_log_set_callback(lb_callback);

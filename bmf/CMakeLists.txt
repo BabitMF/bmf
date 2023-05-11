@@ -39,12 +39,14 @@ else()
     )
 endif()
 
-add_custom_command(
-    OUTPUT
-        ${CMAKE_CURRENT_BINARY_DIR}/__always_update 
-        ${CMAKE_CURRENT_BINARY_DIR}/always_update
-    COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/always_update
-)
+if(NOT WIN32)
+    add_custom_command(
+        OUTPUT
+            ${CMAKE_CURRENT_BINARY_DIR}/__always_update
+            ${CMAKE_CURRENT_BINARY_DIR}/always_update
+        COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/always_update
+    )
+endif()
 
 function(copy_dir_to_bmf_module)
     if(ARGV1)
@@ -133,20 +135,21 @@ set(HML_ROOT ${PROJECT_SOURCE_DIR}/bmf/hml)
 add_custom_command(TARGET bmf_assem
     POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:hmp> ${BMF_ASSEMBLE_ROOT}/bmf/lib
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:fmt> ${BMF_ASSEMBLE_ROOT}/bmf/lib
 )
 
 ## copy symbol link of hmp and _jhmp
 if(NOT APPLE AND NOT ANDROID)
     add_custom_command(TARGET bmf_assem
         POST_BUILD
-            COMMAND cp -a 
-            $<TARGET_FILE_DIR:hmp>/${CMAKE_SHARED_LIBRARY_PREFIX}hmp${CMAKE_SHARED_LIBRARY_SUFFIX}* ${BMF_ASSEMBLE_ROOT}/bmf/lib
+            COMMAND ${CMAKE_COMMAND} -E copy
+            $<TARGET_FILE_DIR:hmp>/${CMAKE_SHARED_LIBRARY_PREFIX}hmp${CMAKE_SHARED_LIBRARY_SUFFIX} ${BMF_ASSEMBLE_ROOT}/bmf/lib
     )
 
     if(BMF_ENABLE_JNI)
         add_custom_command(TARGET bmf_assem
             POST_BUILD
-                COMMAND cp -a 
+                COMMAND ${CMAKE_COMMAND} -E copy
                 $<TARGET_FILE_DIR:_jhmp>/${CMAKE_SHARED_LIBRARY_PREFIX}_jhmp${CMAKE_SHARED_LIBRARY_SUFFIX} ${BMF_ASSEMBLE_ROOT}/bmf/lib
         )
     endif()

@@ -57,27 +57,28 @@ struct D : public C { // moveable only
 BMF_DEFINE_TYPE(test::C)
 BMF_DEFINE_TYPE(test::D)
 
-TEST(type_info, type_info) {
-    // default using type_id
-    EXPECT_TRUE(type_info<A>() == type_info<const A>());
-    EXPECT_TRUE(type_info<A>() == type_info<const A &>());
-    EXPECT_TRUE(type_info<A>() == type_info<const A &&>());
-    EXPECT_TRUE(type_info<A>() == type_info<A &&>());
-    EXPECT_TRUE(type_info<A>() != type_info<B>());
+TEST(type_info, type_info)
+{
+    //default using type_id
+    EXPECT_TRUE(bmf_sdk::type_info<A>() == bmf_sdk::type_info<const A>());
+    EXPECT_TRUE(bmf_sdk::type_info<A>() == bmf_sdk::type_info<const A&>());
+    EXPECT_TRUE(bmf_sdk::type_info<A>() == bmf_sdk::type_info<const A&&>());
+    EXPECT_TRUE(bmf_sdk::type_info<A>() == bmf_sdk::type_info<A&&>());
+    EXPECT_TRUE(bmf_sdk::type_info<A>() != bmf_sdk::type_info<B>());
 
-    // register by BMF_DEFINE_TYPE
-    auto &c_info = type_info<test::C>();
-    auto &d_info = type_info<test::D>();
-    EXPECT_TRUE(type_info<A>() != c_info);
-    EXPECT_TRUE(type_info<test::D>() != c_info);
+    //register by BMF_DEFINE_TYPE
+    auto &c_info = bmf_sdk::type_info<test::C>();
+    auto &d_info = bmf_sdk::type_info<test::D>();
+    EXPECT_TRUE(bmf_sdk::type_info<A>() != c_info);
+    EXPECT_TRUE(bmf_sdk::type_info<test::D>() != c_info);
     EXPECT_EQ(c_info.name, std::string("test::C"));
     EXPECT_EQ(d_info.name, std::string("test::D"));
 
-    // pre-define types
-    EXPECT_EQ(type_info<std::string>().name, std::string("std::string"));
-    EXPECT_EQ(type_info<Tensor>().name, std::string("hmp::Tensor"));
-    EXPECT_EQ(type_info<VideoFrame>().name, std::string("bmf_sdk::VideoFrame"));
-    EXPECT_EQ(type_info<AudioFrame>().name, std::string("bmf_sdk::AudioFrame"));
+    //pre-define types
+    EXPECT_EQ(bmf_sdk::type_info<std::string>().name, std::string("std::string"));
+    EXPECT_EQ(bmf_sdk::type_info<Tensor>().name, std::string("hmp::Tensor"));
+    EXPECT_EQ(bmf_sdk::type_info<VideoFrame>().name, std::string("bmf_sdk::VideoFrame"));
+    EXPECT_EQ(bmf_sdk::type_info<AudioFrame>().name, std::string("bmf_sdk::AudioFrame"));
 }
 
 TEST(packet, constructors) {

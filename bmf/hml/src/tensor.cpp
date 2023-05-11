@@ -455,7 +455,8 @@ Tensor &hstack(Tensor &out, const TensorList &tensors) {
     return kernel::hstack(out, tensors);
 }
 
-#if defined(__ANDROID__) && HMP_NDK_VERSION < 24
+
+#if (defined(__ANDROID__) && HMP_NDK_VERSION < 24) || defined(_WIN32)
 #define FSEEK fseek
 #define FTELL ftell
 #else

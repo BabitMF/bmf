@@ -71,7 +71,7 @@ if(HMP_ENABLE_JNI)
     add_subdirectory(java)
 endif()
 
-if(NOT HMP_ENABLE_MOBILE)
+if(NOT HMP_ENABLE_MOBILE AND NOT WIN32)
     add_subdirectory(perf)
 endif()
 

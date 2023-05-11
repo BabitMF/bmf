@@ -96,35 +96,8 @@ class CPPModuleFactory : public ModuleFactoryI {
     }
 };
 
-struct ModuleManager::Private {
-    nlohmann::json builtin_config;
-    std::string builtin_root;
-    std::vector<std::string> repo_roots;
 
-    // cached module info
-    std::map<std::string, ModuleInfo> known_modules;
-
-    // cached moudle factories
-    std::map<std::string, std::shared_ptr<ModuleFactoryI>> factories;
-
-    // supported module loaders
-    std::map<std::string, std::function<ModuleFactoryI *(const ModuleInfo &)>>
-        loaders;
-};
-
-ModuleManager::ModuleManager() {
-    if (false == inited) {
-        init();
-    }
-}
-
-bool ModuleManager::set_repo_root(const std::string &path) {
-    std::lock_guard<std::mutex> guard(m_mutex);
-    if (fs::exists(path)) {
-        self->repo_roots.push_back(path);
-    }
-    return true;
-}
+ModuleManager::ModuleManager(){}
 
 std::function<ModuleFactoryI *(const ModuleInfo &)>
 ModuleManager::get_loader(const std::string module_type) {

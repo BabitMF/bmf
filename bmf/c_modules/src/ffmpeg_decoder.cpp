@@ -79,8 +79,6 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
     extract_frames_device_ = "";
     stream_frame_number_ = 0;
 
-    if (!LogBuffer::avlog_cb_set())
-        av_log_set_level(AV_LOG_VERBOSE);
     /** @addtogroup DecM
      * @{
      * @arg loglevel: to set the loglevel of ffmpeg library

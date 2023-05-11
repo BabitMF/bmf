@@ -303,8 +303,6 @@ int CFFEncoder::init() {
      * @{
      * @arg loglevel: without using the logbuffer of builder API, to set the ffmpeg av log level: "quiet","panic","fatal","error","warning","info","verbose","debug","trace"
      * @} */
-    if (!LogBuffer::avlog_cb_set())
-        av_log_set_level(AV_LOG_VERBOSE);
     if (input_option_.has_key("loglevel")) {
         std::string log_level = "";
         input_option_.get_string("loglevel", log_level);

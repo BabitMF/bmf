@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+#pragma once
+
+#include <bmf/sdk/config.h>
+
 #ifndef BMF_COMMON_H
 #define BMF_COMMON_H
 
@@ -27,7 +31,8 @@
 
 #define likely(x)      __builtin_expect(!!(x), 1)
 #define unlikely(x)    __builtin_expect(!!(x), 0)
-#define BMF_SDK_VERSION "v1.0.0"
+
+#define BMF_SDK_VERSION BMF_BUILD_VERSION
 
 //interface export
 #ifdef _WIN32

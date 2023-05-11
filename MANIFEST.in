@@ -1,0 +1,7 @@
+recursive-include bmf
+prune bmf/example*
+prune bmf/cmd*
+prune bmf/docs*
+prune bmf/sdk*
+global-exclude *.a
+

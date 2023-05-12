@@ -152,7 +152,7 @@ endif()
 
 add_custom_command(TARGET bmf_assem
     POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${HML_ROOT}/hmp ${BMF_ASSEMBLE_ROOT}/hmp
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${HML_ROOT}/hmp ${BMF_ASSEMBLE_ROOT}/bmf/hml/hmp
 )
 
 

@@ -124,7 +124,7 @@ class trt_face_detect(Module):
         torch_mean = torch.empty((1, 3, 1, 1), device="cuda").fill_(0.5)
         torch_std = torch.empty((1, 3, 1, 1), device="cuda").fill_(0.5)
 
-        input_tensor = (input_tensor - torch_mean) / torch_std
+        input_tensor = (input_tensor / 255 - torch_mean) / torch_std
 
         return input_tensor
 
@@ -141,7 +141,7 @@ class trt_face_detect(Module):
                     y1 = int(box[1] * image.size[1])
                     x2 = int(box[2] * image.size[0])
                     y2 = int(box[3] * image.size[1])
-                    detect_result = DetectResult(x1, y2, x2, y2, 1, scores[image_id, index, 1])
+                    detect_result = DetectResult(x1, y1, x2, y2, 1, scores[image_id, index, 1])
                     box_data.append(detect_result)
             output_list.append(box_data)
         return output_list
@@ -191,7 +191,7 @@ class trt_face_detect(Module):
         input_tensor = self.pre_process(torch_image_array)
 
         for i in range(self.num_inputs_):
-            self.context_.set_tensor_address(self.tensor_names_[i], int(input_tensor.data_ptr()))
+            self.context_.set_tensor_address(self.tensor_names_[i], int(input_tensor.contiguous().data_ptr()))
 
         for i in range(self.num_inputs_, self.num_io_tensors_):
             self.context_.set_tensor_address(self.tensor_names_[i], int(self.output_dict_[self.tensor_names_[i]].torch().data_ptr()))

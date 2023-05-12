@@ -146,9 +146,12 @@ class onnx_face_detect(Module):
         if frame_num==0:
             return [],[]
         for i in range(frame_num):
-            frame = self.frame_cache_.get()
-            input_frames.append(frame)
-            input_pil_arrays.append(Image.fromarray(np.uint8(frame.image().data().numpy())))
+            vf = self.frame_cache_.get()
+            input_frames.append(vf)
+
+            rgb = mp.PixelInfo(mp.kPF_RGB24)
+            numpy_vf = vf.reformat(rgb).frame().plane(0).numpy()
+            input_pil_arrays.append(Image.fromarray(numpy_vf))
 
         input_tensor = self.pre_process(input_pil_arrays)
         scores,boxes = self.sess_.run(self.output_names_, {self.input_names_[0]: input_tensor})

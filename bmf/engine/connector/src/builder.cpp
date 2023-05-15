@@ -31,11 +31,13 @@ namespace bmf::builder {
 namespace internal {
 RealStream::RealStream(const std::shared_ptr<RealNode> &node, std::string name,
                        std::string notify, std::string alias)
-    : node_(node), name_(std::move(name)), notify_(std::move(notify)),
+    : node_(node), graph_(node->graph_), name_(std::move(name)), notify_(std::move(notify)),
       alias_(std::move(alias)) {}
 
 void RealStream::SetNotify(std::string const &notify) {
     auto node = node_.lock();
+    if (!node)
+        throw std::logic_error("Could not call SetNotify on an input stream.");
     int idx = -1;
     for (idx = 0; idx < node->outputStreams_.size(); ++idx)
         if (node->outputStreams_[idx]->name_ == name_)
@@ -47,6 +49,8 @@ void RealStream::SetNotify(std::string const &notify) {
 
 void RealStream::SetAlias(std::string const &alias) {
     auto node = node_.lock();
+    if (!node)
+        throw std::logic_error("Could not call SetAlias on an input stream.");
     int idx = -1;
     for (idx = 0; idx < node->outputStreams_.size(); ++idx)
         if (node->outputStreams_[idx]->name_ == name_)
@@ -63,7 +67,7 @@ std::shared_ptr<RealNode> RealStream::AddModule(
     std::string const &modulePath, std::string const &moduleEntry,
     InputManagerType inputStreamManager, int scheduler) {
     inputStreams.insert(inputStreams.begin(), shared_from_this());
-    return node_.lock()->graph_.lock()->AddModule(
+    return graph_.lock()->AddModule(
         alias, option, inputStreams, moduleName, moduleType, modulePath,
         moduleEntry, inputStreamManager, scheduler);
 }
@@ -78,9 +82,15 @@ nlohmann::json RealStream::Dump() {
 }
 
 void RealStream::Start() {
-    auto node = node_.lock();
-    node->graph_.lock()->Start(shared_from_this(), false, true);
+    std::vector<std::shared_ptr<internal::RealStream> > generateRealStreams;
+    generateRealStreams.emplace_back(shared_from_this());
+    graph_.lock()->Start(generateRealStreams, false, true);
 }
+
+std::string RealStream::GetName() {
+    return name_;
+}
+
 
 RealNode::ModuleMetaInfo::ModuleMetaInfo(std::string moduleName,
                                          ModuleType moduleType,
@@ -411,12 +421,11 @@ int RealGraph::Run(bool dumpGraph, bool needMerge) {
     return graphInstance_->close();
 }
 
-void RealGraph::Start(const std::shared_ptr<internal::RealStream> &stream,
-                      bool dumpGraph, bool needMerge) {
-    outputStreams_.emplace_back(stream);
-    generatorStreamName = stream->name_;
+void RealGraph::Start(const std::vector<std::shared_ptr<internal::RealStream> >& streams,
+                              bool dumpGraph, bool needMerge) {
+    outputStreams_.insert(outputStreams_.end(), streams.begin(), streams.end());
     Start(dumpGraph, needMerge);
-}
+} 
 
 bmf::BMFGraph RealGraph::Instantiate(bool dumpGraph, bool needMerge) {
     auto graph_config = Dump().dump(4);
@@ -439,11 +448,20 @@ bmf::BMFGraph RealGraph::Instance() {
     return *graphInstance_;
 }
 
-Packet RealGraph::Generate() {
-    Packet pkt =
-        graphInstance_->poll_output_stream_packet(generatorStreamName, true);
-    return pkt;
+Packet RealGraph::Generate(std::string streamName, bool block) {
+    return graphInstance_->poll_output_stream_packet(streamName, block);
 }
+
+int RealGraph::FillPacket(std::string streamName, Packet packet, bool block) {
+    return graphInstance_->add_input_stream_packet(streamName, packet, block);
+}
+
+std::shared_ptr<RealStream> RealGraph::InputStream(std::string streamName, std::string notify, std::string alias) {
+    auto realStream = std::make_shared<internal::RealStream>(shared_from_this(), streamName, notify, alias);
+    inputStreams_.emplace_back(realStream);
+    return realStream;
+}
+
 } // namespace internal
 
 std::string GetVersion() { return BMF_VERSION; }
@@ -596,6 +614,11 @@ Node Stream::ConnectNewModule(
                                   moduleType, modulePath, moduleEntry,
                                   inputStreamManager, scheduler));
 }
+
+std::string Stream::GetName() {
+    return baseP_->GetName();
+}
+
 
 Node::Node(std::shared_ptr<internal::RealNode> baseP)
     : baseP_(std::move(baseP)) {}
@@ -758,8 +781,16 @@ int Graph::Run(bool dumpGraph, bool needMerge) {
     return graph_->Run(dumpGraph, needMerge);
 }
 
-void Graph::Start(bool dumpGraph, bool needMerge) {
-    graph_->Start(dumpGraph, needMerge);
+void Graph::Start(std::vector<Stream>& generateStreams, bool dumpGraph, bool needMerge) {
+    std::vector<std::shared_ptr<internal::RealStream> > generateRealStreams;
+    generateRealStreams.reserve(generateStreams.size());
+    for (auto &s:generateStreams)
+        generateRealStreams.emplace_back(s.baseP_);
+    graph_->Start(generateRealStreams, dumpGraph, needMerge);
+}
+
+Packet Graph::Generate(std::string streamName, bool block) {
+    return graph_->Generate(streamName, block);
 }
 
 Packet Graph::Generate() { return graph_->Generate(); }
@@ -994,20 +1025,28 @@ SyncPackets Graph::Process(SyncModule module, SyncPackets pkts) {
     return returnPkts;
 }
 
-void Graph::Init(SyncModule module) { module.moduleInstance->init(); }
+int32_t Graph::Init(SyncModule module) { return module.moduleInstance->init(); }
 
-void Graph::Close(SyncModule module) { module.moduleInstance->close(); }
+int32_t Graph::Close(SyncModule module) { return module.moduleInstance->close(); }
 
-void Graph::SendEOF(SyncModule module) {
+int32_t Graph::SendEOF(SyncModule module) {
     auto task = bmf_sdk::Task(0, module.inputStreams, module.outputStreams);
     for (auto id : module.inputStreams) {
         task.fill_input_packet(id, Packet::generate_eof_packet());
     }
-    module.moduleInstance->process(task);
+    return module.moduleInstance->process(task);
 }
 
 void Graph::SetOption(const bmf_sdk::JsonParam &optionPatch) {
     graph_->SetOption(optionPatch);
+}
+
+Stream Graph::InputStream(std::string streamName, std::string notify, std::string alias) {
+    return Stream(graph_->InputStream(streamName, notify, alias));
+}
+
+int Graph::FillPacket(std::string streamName, Packet packet, bool block) {
+    return graph_->FillPacket(streamName, packet, block);
 }
 
 void SyncPackets::Insert(int streamId, std::vector<Packet> frames) {
@@ -1047,17 +1086,17 @@ SyncPackets SyncModule::ProcessPkts(SyncPackets pkts) {
     return returnPkts;
 }
 
-void SyncModule::Process(bmf_sdk::Task task) { moduleInstance->process(task); }
+int32_t SyncModule::Process(bmf_sdk::Task task) { return moduleInstance->process(task); }
 
-void SyncModule::SendEOF() {
+int32_t SyncModule::SendEOF() {
     auto task = bmf_sdk::Task(0, inputStreams, outputStreams);
     for (auto id : inputStreams) {
         task.fill_input_packet(id, Packet::generate_eof_packet());
     }
-    moduleInstance->process(task);
+    return moduleInstance->process(task);
 }
 
-void SyncModule::Init() { moduleInstance->init(); }
+int32_t SyncModule::Init() { return moduleInstance->init(); }
 
-void SyncModule::Close() { moduleInstance->close(); }
+int32_t SyncModule::Close() { return moduleInstance->close(); }
 } // namespace bmf::builder

@@ -49,5 +49,9 @@ TEST(cpp_set_option, set_option) {
     graph.SetOption(bmf_sdk::JsonParam(option_patch));
     graph.Run(false);
 
-    EXPECT_EQ(true, access(graph_json.c_str(), F_OK) == 0);
+    #ifdef _WIN32
+        EXPECT_EQ(true, _access(graph_json.c_str(), 0) == 0);
+    #else
+        EXPECT_EQ(true, access(graph_json.c_str(), F_OK) == 0);
+    #endif
 }

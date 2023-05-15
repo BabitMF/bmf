@@ -288,6 +288,10 @@ class Broadcaster:
             Log.log(LogLevel.WARNING, "index: ", index, " has no audio steam")
             return
 
+        if volume < 0 or volume > 10.0:
+            Log.log(LogLevel.ERROR, "volume: ", volume, " out of range, use value in 0-10.0")
+            return
+
         config = dict()
         config[stream_id] = volume
         config["alias"] = self.amix_alaias

@@ -335,10 +335,6 @@ Tensor &img_normalize_cpu(Tensor &dst, const Tensor &src, const Tensor &mean,
                         });
                 });
         });
-<<<<<<< HEAD
-=======
-    });
->>>>>>> 2cd4cf1e (compile with msvc on windows)
 
     return dst;
 }
@@ -353,12 +349,6 @@ HMP_DEVICE_DISPATCH(kCPU, img_resize_stub, &img_resize_cpu)
 HMP_DEVICE_DISPATCH(kCPU, img_rotate_stub, &img_rotate_cpu)
 HMP_DEVICE_DISPATCH(kCPU, img_mirror_stub, &img_mirror_cpu)
 HMP_DEVICE_DISPATCH(kCPU, img_normalize_stub, &img_normalize_cpu)
-<<<<<<< HEAD
 } // namespace
 } // namespace kernel
 } // namespace hmp
-=======
-
-
-}}} //namespace hmp::kernel
->>>>>>> 2cd4cf1e (compile with msvc on windows)

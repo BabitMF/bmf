@@ -3,10 +3,6 @@ cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 # Cross Compile
 # cmake -DCMAKE_TOOLCHAIN_FILE=cmake/aarch64-toolchain.cmake
 
-#if(WIN32)
-#    set(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING “” FORCE)
-#endif()
-
 project(BMF CXX C)
 ### options
 if (NOT APPLE)

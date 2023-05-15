@@ -587,7 +587,7 @@ TEST(cpp_transcode, transcode_extract_frames) {
     videoStream.Start();
     int num = 0;
     while (true) {
-        Packet pkt = graph.Generate();
+        Packet pkt = graph.Generate(videoStream.GetName());
         if (pkt.timestamp() == BMF_EOF) {
             break;
         }
@@ -648,7 +648,7 @@ TEST(cpp_transcode, transcode_incorrect_encoder_param) {
              {wrong_k_2, wrong_v_2},
          }},
         {"audio_params", {{wrong_k_1, wrong_v_1}, {wrong_k_2, wrong_v_2}}},
-        {"mux_params", {{wrong_k_1 : wrong_v_1}, {wrong_k_2 : wrong_v_2}}}};
+        {"mux_params", {{wrong_k_1 , wrong_v_1}, {wrong_k_2 , wrong_v_2}}}};
     try {
         graph.Encode(v, a, bmf_sdk::JsonParam(encode_para));
         graph.Run();
@@ -811,7 +811,7 @@ TEST(cpp_transcode, test_encoder_push_output_mp4) {
     stream.Start();
     std::ofstream outFile(output_file, std::ios::out | std::ios::binary);
     while (true) {
-        Packet pkt = graph.Generate();
+        Packet pkt = graph.Generate(stream.GetName());
         if (pkt.timestamp() == BMF_EOF) {
             break;
         }
@@ -861,7 +861,7 @@ TEST(cpp_transcode, test_encoder_push_output_image2pipe) {
     stream.Start();
     int write_num = 0;
     while (true) {
-        Packet pkt = graph.Generate();
+        Packet pkt = graph.Generate(stream.GetName());
         if (pkt.timestamp() == BMF_EOF) {
             break;
         }
@@ -914,7 +914,7 @@ TEST(cpp_transcode, test_encoder_push_output_audio_pcm_s16le) {
     stream.Start();
     std::ofstream outFile(output_file, std::ios::out | std::ios::binary);
     while (true) {
-        Packet pkt = graph.Generate();
+        Packet pkt = graph.Generate(stream.GetName());
         if (pkt.timestamp() == BMF_EOF) {
             break;
         }
@@ -951,7 +951,7 @@ TEST(cpp_transcode, test_generator) {
         .Start();
     int frame_num = 0;
     while (true) {
-        Packet pkt = graph.Generate();
+        Packet pkt = graph.Generate(stream[0].GetName());
         if (pkt.timestamp() == BMF_EOF) {
             break;
         }

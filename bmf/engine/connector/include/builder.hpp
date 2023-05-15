@@ -68,6 +68,9 @@ class RealStream : public std::enable_shared_from_this<RealStream> {
     RealStream(const std::shared_ptr<RealNode> &node, std::string name,
                std::string notify, std::string alias);
 
+    RealStream(const std::shared_ptr<RealGraph>& graph, std::string name, std::string notify,
+                       std::string alias);
+
     RealStream() = delete;
 
     RealStream(RealStream const &) = delete;
@@ -87,6 +90,7 @@ class RealStream : public std::enable_shared_from_this<RealStream> {
               std::string const &moduleName, ModuleType moduleType,
               std::string const &modulePath, std::string const &moduleEntry,
               InputManagerType inputStreamManager, int scheduler);
+    std::string GetName();
 
   private:
     friend bmf::builder::Graph;
@@ -96,6 +100,7 @@ class RealStream : public std::enable_shared_from_this<RealStream> {
     friend RealNode;
 
     std::weak_ptr<RealNode> node_;
+    std::weak_ptr<RealGraph> graph_;
     std::string name_;
     std::string notify_;
     std::string alias_;
@@ -225,11 +230,13 @@ class RealGraph : public std::enable_shared_from_this<RealGraph> {
     bmf::BMFGraph Instantiate(bool dumpGraph, bool needMerge);
     bmf::BMFGraph Instance();
     void Start(bool dumpGraph, bool needMerge);
-    void Start(const std::shared_ptr<internal::RealStream> &stream,
-               bool dumpGraph, bool needMerge);
-    int Run(bool dumpGraph, bool needMerge);
-    Packet Generate();
+    void Start(const std::vector<std::shared_ptr<internal::RealStream> >& streams,
+                        bool dumpGraph, bool needMerge);
 
+    int Run(bool dumpGraph, bool needMerge);
+    Packet Generate(std::string streamName, bool block = true);
+    int FillPacket(std::string stream_name, Packet packet, bool block = false);
+    std::shared_ptr<RealStream> InputStream(std::string streamName, std::string notify, std::string alias);
   private:
     friend bmf::builder::Graph;
     friend bmf::builder::Node;
@@ -245,7 +252,6 @@ class RealGraph : public std::enable_shared_from_this<RealGraph> {
 
     std::shared_ptr<RealNode> placeholderNode_;
     std::shared_ptr<bmf::BMFGraph> graphInstance_ = nullptr;
-    std::string generatorStreamName;
     std::map<std::string, std::shared_ptr<RealStream>> existedStreamAlias_;
     std::map<std::string, std::shared_ptr<RealNode>> existedNodeAlias_;
 };
@@ -359,7 +365,7 @@ class Stream {
     BMF_FUNC_VIS Node Loop(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Split(T para, std::string const &alias = "");
+    BMF_FUNC_VIS Node (T para, std::string const &alias = "");
 
     template <typename T>
     BMF_FUNC_VIS Node Adelay(T para, std::string const &alias = "");
@@ -386,6 +392,8 @@ class Stream {
                              std::string const &alias = "");
 
     BMF_FUNC_VIS Node Fps(int fps, std::string const &alias = "");
+
+    BMF_FUNC_VIS std::string GetName();
 
   private:
     BMF_FUNC_VIS Node ConnectNewModule(
@@ -580,10 +588,10 @@ class SyncModule {
     BMF_FUNC_VIS std::map<int, std::vector<Packet>>
     ProcessPkts(std::map<int, std::vector<Packet>> inputPackets);
     BMF_FUNC_VIS SyncPackets ProcessPkts(SyncPackets pkts = SyncPackets());
-    BMF_FUNC_VIS void Process(bmf_sdk::Task task);
-    BMF_FUNC_VIS void SendEOF();
-    BMF_FUNC_VIS void Init();
-    BMF_FUNC_VIS void Close();
+    BMF_FUNC_VIS int32_t Process(bmf_sdk::Task task);
+    BMF_FUNC_VIS int32_t SendEOF();
+    BMF_FUNC_VIS int32_t Init();
+    BMF_FUNC_VIS int32_t Close();
 };
 
 class Graph {
@@ -624,6 +632,8 @@ class Graph {
     BMF_FUNC_VIS int Run(bool dumpGraph = true, bool needMerge = true);
 
     BMF_FUNC_VIS void Start(bool dumpGraph = true, bool needMerge = true);
+
+    BMF_FUNC_VIS void Start(std::vector<Stream>& generateStreams, bool dumpGraph = true, bool needMerge = true);
 
     BMF_FUNC_VIS std::string Dump();
 
@@ -768,14 +778,19 @@ class Graph {
     BMF_FUNC_VIS SyncPackets Process(SyncModule module,
                                      SyncPackets pkts = SyncPackets());
 
-    BMF_FUNC_VIS void Init(SyncModule module);
+    BMF_FUNC_VIS int32_t  Init(SyncModule module);
 
-    BMF_FUNC_VIS void Close(SyncModule module);
+    BMF_FUNC_VIS int32_t  Close(SyncModule module);
 
-    BMF_FUNC_VIS void SendEOF(SyncModule module);
+    BMF_FUNC_VIS int32_t  SendEOF(SyncModule module);
 
     BMF_FUNC_VIS void SetOption(const bmf_sdk::JsonParam &optionPatch);
-    BMF_FUNC_VIS Packet Generate();
+
+    BMF_FUNC_VIS Packet Generate(std::string streamName, bool block = true);
+
+    BMF_FUNC_VIS Stream InputStream(std::string streamName, std::string notify, std::string alias);
+
+    BMF_FUNC_VIS int FillPacket(std::string stream_name, Packet packet, bool block = false);
 
   private:
     BMF_FUNC_VIS Node

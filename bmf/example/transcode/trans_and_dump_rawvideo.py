@@ -25,6 +25,7 @@ def test_encode_and_raw_data():
                 "video_params": {
                     "codec": "rawvideo" # using this parameter to get raw yuv data
                 },
+                "format": "rawvideo",
                 "output_path": raw_output_path
             }
         )

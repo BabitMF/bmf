@@ -503,6 +503,34 @@ Tensor overlay( const Tensor &src0, const Tensor &src1, const Tensor &alpha)
     return overlay(dst, src0, src1, alpha);
 }
 
+Tensor transfer(const Tensor &src, const ChannelFormat &src_format, const ChannelFormat &dst_format)
+{
+    HMP_REQUIRE(src.dim() == 3 || src.dim() == 4, "dims must be 3 or 4");
+
+    Tensor dst;
+    if (src.dim() == 3) {
+        if(dst_format == ChannelFormat::NCHW && src_format == ChannelFormat::NHWC){
+            dst = src.permute({2, 0, 1});
+        } else if(dst_format == ChannelFormat::NHWC && src_format == ChannelFormat::NCHW){
+            dst = src.permute({1, 2, 0});
+        } else {
+            dst = src;
+        }
+        dst = dst.contiguous();
+
+    } else if (src.dim() == 4) {
+        if(dst_format == ChannelFormat::NCHW && src_format == ChannelFormat::NHWC){
+            dst = src.permute({0, 3, 1, 2});
+        } else if(dst_format == ChannelFormat::NHWC && src_format == ChannelFormat::NCHW){
+            dst = src.permute({0, 2, 3, 1});
+        } else {
+            dst = src;
+        }
+        dst = dst.contiguous();
+    }
+    return dst;
+}
+
 #endif //HMP_ENABLE_MOBILE
 
 

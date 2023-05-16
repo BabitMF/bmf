@@ -23,67 +23,54 @@ namespace {
 
 
 Packet load_from_file(const std::string &fn, 
-                      const std::string &type,
                       const JsonParam &param)
 {
-    if(type == "image" || type == "frame"){
-        ScalarType dtype = kUInt8;
-        auto width = param.get<int>("width");
-        auto height = param.get<int>("height");
-        auto ext = fn.substr(fn.find_last_of("."));
+    ScalarType dtype = kUInt8;
+    auto width = param.get<int>("width");
+    auto height = param.get<int>("height");
+    auto ext = fn.substr(fn.find_last_of("."));
 
-        auto data = hmp::fromfile(fn, dtype);
-        if(ext == ".rgb"){
-            data = data.reshape(SizeArray{height, width, 3});
-            if(type == "image"){
-                return VideoFrame(Image(data, kNHWC));
-            }
-            else{
-                auto planes = TensorList{data.select(2, 0),
-                                         data.select(2, 1),
-                                         data.select(2, 2)};
-                auto frame = Frame(planes, PixelInfo(PixelFormat::PF_RGB24));
-                return VideoFrame(frame);
-            }
+    auto data = hmp::fromfile(fn, dtype);
+    if(ext == ".rgb"){
+        data = data.reshape(SizeArray{height, width, 3});
+        //return VideoFrame(Image(data, kNHWC));
+        auto rgb = hmp::PixelInfo(hmp::PF_RGB24);
+        return VideoFrame(hmp::Frame({data}, rgb));
+    }
+    else if(ext == ".yuv"){
+        auto format_str = param.get<std::string>("format");
+        PixelFormat pformat;
+        if(format_str == "yuv420p"){
+            pformat = PixelFormat::PF_YUV420P;
         }
-        else if(ext == ".yuv"){
-            auto format_str = param.get<std::string>("format");
-            PixelFormat pformat;
-            if(format_str == "yuv420p"){
-                pformat = PixelFormat::PF_YUV420P;
-            }
-            else if(format_str == "yuva420p"){
-                pformat = PixelFormat::PF_YUVA420P;
-            }
-            else{
-                throw std::runtime_error(fmt::format("Unsupport image/frame format {}", format_str));
-            }
-
-            hmp::PixelFormatDesc desc(pformat);
-            if(desc.infer_nitems(width, height) != data.nitems()){
-                throw std::runtime_error(fmt::format("Invalid image size"));
-            }
-
-            TensorList planes;
-            int64_t off = 0;
-            for(int i = 0; i < desc.nplanes(); ++i){
-                auto n = desc.infer_nitems(width, height, i);
-                auto w = desc.infer_width(width, i);
-                auto h = desc.infer_height(height, i);
-                auto plane = data.slice(0, off, off + n).reshape(SizeArray{h, w, -1});
-                planes.push_back(plane);
-                off += n;
-            }
-
-            auto frame = Frame(planes, width, height, pformat);
-            return VideoFrame(frame);
+        else if(format_str == "yuva420p"){
+            pformat = PixelFormat::PF_YUVA420P;
         }
         else{
-            throw std::runtime_error(fmt::format("Unsupport image/frame file format {}", ext));
+            throw std::runtime_error(fmt::format("Unsupport image/frame format {}", format_str));
         }
+
+        hmp::PixelFormatDesc desc(pformat);
+        if(desc.infer_nitems(width, height) != data.nitems()){
+            throw std::runtime_error(fmt::format("Invalid image size"));
+        }
+
+        TensorList planes;
+        int64_t off = 0;
+        for(int i = 0; i < desc.nplanes(); ++i){
+            auto n = desc.infer_nitems(width, height, i);
+            auto w = desc.infer_width(width, i);
+            auto h = desc.infer_height(height, i);
+            auto plane = data.slice(0, off, off + n).reshape(SizeArray{h, w, -1});
+            planes.push_back(plane);
+            off += n;
+        }
+
+        auto frame = Frame(planes, width, height, pformat);
+        return VideoFrame(frame);
     }
     else{
-        throw std::runtime_error(fmt::format("Unsupported data type {}", type));
+        throw std::runtime_error(fmt::format("Unsupport image/frame file format {}", ext));
     }
 }
 
@@ -93,24 +80,19 @@ void store_to_file(const Packet &pkt, const std::string &fn)
     if(pkt.is<VideoFrame>()){
         auto vf = pkt.get<VideoFrame>();
         Tensor data;
-        if(vf.is_image()){
-            data = vf.image().data();
+        auto frame = vf.frame();
+        int64_t nitems = 0;
+        for(int i = 0; i < frame.nplanes(); ++i){
+            nitems += frame.plane(i).nitems();
         }
-        else{
-            auto frame = vf.frame();
-            int64_t nitems = 0;
-            for(int i = 0; i < frame.nplanes(); ++i){
-                nitems += frame.plane(i).nitems();
-            }
 
-            //concatenate all planes
-            data = hmp::empty(SizeArray{nitems}, frame.plane(0).dtype());
-            nitems = 0;
-            for(int i = 0; i < frame.nplanes(); ++i){
-                auto &plane = frame.plane(i);
-                data.slice(0, nitems, nitems + plane.nitems()).copy_(plane.flatten());
-                nitems += plane.nitems();
-            }
+        //concatenate all planes
+        data = hmp::empty(SizeArray{nitems}, frame.plane(0).dtype());
+        nitems = 0;
+        for(int i = 0; i < frame.nplanes(); ++i){
+            auto &plane = frame.plane(i);
+            data.slice(0, nitems, nitems + plane.nitems()).copy_(plane.flatten());
+            nitems += plane.nitems();
         }
         data.tofile(fn);
     }
@@ -134,12 +116,12 @@ public:
     VFSource(int node_id,  JsonParam &option)
         : Module(node_id, option)
     {
-        auto type = option.get<std::string>("type");
+        //auto type = option.get<std::string>("type");
         auto param = option["param"];
 
         for(auto &fn : glob::glob(option.get<std::string>("filter"))){
             pkts.push_back(
-                load_from_file(fn, type, param));
+                load_from_file(fn.string(), param));
         }
         idx = 0;
         HMP_INF("VFSource load {} files", pkts.size());

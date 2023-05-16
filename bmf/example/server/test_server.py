@@ -271,7 +271,7 @@ class TestServer(BaseTestCase):
         input_file = "../files/blue.png"
         output_path_1 = "./first_module_is_not_decoder/1/output.mjpeg"
         expect_result_1 = '../server/first_module_is_not_decoder/1/output.mjpeg|864|1438|0.000000|JPEG_PIPE|0|127312|' \
-                          'mjpeg|{"fps": "0"}'
+                          'mjpeg|{"fps": "25.0"}'
 
         self.remove_result_data(output_path_1)
         graph = bmf.graph({"dump_graph": 1})

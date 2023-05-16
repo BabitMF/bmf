@@ -25,6 +25,7 @@
 #include <bmf/sdk/common.h>
 #include <bmf/sdk/json_param.h>
 #include <bmf/sdk/task.h>
+#include <bmf/sdk/log.h>
 
 
 namespace bmf_sdk{
@@ -36,7 +37,10 @@ public:
         @param node_id unique id .
         @param json_param json param of module.
         */
-    Module(int32_t node_id = -1, JsonParam json_param = JsonParam()) { node_id_ = node_id; };
+    Module(int32_t node_id = -1, JsonParam json_param = JsonParam()) { 
+        configure_bmf_log();
+        node_id_ = node_id;
+    };
 
     /** @brief get input stream info of module
         @param json_param input stream info.

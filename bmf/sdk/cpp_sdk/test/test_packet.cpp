@@ -121,6 +121,7 @@ TEST(packet, constructors)
     EXPECT_EQ(pkt_eof.timestamp(), BMF_EOF);
 
     //
-    EXPECT_NO_THROW(Packet(VideoFrame::make(720, 1280, 3, kNCHW)));
+    auto rgb = hmp::PixelInfo(hmp::PF_RGB24);
+    EXPECT_NO_THROW(Packet(VideoFrame::make(720, 1280, rgb)));
 
 }

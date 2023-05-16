@@ -20,6 +20,7 @@
 #include<thread>
 #include"scheduler_queue.h"
 #include"node.h"
+#include<chrono>
 
 BEGIN_BMF_ENGINE_NS
     USE_BMF_SDK_NS
@@ -42,7 +43,7 @@ BEGIN_BMF_ENGINE_NS
 
     class Scheduler {
     public:
-        Scheduler(SchedulerCallBack callback, int scheduler_cnt = 1);
+        Scheduler(SchedulerCallBack callback, int scheduler_cnt = 1, double time_out = 0);
 
         int add_scheduler_queue();
 
@@ -66,6 +67,8 @@ BEGIN_BMF_ENGINE_NS
 
         int to_schedule_queue(std::shared_ptr<Node> node);
 
+        int alive_watch();
+
         bool paused_ = false;
         std::vector<std::shared_ptr<SchedulerQueue> > scheduler_queues_;
         std::map<int, NodeItem> nodes_to_schedule_;
@@ -77,8 +80,12 @@ BEGIN_BMF_ENGINE_NS
         std::exception_ptr eptr_;
         bool exception_flag_ = false;
         int64_t last_schedule_success_time_;
+        std::chrono::steady_clock::time_point last_schedule_clk_;
         SchedulerCallBack callback_;
         SafeQueue<std::shared_ptr<Node>> sched_nodes_;
+
+        double time_out_; //task schedule requirement time out hang check
+        std::thread guard_thread_; 
     };
 
 END_BMF_ENGINE_NS

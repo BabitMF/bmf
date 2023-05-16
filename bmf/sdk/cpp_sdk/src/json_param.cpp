@@ -141,4 +141,8 @@ BEGIN_BMF_SDK_NS
         return result;
     }
 
+    void JsonParam::merge_patch(const JsonParam& json_patch) {
+        json_value_.merge_patch(json_patch.json_value_);
+    }
+
 END_BMF_SDK_NS

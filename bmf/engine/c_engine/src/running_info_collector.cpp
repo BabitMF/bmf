@@ -25,7 +25,7 @@ BEGIN_BMF_ENGINE_NS
     USE_BMF_SDK_NS
 
     bmf::GraphRunningInfo RunningInfoCollector::collect_graph_info(Graph *graph) {
-        graph->pause_running();
+        //graph->pause_running();
         bmf::GraphRunningInfo graph_info;
         // TODO: Not implemented.
         graph_info.id = 0;

@@ -35,12 +35,20 @@ extern "C" {
 #include "video_sync.h"
 #include "av_common_utils.h"
 #include <bmf/sdk/filter_graph.h>
+#include <list>
+
+typedef enum OutputMode {
+    OUTPUT_NOTHING,
+    OUTPUT_MUXED_PACKET,
+    OUTPUT_UNMUX_PACKET,
+} OutputMode;
 
 typedef struct OutputStream {
     int64_t last_mux_dts;
     int64_t data_size;
     int64_t packets_written;
     int64_t max_frames;
+    int64_t min_frames;
     int64_t frame_number;
     bool encoding_needed;
     std::shared_ptr<AVStream> input_stream;
@@ -117,10 +125,17 @@ class CFFEncoder : public Module {
     OutputStream ost_[2];
     int avio_buffer_size_ = 4 * 4096;
     int64_t current_frame_pts_;
+    int64_t recorded_pts_;
+    double estimated_time_ = 0.0;
+    double orig_pts_time_;
+    double last_orig_pts_time_ = 0.0;
+    std::list<double> orig_pts_time_list_;
     int64_t current_offset_ = 0;
     int current_whence_ = 0;
     Task* current_task_ptr_ = nullptr;
+    bool first_packet_[2] = {true, true};
     CurrentImage2Buffer current_image_buffer_ = {0};
+    bool copy_ts_ = false;
 
 public:
     CFFEncoder(int node_id, JsonParam option);

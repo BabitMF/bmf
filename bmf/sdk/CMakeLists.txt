@@ -36,8 +36,8 @@ target_include_directories(bmf_module_sdk
 
 target_link_libraries(bmf_module_sdk
     PUBLIC
-        ${BMF_STD_DEPS}  
-        hmp nlohmann
+    ${BMF_STD_DEPS}  
+     hmp nlohmann
 )
 
 if(NOT APPLE AND NOT ANDROID)

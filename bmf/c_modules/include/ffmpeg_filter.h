@@ -34,6 +34,7 @@ class CFFFilter : public Module {
     bool is_inf_;
     bool all_input_eof_;
     bool all_output_eof_;
+    bool copy_ts_;
     std::vector<bool> in_eof_;
     std::vector<bool> out_eof_;
     std::map<int, FilterConfig> config_;
@@ -41,6 +42,7 @@ class CFFFilter : public Module {
     int64_t stream_first_dts_;
     std::mutex reset_check_mutex_;
     std::map<int,int> input_stream_node_;
+    std::map<int, std::string> orig_pts_time_cache_;
     JsonParam option_;
 public:
     CFFFilter(int node_id, JsonParam option);

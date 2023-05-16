@@ -126,6 +126,8 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
         double opt;
         option.get_double("end_time", opt);
         end_time_ = (int64_t)(opt * AV_TIME_BASE);
+        if (!option.has_key("copyts") && option.has_key("start_time"))
+            end_time_ -= start_time_; //the pts will be offset by the start time
     }
     
     /** @addtogroup DecM
@@ -176,6 +178,13 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
     /** @addtogroup DecM
      * @{
      * @arg skip_frame: skip frame, exp. 32, make decoder discard processing depending on the option value, just as -skip_frame in ffmpeg commnad.
+     * AVDISCARD_NONE = -16, ///< discard nothing 
+     * AVDISCARD_DEFAULT = 0, ///< discard useless packets like 0 size packets in avi 
+     * AVDISCARD_NONREF = 8, ///< discard all non reference 
+     * AVDISCARD_BIDIR = 16, ///< discard all bidirectional frames 
+     * AVDISCARD_NONINTRA= 24, ///< discard all non intra frames 
+     * AVDISCARD_NONKEY = 32, ///< discard all frames except keyframes 
+     * AVDISCARD_ALL = 48, ///< discard all
      * @} */
     if (option.has_key("skip_frame")) {
         int tmp;
@@ -251,6 +260,27 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
     if (option.has_key("aframes"))
         option.get_long("aframes", ist_[1].max_frames);
     assert(ist_[0].max_frames >= 0 && ist_[1].max_frames >= 0);
+
+    /** @addtogroup DecM
+     * @{
+     * @arg copyts: copy timestamps
+     * @} */
+    if (option.has_key("copyts"))
+        copy_ts_ = true;
+
+    /** @addtogroup DecM
+     * @{
+     * @arg max_width_height: set the max width or height limitation of input frame. Once it's
+     * enabled, frame will be dropped by default or it will throw exp according to "limit_hits"
+     * @} */
+    if (option.has_key("max_width_height"))
+        option.get_int("max_width_height", max_wh_);
+    /** @addtogroup DecM
+     * @{
+     * @arg max_limit_hits: set the max number of limit hits, once exceeded the exp will be threw
+     * @} */
+    if (option.has_key("max_limit_hits"))
+        option.get_int("max_limit_hits", max_limit_hits_);
 
     /** @addtogroup DecM
      * @{
@@ -399,6 +429,13 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
     if (option.has_key("sample_fmt"))
         option.get_int("sample_fmt", push_audio_sample_fmt_);
 
+    /** @addtogroup DecM
+     * @{
+     * @arg orig_pts_time: keep the original pts time of inputstream in the frame
+     * @} */
+    if (option.has_key("orig_pts_time"))
+        option.get_int("orig_pts_time", orig_pts_time_);
+
     return;
 }
 
@@ -461,6 +498,25 @@ int copy_simple_frame(AVFrame* frame) {
     return 0;
 }
 
+#ifdef BMF_USE_MEDIACODEC
+int CFFDecoder::init_android_vm(){
+    static JavaVM *vm = NULL;
+    static JNIEnv *env = NULL;
+    BMFLOG_NODE(BMF_INFO, node_id_) << "vm = " << vm << "env = " << env;
+    if (vm) {
+        BMFLOG_NODE(BMF_ERROR, node_id_) << "Java VM has been inited ever before!";
+        return 0;
+    }
+    int status = init_jvm(&vm, &env);
+    if (status != 0) {
+        BMFLOG_NODE(BMF_WARNING, node_id_) << "Initialization failure (" << status << ":" << dlerror();
+        return -1;
+    }
+    av_jni_set_java_vm(vm, 0);
+    return 0;
+}
+
+#endif
 
 int CFFDecoder::codec_context(int *stream_idx,
                               AVCodecContext **dec_ctx, AVFormatContext *fmt_ctx, enum AVMediaType type) {
@@ -500,6 +556,7 @@ int CFFDecoder::codec_context(int *stream_idx,
                 << "Failed to find " << av_get_media_type_string(type) << " codec";
             return AVERROR(EINVAL);
         }
+
         *dec_ctx = avcodec_alloc_context3(dec);
         if (!*dec_ctx) {
             BMFLOG_NODE(BMF_ERROR, node_id_) 
@@ -531,7 +588,13 @@ int CFFDecoder::codec_context(int *stream_idx,
                 if ((*dec_ctx)->has_b_frames < 2)
                     av_hwdevice_ctx_create(&((*dec_ctx)->hw_device_ctx), AV_HWDEVICE_TYPE_CUDA, NULL, NULL, 1);
             }
+        } 
+        #ifdef BMF_USE_MEDIACODEC
+        if (hwaccel_str_ == "mediacodec" && type == AVMEDIA_TYPE_VIDEO) {
+            init_android_vm();
+            av_hwdevice_ctx_create(&((*dec_ctx)->hw_device_ctx), AV_HWDEVICE_TYPE_MEDIACODEC, NULL, NULL, 1);
         }
+        #endif
         if ((ret = avcodec_open2(*dec_ctx, dec, &opts)) < 0) {
             BMFLOG_NODE(BMF_ERROR, node_id_) << "Failed to open " << av_get_media_type_string(type) << " codec";
             return ret;
@@ -549,11 +612,12 @@ int CFFDecoder::init_filtergraph(int index, AVFrame *frame) {
     double ts_offset = 0;
     double current_duration = 0;
 
-    //if (copy_ts) {
-    //    tsoffset = f->start_time == AV_NOPTS_VALUE ? 0 : f->start_time;
-    //    if (!start_at_zero && f->ctx->start_time != AV_NOPTS_VALUE)
-    //        tsoffset += f->ctx->start_time;
-    //}
+    if (copy_ts_) {
+        //tsoffset = f->start_time == AV_NOPTS_VALUE ? 0 : f->start_time; //input file start time not supported
+        //if (!start_at_zero &&
+        if (input_fmt_ctx_->start_time != AV_NOPTS_VALUE)
+            ts_offset += input_fmt_ctx_->start_time;
+    }
     if (durations_.size() > 0) {
         current_duration = (durations_[idx_dur_ + 1] - durations_[idx_dur_]);
         if (idx_dur_ > 0) {
@@ -698,14 +762,21 @@ int CFFDecoder::init_input(AVDictionary *options) {
                    input_path_.c_str(), (double)timestamp / AV_TIME_BASE);
         }
     }
-    ts_offset_ = -timestamp;
+    ts_offset_ = copy_ts_ ? 0 : -timestamp;
 
     if (codec_context(&video_stream_index_, &video_decode_ctx_, input_fmt_ctx_, AVMEDIA_TYPE_VIDEO) >= 0) {
         video_stream_ = input_fmt_ctx_->streams[video_stream_index_];
         if (end_time_ > 0 && !encrypted_) {
-            end_video_time_ = av_rescale_q((end_time_ + ts_offset_), AV_TIME_BASE_Q, video_stream_->time_base);
+            end_video_time_ = av_rescale_q(end_time_, AV_TIME_BASE_Q, video_stream_->time_base);
         }
         video_decode_ctx_->skip_frame = skip_frame_;
+        if (max_wh_) {
+            parser_ = av_parser_init(video_decode_ctx_->codec_id);
+            if (!parser_) {
+                BMFLOG_NODE(BMF_ERROR, node_id_) << "Parser not found";
+                return -1;
+            }
+        }
     }
     ist_[0].next_dts = AV_NOPTS_VALUE;
     ist_[0].next_pts = AV_NOPTS_VALUE;
@@ -713,7 +784,7 @@ int CFFDecoder::init_input(AVDictionary *options) {
     if (codec_context(&audio_stream_index_, &audio_decode_ctx_, input_fmt_ctx_, AVMEDIA_TYPE_AUDIO) >= 0) {
         audio_stream_ = input_fmt_ctx_->streams[audio_stream_index_];
         if (end_time_ > 0 && !encrypted_) {
-            end_audio_time_ = av_rescale_q((end_time_ + ts_offset_), AV_TIME_BASE_Q, audio_stream_->time_base);
+            end_audio_time_ = av_rescale_q(end_time_, AV_TIME_BASE_Q, audio_stream_->time_base);
         }
     }
     ist_[1].next_dts = AV_NOPTS_VALUE;
@@ -731,16 +802,40 @@ int CFFDecoder::init_input(AVDictionary *options) {
 Packet CFFDecoder::generate_video_packet(AVFrame *frame)
 {
     AVRational out_tb;
+    AVRational orig_tb;
+    int64_t orig_pts;
     if (filter_graph_[0])
         out_tb = av_buffersink_get_time_base(filter_graph_[0]->buffer_sink_ctx_[0]);
     else if (video_stream_)
         out_tb = video_stream_->time_base;
+
 
     if (!push_raw_stream_) {
         std::string s_tb = std::to_string(out_tb.num) + "," + std::to_string(out_tb.den);
         av_dict_set(&frame->metadata, "time_base", s_tb.c_str(), 0);
     } else
         av_dict_set(&frame->metadata, "time_base", video_time_base_string_.c_str(), 0);
+
+    if (orig_pts_time_) {
+        if (!push_raw_stream_)
+            orig_tb = out_tb;
+        else {
+            int pos = video_time_base_string_.find(",");
+            if (pos > 0) {
+                orig_tb.num = stoi(video_time_base_string_.substr(0, pos));
+                orig_tb.den = stoi(video_time_base_string_.substr(pos + 1));
+            }
+        }
+
+        if (start_time_ != AV_NOPTS_VALUE && !copy_ts_)
+            orig_pts = frame->pts + av_rescale_q(start_time_, AV_TIME_BASE_Q, video_stream_->time_base);
+        else
+            orig_pts = frame->pts;
+
+        std::string pts_time = std::to_string(orig_pts * av_q2d(orig_tb));
+        av_dict_set(&frame->metadata, "orig_pts_time", pts_time.c_str(), 0);
+    }
+
     frame->pict_type = AV_PICTURE_TYPE_NONE;
 
     AVRational frame_rate;
@@ -781,6 +876,9 @@ Packet CFFDecoder::generate_video_packet(AVFrame *frame)
     }
     
     auto packet = Packet(video_frame);
+    if (orig_pts_time_) {
+        packet.set_time(orig_pts * av_q2d(orig_tb));
+    }
     if (!push_raw_stream_)
         packet.set_timestamp(frame->pts * av_q2d(video_stream_->time_base) * 1000000);
     else
@@ -891,6 +989,11 @@ int CFFDecoder::extract_frames(AVFrame *frame,std::vector<AVFrame*> &output_fram
         }
         if (extract_frames_device_ == "CUDA") {
             enum AVPixelFormat output_pix_fmt = AV_PIX_FMT_CUDA;
+            hwaccel_retrieve_data(output_frames[i], output_pix_fmt);
+        }
+
+        if (extract_frames_device_ == "mediacodec") {
+            enum AVPixelFormat output_pix_fmt = AV_PIX_FMT_MEDIACODEC;
             hwaccel_retrieve_data(output_frames[i], output_pix_fmt);
         }
     }
@@ -1155,9 +1258,9 @@ int CFFDecoder::pkt_ts(AVPacket *pkt, int index) {
                                                 << new_start_time - input_fmt_ctx_->start_time;
                 ts_offset_ = -new_start_time;
                 if (end_time_ > 0) {
-                    end_video_time_ = av_rescale_q((end_time_ + ts_offset_), AV_TIME_BASE_Q,
+                    end_video_time_ = av_rescale_q(end_time_, AV_TIME_BASE_Q,
                                                    input_fmt_ctx_->streams[video_stream_index_]->time_base);
-                    end_audio_time_ = av_rescale_q((end_time_ + ts_offset_), AV_TIME_BASE_Q,
+                    end_audio_time_ = av_rescale_q(end_time_, AV_TIME_BASE_Q,
                                                    input_fmt_ctx_->streams[audio_stream_index_]->time_base);
                 }
             }
@@ -1192,7 +1295,7 @@ int CFFDecoder::pkt_ts(AVPacket *pkt, int index) {
                                 AV_TIME_BASE_Q, (enum AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
     if (pkt_dts != AV_NOPTS_VALUE &&
         ist->next_dts == AV_NOPTS_VALUE &&
-        //!copy_ts &&
+        !copy_ts_ &&
         (input_fmt_ctx_->iformat->flags & AVFMT_TS_DISCONT) &&
         last_ts_ != AV_NOPTS_VALUE
         //!force_dts_monotonicity
@@ -1222,8 +1325,8 @@ int CFFDecoder::pkt_ts(AVPacket *pkt, int index) {
 
     pkt_dts = av_rescale_q_rnd(pkt->dts, stream->time_base,
                                 AV_TIME_BASE_Q, (enum AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
-    if (pkt_dts != AV_NOPTS_VALUE && ist->next_dts != AV_NOPTS_VALUE
-        //!copy_ts &&
+    if (pkt_dts != AV_NOPTS_VALUE && ist->next_dts != AV_NOPTS_VALUE &&
+        !copy_ts_
         //!force_dts_monotonicity
     ) {
         int64_t delta   = pkt_dts - ist->next_dts;
@@ -1364,6 +1467,19 @@ int CFFDecoder::decode_send_packet(Task &task, AVPacket *pkt, int *got_frame) {
         av_packet.set_time_base({stream->time_base.num, stream->time_base.den});
 
         auto packet = Packet(av_packet);
+
+        int64_t e_time = (index == 0) ? end_video_time_ : end_audio_time_;
+        if (e_time <= av_rescale_q(ist->pts, AV_TIME_BASE_Q, stream->time_base)) {
+            if (e_time < 0)
+                BMFLOG_NODE(BMF_ERROR, node_id_)
+                    << "Error of end time in stream copy, which is shorter than the start offset";
+            AVPacket ept;
+            av_init_packet(&ept);
+            ept.data = NULL;
+            ept.size = 0;
+            ept.stream_index = (index == 0) ? video_stream_index_ : audio_stream_index_;
+            return decode_send_packet(task, &ept, got_frame);
+        }
         packet.set_timestamp(pkt->pts * av_q2d(stream->time_base) * 1000000);
         if (task.get_outputs().find(index) != task.get_outputs().end())
             task.get_outputs()[index]->push(packet);
@@ -1579,6 +1695,10 @@ int CFFDecoder::clean() {
         avcodec_free_context(&audio_decode_ctx_);
         audio_decode_ctx_ = NULL;
     }
+    if (parser_) {
+        av_parser_close(parser_);
+        parser_ = NULL;
+    }
     if (input_fmt_ctx_) {
         avformat_close_input(&input_fmt_ctx_);
         input_fmt_ctx_ = NULL;
@@ -1665,6 +1785,29 @@ int CFFDecoder::init_av_codec() {
 
 bool CFFDecoder::check_valid_packet(AVPacket *pkt, Task &task) {
     if (pkt->stream_index == video_stream_index_ && !video_end_ && task.get_outputs().count(0) > 0) {
+        if (max_wh_ > 0 && video_decode_ctx_) {
+            int ret;
+            AVPacket opkt;
+            av_init_packet(&opkt);
+            ret = av_parser_parse2(parser_, video_decode_ctx_, &opkt.data, &opkt.size, pkt->data, pkt->size,
+                                   AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
+            if (ret < 0) {
+                BMFLOG_NODE(BMF_ERROR, node_id_) << "Error while parsing";
+                return false;
+            }
+            if (parser_->coded_width >= max_wh_ || parser_->coded_height >= max_wh_) {
+                BMFLOG_NODE(BMF_INFO, node_id_) << "the input stream width or height "
+                                                << parser_->coded_width << "x"
+                                                << parser_->coded_height << " is limited by "
+                                                << max_wh_;
+                if (max_limit_hits_ > 0) { // enabled limit hits
+                    if (--max_limit_hits_ == 0)
+                        BMF_Error(BMF_TranscodeError,
+                                  "max number of limited resolution frames exceeded");
+                }
+                return false;
+            }
+        }
         return true;
     }
     if (pkt->stream_index == audio_stream_index_ && !audio_end_ && task.get_outputs().count(1) > 0) {

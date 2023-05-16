@@ -166,6 +166,11 @@ BEGIN_BMF_SDK_NS
             */
         std::string dump() const;
 
+        /** @brief merge json patch to current target
+         *  @param json_patch json patch
+            */
+        void merge_patch(const JsonParam& json_patch);
+
     public:
         bmf_nlohmann::json json_value_;
 

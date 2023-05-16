@@ -47,6 +47,7 @@ BEGIN_BMF_ENGINE_NS
                  std::map<int, std::shared_ptr<ModuleCallbackLayer> > callback_bindings) {
         std::signal(SIGTERM, terminate);
         std::signal(SIGINT, interrupted);
+        configure_bmf_log();
         BMFLOG(BMF_INFO) << "BMF Version: " << BMF_VERSION;
         BMFLOG(BMF_INFO) << "BMF Commit: " << BMF_COMMIT;
         BMFLOG(BMF_INFO) << "start init graph";
@@ -74,16 +75,33 @@ BEGIN_BMF_ENGINE_NS
         scheduler_callback.close_report_ = [this](int node_id, bool is_exception) -> int {
             std::lock_guard<std::mutex> _(this->con_var_mutex_);
             this->closed_count_++;
-            if (is_exception)
-                BMFLOG(BMF_INFO) << "node " << node_id << " got exception, close directly";
-            else
+            if (is_exception) {
+                if (node_id == -1) {
+                    this->exception_from_scheduler_ = true;
+                    BMFLOG(BMF_INFO) << "got exception not from any node, close directly";
+                } else
+                    BMFLOG(BMF_INFO) << "node " << node_id << " got exception, close directly";
+
+                if (this->output_streams_.size() > 0) {
+                    for (auto &outputs:this->output_streams_) {
+                        Packet eof_pkt = Packet::generate_eof_packet();
+                        outputs.second->inject_packet(eof_pkt);
+                    }
+                }
+            } else
                 BMFLOG(BMF_INFO) << "node " << node_id << " close report, closed count: " << this->closed_count_;
             if (this->closed_count_ == this->nodes_.size() || is_exception)
                 this->cond_close_.notify_one();
             return 0;
         };
 
-        scheduler_ = std::make_shared<Scheduler>(scheduler_callback, scheduler_count_);
+        double time_out = 0;
+        if (graph_config.get_option().json_value_.count("time_out")) {
+            time_out = graph_config.get_option().json_value_.at("time_out").get<double>();
+            BMFLOG(BMF_INFO) << "scheduler time out: " << time_out << " seconds";
+        }
+
+        scheduler_ = std::make_shared<Scheduler>(scheduler_callback, scheduler_count_, time_out);
         BMFLOG(BMF_INFO) << "scheduler count" << scheduler_count_;
 
         // create all nodes and output streams
@@ -98,6 +116,9 @@ BEGIN_BMF_ENGINE_NS
 
         // input streams that are not connected
         find_orphan_input_streams();
+
+        // delete useless orphan output stream to avoid graph build issue
+        delete_orphan_output_streams();
 
         for (auto &node:source_nodes_)
             scheduler_->add_or_remove_node(node->get_id(), true);
@@ -273,6 +294,29 @@ BEGIN_BMF_ENGINE_NS
                 if (not input_stream.second->is_connected()) {
                     orphan_streams_.push_back(input_stream.second);
                 }
+            }
+        }
+        return 0;
+    }
+
+    int Graph::delete_orphan_output_streams() {
+        for (auto &node_iter:nodes_) {
+            std::shared_ptr<OutputStreamManager> output_stream_manager;
+            std::map<int, std::shared_ptr<OutputStream>> output_streams;
+            node_iter.second->get_output_stream_manager(output_stream_manager);
+            node_iter.second->get_output_streams(output_streams);
+            std::vector<int> rm_streams_id;
+            for (auto &output_stream:output_streams) {
+                if (output_stream.second->mirror_streams_.size() == 0) {//orphan output stream
+                    BMFLOG(BMF_INFO) << "node:" << node_iter.second->get_type() << " "
+                                     << node_iter.second->get_id()
+                                     << " will delete orphan output stream which is useless: "
+                                     << output_stream.second->identifier_;
+                    rm_streams_id.push_back(output_stream.first);
+                }
+            }
+            for (auto streams_id:rm_streams_id) {
+                output_stream_manager->remove_stream(streams_id, -1);
             }
         }
         return 0;
@@ -669,12 +713,20 @@ BEGIN_BMF_ENGINE_NS
     int Graph::close() {
         {
             std::unique_lock<std::mutex> lk(con_var_mutex_);
-            if (closed_count_ != nodes_.size())
+            if (closed_count_ != nodes_.size() && !scheduler_->eptr_)
                 cond_close_.wait(lk);
         }
-        scheduler_->close();
+
+        if (not exception_from_scheduler_)
+            scheduler_->close();
+        else
+            std::cerr << "!!Coredump may occured due to unfinished schedule threads and node process, please refer the detail information to debug or optimze the graph..." << std::endl;
+
         g_ptr.clear();
-        if (scheduler_->eptr_){
+        if (scheduler_->eptr_) {
+            auto graph_info = status();
+            std::cerr << "Graph status when exception occured: " << graph_info.jsonify().dump()
+                      << std::endl;
             std::rethrow_exception(scheduler_->eptr_);
         }
         return 0;
@@ -776,7 +828,8 @@ BEGIN_BMF_ENGINE_NS
     }
 
     Graph::~Graph() {
-        scheduler_->close();
+        if (not exception_from_scheduler_)
+            scheduler_->close();
     }
 
     bmf::GraphRunningInfo Graph::status() {
@@ -799,6 +852,17 @@ BEGIN_BMF_ENGINE_NS
 
     void GraphOutputStream::poll_packet(Packet &packet, bool block) {
         packet = input_manager_->pop_next_packet(0, block);
+    }
+
+    void GraphOutputStream::inject_packet(Packet &packet, int index) {
+        std::shared_ptr<SafeQueue<Packet>> packets = std::make_shared<SafeQueue<Packet>>();
+        packets->push(packet);
+        if (index < 0) {
+            for (auto &input_stream:input_manager_->input_streams_) {
+                input_manager_->add_packets(input_stream.first, packets);
+            }
+        } else
+            input_manager_->add_packets(index, packets);
     }
 
 END_BMF_ENGINE_NS

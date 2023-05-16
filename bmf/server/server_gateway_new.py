@@ -66,17 +66,18 @@ class ServerGatewayNew:
             # currently, we think each job will produce only one result packet, which contains return value in its data
             if pkt is not None and pkt.defined():
                 # one more access result
-                self.result_id += 1
-                # get result
-                if self.result_id in self.alias_dict:
-                    res_name = self.alias_dict[self.result_id]
-                else:
-                    res_name = "res_" + str(self.result_id)
-                # save result
-                self.result_dict[res_name] = pkt.get(str)
-                if not self.block_event.is_set():
-                    self.block_event.set()
-                    self.block_event.clear()
+                if pkt.class_name == "std::string":
+                    self.result_id += 1
+                    # get result
+                    if self.result_id in self.alias_dict:
+                        res_name = self.alias_dict[self.result_id]
+                    else:
+                        res_name = "res_" + str(self.result_id)
+                    # save result
+                    self.result_dict[res_name] = pkt.get(str)
+                    if not self.block_event.is_set():
+                        self.block_event.set()
+                        self.block_event.clear()
 
     def close(self):
         # generate an eos pkt and push into graph_input

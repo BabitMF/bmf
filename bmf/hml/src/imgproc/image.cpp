@@ -19,7 +19,6 @@
 
 namespace hmp{
 
-
 Frame::Frame(const TensorList &data, int width, int height, const PixelInfo& pix_info)
     : pix_info_(pix_info), width_(width), height_(height)
 {
@@ -36,6 +35,11 @@ Frame::Frame(const TensorList &data, int width, int height, const PixelInfo& pix
 
 Frame::Frame(const TensorList &data, const PixelInfo &pix_info)
     : Frame(data, data[0].size(1), data[0].size(0), pix_info)
+{
+}
+
+Frame::Frame(const Tensor &data, const PixelInfo &pix_info)
+    : Frame({data}, data.size(1), data.size(0), pix_info)
 {
 }
 
@@ -138,171 +142,19 @@ Frame Frame::crop(int left, int top, int w, int h) const
     return Frame(out, w, h, pix_info_);
 }
 
-
-Image Frame::to_image(ChannelFormat cformat) const
+Frame Frame::reformat(const PixelInfo &pix_info)
 {
-    if(pix_info_.is_rgbx()){
-        HMP_REQUIRE(data_.size() == 1, "Internal error");
-        return Image(data_[0], kNHWC, pix_info_.color_model()).to(cformat);
-    }
-    else{
-#ifndef HMP_ENABLE_MOBILE
-        HMP_REQUIRE(pix_desc_.defined(),
-                    "Frame::to_image: pixel format {} is not supported", pix_desc_.format());
-        auto data = img::yuv_to_rgb(data_, pix_info_, cformat);
-        return Image(data, cformat, pix_info_.color_model());
-#else
-        HMP_REQUIRE(false,
-                    "Frame::to_image: pixel format {} is not supported", pix_desc_.format());
-#endif
-    }
-}
+    if (pix_info_.format() == PF_RGB24) {
+        auto yuv = img::rgb_to_yuv(data_[0], pix_info, kNHWC);
+        return Frame(yuv, width_, height_, pix_info);
 
-
-Frame Frame::from_image(const Image &image, const PixelInfo &pix_info)
-{
-    if(pix_info.is_rgbx()){
-        auto pix_desc = PixelFormatDesc(pix_info.format());
-        HMP_REQUIRE(pix_desc.defined() && pix_desc.channels(0) == image.nchannels(), 
-            "Frame::from_image: expect image has {} channels, got {}",
-            pix_desc.channels(), image.nchannels());
-        HMP_REQUIRE(image.format() == kNHWC, 
-            "Frame::from_image: expect image has NHWC layout");
-        HMP_REQUIRE(image.dtype() == pix_desc.dtype(),
-            "Frame:from_image: expect image has dtype {}, got {}",
-            pix_desc.dtype(), image.dtype());
-        return Frame({image.data()}, pix_info);
-    }
-    else{
-#ifndef HMP_ENABLE_MOBILE
-        auto yuv = img::rgb_to_yuv(image.data(), pix_info, image.format());
-        return Frame(yuv, image.width(), image.height(), pix_info);
-#else
-        HMP_REQUIRE(false,
-                    "Frame::from_image: pixel format {} is not supported", pix_info.format());
-#endif //HMP_ENABLE_MOBILE
-    }
-}
-
-
-
-/////////////////////////// Image ////////////////////////////
-
-Image::Image(const Tensor &data, ChannelFormat format, const ColorModel &cm)
-    : Image(data, format)
-{
-    cm_ = cm;
-}
-
-
-Image::Image(const Tensor &data, ChannelFormat format)
-    : format_(format)
-{
-    HMP_REQUIRE(data.dim() == 2 || data.dim() == 3,
-        "Image: expect data has 2 or 3 dims, got {}", data.dim());
-
-    //convert to standard layout
-    if(data.dim() == 2){
-        if(format == kNCHW){
-            data_ = data.unsqueeze(0);
-        }
-        else{
-            data_ = data.unsqueeze(-1);
-        }
-    }
-    else{
-        data_ = data.alias();
-    }
-}
-
-
-Image::Image(int width, int height, int channels, ChannelFormat format, const TensorOptions &options)
-{
-    if(format == kNCHW){
-        data_ = empty({channels, height, width}, options);
-    }
-    else{
-        data_ = empty({height, width, channels}, options);
-    }
-    format_ = format;
-}
-
-
-Image Image::to(const Device &device, bool non_blocking) const
-{
-    auto data = data_.to(device, non_blocking);
-    return Image(data, format_, cm_);
-}
-
-Image Image::to(DeviceType device, bool non_blocking) const
-{
-    auto data = data_.to(device, non_blocking);
-    return Image(data, format_, cm_);
-}
-
-Image Image::to(ScalarType dtype) const
-{
-    auto data = data_.to(dtype);
-    return Image(data, format_, cm_);
-}
-
-Image Image::to(ChannelFormat format, bool contiguous) const
-{
-    Tensor data = data_;
-    if(format == ChannelFormat::NCHW && format_ == ChannelFormat::NHWC){
-        data = data_.permute({2, 0, 1});
-    }
-    else if(format == ChannelFormat::NHWC && format_ == ChannelFormat::NCHW){
-        data = data_.permute({1, 2, 0});
+    } else if (pix_info.format() == PF_RGB24) {
+        auto rgb = img::yuv_to_rgb(data_, pix_info_, kNHWC);
+        return Frame({rgb}, width_, height_, pix_info);
     }
 
-    if(contiguous){
-        data = data.contiguous();
-    }
-    return Image(data, format, cm_);
+    HMP_REQUIRE(false, "{} to {} not support", stringfy(pix_info_.format()), stringfy(pix_info.format()));
 }
-
-
-Image &Image::copy_(const Image &from)
-{
-    HMP_REQUIRE(from.format() == format(), 
-        "Image::copy_: expect channel format {}, got {}", format(), from.format());
-
-    data_.copy_(from.data_);
-    return *this;
-}
-
-Image Image::clone() const
-{
-    return Image(data_.clone(), format_, cm_);
-}
-
-
-Image Image::crop(int left, int top, int w, int h) const
-{
-    auto width = this->width();
-    auto height = this->height();
-    left = wrap_size(left, width);
-    top = wrap_size(top, height);
-
-    auto right = left + w;
-    auto bottom = top + h;
-    HMP_REQUIRE(left < right && right <= width, 
-        "Image::crop expect left({}) < right({}) and right <= {}", left, right, width);
-    HMP_REQUIRE(top < bottom && bottom <= height, 
-        "Image::crop expect top({}) < bottom({}) and bottom <= {}", top, bottom, height);
-
-    auto data = data_.slice(wdim(), left, right).slice(hdim(), top, bottom);
-    return Image(data, format_, cm_);
-}
-
-
-Image Image::select(int channel) const
-{
-    auto data = data_.slice(cdim(), channel, channel+1);
-    return Image(data, format_, cm_); 
-}
-
 
 std::string stringfy(const Frame &frame)
 {
@@ -310,13 +162,5 @@ std::string stringfy(const Frame &frame)
         frame.device(), frame.dtype(), frame.format(),
         frame.nplanes(), frame.height(), frame.width());
 }
-
-std::string stringfy(const Image &image)
-{
-    return fmt::format("Image({}, {}, {})",
-        image.device(), image.dtype(), image.format(),
-        image.data().shape());
-}
-
 
 } //namespace hmp

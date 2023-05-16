@@ -104,6 +104,7 @@ int CFFEncoder::init() {
     width_ = 0;
     height_ = 0;
     last_pts_ = -1;
+    recorded_pts_ = -1;
     fps_ = 0;
     n_resample_out_ = 0;
     pix_fmt_ = AV_PIX_FMT_YUV420P;
@@ -151,16 +152,13 @@ int CFFEncoder::init() {
 
     /** @addtogroup EncM
      * @{
-     * @arg push_output: output the result to the output queue instead of write to disk, exp.
+     * @arg push_output: decide whether to mux the result and where to output the results, available value is 0/1/2. 0: write muxed result to disk, 1: write muxed result to the output queue, 2: write unmuxed result to the output queue.
      * @code
             "push_output": 1
      * @endcode
      * @} */
     if (input_option_.has_key("push_output")) {
-        int tmp;
-        input_option_.get_int("push_output", tmp);
-        if (tmp == 1)
-            push_output_ = 1;
+        input_option_.get_int("push_output", push_output_);
     }
 
     /** @addtogroup EncM
@@ -232,6 +230,12 @@ int CFFEncoder::init() {
     if (input_option_.has_key("aframes"))
         input_option_.get_long("aframes", ost_[1].max_frames);
     assert(ost_[0].max_frames >= 0 && ost_[1].max_frames >= 0);
+    /** @addtogroup EncM
+     * @{
+     * @arg min_frames: set the min number of output video frames
+     * @} */
+    if (input_option_.has_key("min_frames"))
+        input_option_.get_long("min_frames", ost_[0].min_frames);
 
     /** @addtogroup EncM
      * @{
@@ -340,7 +344,7 @@ int CFFEncoder::clean() {
         if (ost_[idx].input_stream)
             ost_[idx].input_stream = NULL;
     }
-    if (push_output_ == 0 && output_fmt_ctx_ && output_fmt_ctx_->oformat && !(output_fmt_ctx_->oformat->flags & AVFMT_NOFILE))
+    if (push_output_ == OutputMode::OUTPUT_NOTHING && output_fmt_ctx_ && output_fmt_ctx_->oformat && !(output_fmt_ctx_->oformat->flags & AVFMT_NOFILE))
         avio_closep(&output_fmt_ctx_->pb);
 
     if (output_fmt_ctx_) {
@@ -397,9 +401,14 @@ int CFFEncoder::handle_output(AVPacket *hpkt, int idx) {
         }
     }
 
-    //BMFLOG_NODE(BMF_INFO, node_id_) << "push out time stamp: " << pkt->pts;
-    if (push_output_)
+    if (push_output_) {
         current_frame_pts_ = pkt->pts;
+        orig_pts_time_ = -1;
+        if (orig_pts_time_list_.size() > 0) {
+            orig_pts_time_ = orig_pts_time_list_.front();
+            orig_pts_time_list_.pop_front();
+        }
+    }
 
     AVFormatContext *s = output_fmt_ctx_;
     AVStream *st = output_stream_[idx];
@@ -548,6 +557,32 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_pack
         ++last_pts_;
     }
 
+    if (av_index == 0 && frame && oformat_ == "image2pipe" && push_output_) { //only support to carry orig pts time for images
+        std::string stime = "";
+        if (frame->metadata) {
+            AVDictionaryEntry *tag = NULL;
+            while ((tag = av_dict_get(frame->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
+                if (!strcmp(tag->key, "orig_pts_time")) {
+                    stime = tag->value;
+                    break;
+                }
+            }
+        }
+        if (stime != "") {
+            orig_pts_time_list_.push_back(std::stod(stime));
+            recorded_pts_ = frame->pts;
+            last_orig_pts_time_ = std::stod(stime);
+        } else {
+            if (recorded_pts_ >= 0)
+                estimated_time_ = last_orig_pts_time_ +
+                                (frame->pts - recorded_pts_) * av_q2d(enc_ctxs_[idx]->time_base);
+            else
+                estimated_time_ += 0.001;
+
+            orig_pts_time_list_.push_back(estimated_time_);
+        }
+    }
+
     if(frame && enc_ctxs_[idx])
         frame->quality = enc_ctxs_[idx]->global_quality;
 
@@ -557,6 +592,19 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_pack
         BMF_Error(BMF_TranscodeError, msg.c_str());
         return ret;
     }
+
+    auto flush_cache = [this] () -> int {
+        int ret = 0;
+        while (cache_.size()) {
+            auto tmp = cache_.front();
+            cache_.erase(cache_.begin());
+            ret = handle_output(tmp.first, tmp.second);
+            av_packet_free(&tmp.first);
+            if (ret < 0)
+                return ret;
+        }
+        return ret;
+    };
 
     while (1) {
         AVPacket *enc_pkt = av_packet_alloc();
@@ -570,6 +618,15 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_pack
         *got_packet = avcodec_receive_packet(enc_ctxs_[idx], enc_pkt);
         if (*got_packet == AVERROR(EAGAIN) || *got_packet == AVERROR_EOF) {
             av_packet_free(&enc_pkt);
+            if (*got_packet == AVERROR_EOF) {
+                if (!stream_inited_) {
+                    BMFLOG_NODE(BMF_WARNING, node_id_) << "The stream at index:" << idx << " ends, "
+                        "but not all streams are initialized, all packets may be dropped.";
+                    return 0;
+                }
+                if (ret = flush_cache(); ret < 0)
+                    return ret;
+            }
             ret = 0;
             break;
         }
@@ -579,23 +636,41 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_pack
             return *got_packet;
         }
 
-        if (!stream_inited_ && *got_packet == 0) {
-            cache_.push_back(std::pair<AVPacket*, int>(enc_pkt, idx));
-            continue;
-        }
-        while (cache_.size()) {
-            auto tmp = cache_.front();
-            cache_.erase(cache_.begin());
-            ret = handle_output(tmp.first, tmp.second);
-            av_packet_free(&tmp.first);
-            if (ret < 0)
-                return ret;
-        }
+        if (push_output_ == OutputMode::OUTPUT_UNMUX_PACKET) {
+            if (first_packet_[idx]) {
+                auto stream = std::make_shared<AVStream>();
+                *stream = *(output_stream_[idx]);
+                stream->codecpar = avcodec_parameters_alloc();
+                avcodec_parameters_copy(stream->codecpar, output_stream_[idx]->codecpar);
+                auto packet = Packet(stream);
+                //packet.set_data_type(DATA_TYPE_C);
+                //packet.set_class_name("AVStream");
+                if (current_task_ptr_->get_outputs().find(idx) != current_task_ptr_->get_outputs().end())
+                    current_task_ptr_->get_outputs()[idx]->push(packet);
+                first_packet_[idx] = false;
+            }
 
-        ret = handle_output(enc_pkt, idx);
-        if (ret != 0) {
-            av_packet_free(&enc_pkt);
-            return ret;
+            BMFAVPacket packet_tmp = ffmpeg::to_bmf_av_packet(enc_pkt, true);
+            auto packet = Packet(packet_tmp);
+            packet.set_timestamp(enc_pkt->pts * av_q2d(output_stream_[idx]->time_base) * 1000000);
+            //packet.set_data_type(DATA_TYPE_C);
+            //packet.set_data_class_type(BMFAVPACKET_TYPE);
+            //packet.set_class_name("libbmf_module_sdk.BMFAVPacket");
+            if (current_task_ptr_->get_outputs().find(idx) != current_task_ptr_->get_outputs().end())
+                current_task_ptr_->get_outputs()[idx]->push(packet);
+        } else {
+            if (!stream_inited_ && *got_packet == 0) {
+                cache_.push_back(std::pair<AVPacket*, int>(enc_pkt, idx));
+                continue;
+            }
+            if (ret = flush_cache(); ret < 0)
+                return ret;
+
+            ret = handle_output(enc_pkt, idx);
+            if (ret != 0) {
+                av_packet_free(&enc_pkt);
+                return ret;
+            }
         }
 
         av_packet_free(&enc_pkt);
@@ -608,7 +683,7 @@ int CFFEncoder::init_stream() {
     int ret = 0;
     if (!output_fmt_ctx_)
         return 0;
-    if (push_output_ == 0 && !(output_fmt_ctx_->oformat->flags & AVFMT_NOFILE)) {
+    if (push_output_ == OutputMode::OUTPUT_NOTHING && !(output_fmt_ctx_->oformat->flags & AVFMT_NOFILE)) {
         ret = avio_open(&output_fmt_ctx_->pb, output_path_.c_str(), AVIO_FLAG_WRITE);
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Could not open output file '%s'", output_path_.c_str());
@@ -616,36 +691,38 @@ int CFFEncoder::init_stream() {
         }
     }
 
-    AVDictionary *opts = NULL;
-    std::vector<std::pair<std::string, std::string>> params;
-    mux_params_.get_iterated(params);
-    for (int i = 0; i < params.size(); i++) {
-        av_dict_set(&opts, params[i].first.c_str(), params[i].second.c_str(), 0);
-    }
-    {
+    if (push_output_ == OutputMode::OUTPUT_NOTHING or push_output_ == OutputMode::OUTPUT_MUXED_PACKET) {
+        AVDictionary *opts = NULL;
         std::vector<std::pair<std::string, std::string>> params;
-        metadata_params_.get_iterated(params);
+        mux_params_.get_iterated(params);
         for (int i = 0; i < params.size(); i++) {
-            av_dict_set(&output_fmt_ctx_->metadata, params[i].first.c_str(), params[i].second.c_str(), 0);
+            av_dict_set(&opts, params[i].first.c_str(), params[i].second.c_str(), 0);
         }
-    }
-    ret = avformat_write_header(output_fmt_ctx_, &opts);
-    if (ret < 0) {
-        BMFLOG_NODE(BMF_ERROR, node_id_) << "Error occurred when opening output file";
-        return ret;
-    } else if (av_dict_count(opts) > 0) {
-        AVDictionaryEntry *t = NULL;
-        std::string err_msg = "Encoder mux_params contains incorrect key :";
-        while ((t = av_dict_get(opts, "", t, AV_DICT_IGNORE_SUFFIX))) {
-            err_msg.append(" ");
-            err_msg.append(t->key);
+        {
+            std::vector<std::pair<std::string, std::string>> params;
+            metadata_params_.get_iterated(params);
+            for (int i = 0; i < params.size(); i++) {
+                av_dict_set(&output_fmt_ctx_->metadata, params[i].first.c_str(), params[i].second.c_str(), 0);
+            }
+        }
+        ret = avformat_write_header(output_fmt_ctx_, &opts);
+        if (ret < 0) {
+            BMFLOG_NODE(BMF_ERROR, node_id_) << "Error occurred when opening output file";
+            return ret;
+        } else if (av_dict_count(opts) > 0) {
+            AVDictionaryEntry *t = NULL;
+            std::string err_msg = "Encoder mux_params contains incorrect key :";
+            while ((t = av_dict_get(opts, "", t, AV_DICT_IGNORE_SUFFIX))) {
+                err_msg.append(" ");
+                err_msg.append(t->key);
+            }
+            av_dict_free(&opts);
+            BMFLOG_NODE(BMF_ERROR, node_id_) << err_msg;
         }
         av_dict_free(&opts);
-        BMFLOG_NODE(BMF_ERROR, node_id_) << err_msg;
-    }
-    av_dict_free(&opts);
 
-    av_dump_format(output_fmt_ctx_, 0, output_path_.c_str(), 1);
+        av_dump_format(output_fmt_ctx_, 0, output_path_.c_str(), 1);
+    }
 
     if (video_first_pts_ < audio_first_pts_) {
         first_pts_ = video_first_pts_;
@@ -673,11 +750,14 @@ int CFFEncoder::write_current_packet_data(uint8_t *buf, int buf_size) {
     bmf_avpkt.set_whence(current_whence_);
     auto packet = Packet(bmf_avpkt);
     packet.set_timestamp(current_frame_pts_);
+    packet.set_time(orig_pts_time_);
+    //packet.set_data(packet_tmp);
     //packet.set_data_type(DATA_TYPE_C);
     //packet.set_data_class_type(BMFAVPACKET_TYPE);
     //packet.set_class_name("libbmf_module_sdk.BMFAVPacket");
     if (current_task_ptr_->get_outputs().find(0) != current_task_ptr_->get_outputs().end())
         current_task_ptr_->get_outputs()[0]->push(packet);
+
     return buf_size;
 }
 
@@ -747,12 +827,12 @@ int CFFEncoder::init_codec(int idx, AVFrame* frame) {
 
     if (!output_fmt_ctx_) {
         avformat_alloc_output_context2(&output_fmt_ctx_, NULL, (oformat_ != "" ? oformat_.c_str() : NULL),
-                                           push_output_ == 0 ? output_path_.c_str() : NULL);
+                                           push_output_ == OutputMode::OUTPUT_NOTHING ? output_path_.c_str() : NULL);
         if (!output_fmt_ctx_) {
             BMFLOG_NODE(BMF_ERROR, node_id_) << "Could not create output context";
             return AVERROR_UNKNOWN;
         }
-        if (push_output_ > 0) {
+        if (push_output_ == OutputMode::OUTPUT_MUXED_PACKET) {
             unsigned char *avio_ctx_buffer;
             size_t avio_ctx_buffer_size = avio_buffer_size_;
             avio_ctx_buffer = (unsigned char*)av_malloc(avio_ctx_buffer_size);
@@ -931,6 +1011,9 @@ int CFFEncoder::init_codec(int idx, AVFrame* frame) {
                     std::string svalue = tag->value;
                     stream_first_dts_ = stol(svalue);
                 }
+
+                if (!strcmp(tag->key, "copyts"))
+                    copy_ts_ = true;
             }
         }
         /** @addtogroup EncM
@@ -1041,9 +1124,8 @@ int CFFEncoder::init_codec(int idx, AVFrame* frame) {
             //    && input_files[ist->file_index]->input_ts_offset == 0) {
             //    vsync_method_ = VSYNC_VSCFR;
             //}
-            //if (vsync_method_ == VSYNC_CFR && copy_ts) {
-            //    vsync_method_ = VSYNC_VSCFR;
-            //}
+            if (vsync_method_ == VSYNC_CFR && copy_ts_)
+                vsync_method_ = VSYNC_VSCFR;
         }
 
         if (video_frame_rate_.num == 0) {
@@ -1312,7 +1394,7 @@ int CFFEncoder::flush() {
     }
 
     b_flushed_ = true;
-    if (output_fmt_ctx_)
+    if (output_fmt_ctx_ && (push_output_ == OutputMode::OUTPUT_NOTHING or push_output_ == OutputMode::OUTPUT_MUXED_PACKET))
         ret = av_write_trailer(output_fmt_ctx_);
 
     return ret;
@@ -1436,7 +1518,7 @@ int CFFEncoder::handle_video_frame(AVFrame *frame, bool is_flushing, int index) 
     for (int i=0; i < filter_frames.size(); i++) {
         AVFrame* filter_frame = filter_frames[i];
         if (video_sync_ == NULL) {
-            video_sync_ = std::make_shared<VideoSync>(in_stream_tbs_[0], enc_ctxs_[0]->time_base, input_video_frame_rate_, video_frame_rate_, stream_start_time_, stream_first_dts_, vsync_method_, ost_[0].max_frames);
+            video_sync_ = std::make_shared<VideoSync>(in_stream_tbs_[0], enc_ctxs_[0]->time_base, input_video_frame_rate_, video_frame_rate_, stream_start_time_, stream_first_dts_, vsync_method_, ost_[0].max_frames, ost_[0].min_frames);
         }
 
         video_sync_->process_video_frame(filter_frame, sync_frames, ost_[0].frame_number);
@@ -1602,7 +1684,22 @@ int CFFEncoder::process(Task &task) {
 
             if (index == 0) {
                 auto video_frame = packet.get<VideoFrame>();
-                frame = ffmpeg::from_video_frame(video_frame, false);
+                frame = av_frame_clone(ffmpeg::from_video_frame(video_frame, false));
+
+                if (oformat_ == "image2pipe" && push_output_) { //only support to carry orig pts time for images
+                    std::string stime = "";
+                    if (frame->metadata) {
+                        AVDictionaryEntry *tag = NULL;
+                        while ((tag = av_dict_get(frame->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
+                            if (!strcmp(tag->key, "orig_pts_time")) {
+                                stime = tag->value;
+                                break;
+                            }
+                        }
+                    }
+                    if (stime != "")
+                        orig_pts_time_list_.push_back(std::stod(stime));
+                }
             }
             if (index == 1) {
                 auto audio_frame = packet.get<AudioFrame>();
@@ -1654,7 +1751,7 @@ int CFFEncoder::process(Task &task) {
     if (b_eof_) {
         if (!null_output_) {
             if (task.get_outputs().size() > 0 && !b_flushed_) {
-                if (push_output_ == 0) { //for server mode output
+                if (push_output_ == OutputMode::OUTPUT_NOTHING) {
                     std::string data;
                     if (!output_dir_.empty())
                         data = output_dir_;
@@ -1666,10 +1763,12 @@ int CFFEncoder::process(Task &task) {
                 }
             }
             flush();
-            if (push_output_ > 0) { //for none IO mux output
+            if (task.get_outputs().size() > 0 || push_output_ != OutputMode::OUTPUT_NOTHING) {
                 Packet pkt = Packet::generate_eof_packet();
                 assert(pkt.timestamp() == BMF_EOF);
-                task.get_outputs()[0]->push(pkt);
+                for (int i = 0; i < task.get_outputs().size(); i++){
+                    task.get_outputs()[i]->push(pkt);
+                }
             }
         }
         task.set_timestamp(DONE);

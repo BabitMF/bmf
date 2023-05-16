@@ -230,6 +230,33 @@ enum class ChannelFormat : uint8_t {
     NCHW,
     NHWC
 };
+
+enum CHW {
+    CHW_C = 0,
+    CHW_H = 1,
+    CHW_W = 2,
+};
+
+enum HWC {
+    HWC_H = 0,
+    HWC_W = 1,
+    HWC_C = 2,
+};
+
+enum NHWC {
+    NHWC_N = 0,
+    NHWC_H = 1,
+    NHWC_W = 2,
+    NHWC_C = 3,
+};
+
+enum NCHW {
+    NCHW_N = 0,
+    NCHW_C = 1,
+    NCHW_H = 2,
+    NCHW_W = 3,
+};
+
 const static ChannelFormat kNCHW = ChannelFormat::NCHW;
 const static ChannelFormat kNHWC = ChannelFormat::NHWC;
 

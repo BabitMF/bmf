@@ -57,6 +57,7 @@ public:
     {
         close_time_++;
         HMP_REQUIRE(close_time_ < 2, "close module more than once. close time = {}", close_time_);
+        return 0;
     }
 };
 

@@ -134,3 +134,52 @@ TEST(cpp_edit, edit_overlay) {
         "../edit/overlays.mp4|480|640|6.984000|MOV,MP4,M4A,3GP,3G2,MJ2|989234|863602|h264|{\"fps\": \"30.0715990453\"}"
     );
 }
+
+/* TEST(cpp_edit, edit_audio_mix) { */
+/*     std::string output_file = "./audio_mix.mp4"; */
+/*     BMF_CPP_FILE_REMOVE(output_file); */
+
+/*     nlohmann::json graph_para = { */
+/*         {"dump_graph", 0} */
+/*     }; */
+/*     auto graph = bmf::builder::Graph(bmf::builder::NormalMode, bmf_sdk::JsonParam(graph_para)); */
+
+/*     nlohmann::json decode_para = { */
+/*         {"input_path", "../../example/files/img.mp4"} */
+/*     }; */
+/*     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para)); */
+/*     auto video2 = graph.Decode(bmf_sdk::JsonParam(decode_para)); */
+/*     nlohmann::json module_para = { */
+/*         {"audios", { */
+/*             { */
+/*                 {"start", 1}, */
+/*                 {"duration", 5} */
+/*             }, */
+/*             { */
+/*                 {"start", 0}, */
+/*                 {"duration", 5} */
+/*             } */
+/*         } */
+/*         } */
+/*     }; */
+    
+/*     auto audio_stream = graph.Module({video["audio"], video2["audio"]}, "audio_mix", bmf::builder::Python, bmf_sdk::JsonParam(module_para), */
+/*             "MyModule", "../../example/edit", "audio_mix:audio_mix" */
+/*         ); */
+
+/*     nlohmann::json encode_para = { */
+/*         {"output_path", output_file}, */
+/*         {"video_params", { */
+/*             {"width", 640}, */
+/*             {"height", 480} */
+/*         }} */
+/*     }; */
+/*     video["video"].EncodeAsVideo(audio_stream, bmf_sdk::JsonParam(encode_para)); */
+/*     std::cout << graph.Dump() << std::endl; */
+/*     graph.Run(); */
+
+/*     BMF_CPP_FILE_CHECK( */
+/*         output_file, */ 
+/*         "../edit/audio_mix.mp4|480|640|7.550000|MOV,MP4,M4A,3GP,3G2,MJ2|1143753|1079417|h264|{\"fps\": \"30.0662251656\"}" */
+/*     ); */
+/* } */

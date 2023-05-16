@@ -1,0 +1,133 @@
+import re
+from math import pi, cos, tan, sqrt
+
+from bmf import *
+import hmp
+from cuda import cuda
+import cvcuda
+import torch
+
+import pdb
+
+class crop_gpu(Module):
+    # TODO: Add radians as defalut rotation
+    def __get_rotation(self, option):
+        self.angle_deg = 0
+        self.shift = [0, 0]
+        self.algo = cvcuda.Interp.LINEAR
+        if 'angle' in option.keys():
+            self.angle_deg = eval(option['angle'].lower()) * 180 / pi
+        if 'angle_deg' in option.keys():
+            self.angle_deg = option['angle_deg']
+        if 'shift' in option.keys():
+            split = re.split('\*|x|,', option.shift())
+            self.shift = split
+        if 'algo' in option.keys():
+            self.algo = self.__get_algo(option['algo'])
+    
+    def __get_crop(self, option):
+        self.width = None
+        self.height = None
+        self.x = None
+        self.y = None
+        if 'width' in option.keys():
+            self.width = option['width']
+        if 'height' in option.keys():
+            self.height = option['height']
+        if 'x' in option.keys():
+            self.x = option['x']
+        if 'y' in option.keys():
+            self.y = option['y']
+
+    def __init__(self, node, option=None):
+        self.node_ = node
+        self.option_ = option
+        self.eof_received_ = False
+
+        self.__get_crop(option)
+
+        self.i420info = hmp.PixelInfo(hmp.PixelFormat.kPF_YUV420P, hmp.ColorSpace.kCS_BT470BG, hmp.ColorRange.kCR_MPEG)
+        self.i420_out = None
+
+    def process(self, task):
+        
+        # get input and output packet queue
+        input_queue = task.get_inputs()[0]
+        output_queue = task.get_outputs()[0]
+
+        # add all input frames into frame cache
+        while not input_queue.empty():
+            in_pkt = input_queue.get()
+
+            if in_pkt.timestamp == Timestamp.EOF:
+                # we should done all frames processing in following loop
+                self.eof_received_ = True
+                continue
+
+            in_frame = in_pkt.get(VideoFrame)
+
+            # validate crop parameters
+            if (not 0 <= self.x < in_frame.width - 1) or (not 0 <= self.y < in_frame.height - 1):
+                Log.log(LogLevel.ERROR, "Invalid crop position")
+            if (self.x + self.width >= in_frame.width):
+                Log.log(LogLevel.ERROR, "Crop width is out of image bound")
+            if (self.y + self.height >= in_frame.height):
+                Log.log(LogLevel.ERROR, "Crop height is out of image bound")
+
+            if (in_frame.frame().device() == hmp.Device('cpu')):
+                in_frame = in_frame.cuda()
+            tensor_list = in_frame.frame().data()
+            frame_out = hmp.Frame(self.width, self.height, in_frame.frame().pix_info(), device='cuda')
+            self.i420_out = hmp.Frame(self.width, self.height, self.i420info, device='cuda')
+
+            out_tensor_list = frame_out.data()
+            stream = hmp.current_stream(hmp.kCUDA)
+            cvstream = cvcuda.cuda.as_stream(stream.handle())
+
+            in_list = []
+            out_list = []
+
+            # deal with nv12 special case
+            if (in_frame.frame().format() == hmp.PixelFormat.kPF_NV12):
+                self.i420_in = hmp.Frame(in_frame.width, in_frame.height, self.i420info, device='cuda')
+                hmp.img.yuv_to_yuv(self.i420_in.data(), in_frame.frame().data(), self.i420info, in_frame.frame().pix_info())
+                in_list = [x.torch() for x in self.i420_in.data()]
+                out_list = [x.torch() for x in self.i420_out.data()]
+
+            # other pixel formats, e.g. yuv420, rgb
+            else:
+                
+                in_list = [x.torch() for x in tensor_list]
+                out_list = [x.torch() for x in out_tensor_list]
+
+            
+            for index, (in_tensor, out_tensor) in enumerate(zip(in_list, out_list)):
+                chroma_shift = 0
+                # rect = cvcuda.RectI(self.x, self.y, self.width, self.height)
+                if ((index in range(1,3)) and
+                    (in_frame.frame().format() == hmp.PixelFormat.kPF_NV12 or
+                     in_frame.frame().format() == hmp.PixelFormat.kPF_YUV420P)):
+                    chroma_shift = 1
+                rect = cvcuda.RectI(self.x >> chroma_shift, self.y >> chroma_shift,
+                                    self.width >> chroma_shift, self.height >> chroma_shift)
+
+                cvcuda.customcrop_into(cvcuda.as_tensor(out_tensor, 'HWC'), cvcuda.as_tensor(in_tensor, 'HWC'),
+                                       rect=rect, stream=cvstream)
+
+            if (in_frame.frame().format() == hmp.PixelFormat.kPF_NV12):
+                hmp.img.yuv_to_yuv(frame_out.data(), self.i420_out.data(), frame_out.pix_info(), self.i420_out.pix_info())
+
+            videoframe_out = VideoFrame(frame_out)
+            videoframe_out.pts = in_frame.pts
+            videoframe_out.time_base = in_frame.time_base
+            out_pkt = Packet(videoframe_out.cpu())
+            out_pkt.timestamp = videoframe_out.pts
+            output_queue.put(out_pkt)
+
+        if self.eof_received_:
+            output_queue.put(Packet.generate_eof_packet())
+            Log.log_node(LogLevel.DEBUG, self.node_,
+                         'output stream', 'done')
+            task.set_timestamp(Timestamp.DONE)
+
+        return ProcessResult.OK

@@ -25,10 +25,15 @@ def test():
     (
         video['video']
             .module('scale_gpu', {"size": '720x1280', 'algo': 'cubic'})
+            # .module('flip_gpu', {'direction': 'v'})
+            # .module('rotate_gpu', {'angle': 'pi/8'})
+            # .module('crop_gpu', {'x': 0, 'y': 0, 'width': 480, 'height': 640})
+            # .module('blur_gpu', {'op': 'gblur', 'sigma': [0.7, 0.7], 'size': [5, 5]})
             .encode(None, {
                 "output_path": output_path,
                 "video_params": {
                     "codec": "hevc_nvenc",
+                    "pix_fmt": "cuda",
                     # "width": 720,
                     # "height": 1280,
                 }

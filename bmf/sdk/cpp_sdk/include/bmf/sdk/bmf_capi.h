@@ -127,7 +127,8 @@ BMF_API void bmf_pkt_set_pts(bmf_BMFAVPacket pkt, int64_t pts);
 BMF_API int64_t bmf_pkt_pts(bmf_BMFAVPacket pkt);
 BMF_API void bmf_pkt_set_time_base(bmf_BMFAVPacket pkt, int num, int den);
 BMF_API void bmf_pkt_time_base(bmf_BMFAVPacket pkt, int *num, int *den);
-
+BMF_API int64_t bmf_pkt_offset(bmf_BMFAVPacket pkt);
+BMF_API int64_t bmf_pkt_whence(bmf_BMFAVPacket pkt);
 
 /////////// TypeInfo ///////////
 BMF_API const char* bmf_type_info_name(const bmf_TypeInfo type_info);

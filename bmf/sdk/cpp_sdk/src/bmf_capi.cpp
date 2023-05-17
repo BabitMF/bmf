@@ -2,7 +2,6 @@
 #include <hmp/tensor.h>
 #include <hmp/format.h>
 
-
 #define BMF_PROTECT(...) 	            \
 	try{                                \
         __VA_ARGS__                     \
@@ -461,6 +460,16 @@ void bmf_pkt_time_base(bmf_BMFAVPacket pkt, int *num, int *den)
     *den = pkt->time_base().den;
 }
 
+int64_t bmf_pkt_offset(bmf_BMFAVPacket pkt)
+{
+    return pkt->get_offset();
+}
+
+int64_t bmf_pkt_whence(bmf_BMFAVPacket pkt)
+{
+    return pkt->get_whence();
+}
+
 
 /////////////// TypeInfo /////////////////
 const char* bmf_type_info_name(const bmf_TypeInfo type_info)
@@ -742,7 +751,6 @@ bmf_ModuleFunctor bmf_module_functor_make(
         if(factory == nullptr){
             throw std::runtime_error("Load module " + info.module_name + " failed");
         }
-
         JsonParam json_option;
         json_option.parse(option);
         auto m = factory->make(node_id, json_option);

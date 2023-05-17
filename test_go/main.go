@@ -1,13 +1,12 @@
 package main
 
 import (
+	"code.byted.org/videoarch/bmf-gosdk/bmf"
+	"code.byted.org/videoarch/bmf-gosdk/builder"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"time"
-
-	"code.byted.org/videoarch/bmf-gosdk/bmf"
-	"code.byted.org/videoarch/bmf-gosdk/builder"
 )
 
 func normalMode() {
@@ -163,7 +162,11 @@ func testCrypt() {
 func testOption() {
 	g := builder.NewBMFGraph(builder.Normal, nil)
 	vid := g.Decode(map[string]interface{}{
+<<<<<<< HEAD
 		"input_path": "../../../bmf/example/files/big_bunny_10s_30fps.mp4",
+=======
+		"input_path": "../../../bmf/example/files/img.mp4",
+>>>>>>> 1936e118... bmf dev_v3 enable go
 		"start_time": 2,
 	}, nil)
 	g.Encode(vid.Stream(0), vid.Stream(1), map[string]interface{}{
@@ -328,7 +331,11 @@ func testShortVideoConcat() {
 
 func testMapParam() {
 	g := builder.NewBMFGraph(builder.Normal, nil)
+<<<<<<< HEAD
 	input_video_path := "../../../bmf/example/files/big_bunny_multi_stream.mp4"
+=======
+	input_video_path := "../../../bmf/example/files/multi_stream_video.mp4"
+>>>>>>> 1936e118... bmf dev_v3 enable go
 	output_path_1 := "./output_1.mp4"
 	output_path_2 := "./output_2.mp4"
 	video1 := g.Decode(map[string]interface{}{
@@ -375,7 +382,11 @@ func testRGB2Video() {
 func testStreamCopy() {
 	g := builder.NewBMFGraph(builder.Normal, nil)
 	vid := g.Decode(map[string]interface{}{
+<<<<<<< HEAD
 		"input_path":  "../../../bmf/example/files/big_bunny_10s_30fps_mpeg.mp4",
+=======
+		"input_path":  "../../../bmf/example/files/img.mp4",
+>>>>>>> 1936e118... bmf dev_v3 enable go
 		"video_codec": "copy",
 	}, nil)
 	videoStream := vid.Stream(0)
@@ -389,7 +400,11 @@ func testStreamCopy() {
 func testStreamAudioCopy() {
 	g := builder.NewBMFGraph(builder.Normal, nil)
 	vid := g.Decode(map[string]interface{}{
+<<<<<<< HEAD
 		"input_path":  "../../../bmf/example/files/big_bunny_10s_only_audio.flv",
+=======
+		"input_path":  "../../../bmf/example/files/live_audio.flv",
+>>>>>>> 1936e118... bmf dev_v3 enable go
 		"video_codec": "copy",
 		"audio_codec": "copy",
 	}, nil)
@@ -403,7 +418,11 @@ func testStreamAudioCopy() {
 func testExtractFrames() {
 	g := builder.NewBMFGraph(builder.Generator, nil)
 	vstream := g.Decode(map[string]interface{}{
+<<<<<<< HEAD
 		"input_path": "../../../bmf/example/files/big_bunny_10s_30fps.mp4",
+=======
+		"input_path": "../../../bmf/example/files/img.mp4",
+>>>>>>> 1936e118... bmf dev_v3 enable go
 		"video_params": map[string]interface{}{
 			"extract_frames": map[string]interface{}{
 				"fps": 0.5,
@@ -493,7 +512,11 @@ func testIncorrectEncoderParam() {
 func testDurations() {
 	g := builder.NewBMFGraph(builder.Normal, nil)
 	vid := g.Decode(map[string]interface{}{
+<<<<<<< HEAD
 		"input_path": "../../../bmf/example/files/big_bunny_10s_30fps.mp4",
+=======
+		"input_path": "../../../bmf/example/files/img.mp4",
+>>>>>>> 1936e118... bmf dev_v3 enable go
 		"durations":  []float64{1.5, 3, 5, 6},
 	}, nil)
 	g.Encode(vid.Stream(0), vid.Stream(1), map[string]interface{}{
@@ -563,7 +586,11 @@ func testVframes() {
 func testEncoderPushOutputMp4() {
 	g := builder.NewBMFGraph(builder.Generator, nil)
 	vstream := g.Decode(map[string]interface{}{
+<<<<<<< HEAD
 		"input_path": "../../../bmf/example/files/big_bunny_10s_30fps.mp4",
+=======
+		"input_path": "../../../bmf/example/files/img.mp4",
+>>>>>>> 1936e118... bmf dev_v3 enable go
 	}, nil).Stream(0)
 
 	fName := "./simple_vframe_python.mp4"
@@ -620,7 +647,11 @@ func testEncoderPushOutputMp4() {
 func testEncoderPushOutputImage2Pipe() {
 	g := builder.NewBMFGraph(builder.Generator, nil)
 	vstream := g.Decode(map[string]interface{}{
+<<<<<<< HEAD
 		"input_path": "../../../bmf/example/files/big_bunny_10s_30fps.mp4",
+=======
+		"input_path": "../../../bmf/example/files/img.mp4",
+>>>>>>> 1936e118... bmf dev_v3 enable go
 	}, nil).Stream(0)
 
 	vframes_num := 2
@@ -672,7 +703,11 @@ func testEncoderPushOutputImage2Pipe() {
 func testEncoderPushOutputAudioPcmS16le() {
 	g := builder.NewBMFGraph(builder.Generator, nil)
 	aStream := g.Decode(map[string]interface{}{
+<<<<<<< HEAD
 		"input_path": "../../../bmf/example/files/big_bunny_10s_30fps.mp4",
+=======
+		"input_path": "../../../bmf/example/files/img.mp4",
+>>>>>>> 1936e118... bmf dev_v3 enable go
 	}, nil).Stream(1)
 
 	fName := "./test_audio_simple_pcm_s16le.wav"
@@ -725,7 +760,11 @@ func testEncoderPushOutputAudioPcmS16le() {
 func testSkipFrame() {
 	g := builder.NewBMFGraph(builder.Normal, nil)
 	vid := g.Decode(map[string]interface{}{
+<<<<<<< HEAD
 		"input_path": "../../../bmf/example/files/big_bunny_10s_30fps.mp4",
+=======
+		"input_path": "../../../bmf/example/files/img.mp4",
+>>>>>>> 1936e118... bmf dev_v3 enable go
 		"skip_frame": 32,
 	}, nil)
 	g.Encode(vid.Stream(0), nil, map[string]interface{}{
@@ -743,7 +782,11 @@ func testSkipFrame() {
 func testSegmentTrans() {
 	g := builder.NewBMFGraph(builder.Normal, nil)
 	vid := g.Decode(map[string]interface{}{
+<<<<<<< HEAD
 		"input_path":  "../../../bmf/example/files/big_bunny_10s_30fps_mpeg.mp4",
+=======
+		"input_path":  "../../../bmf/example/files/img.mp4",
+>>>>>>> 1936e118... bmf dev_v3 enable go
 		"video_codec": "copy",
 	}, nil)
 	output_path := "./simple_%05d.mp4"
@@ -822,7 +865,11 @@ func testVideoConcat() {
 	var audio_concat_streams []*builder.BMFStream
 	for i := 0; i < 3; i++ {
 		video := g.Decode(map[string]interface{}{
+<<<<<<< HEAD
 			"input_path": "../../../bmf/example/files/big_bunny_10s_30fps.mp4",
+=======
+			"input_path": "../../../bmf/example/files/img.mp4",
+>>>>>>> 1936e118... bmf dev_v3 enable go
 		}, nil)
 		video_stream := video.Stream(0).Scale("1280:720")
 
@@ -877,7 +924,11 @@ func premoduleMode() {
 func syncMode() {
 	done := false
 	decoder, err0 := bmf.NewModuleFunctorBuiltin("c_ffmpeg_decoder", map[string]interface{}{
+<<<<<<< HEAD
 		"input_path": "../../../bmf/example/files/big_bunny_10s_30fps.mp4",
+=======
+		"input_path": "../../../bmf/example/files/img.mp4",
+>>>>>>> 1936e118... bmf dev_v3 enable go
 	}, 0, 1)
 	if decoder == nil {
 		fmt.Printf("Load decoder module failed %v\n", err0)
@@ -925,11 +976,19 @@ func syncMode() {
 				if err1 != nil {
 					fmt.Printf("Pass Through Fetch failed! error : %v\n", err1)
 					break
+<<<<<<< HEAD
 				}
 				// do encoder module
 				for i := 0; i < len(opkts_pass); i++ {
 					encChan <- []*bmf.Packet{opkts_pass[i]}
 				}
+=======
+				}
+				// do encoder module
+				for i := 0; i < len(opkts_pass); i++ {
+					encChan <- []*bmf.Packet{opkts_pass[i]}
+				}
+>>>>>>> 1936e118... bmf dev_v3 enable go
 
 			}
 
@@ -1010,7 +1069,11 @@ func syncMode() {
 
 func syncModeSerial() {
 	decoder, err0 := bmf.NewModuleFunctorBuiltin("c_ffmpeg_decoder", map[string]interface{}{
+<<<<<<< HEAD
 		"input_path": "../../../bmf/example/files/big_bunny_10s_30fps.mp4",
+=======
+		"input_path": "../../../bmf/example/files/img.mp4",
+>>>>>>> 1936e118... bmf dev_v3 enable go
 	}, 0, 1)
 	defer decoder.Free()
 	if decoder == nil {
@@ -1054,11 +1117,19 @@ func syncModeSerial() {
 			}
 			if err_eof != nil {
 				fmt.Println("PassThrough EOF execute failed error : %v\n", err_eof)
+<<<<<<< HEAD
 			}
 			opkts_eof, err1_eof := pass.Fetch(0)
 			if err1_eof != nil {
 				fmt.Println("PassThrough EOF fetch failed error : %v\n", err1_eof)
 			}
+=======
+			}
+			opkts_eof, err1_eof := pass.Fetch(0)
+			if err1_eof != nil {
+				fmt.Println("PassThrough EOF fetch failed error : %v\n", err1_eof)
+			}
+>>>>>>> 1936e118... bmf dev_v3 enable go
 
 			for i := 0; i < len(opkts_eof); i++ {
 				_, err_enc_eof := encoder.Call([]*bmf.Packet{opkts_eof[i]})

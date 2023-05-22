@@ -46,30 +46,6 @@ def task(proc_idx, input_video_path, frames_dict):
 
     frames_dict[str(proc_idx)] = num_frames
 
-def test_gpu_decode_multi_proc_perf():
-    input_video_path = "../files/perf_1080p_10k.h264"
-    num_processes = 2
-    processes = []
-    frames_dict = multiprocessing.Manager().dict()
-
-    for i in range(num_processes):
-        processes.append(Process(target=task, args=(i, input_video_path, frames_dict)))
-    
-    start = time.time()
-    for i in range(num_processes):
-        processes[i].start()
-
-    for i in range(num_processes):
-        processes[i].join()
-    stop = time.time()
-
-    duration = stop - start
-    total_frames = 0
-    for i in range(num_processes):
-        total_frames += frames_dict[str(i)]
-
-    print("Total Frames Decoded={}, time={} seconds, FPS under multiple processes={}".format(total_frames, duration, total_frames / duration))
-
 def test_gpu_decode_multi_thread_perf():
     input_video_path = "../files/perf_1080p_10k.h264"
     num_threads = 2
@@ -93,8 +69,6 @@ def test_gpu_decode_multi_thread_perf():
         total_frames += frames_dict[str(i)]
 
     print("Total Frames Decoded={}, time={} seconds, FPS under multiple threads={}".format(total_frames, duration, total_frames / duration))
-
-
 
 if __name__ == "__main__":
     test_gpu_decode()

@@ -9,8 +9,7 @@ sys.path.append("../gpu_video_frame/")
 import bmf
 
 def test_gpu_encode():
-    #input_video_path = "../files/lark_stream0.flv"
-    input_video_path = "./test_video.mp4"
+    input_video_path = "../files/lark_stream0.flv"
     yuv_path = "./gpu_decode_result.yuv"
     output_path = "gpu_encode_result.h264"
 

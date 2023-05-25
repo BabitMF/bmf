@@ -20,131 +20,108 @@
 
 namespace hmp{
 
-/** 
-  * Map from AVColorPrimaries  
-  * Chromaticity coordinates of the source primaries.
-  * These values match the ones defined by ISO/IEC 23001-8_2013 § 7.1.
-  */
 enum ColorPrimaries{
     CP_RESERVED0   = 0,
-    CP_BT709       = 1,  ///< also ITU-R BT1361 / IEC 61966-2-4 / SMPTE RP177 Annex B
+    CP_BT709       = 1, 
     CP_UNSPECIFIED = 2,
     CP_RESERVED    = 3,
-    CP_BT470M      = 4,  ///< also FCC Title 47 Code of Federal Regulations 73.682 (a)(20)
+    CP_BT470M      = 4, 
 
-    CP_BT470BG     = 5,  ///< also ITU-R BT601-6 625 / ITU-R BT1358 625 / ITU-R BT1700 625 PAL & SECAM
-    CP_SMPTE170M   = 6,  ///< also ITU-R BT601-6 525 / ITU-R BT1358 525 / ITU-R BT1700 NTSC
-    CP_SMPTE240M   = 7,  ///< functionally identical to above
-    CP_FILM        = 8,  ///< colour filters using Illuminant C
-    CP_BT2020      = 9,  ///< ITU-R BT2020
-    CP_SMPTE428    = 10, ///< SMPTE ST 428-1 (CIE 1931 XYZ)
+    CP_BT470BG     = 5, 
+    CP_SMPTE170M   = 6, 
+    CP_SMPTE240M   = 7, 
+    CP_FILM        = 8, 
+    CP_BT2020      = 9, 
+    CP_SMPTE428    = 10,
     CP_SMPTEST428_1 = CP_SMPTE428,
-    CP_SMPTE431    = 11, ///< SMPTE ST 431-2 (2011) / DCI P3
-    CP_SMPTE432    = 12, ///< SMPTE ST 432-1 (2010) / P3 D65 / Display P3
-    CP_EBU3213     = 22, ///< EBU Tech. 3213-E / JEDEC P22 phosphors
+    CP_SMPTE431    = 11, 
+    CP_SMPTE432    = 12, 
+    CP_EBU3213     = 22, 
     CP_JEDEC_P22   = CP_EBU3213,
-    CP_NB                ///< Not part of ABI
+    CP_NB                
 };
 
-
-/** 
- * map from AVColorTransferCharacteristic
- * Color Transfer Characteristic.
- * These values match the ones defined by ISO/IEC 23001-8_2013 § 7.2.
- */
 enum ColorTransferCharacteristic{
     CTC_RESERVED0    = 0,
-    CTC_BT709        = 1,  ///< also ITU-R BT1361
+    CTC_BT709        = 1,  
     CTC_UNSPECIFIED  = 2,
     CTC_RESERVED     = 3,
-    CTC_GAMMA22      = 4,  ///< also ITU-R BT470M / ITU-R BT1700 625 PAL & SECAM
-    CTC_GAMMA28      = 5,  ///< also ITU-R BT470BG
-    CTC_SMPTE170M    = 6,  ///< also ITU-R BT601-6 525 or 625 / ITU-R BT1358 525 or 625 / ITU-R BT1700 NTSC
+    CTC_GAMMA22      = 4,  
+    CTC_GAMMA28      = 5,  
+    CTC_SMPTE170M    = 6,  
     CTC_SMPTE240M    = 7,
-    CTC_LINEAR       = 8,  ///< "Linear transfer characteristics"
-    CTC_LOG          = 9,  ///< "Logarithmic transfer characteristic (100:1 range)"
-    CTC_LOG_SQRT     = 10, ///< "Logarithmic transfer characteristic (100 * Sqrt(10) : 1 range)"
-    CTC_IEC61966_2_4 = 11, ///< IEC 61966-2-4
-    CTC_BT1361_ECG   = 12, ///< ITU-R BT1361 Extended Colour Gamut
-    CTC_IEC61966_2_1 = 13, ///< IEC 61966-2-1 (sRGB or sYCC)
-    CTC_BT2020_10    = 14, ///< ITU-R BT2020 for 10-bit system
-    CTC_BT2020_12    = 15, ///< ITU-R BT2020 for 12-bit system
-    CTC_SMPTE2084    = 16, ///< SMPTE ST 2084 for 10-, 12-, 14- and 16-bit systems
+    CTC_LINEAR       = 8,  
+    CTC_LOG          = 9,  
+    CTC_LOG_SQRT     = 10, 
+    CTC_IEC61966_2_4 = 11, 
+    CTC_BT1361_ECG   = 12, 
+    CTC_IEC61966_2_1 = 13, 
+    CTC_BT2020_10    = 14, 
+    CTC_BT2020_12    = 15, 
+    CTC_SMPTE2084    = 16, 
     CTC_SMPTEST2084  = CTC_SMPTE2084,
-    CTC_SMPTE428     = 17, ///< SMPTE ST 428-1
+    CTC_SMPTE428     = 17, 
     CTC_SMPTEST428_1 = CTC_SMPTE428,
-    CTC_ARIB_STD_B67 = 18, ///< ARIB STD-B67, known as "Hybrid log-gamma"
-    CTC_NB                 ///< Not part of ABI
+    CTC_ARIB_STD_B67 = 18, 
+    CTC_NB                 
 };
 
-
-/** 
- * Map from AVColorSpace
- * YUV colorspace type.
- * These values match the ones defined by ISO/IEC 23001-8_2013 § 7.3.
- */
 enum ColorSpace{
-    CS_RGB         = 0,  ///< order of coefficients is actually GBR, also IEC 61966-2-1 (sRGB)
-    CS_BT709       = 1,  ///< also ITU-R BT1361 / IEC 61966-2-4 xvYCC709 / SMPTE RP177 Annex B
+    CS_RGB         = 0,  
+    CS_BT709       = 1,  
     CS_UNSPECIFIED = 2,
     CS_RESERVED    = 3,
-    CS_FCC         = 4,  ///< FCC Title 47 Code of Federal Regulations 73.682 (a)(20)
-    CS_BT470BG     = 5,  ///< also ITU-R BT601-6 625 / ITU-R BT1358 625 / ITU-R BT1700 625 PAL & SECAM / IEC 61966-2-4 xvYCC601
-    CS_SMPTE170M   = 6,  ///< also ITU-R BT601-6 525 / ITU-R BT1358 525 / ITU-R BT1700 NTSC
-    CS_SMPTE240M   = 7,  ///< functionally identical to above
-    CS_YCGCO       = 8,  ///< Used by Dirac / VC-2 and H.264 FRext, see ITU-T SG16
+    CS_FCC         = 4,  
+    CS_BT470BG     = 5,  
+    CS_SMPTE170M   = 6,  
+    CS_SMPTE240M   = 7,  
+    CS_YCGCO       = 8,  
     CS_YCOCG       = CS_YCGCO,
-    CS_BT2020_NCL  = 9,  ///< ITU-R BT2020 non-constant luminance system
-    CS_BT2020_CL   = 10, ///< ITU-R BT2020 constant luminance system
-    CS_SMPTE2085   = 11, ///< SMPTE 2085, Y'D'zD'x
-    CS_CHROMA_DERIVED_NCL = 12, ///< Chromaticity-derived non-constant luminance system
-    CS_CHROMA_DERIVED_CL = 13, ///< Chromaticity-derived constant luminance system
-    CS_ICTCP       = 14, ///< ITU-R BT.2100-0, ICtCp
+    CS_BT2020_NCL  = 9,  
+    CS_BT2020_CL   = 10, 
+    CS_SMPTE2085   = 11, 
+    CS_CHROMA_DERIVED_NCL = 12, 
+    CS_CHROMA_DERIVED_CL = 13, 
+    CS_ICTCP       = 14, 
     CS_NB
 };
 
-
-/** 
- * map from AVColorRange
- * MPEG vs JPEG YUV range.
- */ 
 enum ColorRange{
     CR_UNSPECIFIED = 0,
-    CR_MPEG        = 1, ///< the normal 219*2^(n-8) "MPEG" YUV ranges
-    CR_JPEG        = 2, ///< the normal     2^n-1   "JPEG" YUV ranges
-    CR_NB               ///< Not part of ABI
+    CR_MPEG        = 1, 
+    CR_JPEG        = 2, 
+    CR_NB               
 };
 
-// map from AVPixelFormat
 enum PixelFormat{
     PF_NONE         = -1,
-    PF_YUV420P      = 0, ///< planar YUV 4:2:0, 12bpp, (1 Cr & Cb sample per 2x2 Y samples)
-    PF_YUV422P      = 4, ///< planar YUV 4:2:2, 16bpp, (1 Cr & Cb sample per 2x1 Y samples)
-    PF_YUV444P      = 5, ///< planar YUV 4:4:4, 24bpp, (1 Cr & Cb sample per 1x1 Y samples)
-    PF_NV12         = 23,   ///< planar YUV 4:2:0, 12bpp, 1 plane for Y and 1 plane for the UV components, which are interleaved (first byte U and the following byte V)
-    PF_NV21         = 24,   ///< as above, but U and V bytes are swapped
+    PF_YUV420P      = 0, 
+    PF_YUV422P      = 4, 
+    PF_YUV444P      = 5, 
+    PF_NV12         = 23,
+    PF_NV21         = 24,
 
-    PF_GRAY8        = 8,   ///<        Y        ,  8bpp
-    PF_RGB24        = 2,   ///< packed RGB 8:8:8, 24bpp, RGBRGB...
-    PF_BGR24        = 3,   ///< packed RGB 8:8:8, 24bpp, BGRBGR...
+    PF_GRAY8        = 8, 
+    PF_RGB24        = 2, 
+    PF_BGR24        = 3, 
 
-    PF_YUVJ420P     = 12,  ///< planar YUV 4:2:0, 12bpp, full scale (JPEG), deprecated in favor of AV_PIX_FMT_YUV420P and setting color_range
+    PF_YUVJ420P     = 12,
 
-    PF_ARGB32       = 25,      ///< packed ARGB 8:8:8:8, 32bpp, ARGBARGB...
-    PF_RGBA32       = 26,      ///< packed RGBA 8:8:8:8, 32bpp, RGBARGBA...
-    PF_ABGR32       = 27,      ///< packed ABGR 8:8:8:8, 32bpp, ABGRABGR...
-    PF_BGRA32       = 28,      ///< packed BGRA 8:8:8:8, 32bpp, BGRABGRA...
+    PF_ARGB32       = 25,
+    PF_RGBA32       = 26,
+    PF_ABGR32       = 27,
+    PF_BGRA32       = 28,
 
-    PF_GRAY16       = 30, ///<        Y        , 16bpp, little-endian
-    PF_YUVA420P     = 33, ///< planar YUV 4:2:0, 20bpp, (1 Cr & Cb sample per 2x2 Y & A samples)
-    PF_RGB48        = 35, ///< packed RGB 16:16:16, 48bpp, 16R, 16G, 16B, the 2-byte value for each R/G/B component is stored as little-endian
-    PF_YA8          = 58,       ///< 8 bits gray, 8 bits alpha
-    PF_RGBA64       = 107, ///< packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A, the 2-byte value for each R/G/B/A component is stored as little-endian
+    PF_GRAY16       = 30,
+    PF_YUVA420P     = 33,
+    PF_RGB48        = 35,
+    PF_YA8          = 58,
+    PF_RGBA64       = 107,
 
-    PF_P010LE       = 161, ///< like NV12, with 10bpp per component, data in the high bits, zeros in the low bits, little-endian
-    PF_P016LE       = 172, ///< like NV12, with 16bpp per component, little-endian
-    PF_YUV422P10LE  = 66,///< planar YUV 4:2:2, 20bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
-    PF_YUV420P10LE  = 64,///< planar YUV 4:2:0, 20bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
+    PF_P010LE       = 161,
+    PF_P016LE       = 172,
+    PF_YUV422P10LE  = 66,
+    PF_YUV420P10LE  = 64,
 };
 
 #define HMP_FORALL_PIXEL_FORMATS(_)  \

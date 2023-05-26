@@ -335,7 +335,7 @@ BEGIN_BMF_ENGINE_NS
     NodeReadiness FrameSyncInputStreamManager::get_node_readiness(int64_t &min_timestamp) {
         std::lock_guard<std::mutex> _(mtx_);
 
-        while (!frames_ready_) {
+        while (!frames_ready_ && stream_done_.size() != input_streams_.size()) {
             int nb_miss = 0;
             for (auto input_stream:input_streams_) {
                 if (have_next_.count(input_stream.first) <= 0) {

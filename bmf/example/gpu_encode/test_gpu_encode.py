@@ -39,7 +39,7 @@ def test_gpu_encode():
                         "vsync": 0,
                     },
                     "pix_fmt": "yuv420p",
-                    "s": "1280x720"
+                    "s": "1920x1080"
                     })["video"]
            .encode(
                 None,
@@ -83,7 +83,7 @@ def task(num_frames):
                         "vsync": 0,
                     },
                     "pix_fmt": "yuv420p",
-                    "s": "1280x720"
+                    "s": "1920x1080"
                     })["video"]
             .encode(
                 None,

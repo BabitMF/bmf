@@ -94,8 +94,8 @@ else
     echo "Without ffmpeg"
 fi
 
-cp -a $PWD/3rd_party/ffmpeg_bin/linux/build/lib/. /usr/local/lib/
-cp -a $PWD/3rd_party/ffmpeg_bin/linux/build/include/. /usr/local/include/
+# cp -a $PWD/3rd_party/ffmpeg_bin/linux/build/lib/. /usr/local/lib/
+# cp -a $PWD/3rd_party/ffmpeg_bin/linux/build/include/. /usr/local/include/
 
 # Generate BMF version
 source ./version.sh

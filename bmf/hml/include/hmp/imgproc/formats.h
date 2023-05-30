@@ -145,6 +145,7 @@ enum PixelFormat{
     PF_P016LE       = 172, ///< like NV12, with 16bpp per component, little-endian
     PF_YUV422P10LE  = 66,///< planar YUV 4:2:2, 20bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
     PF_YUV420P10LE  = 64,///< planar YUV 4:2:0, 20bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
+    PF_YUV444P10LE  = 68,///< planar YUV 4:4:4, 30bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
 };
 
 #define HMP_FORALL_PIXEL_FORMATS(_)  \

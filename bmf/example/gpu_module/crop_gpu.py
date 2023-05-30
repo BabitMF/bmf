@@ -65,6 +65,9 @@ class crop_gpu(Module):
                 continue
 
             in_frame = in_pkt.get(VideoFrame)
+            if (self.x is None):
+                self.x = in_frame.width // 2 - self.width // 2
+                self.y = in_frame.height // 2 - self.height // 2
 
             # validate crop parameters
             if (not 0 <= self.x < in_frame.width - 1) or (not 0 <= self.y < in_frame.height - 1):
@@ -120,7 +123,7 @@ class crop_gpu(Module):
             videoframe_out = VideoFrame(frame_out)
             videoframe_out.pts = in_frame.pts
             videoframe_out.time_base = in_frame.time_base
-            out_pkt = Packet(videoframe_out.cpu())
+            out_pkt = Packet(videoframe_out)
             out_pkt.timestamp = videoframe_out.pts
             output_queue.put(out_pkt)
 

@@ -15,20 +15,20 @@ def test():
     graph = bmf.graph()
     video = graph.decode({
         "input_path": input_video_path,
-        "video_params": {
-            "hwaccel": "cuda",
-            "extract_frames": {
-                "device": "cuda"
-            }
-        }
+        # "video_params": {
+        #     "hwaccel": "cuda",
+        #     "extract_frames": {
+        #         "device": "cuda"
+        #     }
+        # }
     })
     (
         video['video']
             .module('scale_gpu', {"size": '720x1280', 'algo': 'cubic'})
-            # .module('flip_gpu', {'direction': 'v'})
-            # .module('rotate_gpu', {'angle': 'pi/8'})
-            # .module('crop_gpu', {'x': 0, 'y': 0, 'width': 480, 'height': 640})
-            # .module('blur_gpu', {'op': 'gblur', 'sigma': [0.7, 0.7], 'size': [5, 5]})
+            .module('flip_gpu', {'direction': 'v'})
+            .module('rotate_gpu', {'angle': 'pi/8'})
+            .module('crop_gpu', {'x': 0, 'y': 0, 'width': 480, 'height': 640})
+            .module('blur_gpu', {'op': 'gblur', 'sigma': [0.7, 0.7], 'size': [5, 5]})
             .encode(None, {
                 "output_path": output_path,
                 "video_params": {

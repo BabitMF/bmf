@@ -273,7 +273,10 @@ void imageBind(py::module &m)
 
     img.def("yuv_to_yuv",
         (TensorList&(*)(TensorList&, const TensorList&, const PixelInfo&, const PixelInfo&))&img::yuv_to_yuv,
-        py::arg("dst"), py::arg("src"), py::arg("src_pix_info"), py::arg("dst_pix_info"));
+        py::arg("dst"), py::arg("src"), py::arg("dst_pix_info"), py::arg("src_pix_info"));
+    img.def("yuv_to_yuv",
+        (TensorList(*)(const TensorList&, const PixelInfo&, const PixelInfo&))&img::yuv_to_yuv,
+        py::arg("src"), py::arg("dst_pix_info"), py::arg("src_pix_info"));
 
     img.def("yuv_resize", &img::yuv_resize);
     img.def("yuv_rotate", &img::yuv_rotate);

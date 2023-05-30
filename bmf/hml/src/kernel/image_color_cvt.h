@@ -64,6 +64,15 @@ struct YUV2RGB
             rgb[1] = yuv.dot(wtype{1.164384f, -0.391762f, -0.812968f});
             rgb[2] = yuv.dot(wtype{1.164384f, 2.017232f, 0.f});
         }
+        else if(format == PPixelFormat::P010 ||
+                format == PPixelFormat::U420 ||
+                format == PPixelFormat::U422 ||
+                format == PPixelFormat::U444
+                ){ //BT.2020
+            rgb[0] = yuv.dot(wtype{1.164384f, 0.f, 1.596027f});
+            rgb[1] = yuv.dot(wtype{1.164384f, -0.391762f, -0.812968f});
+            rgb[2] = yuv.dot(wtype{1.164384f, 2.017232f, 0.f});
+        }
         else{
             //zeros
         }

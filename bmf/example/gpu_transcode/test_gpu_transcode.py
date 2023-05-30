@@ -80,7 +80,7 @@ def test_gpu_transcode_1_to_n():
     graph.run()
 
 def task():
-    input_video_path = "../files/perf_1080p_10k.h264"
+    input_video_path = "../files/lark_stream0.flv"
     graph = bmf.graph()
 
     video = graph.decode({"input_path": input_video_path,
@@ -98,7 +98,7 @@ def task():
                     "preset": "p3",
                     "tune": "hq"
                 },
-                "null_output": 1 
+                "format": "null",
             }
         ).run()
     )
@@ -119,7 +119,7 @@ def get_total_frames(input_video_path):
     return num_frames
 
 def test_gpu_transcode_multi_thread_perf():
-    input_video_path = "../files/perf_1080p_10k.h264"
+    input_video_path = "../files/lark_stream0.flv"
     num_threads = 2
     threads = []
 

@@ -92,7 +92,7 @@ def task(num_frames):
                         "codec": "h264_nvenc",
                         "frames": num_frames,
                     },
-                    "null_output": 1 
+                    "format": "null",
                 }
            ).run()
     )

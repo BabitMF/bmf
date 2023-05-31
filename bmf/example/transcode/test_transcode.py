@@ -4,7 +4,6 @@ import unittest
 
 sys.path.append("../../")
 import bmf
-import hmp
 import timeout_decorator
 
 sys.path.append("../")

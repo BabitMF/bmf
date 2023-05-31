@@ -45,11 +45,11 @@ struct YUV2RGB
         wtype rgb(0, 0, 0);
 
         //FIXME: only support 8bit pixel data 
-        yuv -= wtype(16.f, 128.f, 128.f); //
 
         if(format == PPixelFormat::H420 ||
            format == PPixelFormat::H422 || 
            format == PPixelFormat::H444){ //BT.709 limited range
+            yuv -= wtype(16.f, 128.f, 128.f); //
             rgb[0] = yuv.dot(wtype{1.164384f, 0.f, 1.792741f});
             rgb[1] = yuv.dot(wtype{1.164384f, -0.213249f, -0.532909f});
             rgb[2] = yuv.dot(wtype{1.164384f, 2.112402f, 0.f});
@@ -59,7 +59,8 @@ struct YUV2RGB
                 format == PPixelFormat::I444 ||
                 format == PPixelFormat::NV21 ||
                 format == PPixelFormat::NV12
-                ){ //BT.601
+                ){ //BT.601 limited range
+            yuv -= wtype(16.f, 128.f, 128.f); //
             rgb[0] = yuv.dot(wtype{1.164384f, 0.f, 1.596027f});
             rgb[1] = yuv.dot(wtype{1.164384f, -0.391762f, -0.812968f});
             rgb[2] = yuv.dot(wtype{1.164384f, 2.017232f, 0.f});
@@ -68,16 +69,18 @@ struct YUV2RGB
                 format == PPixelFormat::U420 ||
                 format == PPixelFormat::U422 ||
                 format == PPixelFormat::U444
-                ){ //BT.2020
-            rgb[0] = yuv.dot(wtype{1.164384f, 0.f, 1.596027f});
-            rgb[1] = yuv.dot(wtype{1.164384f, -0.391762f, -0.812968f});
-            rgb[2] = yuv.dot(wtype{1.164384f, 2.017232f, 0.f});
+                ){ //BT.2020 10 bit limited range
+            // yuv -= wtype(64.f, 512.f, 512.f); //
+            yuv -= wtype((float)(64 << 6), (float)(512 << 6), (float)(512 << 6));
+            rgb[0] = yuv.dot(wtype{1.168932f, 0.f, 1.723707f});
+            rgb[1] = yuv.dot(wtype{1.168932f, -0.192351, -0.667873f});
+            rgb[2] = yuv.dot(wtype{1.168932f, 2.199229f, 0.f});
         }
         else{
             //zeros
         }
 
-        auto rgb_out = saturate_cast<cast_type>(rgb);
+        auto rgb_out = saturate_cast<otype>(rgb);
         rgb_iter.set(batch, w, h, rgb_out);
     }
 };
@@ -112,6 +115,7 @@ struct RGB2YUV
             yuv[0] = rgb.dot(wtype{0.18258588f,  0.61423059f,  0.06200706f});
             yuv[1] = rgb.dot(wtype{-0.10064373f, -0.33857195f,  0.43921569f});
             yuv[2] = rgb.dot(wtype{0.43921569f, -0.39894216f, -0.04027352f});
+            yuv += wtype(16.f, 128.f, 128.f);
         }
         else if(format == PPixelFormat::I420 || 
                 format == PPixelFormat::I422 || 
@@ -122,17 +126,28 @@ struct RGB2YUV
             yuv[0] = rgb.dot(wtype{0.25678824f,  0.50412941f,  0.09790588f});
             yuv[1] = rgb.dot(wtype{-0.1482229f,  -0.29099279f,  0.43921569f});
             yuv[2] = rgb.dot(wtype{0.43921569f, -0.36778831f, -0.07142737f});
+            yuv += wtype(16.f, 128.f, 128.f);
+        }
+        else if(format == PPixelFormat::P010 ||
+                format == PPixelFormat::U420 ||
+                format == PPixelFormat::U422 ||
+                format == PPixelFormat::U444
+                ){ //BT.2020 10 bit limited range
+            // yuv -= wtype(64.f, 512.f, 512.f); //
+            yuv += wtype((float)(64 << 6), (float)(512 << 6), (float)(512 << 6));
+            yuv[0] = rgb.dot(wtype{0.22473507f, 0.58001666f, 0.05073007f});
+            yuv[1] = rgb.dot(wtype{-0.11945098f, -0.30828992f, 0.42774090f});
+            yuv[2] = rgb.dot(wtype{0.42774090f, -0.39333830f, -0.03440260f});
         }
         else{
             //zeros
         }
-        yuv += wtype(16.f, 128.f, 128.f);
 
         //yuv[0] = clamp<float>(yuv[0], 16, 235);
         //yuv[1] = clamp<float>(yuv[1], 16, 240);
         //yuv[2] = clamp<float>(yuv[2], 16, 240);
 
-        auto yuv_out = saturate_cast<cast_type>(yuv);
+        auto yuv_out = saturate_cast<otype>(yuv);
         yuv_iter.set(batch, w, h, yuv_out);
     }
 };

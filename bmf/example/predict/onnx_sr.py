@@ -1,6 +1,6 @@
 import onnxruntime as rt
 import numpy as np
-import hmp as mp
+import bmf.hml.hmp as mp
 import time
 from bmf import Module, Log, LogLevel, InputType, ProcessResult, Packet, Timestamp, scale_av_pts, av_time_base, \
     BmfCallBackType, VideoFrame, AudioFrame

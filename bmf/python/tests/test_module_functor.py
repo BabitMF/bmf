@@ -1,5 +1,5 @@
 
-import hmp as mp
+import bmf.hml.hmp as mp
 import bmf
 
 class MockDecoderModule(bmf.Module):

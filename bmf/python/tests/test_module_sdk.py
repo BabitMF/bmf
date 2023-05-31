@@ -1,5 +1,5 @@
 import pytest
-import hmp as mp
+import bmf.hml.hmp as mp
 import numpy as np
 from bmf_fixtures import has_cuda
 from bmf.lib._bmf.sdk import VideoFrame, AudioFrame, BMFAVPacket

@@ -31,7 +31,8 @@ class MockDecoderModule(bmf.Module):
             return 0
 
         for i in range(self.npkts):
-            vf = bmf.VideoFrame(1920, 1080, 3, format=mp.kNCHW, dtype=mp.uint8)
+            rgbformat = mp.PixelInfo(mp.kPF_RGB24)
+            vf = bmf.VideoFrame(1920, 1080, rgbformat)
             task.fill_output_packet(0, bmf.Packet(vf))
         return 0
 
@@ -46,8 +47,6 @@ class MockProbeModule(bmf.Module):
         info = {
             'width': vf.width,
             'height': vf.height,
-            'is_image': vf.is_image(),
-            'nchannels': vf.image().nchannels()
         }
 
         task.fill_output_packet(0, bmf.Packet(info))
@@ -70,8 +69,6 @@ def test_make_sync_func():
     assert(isinstance(info, dict))
     assert(info['width'] == 1920)
     assert(info['height'] == 1080)
-    assert(info['is_image'] == True)
-    assert(info['nchannels'] == 3)
 
 
 def test_make_sync_func_exception():

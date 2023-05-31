@@ -20,7 +20,7 @@ add_library(${PROJECT_NAME} SHARED ${MODULE_SRCS})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/../../../output/bmf/include
                            ${CUDA_INCLUDE_DIR}
                            /usr/local/include)
-target_link_libraries(${PROJECT_NAME} PRIVATE nvjpeg
+target_link_libraries(${PROJECT_NAME} PRIVATE nvjpeg cudart
                       bmf_module_sdk)
 target_link_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/../../../output/bmf/lib
                         ${CUDA_LIBRARY_DIR})

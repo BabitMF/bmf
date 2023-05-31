@@ -11,15 +11,14 @@ class TestVideoFrame(object):
 
     def test_image(self):
         # construct Image by parameters
-        vf = VideoFrame(1920, 1080, 3, format=mp.kNCHW, dtype=mp.uint8)
+        rgbformat = mp.PixelInfo(mp.kPF_RGB24)
+        vf = VideoFrame(1920, 1080, rgbformat)
 
         assert (vf.defined())
         assert (vf.width == 1920)
         assert (vf.height == 1080)
         assert (vf.dtype == mp.uint8)
-        assert (vf.is_image())
         assert (vf.device == mp.Device("cpu"))
-        _ = vf.image()  # No exception
 
         vf_sub = vf.crop(100, 200, 300, 400)
         assert (vf_sub.width == 300)
@@ -32,15 +31,15 @@ class TestVideoFrame(object):
         assert (vf.defined())
         assert (vf.width == 1920)
         assert (vf.height == 1080)
-        assert (not vf.is_image())
         _ = vf.frame()  # no exception
 
     def test_numpy_interop(self):
         # construct image from numpy array
         data_np = np.random.randint(255, size=(1080, 1920, 3), dtype=np.uint8)
-        image = mp.Image(mp.from_numpy(data_np), format=mp.kNHWC)
+        rgbformat = mp.PixelInfo(mp.kPF_RGB24)
+        image = mp.Frame(mp.from_numpy(data_np), rgbformat)
         vf = VideoFrame(image)
-        data_np_1 = vf.image().data().numpy()
+        data_np_1 = vf.frame().plane(0).numpy()
         assert (np.allclose(data_np, data_np_1))
 
         # construct frame from numpy arrays
@@ -59,7 +58,8 @@ class TestVideoFrame(object):
         assert (np.allclose(V, V_1))
 
     def test_opaque_data(self):
-        vf = VideoFrame(1920, 1080, 3, format=mp.kNCHW, dtype=mp.uint8)
+        rgbformat = mp.PixelInfo(mp.kPF_RGB24)
+        vf = VideoFrame(1920, 1080, rgbformat)
         assert (vf.private_get(dict) is None)  # bmf_sdk::JsonParam
 
         ref = {'int': 42, 'str': 'hello', 'dict': {'a': 10, 'b': 11}}
@@ -78,24 +78,23 @@ class TestVideoFrame(object):
     @pytest.mark.skipif(not has_cuda, reason="CUDA is not enabled")
     def test_cuda_constructors(self):
         H420 = mp.PixelInfo(mp.kPF_YUV420P, mp.kCS_BT709)
-        vf_image = VideoFrame(1920, 1080, 3, format=mp.kNCHW, device='cuda:0')
-        assert (vf_image.device == mp.Device("cuda:0"))
         vf_frame = VideoFrame(1920, 1080, pix_info=H420, device='cuda:0')
         assert (vf_frame.device == mp.Device("cuda:0"))
 
     @pytest.mark.skipif(not has_cuda, reason="CUDA is not enabled")
     def test_cuda_interop(self):
-        vf = VideoFrame(1920, 1080, 3, format=mp.kNCHW, device='cuda:0')
+        rgbformat = mp.PixelInfo(mp.kPF_RGB24)
+        vf = VideoFrame(1920, 1080, rgbformat, device='cuda:0')
 
         stream = mp.create_stream(mp.kCUDA)
         with stream:  # set currrent stream
-            data = vf.image().data()
+            data = vf.frame().plane(0)
             data_resized = mp.img.resize(data,
                                          4000,
                                          2000,
                                          mode=mp.kBicubic,
-                                         format=mp.kNCHW)
-            vf_out = VideoFrame(mp.Image(data_resized, mp.kNCHW))
+                                         format=mp.kNHWC)
+            vf_out = VideoFrame(mp.Frame(data_resized, rgbformat))
             vf_out.record(
                 use_current=True)  # record on current stream(default)
             assert (vf_out.ready() == False)
@@ -139,19 +138,19 @@ class TestPacket(object):
         assert (eos_pkt.timestamp == sdk.kEOS)
         assert (eof_pkt.timestamp == sdk.kBMF_EOF)
 
-        pkt = Packet(None)
+        pkt = Packet(0)
         pkt.timestamp = 42  # set timestamp
         assert (pkt.timestamp == 42)
 
     def test_cpp_types(self):
-        vf = VideoFrame(1920, 1080, 3, format=mp.kNCHW, dtype=mp.uint8)
+        rgbformat = mp.PixelInfo(mp.kPF_RGB24)
+        vf = VideoFrame(1920, 1080, rgbformat)
         pkt = Packet(vf)  #
         assert (pkt.is_(VideoFrame))  # type check
         v = pkt.get(VideoFrame)  # cast from pkt to VideoFrame
         assert (isinstance(v, VideoFrame))
         assert (v.width == 1920)
         assert (v.height == 1080)
-        assert (v.is_image())
 
         af = AudioFrame(160, sdk.kLAYOUT_STEREO, True, dtype=mp.uint8)
         pkt = Packet(af)

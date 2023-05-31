@@ -45,6 +45,8 @@ namespace{
         PIXEL_FORMAT_CASE(Op, I444, Cformat)                                                   \
         PIXEL_FORMAT_CASE(Op, NV21, Cformat)                                                   \
         PIXEL_FORMAT_CASE(Op, NV12, Cformat)                                                   \
+        PIXEL_FORMAT_CASE(Op, NV21_BT709, Cformat)                                                   \
+        PIXEL_FORMAT_CASE(Op, NV12_BT709, Cformat)                                                   \
         default:                                                                                \
             HMP_REQUIRE(false, "{} : unsupported PPixelFormat {}", name, format);                \
      }

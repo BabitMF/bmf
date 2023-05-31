@@ -79,8 +79,6 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
     extract_frames_device_ = "";
     stream_frame_number_ = 0;
 
-    if (!LogBuffer::avlog_cb_set())
-        av_log_set_level(AV_LOG_VERBOSE);
     /** @addtogroup DecM
      * @{
      * @arg loglevel: to set the loglevel of ffmpeg library
@@ -383,8 +381,12 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
      * @arg input_path: decode input file,exp. "1.mp4".
      * @} */
     if (option.has_key("input_path")) {
-        if (!init_done_) {
-            option.get_string("input_path", input_path_);
+        option.get_string("input_path", input_path_);
+        int delay_init = 0;
+        if (option.has_key("delay_init_input")) {
+            option.get_int("delay_init_input", delay_init);
+        }
+        if (!delay_init && !init_done_) {
             init_input(opts);
         }
     } else {
@@ -2177,6 +2179,10 @@ int CFFDecoder::process(Task &task) {
             file_info.get_string("input_path", input_path_);
             init_av_codec();
         }
+    }
+
+    if (!init_done_) {
+        init_input(dec_opts_);
     }
 
     if (!input_fmt_ctx_) {

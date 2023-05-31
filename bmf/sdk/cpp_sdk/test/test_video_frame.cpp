@@ -366,9 +366,9 @@ TEST(video_frame, reformat)
     }
 
     auto RGB = PixelInfo(hmp::PF_RGB24, hmp::CS_BT709);
-    auto img_vf = ori_vf.reformat(RGB);
 
     {
+        auto img_vf = ori_vf.reformat(RGB);
         auto H420 = PixelInfo(hmp::PF_YUV420P, hmp::CS_BT709);
         auto yuv_vf = img_vf.reformat(H420);
         EXPECT_EQ(yuv_vf.height(), 1080);
@@ -381,6 +381,35 @@ TEST(video_frame, reformat)
         EXPECT_EQ(yuv_vf.frame().plane(0).stride(0), 1920);
         EXPECT_EQ(yuv_vf.frame().plane(1).stride(0), 1920 / 2);
         EXPECT_EQ(yuv_vf.frame().plane(2).stride(0), 1920 / 2);
+    }
+
+    {
+        auto img_vf = ori_vf.reformat(RGB);
+        auto NV12_709 = PixelInfo(hmp::PF_NV12, hmp::CS_BT709);
+        auto yuv_vf = img_vf.reformat(NV12_709);
+        EXPECT_EQ(yuv_vf.height(), 1080);
+        EXPECT_EQ(yuv_vf.width(), 1920);
+        EXPECT_EQ(yuv_vf.frame().nplanes(), 2);
+        EXPECT_EQ(yuv_vf.frame().height(), 1080);
+        EXPECT_EQ(yuv_vf.frame().width(), 1920);
+        ASSERT_EQ(yuv_vf.frame().format(), hmp::PF_NV12);
+        ASSERT_FALSE(yuv_vf.frame().pix_info().is_rgbx());
+        EXPECT_EQ(yuv_vf.frame().plane(0).stride(0), 1920);
+        EXPECT_EQ(yuv_vf.frame().plane(1).size(0), 1080 / 2);
+        EXPECT_EQ(yuv_vf.frame().plane(1).size(1), 1920 / 2);
+        EXPECT_EQ(yuv_vf.frame().plane(1).size(2), 2);
+
+        //
+        auto new_img = yuv_vf.reformat(RGB);
+        EXPECT_EQ(new_img.height(), 1080);
+        EXPECT_EQ(new_img.width(), 1920);
+        EXPECT_EQ(new_img.frame().nplanes(), 1);
+        EXPECT_EQ(new_img.frame().height(), 1080);
+        EXPECT_EQ(new_img.frame().width(), 1920);
+        ASSERT_EQ(new_img.frame().format(), hmp::PF_RGB24);
+        ASSERT_TRUE(new_img.frame().pix_info().is_rgbx());
+        EXPECT_EQ(new_img.frame().plane(0).stride(0), 3 * 1920);
+
     }
 }
 

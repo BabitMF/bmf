@@ -567,7 +567,7 @@ int CFFDecoder::codec_context(int *stream_idx, AVCodecContext **dec_ctx,
                               AVFormatContext *fmt_ctx, enum AVMediaType type) {
     int ret, stream_index;
     AVStream *st;
-    AVCodec *dec = NULL;
+    const AVCodec *dec = NULL;
     AVDictionary *opts = dec_opts_;
     int stream_id = -1;
 
@@ -928,8 +928,8 @@ Packet CFFDecoder::generate_video_packet(AVFrame *frame) {
         std::string st = std::to_string(video_stream_->start_time);
         av_dict_set(&frame->metadata, "start_time", st.c_str(), 0);
     }
-    if (video_stream_ && video_stream_->first_dts != AV_NOPTS_VALUE) {
-        std::string f_dts = std::to_string(video_stream_->first_dts);
+    if (ist_[0].first_dts != AV_NOPTS_VALUE) {
+        std::string f_dts = std::to_string(ist_[0].first_dts);
         av_dict_set(&frame->metadata, "first_dts", f_dts.c_str(), 0);
     }
 
@@ -1054,7 +1054,7 @@ int CFFDecoder::extract_frames(AVFrame *frame,
             video_sync_ = std::make_shared<VideoSync>(
                 video_stream_->time_base, temp_time_base, frame_rate,
                 video_frame_rate, video_stream_->start_time,
-                video_stream_->first_dts, VSYNC_VFR, 0);
+                ist_[0].first_dts, VSYNC_VFR, 0);
         }
         video_sync_->process_video_frame(frame, output_frames,
                                          ist_[0].frame_number);
@@ -1539,6 +1539,7 @@ int CFFDecoder::decode_send_packet(Task &task, AVPacket *pkt, int *got_frame) {
         pkt_ts(pkt, index);
 
     if (!ist->saw_first_ts) {
+        ist->first_dts = 
         ist->dts = (stream && stream->avg_frame_rate.num)
                        ? -dec_ctx->has_b_frames * AV_TIME_BASE /
                              av_q2d(stream->avg_frame_rate)
@@ -1546,6 +1547,7 @@ int CFFDecoder::decode_send_packet(Task &task, AVPacket *pkt, int *got_frame) {
         ist->pts = 0;
         if (stream && pkt && pkt->pts != AV_NOPTS_VALUE &&
             !ist->decoding_needed) {
+            ist->first_dts =
             ist->dts +=
                 av_rescale_q(pkt->pts, stream->time_base, AV_TIME_BASE_Q);
             ist->pts = ist->dts; // unused but better to set it to a value thats
@@ -2224,7 +2226,7 @@ int CFFDecoder::process_raw_stream_packet(Task &task, BMFAVPacket &bmf_pkt,
     int got_frame;
     if (!video_codec_name_.empty() && !video_decode_ctx_) {
         video_stream_index_ = 0;
-        AVCodec *dec = avcodec_find_decoder_by_name(video_codec_name_.c_str());
+        const AVCodec *dec = avcodec_find_decoder_by_name(video_codec_name_.c_str());
         if (!dec)
             BMFLOG_NODE(BMF_ERROR, node_id_) << "Codec not found";
         video_decode_ctx_ = avcodec_alloc_context3(dec);
@@ -2251,7 +2253,7 @@ int CFFDecoder::process_raw_stream_packet(Task &task, BMFAVPacket &bmf_pkt,
         video_time_base_ = av_make_q(time_base_comps[0], time_base_comps[1]);
     } else if (!audio_codec_name_.empty() && !audio_decode_ctx_) {
         audio_stream_index_ = 0;
-        AVCodec *dec = avcodec_find_decoder_by_name(audio_codec_name_.c_str());
+        const AVCodec *dec = avcodec_find_decoder_by_name(audio_codec_name_.c_str());
         if (!dec)
             BMFLOG_NODE(BMF_ERROR, node_id_) << "Codec not found";
         audio_decode_ctx_ = avcodec_alloc_context3(dec);

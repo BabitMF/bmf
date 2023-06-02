@@ -1021,7 +1021,11 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
         }
 
         out_stream->time_base = input_stream->time_base;
-        out_stream->codec->time_base = input_stream->time_base;
+        #ifdef BMF_FFMPEG_VERSION
+            #if BMF_FFMPEG_VERSION < 50
+                out_stream->codec->time_base = input_stream->time_base;
+            #endif
+        #endif
         ret = 0;
         if (num_input_streams_ == codec_init_touched_num_)
             ret = init_stream();
@@ -1447,7 +1451,11 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
     }
 
     out_stream->time_base = enc_ctxs_[idx]->time_base;
-    out_stream->codec->time_base = enc_ctxs_[idx]->time_base;
+    #ifdef BMF_FFMPEG_VERSION
+        #if BMF_FFMPEG_VERSION < 50
+            out_stream->codec->time_base = enc_ctxs_[idx]->time_base;
+        #endif
+    #endif
 
     ret = 0;
     if (num_input_streams_ == codec_init_touched_num_)
@@ -1698,7 +1706,7 @@ int CFFEncoder::streamcopy(AVPacket *ipkt, AVPacket *opkt, int idx) {
     if (!ipkt || !opkt)
         return -1;
     av_init_packet(opkt);
-
+    av_packet_copy_props(opkt, ipkt);
     if (ipkt->pts != AV_NOPTS_VALUE)
         opkt->pts = av_rescale_q(ipkt->pts, enc_ctxs_[idx]->time_base,
                                  output_stream_[idx]->time_base);
@@ -1737,7 +1745,6 @@ int CFFEncoder::streamcopy(AVPacket *ipkt, AVPacket *opkt, int idx) {
     opkt->data = ipkt->data;
     opkt->size = ipkt->size;
 
-    av_copy_packet_side_data(opkt, ipkt);
     return 0;
 }
 

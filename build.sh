@@ -85,6 +85,15 @@ then
     cmake_args="${cmake_args} ${CMAKE_ARGS}"
 fi
 
+if type ffmpeg >/dev/null 2>&1; then
+    ffmpeg_version=$(ffmpeg -version 2>&1 | grep "ffmpeg version" | sed -E 's/ffmpeg version (n)?([0-9]+\.[0-9]+).*/\2/')
+    echo "ffmpeg version: $ffmpeg_version"
+    ffmpeg_version=$(awk "BEGIN { printf \"%d\", $ffmpeg_version * 10 }")
+else
+    echo "ffmpeg not found."
+    exit 1
+fi
+
 # Handle SCM compilation for x86 multiple Python versions
 if [ "$SCRIPT_EXEC_MODE" == "x86" ]
 then
@@ -105,6 +114,7 @@ then
             -DBMF_PYENV="${python_versions[$i]}" \
             -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
             -DBMF_ENABLE_TEST=OFF \
+            -DBMF_FFMPEG_VERSION=${ffmpeg_version} \
             -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ${cmake_args} ..
         make -j$(nproc)
 
@@ -184,6 +194,7 @@ else
         -DCOVERAGE=${COVERAGE_OPTION} \
         -DBMF_LOCAL_DEPENDENCIES=${LOCAL_BUILD} \
         -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
+        -DBMF_FFMPEG_VERSION=${ffmpeg_version} \
         -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ${cmake_args} ..
     make -j$(nproc)
 

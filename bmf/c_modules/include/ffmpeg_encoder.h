@@ -83,7 +83,7 @@ class CFFEncoder : public Module {
     std::string oformat_;
     std::string vtag_;
     std::string atag_;
-    AVCodec *codecs_[2];
+    const AVCodec *codecs_[2];
     int codec_init_touched_num_;
     AVCodecContext *enc_ctxs_[2];
     AVRational in_stream_tbs_[2];

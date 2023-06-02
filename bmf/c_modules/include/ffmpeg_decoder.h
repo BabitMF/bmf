@@ -48,6 +48,7 @@ typedef struct FilteringContext {
 } FilteringContext;
 
 typedef struct InputStream {
+    int64_t first_dts;
     int64_t next_dts;
     int64_t next_pts;
     int64_t max_pts;

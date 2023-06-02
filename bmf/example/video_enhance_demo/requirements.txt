@@ -1,0 +1,2 @@
+basicsr==1.4.2
+realesrgan

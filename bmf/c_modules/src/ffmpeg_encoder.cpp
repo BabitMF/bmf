@@ -812,6 +812,7 @@ int64_t CFFEncoder::seek_output_data(void *opaque, int64_t offset, int whence) {
 
 int CFFEncoder::init_codec(int idx, AVFrame* frame) {
     AVStream *out_stream;
+    AVBufferRef *device_ref = nullptr;
     int ret;
 
     codec_init_touched_num_++;
@@ -853,6 +854,13 @@ int CFFEncoder::init_codec(int idx, AVFrame* frame) {
         if (!codecs_[idx]) {
             BMFLOG_NODE(BMF_ERROR, node_id_) << "Codec '" << codec_names_[idx].c_str() << "' not found";
             return AVERROR_UNKNOWN;
+        }
+
+        if (codec_names_[idx] == "h264_nvenc" || codec_names_[idx] == "hevc_nvenc") {
+            int err = av_hwdevice_ctx_create(&device_ref, AV_HWDEVICE_TYPE_CUDA, nullptr, nullptr, 1);
+            if (err < 0) {
+                BMFLOG_NODE(BMF_ERROR, node_id_) << "Failed to create hwdevice context";
+            }
         }
     }
     enc_ctxs_[idx] = avcodec_alloc_context3(codecs_[idx]);
@@ -1288,6 +1296,9 @@ int CFFEncoder::init_codec(int idx, AVFrame* frame) {
         AVHWFramesContext* hw_frames_context = (AVHWFramesContext*)frame->hw_frames_ctx->data;
         enc_ctxs_[idx]->hw_device_ctx = av_buffer_ref(hw_frames_context->device_ref);
         enc_ctxs_[idx]->hw_frames_ctx = av_buffer_ref(frame->hw_frames_ctx);
+    }
+    else if (frame && device_ref) {
+        enc_ctxs_[idx]->hw_device_ctx = av_buffer_ref(device_ref);
     }
     ret = avcodec_open2(enc_ctxs_[idx], codecs_[idx], &enc_opts);
     if (ret < 0) {

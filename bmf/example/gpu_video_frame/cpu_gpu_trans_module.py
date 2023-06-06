@@ -1,6 +1,5 @@
 import bmf
 from bmf import *
-import torch
 
 class cpu_gpu_trans_module(Module):
     def __init__(self, node, option=None):

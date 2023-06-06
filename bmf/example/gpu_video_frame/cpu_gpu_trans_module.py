@@ -1,7 +1,6 @@
+import bmf
 from bmf import *
-import pycuda.autoinit
-from pycuda.tools import make_default_context
-
+import torch
 
 class cpu_gpu_trans_module(Module):
     def __init__(self, node, option=None):
@@ -20,10 +19,6 @@ class cpu_gpu_trans_module(Module):
         input_queue = task.get_inputs()[0]
         output_queue = task.get_outputs()[0]
 
-        if (not self.init_context_flag_):
-            self.init_context_flag_ = True
-            self.ctx = make_default_context()
-
         # add all input frames into frame cache
         while not input_queue.empty():
             in_pkt = input_queue.get()
@@ -33,19 +28,18 @@ class cpu_gpu_trans_module(Module):
                 self.eof_received_ = True
                 continue
 
-            out_pkt = Packet()
             if self.trans_to_gpu_ == 1:
-                in_frame = in_pkt.get_data()
-                gpu_frame = in_frame.to_gpu_video_frame()
+                in_frame = in_pkt.get(bmf.VideoFrame)
+                gpu_frame = in_frame.cuda()
                 gpu_frame.pts = in_frame.pts
                 gpu_frame.time_base = in_frame.time_base
-                out_pkt.set_data(gpu_frame)
+                out_pkt = Packet(gpu_frame)
             else:
-                in_frame = in_pkt.get_data()
-                video_frame = av.VideoFrame.from_gpu_video_frame(in_frame)
+                in_frame = in_pkt.get(bmf.VideoFrame)
+                video_frame = in_frame.cpu()
                 video_frame.pts = in_frame.pts
                 video_frame.time_base = in_frame.time_base
-                out_pkt.set_data(video_frame)
+                out_pkt = Packet(video_frame)
 
             out_pkt.set_timestamp(in_pkt.get_timestamp())
             output_queue.put(out_pkt)
@@ -56,6 +50,4 @@ class cpu_gpu_trans_module(Module):
             Log.log_node(LogLevel.DEBUG, self.node_,
                          'output stream', 'done')
             task.set_timestamp(Timestamp.DONE)
-            if self.ctx is not None:
-                self.ctx.pop()
         return ProcessResult.OK

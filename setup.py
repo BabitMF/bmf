@@ -14,7 +14,6 @@ setup(
         'bmf.builder',
         'bmf.ffmpeg_engine',
         'bmf.python_sdk',
-        'bmf.python_builtins',
         'bmf.modules',
         'bmf.server',
         'bmf.lib',

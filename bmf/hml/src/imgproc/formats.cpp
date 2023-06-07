@@ -115,6 +115,9 @@ ColorSpace PixelInfo::infer_space() const
         if(format() == PF_NV12 || format() == PF_NV21){
             return CS_BT470BG;
         }
+        else if(format() == PF_P010LE || format() == PF_YUV420P10LE){
+            return CS_BT2020_CL;
+        }
         else{
             return CS_BT709;
         }

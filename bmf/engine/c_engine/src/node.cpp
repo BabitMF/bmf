@@ -363,7 +363,8 @@ BEGIN_BMF_ENGINE_NS
         //    cleanup();
         //    throw std::runtime_error("[" + node_name_ + "] " + "Python error already set.");
         //}
-        catch (...) {
+        catch (std::exception& e){
+            BMFLOG_NODE(BMF_ERROR, id_) << "catch exception: " << e.what();
             cleanup();
             std::rethrow_exception(std::current_exception());
         }

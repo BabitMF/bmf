@@ -262,6 +262,10 @@ static VideoFrame reformat(const VideoFrame &vf,  const std::string &format_str,
     }
 
     auto dst_vf = to_video_frame(result_frames[0], false);
+
+    av_frame_free(&result_frames[0]);
+    av_frame_free(&av_frame);
+
     dst_vf.copy_props(vf);
     return dst_vf;
 }

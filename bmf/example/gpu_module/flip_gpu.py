@@ -77,8 +77,8 @@ class flip_gpu(Module):
 
                 self.i420_in = hmp.Frame(in_frame.width, in_frame.height, self.i420info, device='cuda')
                 hmp.img.yuv_to_yuv(self.i420_in.data(), in_frame.frame().data(), self.i420info, in_frame.frame().pix_info())
-                in_list = [x.torch() for x in self.i420_in.data()]
-                out_list = [x.torch() for x in self.i420_out.data()]
+                in_list = self.i420_in.data()
+                out_list = self.i420_out.data()
                 cvimg_batch.pushback([cvcuda.as_image(x) for x in in_list])
                 cvimg_batch_out.pushback([cvcuda.as_image(x) for x in out_list])
 
@@ -94,8 +94,8 @@ class flip_gpu(Module):
                 # t3 = torch.ones((in_frame.frame().nplanes(),), dtype=torch.int32, device='cuda') * self.flip_code
 
                 for t, f in zip(tensor_list, out_list):
-                    cvimg = cvcuda.as_image(t.torch())
-                    cvimg_out = cvcuda.as_image(f.torch())
+                    cvimg = cvcuda.as_image(t)
+                    cvimg_out = cvcuda.as_image(f)
                     cvimg_batch.pushback(cvimg)
                     cvimg_batch_out.pushback(cvimg_out)
 

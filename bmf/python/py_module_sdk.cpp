@@ -21,7 +21,9 @@
 #include <torch/csrc/utils/pybind.h>
 #endif
 
+#ifdef _WIN32
 #include <corecrt.h>
+#endif
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>

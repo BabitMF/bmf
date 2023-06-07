@@ -20,7 +20,7 @@ import json
 # sys.path.append("/opt/tiger/bmf/bmf/python_builtins")
 # sys.path.append("/opt/tiger/bmf/bmf/python_sdk")
 # print(os.sys.path)
-import hmp as mp
+import bmf.hml.hmp as mp
 
 from cv_frame import bg_overlay_frames
 from bmf import (

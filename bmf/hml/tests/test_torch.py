@@ -1,5 +1,9 @@
+import platform
 import pytest
-import bmf.lib._hmp as mp
+if platform.system().lower() == 'windows':
+    import bmf.bin._hmp as mp
+else:
+    import bmf.lib._hmp as mp
 from hml_fixtures import device_type, dtype
 try:
     import torch

@@ -3,7 +3,12 @@ import os
 import sys
 import threading
 import time
-from bmf.lib._bmf import engine
+import platform
+
+if platform.system().lower() == 'windows':
+    from bmf.bin._bmf import engine
+else:
+    from bmf.lib._bmf import engine
 from .bmf_modules import bmf_modules
 from .bmf_node import BmfNode, BmfEdge
 from .bmf_stream import BmfStream
@@ -108,7 +113,10 @@ class BmfGraph:
     def get_av_log_buffer(self, level='info'):
         ###@}
         # ffmpeg log config
-        from bmf.lib._bmf.sdk import LogBuffer
+        if platform.system().lower() == 'windows':
+            from bmf.bin._bmf.sdk import LogBuffer
+        else:
+            from bmf.lib._bmf.sdk import LogBuffer
         BmfGraph.av_log_list_.clear()
         BmfGraph.logbuffer_ = LogBuffer(BmfGraph.av_log_list_, level)
         return BmfGraph.av_log_list_

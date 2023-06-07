@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <corecrt.h>
 #include <pybind11/pybind11.h>
 #include <hmp/core/logging.h>
 #include <hmp/core/scalar_type.h>

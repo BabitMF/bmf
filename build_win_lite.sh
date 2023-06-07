@@ -88,7 +88,7 @@ then
             -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE \
             -DBUILD_SHARED_LIBS=TRUE \
             -DCMAKE_TOOLCHAIN_FILE=../../cmake/win-toolchain.cmake \
-            -DBMF_ENABLE_PYTHON=OFF \
+            -DBMF_ENABLE_PYTHON=ON \
             -DBMF_ENABLE_GLOG=OFF \
             -DBMF_ENABLE_MOBILE=OFF \
             -DBMF_ENABLE_FFMPEG=OFF \
@@ -119,7 +119,7 @@ else
         -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE \
         -DBUILD_SHARED_LIBS=TRUE \
         -DCMAKE_TOOLCHAIN_FILE=../cmake/win-toolchain.cmake \
-        -DBMF_ENABLE_PYTHON=OFF \
+        -DBMF_ENABLE_PYTHON=ON \
         -DBMF_ENABLE_GLOG=OFF \
         -DBMF_ENABLE_MOBILE=OFF \
         -DBMF_ENABLE_FFMPEG=OFF \

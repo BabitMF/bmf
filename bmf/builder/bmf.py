@@ -1,5 +1,10 @@
 import json
-from bmf.lib._bmf import engine
+import platform
+
+if platform.system().lower() == 'windows':
+    from bmf.bin._bmf import engine
+else:
+    from bmf.lib._bmf import engine
 from .bmf_graph import BmfGraph
 
 

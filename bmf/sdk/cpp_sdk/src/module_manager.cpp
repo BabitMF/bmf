@@ -264,37 +264,31 @@ bool ModuleManager::resolve_from_builtin(const std::string &module_name,
             "unsupported builtin module type.(must be c++/python/go");
     }
 
-    if (module_path.empty()) {
-        if (module_type == "c++") {
-            module_path =
-                (fs::path(self->builtin_root) /
-                 std::string(SharedLibrary::default_shared_dir()) /
-                 (std::string(SharedLibrary::default_prefix()) +
-                  "builtin_modules" + SharedLibrary::default_extension()))
-                    .string();
-            module_file = std::string(SharedLibrary::default_prefix()) +
-                          "builtin_modules";
-        } else if (module_type == "python") {
-            module_path =
-                fs::path(self->builtin_root) / std::string("python_builtins");
+    if (module_path.empty())
+    {
+        if (module_type == "c++")
+        {
+            module_path = (fs::path(self->builtin_root) / std::string(SharedLibrary::default_shared_dir()) / (std::string(SharedLibrary::default_prefix()) + "builtin_modules" + SharedLibrary::default_extension())).string();
+            module_file = std::string(SharedLibrary::default_prefix()) + "builtin_modules";
+        }
+        else if (module_type == "python")
+        {
+            module_path = (fs::path(self->builtin_root) / std::string("python_builtins")).string();
             if (!module_class.empty())
                 module_file = module_class;
             else
                 module_file = module_name;
-        } else if (module_type == "go") {
-            if (!module_class.empty()) {
-                module_path =
-                    (fs::path(self->builtin_root) /
-                     std::string(SharedLibrary::default_shared_dir()) /
-                     (module_class + SharedLibrary::default_extension()))
-                        .string();
+        }
+        else if (module_type == "go")
+        {
+            if (!module_class.empty())
+            {
+                module_path = (fs::path(self->builtin_root) / std::string(SharedLibrary::default_shared_dir()) / (module_class + SharedLibrary::default_extension())).string();
                 module_file = module_class;
-            } else {
-                module_path =
-                    (fs::path(self->builtin_root) /
-                     std::string(SharedLibrary::default_shared_dir()) /
-                     (module_name + SharedLibrary::default_extension()))
-                        .string();
+            }
+            else
+            {
+                module_path = (fs::path(self->builtin_root) / std::string(SharedLibrary::default_shared_dir()) / (module_name + SharedLibrary::default_extension())).string();
                 module_file = module_name;
             }
         }
@@ -437,14 +431,10 @@ bool ModuleManager::initialize_loader(const std::string &module_type) {
         return true;
     }
     if (module_type == "python") {
-        auto lib_name = std::string(SharedLibrary::default_prefix()) +
-                        "bmf_py_loader" + SharedLibrary::default_extension();
-        auto loader_path =
-            fs::path(SharedLibrary::this_line_location()).parent_path() /
-            lib_name;
-        auto lib = std::make_shared<SharedLibrary>(
-            loader_path, SharedLibrary::LAZY | SharedLibrary::GLOBAL);
-
+        auto lib_name = std::string(SharedLibrary::default_prefix()) + "bmf_py_loader" + SharedLibrary::default_extension();
+        auto loader_path = fs::path(SharedLibrary::this_line_location()).parent_path() / lib_name;
+        auto lib = std::make_shared<SharedLibrary>(loader_path.string(), 
+                            SharedLibrary::LAZY | SharedLibrary::GLOBAL);
         self->loaders["python"] =
             [=](const ModuleInfo &info) -> ModuleFactoryI * {
             std::string module_file, class_name;
@@ -491,7 +481,27 @@ bool ModuleManager::initialize_loader(const std::string &module_type) {
             return mptr;
         };
         return true;
-    } else {
+    }
+    else if(module_type == "go") {
+        auto lib_name = std::string(SharedLibrary::default_prefix()) + "bmf_go_loader" + SharedLibrary::default_extension();
+        auto loader_path = fs::path(SharedLibrary::this_line_location()).parent_path() / lib_name;
+        auto lib = std::make_shared<SharedLibrary>(loader_path.string(), 
+                            SharedLibrary::LAZY | SharedLibrary::GLOBAL);
+
+        self->loaders["go"] = [=](const ModuleInfo &info) -> ModuleFactoryI*{
+            auto import_func = lib->symbol<ModuleFactoryI*(*)(const char*, const char*, char**)>("bmf_import_go_module");
+            char *errstr = nullptr;
+            auto mptr = import_func(info.module_path.c_str(), info.module_name.c_str(), &errstr);
+            if(errstr != nullptr){
+                auto err = std::string(errstr);
+                free(errstr);
+                throw std::runtime_error(err);
+            }
+            return mptr;
+        };
+        return true;
+    }
+    else{
         return false;
     }
 }

@@ -1,10 +1,16 @@
+import platform
 import pytest
 import bmf.hml.hmp as mp
 import numpy as np
-from bmf_fixtures import has_cuda, has_torch
-from bmf.lib._bmf.sdk import VideoFrame, AudioFrame, BMFAVPacket, MediaDesc, OpaqueDataKey, MediaType, bmf_convert
-from bmf.lib._bmf.sdk import Packet
-from bmf.lib._bmf import sdk
+from bmf_fixtures import has_cuda
+if platform.system().lower() == 'windows':
+    from bmf.bin._bmf.sdk import VideoFrame, AudioFrame, BMFAVPacket
+    from bmf.bin._bmf.sdk import Packet
+    from bmf.bin._bmf import sdk
+else:
+    from bmf.lib._bmf.sdk import VideoFrame, AudioFrame, BMFAVPacket
+    from bmf.lib._bmf.sdk import Packet
+    from bmf.lib._bmf import sdk
 
 
 class TestVideoFrame(object):

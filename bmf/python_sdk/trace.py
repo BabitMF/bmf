@@ -1,6 +1,10 @@
+import platform
 import inspect
 from enum import IntEnum
-from bmf.lib._bmf import engine
+if platform.system().lower() == 'windows':
+    from bmf.bin._bmf import engine
+else:
+    from bmf.lib._bmf import engine
 
 # BMF Trace utilities
 

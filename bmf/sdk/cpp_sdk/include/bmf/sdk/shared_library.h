@@ -76,19 +76,22 @@ class BMF_API SharedLibrary {
         return symbol_location((void *)(&this_line_location));
     }
 
-    static const char *default_shared_dir() {
+
+    static const char* default_shared_dir()
+    {
 #ifdef __unix__
         return "lib";
 #elif defined(__APPLE__)
-        return ".dylib";
+        return "lib";
 #elif defined(__MINGW32__) || defined(_WIN32)
-        return ".dll";
+        return "bin";
 #else
 #error "unsupported os"
 #endif
-    }
+						    }
 
-    static const char *default_prefix() {
+    static const char* default_prefix()
+    {
 #ifdef __unix__
         return "lib";
 #elif defined(__APPLE__)
@@ -100,15 +103,20 @@ class BMF_API SharedLibrary {
 #endif
     }
 
-    static const char *default_extension() {
+
+    static const char* default_extension()
+    {
 #ifdef __unix__
-        return ".so";
+        return "lib";
 #elif defined(__APPLE__)
         return ".dylib";
+#elif defined(__MINGW32__) || defined(_WIN32)
+        return ".dll";
 #else
 #error "unsupported os"
 #endif
     }
+
 };
 
 } // namespace bmf_sdk

@@ -1,8 +1,13 @@
+import platform
 import os, time
 from fractions import Fraction
 import logging
-from bmf.lib._bmf import engine
-import bmf.lib._bmf as _bmf
+if platform.system().lower() == 'windows':
+    from bmf.bin._bmf import engine
+    import bmf.bin._bmf
+else:
+    from bmf.lib._bmf import engine
+    import bmf.lib._bmf
 
 ## @ingroup pyAPI
 ## @defgroup pyAPIVer version

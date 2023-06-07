@@ -13,14 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <corecrt.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 #include <pybind11/pybind11.h>
 #include <hmp/tensor.h>
 #include <py_type_cast.h>
 
-namespace pybind11 {
-namespace detail {
+#ifdef _WIN32
+typedef int ssize_t;
+#endif
+
+namespace pybind11{
+namespace detail{
 
 const static int NPY_HALF_ = 23;
 

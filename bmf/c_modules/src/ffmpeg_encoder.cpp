@@ -157,7 +157,7 @@ int CFFEncoder::init() {
      * @arg push_output: decide whether to mux the result and where to output
      the results, available value is 0/1/2. 0: write muxed result to disk, 1:
      write muxed result to the output queue, 2: write unmuxed result to the
-     output queue.
+     output queue, 3: write AVFrame to the output queue.
      * @code
             "push_output": 1
      * @endcode
@@ -398,6 +398,14 @@ bool CFFEncoder::check_valid_task(Task &task) {
     return false;
 }
 
+void CFFEncoder::get_orig_pts() {
+    orig_pts_time_ = -1;
+    if (orig_pts_time_list_.size() > 0) {
+        orig_pts_time_ = orig_pts_time_list_.front();
+        orig_pts_time_list_.pop_front();
+    }
+}
+
 int CFFEncoder::handle_output(AVPacket *hpkt, int idx) {
     int ret;
     AVPacket *pkt = hpkt;
@@ -418,11 +426,7 @@ int CFFEncoder::handle_output(AVPacket *hpkt, int idx) {
 
     if (push_output_) {
         current_frame_pts_ = pkt->pts;
-        orig_pts_time_ = -1;
-        if (orig_pts_time_list_.size() > 0) {
-            orig_pts_time_ = orig_pts_time_list_.front();
-            orig_pts_time_list_.pop_front();
-        }
+        get_orig_pts();
     }
 
     AVFormatContext *s = output_fmt_ctx_;
@@ -564,29 +568,47 @@ int CFFEncoder::handle_output(AVPacket *hpkt, int idx) {
     return ret;
 }
 
-int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx,
-                                 int *got_packet) {
-    int ret;
-    int got_packet_local;
-    int av_index;
-    OutputStream *ost = &ost_[idx];
-
-    if (!got_packet)
-        got_packet = &got_packet_local;
-
-    av_index = (codecs_[idx]->type == AVMEDIA_TYPE_VIDEO) ? 0 : 1;
-    if (av_index == 0 && frame && frame->pts < 0) {
-        BMFLOG_NODE(BMF_ERROR, node_id_) << "Drop negative pts frame";
-        return 0;
-    }
-    if (av_index == 0 && fps_ != 0 && frame) {
-        frame->pts = last_pts_ + 1;
-        current_frame_pts_ = frame->pts;
-        ++last_pts_;
+void CFFEncoder::push_output(AVPacket *enc_pkt, unsigned int idx) {
+    if (first_packet_[idx]) {
+        auto stream = std::make_shared<AVStream>();
+        *stream = *(output_stream_[idx]);
+        stream->codecpar = avcodec_parameters_alloc();
+        avcodec_parameters_copy(stream->codecpar,
+                                output_stream_[idx]->codecpar);
+        auto packet = Packet(stream);
+        // packet.set_data_type(DATA_TYPE_C);
+        // packet.set_class_name("AVStream");
+        if (current_task_ptr_->get_outputs().find(idx) !=
+            current_task_ptr_->get_outputs().end())
+            current_task_ptr_->get_outputs()[idx]->push(packet);
+        first_packet_[idx] = false;
     }
 
-    if (av_index == 0 && frame && oformat_ == "image2pipe" &&
-        push_output_) { // only support to carry orig pts time for images
+    BMFAVPacket packet_tmp = ffmpeg::to_bmf_av_packet(enc_pkt, true);
+    auto packet = Packet(packet_tmp);
+    packet.set_timestamp(enc_pkt->pts *
+                         av_q2d(output_stream_[idx]->time_base) *
+                         1000000);
+    // packet.set_data_type(DATA_TYPE_C);
+    // packet.set_data_class_type(BMFAVPACKET_TYPE);
+    // packet.set_class_name("libbmf_module_sdk.BMFAVPacket");
+    if (current_task_ptr_->get_outputs().find(idx) !=
+        current_task_ptr_->get_outputs().end())
+        current_task_ptr_->get_outputs()[idx]->push(packet);
+}
+
+void CFFEncoder::push_output(AVFrame *frame, unsigned int idx) {
+    VideoFrame video_frame = ffmpeg::to_video_frame(frame, true);
+    video_frame.set_pts(frame->pts);
+    Packet packet = Packet(video_frame);
+    packet.set_time(orig_pts_time_);
+    packet.set_timestamp(frame->pts * av_q2d(output_stream_[idx]->time_base) * 1000000);
+    if (current_task_ptr_->get_outputs().find(idx) != current_task_ptr_->get_outputs().end())
+        current_task_ptr_->get_outputs()[idx]->push(packet);
+}
+
+void CFFEncoder::save_orig_pts(AVFrame *frame, unsigned int idx) {
+    if (idx == 0 && push_output_) { //only support to carry orig pts time for images
         std::string stime = "";
         if (frame->metadata) {
             AVDictionaryEntry *tag = NULL;
@@ -612,6 +634,27 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx,
 
             orig_pts_time_list_.push_back(estimated_time_);
         }
+    }
+}
+
+int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_packet) {
+    int ret;
+    int got_packet_local;
+    int av_index;
+    OutputStream *ost = &ost_[idx];
+
+    if (!got_packet)
+        got_packet = &got_packet_local;
+
+    av_index = (codecs_[idx]->type == AVMEDIA_TYPE_VIDEO) ? 0 : 1;
+    if (av_index == 0 && frame && frame->pts < 0) {
+        BMFLOG_NODE(BMF_ERROR, node_id_) << "Drop negative pts frame";
+        return 0;
+    }
+    if (av_index == 0 && fps_ != 0 && frame) {
+        frame->pts = last_pts_ + 1;
+        current_frame_pts_ = frame->pts;
+        ++last_pts_;
     }
 
     if (frame && enc_ctxs_[idx])
@@ -671,32 +714,7 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx,
         }
 
         if (push_output_ == OutputMode::OUTPUT_UNMUX_PACKET) {
-            if (first_packet_[idx]) {
-                auto stream = std::make_shared<AVStream>();
-                *stream = *(output_stream_[idx]);
-                stream->codecpar = avcodec_parameters_alloc();
-                avcodec_parameters_copy(stream->codecpar,
-                                        output_stream_[idx]->codecpar);
-                auto packet = Packet(stream);
-                // packet.set_data_type(DATA_TYPE_C);
-                // packet.set_class_name("AVStream");
-                if (current_task_ptr_->get_outputs().find(idx) !=
-                    current_task_ptr_->get_outputs().end())
-                    current_task_ptr_->get_outputs()[idx]->push(packet);
-                first_packet_[idx] = false;
-            }
-
-            BMFAVPacket packet_tmp = ffmpeg::to_bmf_av_packet(enc_pkt, true);
-            auto packet = Packet(packet_tmp);
-            packet.set_timestamp(enc_pkt->pts *
-                                 av_q2d(output_stream_[idx]->time_base) *
-                                 1000000);
-            // packet.set_data_type(DATA_TYPE_C);
-            // packet.set_data_class_type(BMFAVPACKET_TYPE);
-            // packet.set_class_name("libbmf_module_sdk.BMFAVPacket");
-            if (current_task_ptr_->get_outputs().find(idx) !=
-                current_task_ptr_->get_outputs().end())
-                current_task_ptr_->get_outputs()[idx]->push(packet);
+            push_output(enc_pkt, idx);
         } else {
             if (!stream_inited_ && *got_packet == 0) {
                 cache_.push_back(std::pair<AVPacket *, int>(enc_pkt, idx));
@@ -1491,6 +1509,7 @@ int CFFEncoder::flush() {
                                                  ost_[idx].frame_number);
                 for (int j = 0; j < sync_frames.size(); j++) {
                     int got_frame = 0;
+                    save_orig_pts(sync_frames[j], idx);
                     int ret = encode_and_write(sync_frames[j], idx, &got_frame);
                     av_frame_free(&sync_frames[j]);
                 }
@@ -1663,12 +1682,20 @@ int CFFEncoder::handle_video_frame(AVFrame *frame, bool is_flushing,
                 ost_[0].min_frames, has_complex_filtergraph_);
         }
 
-        video_sync_->process_video_frame(filter_frame, sync_frames,
-                                         ost_[0].frame_number);
-        for (int j = 0; j < sync_frames.size(); j++) {
-            int got_frame = 0;
-            int ret = encode_and_write(sync_frames[j], index, &got_frame);
-            av_frame_free(&sync_frames[j]);
+        video_sync_->process_video_frame(filter_frame, sync_frames, ost_[0].frame_number);
+        if (push_output_ == OutputMode::OUTPUT_FRAME) {
+            for (int j = 0; j < sync_frames.size(); j++) {
+                save_orig_pts(sync_frames[j], index);
+                get_orig_pts();
+                push_output(sync_frames[j], index);
+            }
+        } else {
+            for (int j = 0; j < sync_frames.size(); j++) {
+                int got_frame = 0;
+                save_orig_pts(sync_frames[j], index);
+                int ret = encode_and_write(sync_frames[j], index, &got_frame);
+                av_frame_free(&sync_frames[j]);
+            }
         }
         sync_frames.clear();
         av_frame_free(&filter_frame);

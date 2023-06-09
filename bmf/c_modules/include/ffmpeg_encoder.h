@@ -41,6 +41,7 @@ typedef enum OutputMode {
     OUTPUT_NOTHING,
     OUTPUT_MUXED_PACKET,
     OUTPUT_UNMUX_PACKET,
+    OUTPUT_FRAME,
 } OutputMode;
 
 typedef struct OutputStream {
@@ -152,6 +153,14 @@ class CFFEncoder : public Module {
     bool check_valid_task(Task &task);
 
     int handle_output(AVPacket *hpkt, int idx);
+
+    void push_output(AVPacket* pkt, unsigned int idx);
+
+    void push_output(AVFrame* frame, unsigned int idx);
+
+    void save_orig_pts(AVFrame* frame, unsigned int idx);
+
+    void get_orig_pts();
 
     int encode_and_write(AVFrame *frame, unsigned int idx, int *got_frame);
 

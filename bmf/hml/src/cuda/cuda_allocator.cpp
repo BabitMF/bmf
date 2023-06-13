@@ -315,7 +315,7 @@ public:
         auto it = blocks.begin();
         while(it != blocks.end()){
             auto block = *it;
-            if(block->is_split()){
+            if(!block->is_split()){
                 HMP_CUDA_CHECK(free_(block->ptr));
                 
                 auto cur = it;

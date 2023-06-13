@@ -63,6 +63,7 @@ class FilterGraph {
     bool b_init_;
 public:
     AVFilterGraph *filter_graph_;
+    AVBufferRef *hw_frames_ctx_;
     std::map<int, AVFilterContext*> buffer_src_ctx_;
     std::map<int, AVFilterContext*> buffer_sink_ctx_;
 
@@ -78,6 +79,7 @@ public:
         outputs_ = NULL;
         inputs_ = NULL;
         filter_graph_ = avfilter_graph_alloc();
+        hw_frames_ctx_ = NULL;
         b_init_ = true;
         if (!filter_graph_) {
             BMFLOG(BMF_ERROR) << "Graph alloc error: ENOMEM";
@@ -223,6 +225,16 @@ public:
             ret = avfilter_graph_create_filter(&buffersrc_ctx, buffersrc, fname.c_str(),
                                             args.str, NULL, filter_graph_);
             av_bprint_finalize(&args, NULL);
+            if (type == AVMEDIA_TYPE_VIDEO) {
+                if (hw_frames_ctx_) {
+                    AVBufferSrcParameters *par = av_buffersrc_parameters_alloc();
+                    memset(par, 0, sizeof(*par));
+                    par->format = AV_PIX_FMT_NONE;
+                    par->hw_frames_ctx = hw_frames_ctx_;
+                    av_buffersrc_parameters_set(buffersrc_ctx, par);
+                }
+            }
+            
             if (ret < 0) {
                 BMFLOG(BMF_ERROR) << "Cannot create buffer source";
                 goto end;

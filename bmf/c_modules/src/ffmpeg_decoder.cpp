@@ -665,6 +665,9 @@ int CFFDecoder::init_filtergraph(int index, AVFrame *frame) {
         fg_config.sample_aspect_ratio = frame->sample_aspect_ratio;
         fg_config.tb = video_stream_->time_base;
         AVRational frame_rate = av_guess_frame_rate(input_fmt_ctx_, video_stream_, NULL);
+        if (frame->hw_frames_ctx) {
+            filter_graph_[index]->hw_frames_ctx_ = av_buffer_ref(frame->hw_frames_ctx);
+        }
         if (frame_rate.num > 0 && frame_rate.den > 0)
             fg_config.frame_rate = frame_rate;
     }

@@ -15,12 +15,14 @@
  */
 
 
+#include <cstdint>
 #include <hmp/tensor.h>
 #ifdef HMP_ENABLE_TORCH
 #include <hmp/torch/torch.h>
 //cast implementation
 #include <torch/csrc/utils/pybind.h>
 #endif
+#include <hmp/dataexport/data_export.h>
 
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
@@ -223,6 +225,45 @@ void tensorBind(py::module &m)
         .def("cuda", &Tensor::cuda)
         .def("numpy", [](const Tensor &self){
           return tensor_to_numpy(self);
+        })
+        .def("data_ptr", [](const Tensor &self){
+            return reinterpret_cast<uint64_t>(self.unsafe_data());
+        })
+        // .def("__dlpack__", &Tensor::to_dlpack, py::arg("stream")=1)
+        .def("__dlpack__", [](const Tensor &self, const int stream){
+            DLManagedTensor* dlMTensor = to_dlpack(self);
+            py::capsule cap(dlMTensor, "dltensor", [](PyObject *ptr)
+                    {
+                        if(PyCapsule_IsValid(ptr, "dltensor"))
+                        {
+                            // If consumer didn't delete the tensor,
+                            if(auto *dlTensor = static_cast<DLManagedTensor *>(PyCapsule_GetPointer(ptr, "dltensor")))
+                            {
+                                // Delete the tensor.
+                                if(dlTensor->deleter != nullptr)
+                                {
+                                    dlTensor->deleter(dlTensor);
+                                }
+                            }
+                        }
+                    });
+            return cap;
+        }, py::arg("stream")=1)
+        .def("__dlpack_device__", [](const Tensor &self){
+            DLDeviceType device_type;
+            switch (self.device().type()) {
+                case DeviceType::CPU:
+                device_type = DLDeviceType::kDLCPU;
+                break;
+                case DeviceType::CUDA:
+                device_type = DLDeviceType::kDLCUDA;
+                break;
+                default:
+                HMP_REQUIRE(false, "Cannot pack tensors on " + stringfy(self.device()));
+            }
+            // DLManagedTensor* dlMTensor = to_dlpack(self);
+            return py::make_tuple(py::int_(static_cast<int>(device_type)),
+                                  py::int_(static_cast<int>(self.device().index())));
         })
 #ifdef HMP_ENABLE_TORCH
         .def("torch", [](const Tensor &self){

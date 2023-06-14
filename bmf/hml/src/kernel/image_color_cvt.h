@@ -66,6 +66,15 @@ struct YUV2RGB
             rgb[1] = yuv.dot(wtype{1.164384f, -0.391762f, -0.812968f});
             rgb[2] = yuv.dot(wtype{1.164384f, 2.017232f, 0.f});
         }
+        else if(format == PPixelFormat::P010 ||
+                format == PPixelFormat::U420 ||
+                format == PPixelFormat::U422 ||
+                format == PPixelFormat::U444
+                ){ //BT.2020
+            rgb[0] = yuv.dot(wtype{1.164384f, 0.f, 1.596027f});
+            rgb[1] = yuv.dot(wtype{1.164384f, -0.391762f, -0.812968f});
+            rgb[2] = yuv.dot(wtype{1.164384f, 2.017232f, 0.f});
+        }
         else{
             //zeros
         }
@@ -129,6 +138,35 @@ struct RGB2YUV
 
         auto yuv_out = saturate_cast<cast_type>(yuv);
         yuv_iter.set(batch, w, h, yuv_out);
+    }
+};
+
+template<typename T, PPixelFormat dformat, PPixelFormat sformat>
+struct YUV2YUV
+{
+    // RGBIter<T, cformat> rgb_iter;
+    YUVIter<T, sformat> src_iter;
+    YUVIter<T, dformat> dst_iter;
+    using wtype = Vector<float, 3>;
+    using otype = Vector<T, 3>;
+    using cast_type = Vector<uint8_t, 3>; //FIXME
+
+    YUV2YUV(TensorList& dst, const TensorList &src)
+        : src_iter(src), dst_iter(dst)
+    {
+        HMP_REQUIRE(src_iter.width() == dst_iter.width() && src_iter.height() == dst_iter.height(),
+            "YUV2YUV: yuv and rgb image size are not matched, dst:{}, src:{}",
+            SizeArray{dst_iter.width(), dst_iter.height()}, 
+            SizeArray{src_iter.width(), src_iter.height()});
+    }
+
+    HMP_HOST_DEVICE inline void operator()(int batch, int w, int h)
+    {
+        wtype src = src_iter.get(batch, w, h);
+        wtype dst = src;
+
+        auto yuv_out = saturate_cast<cast_type>(dst);
+        dst_iter.set(batch, w, h, yuv_out);
     }
 };
 

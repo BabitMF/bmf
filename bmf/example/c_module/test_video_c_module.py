@@ -2,14 +2,15 @@ import sys
 import time
 import unittest
 
-sys.path.append("../../..")
-sys.path.append("../../c_module_sdk/build/bin/lib")
+sys.path.append("../..")
+# sys.path.append("../../c_module_sdk/build/bin/lib")
 import bmf
 import timeout_decorator
 
 sys.path.append("../")
 from base_test.base_test_case import BaseTestCase
 from base_test.media_info import MediaInfo
+sys.path.append("./c_module")
 
 
 class TestVideoCModule(BaseTestCase):

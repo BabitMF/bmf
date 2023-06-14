@@ -95,33 +95,34 @@ enum ColorRange{
 
 enum PixelFormat{
     PF_NONE         = -1,
-    PF_YUV420P      = 0, 
-    PF_YUV422P      = 4, 
-    PF_YUV444P      = 5, 
-    PF_NV12         = 23,
-    PF_NV21         = 24,
+    PF_YUV420P      = 0, ///< planar YUV 4:2:0, 12bpp, (1 Cr & Cb sample per 2x2 Y samples)
+    PF_YUV422P      = 4, ///< planar YUV 4:2:2, 16bpp, (1 Cr & Cb sample per 2x1 Y samples)
+    PF_YUV444P      = 5, ///< planar YUV 4:4:4, 24bpp, (1 Cr & Cb sample per 1x1 Y samples)
+    PF_NV12         = 23,   ///< planar YUV 4:2:0, 12bpp, 1 plane for Y and 1 plane for the UV components, which are interleaved (first byte U and the following byte V)
+    PF_NV21         = 24,   ///< as above, but U and V bytes are swapped
 
-    PF_GRAY8        = 8, 
-    PF_RGB24        = 2, 
-    PF_BGR24        = 3, 
+    PF_GRAY8        = 8,   ///<        Y        ,  8bpp
+    PF_RGB24        = 2,   ///< packed RGB 8:8:8, 24bpp, RGBRGB...
+    PF_BGR24        = 3,   ///< packed RGB 8:8:8, 24bpp, BGRBGR...
 
-    PF_YUVJ420P     = 12,
+    PF_YUVJ420P     = 12,  ///< planar YUV 4:2:0, 12bpp, full scale (JPEG), deprecated in favor of AV_PIX_FMT_YUV420P and setting color_range
 
-    PF_ARGB32       = 25,
-    PF_RGBA32       = 26,
-    PF_ABGR32       = 27,
-    PF_BGRA32       = 28,
+    PF_ARGB32       = 25,      ///< packed ARGB 8:8:8:8, 32bpp, ARGBARGB...
+    PF_RGBA32       = 26,      ///< packed RGBA 8:8:8:8, 32bpp, RGBARGBA...
+    PF_ABGR32       = 27,      ///< packed ABGR 8:8:8:8, 32bpp, ABGRABGR...
+    PF_BGRA32       = 28,      ///< packed BGRA 8:8:8:8, 32bpp, BGRABGRA...
 
-    PF_GRAY16       = 30,
-    PF_YUVA420P     = 33,
-    PF_RGB48        = 35,
-    PF_YA8          = 58,
-    PF_RGBA64       = 107,
+    PF_GRAY16       = 30, ///<        Y        , 16bpp, little-endian
+    PF_YUVA420P     = 33, ///< planar YUV 4:2:0, 20bpp, (1 Cr & Cb sample per 2x2 Y & A samples)
+    PF_RGB48        = 35, ///< packed RGB 16:16:16, 48bpp, 16R, 16G, 16B, the 2-byte value for each R/G/B component is stored as little-endian
+    PF_YA8          = 58,       ///< 8 bits gray, 8 bits alpha
+    PF_RGBA64       = 107, ///< packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A, the 2-byte value for each R/G/B/A component is stored as little-endian
 
-    PF_P010LE       = 161,
-    PF_P016LE       = 172,
-    PF_YUV422P10LE  = 66,
-    PF_YUV420P10LE  = 64,
+    PF_P010LE       = 161, ///< like NV12, with 10bpp per component, data in the high bits, zeros in the low bits, little-endian
+    PF_P016LE       = 172, ///< like NV12, with 16bpp per component, little-endian
+    PF_YUV422P10LE  = 66,///< planar YUV 4:2:2, 20bpp, (1 Cr & Cb sample per 2x1 Y samples), little-endian
+    PF_YUV420P10LE  = 64,///< planar YUV 4:2:0, 20bpp, (1 Cr & Cb sample per 2x2 Y samples), little-endian
+    PF_YUV444P10LE  = 68,///< planar YUV 4:4:4, 30bpp, (1 Cr & Cb sample per 1x1 Y samples), little-endian
 };
 
 #define HMP_FORALL_PIXEL_FORMATS(_)  \

@@ -304,7 +304,6 @@ Tensor Tensor::select(int64_t dim, int64_t index) const
     return out;
 }
 
-
 //factory functions
 Tensor empty(const SizeArray &shape, const TensorOptions &options)
 {

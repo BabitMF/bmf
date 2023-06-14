@@ -23,6 +23,9 @@ file(GLOB NPP_KERN_SRCS kernel/npp/*.h kernel/npp/*.cpp kernel/npp/*.cu)
 file(GLOB TORCH_SRCS torch/*.cpp torch/*.h)
 file(GLOB TORCH_HDRS ${INC_DIR}/torch/*.h)
 
+file(GLOB DLPACK_SRCS dataexport/*.cpp dataexport/*.h)
+file(GLOB DLPACK_HDRS ${INC_DIR}/dataexport/*.h)
+
 if(HMP_ENABLE_MOBILE)
     list(FILTER CPU_SRCS EXCLUDE REGEX "image_seq.cpp")
     list(FILTER CPU_KERN_SRCS EXCLUDE REGEX "imgproc|binary_ops|unary_ops")
@@ -49,6 +52,9 @@ if(HMP_ENABLE_TORCH)
     list(APPEND HMP_HDRS ${TORCH_HDRS})
 endif()
 
+# DLPack
+list(APPEND HMP_SRCS ${DLPACK_SRCS})
+list(APPEND HMP_SRCS ${DLPACK_HDRS})
 
 if(HMP_ENABLE_CUDA)
     if(HMP_ENABLE_OPENCV)
@@ -72,6 +78,7 @@ target_include_directories(hmp
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third_party/spdlog/include>
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third_party/fmt/include>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third_party/dlpack/include>
     PRIVATE
         ${INC_DIR} 
         ${CMAKE_CURRENT_SOURCE_DIR}

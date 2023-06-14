@@ -51,7 +51,10 @@ class blur_gpu(Module):
         self.__get_blur(option)
 
         self.i420info = hmp.PixelInfo(hmp.PixelFormat.kPF_YUV420P, hmp.ColorSpace.kCS_BT470BG, hmp.ColorRange.kCR_MPEG)
+        self.u420info = hmp.PixelInfo(hmp.PixelFormat.kPF_YUV420P10LE, hmp.ColorSpace.kCS_BT2020_CL, hmp.ColorRange.kCR_MPEG)
         self.i420_out = None
+        self.pinfo_map = {hmp.PixelFormat.kPF_NV12: self.i420info,
+                          hmp.PixelFormat.kPF_P010LE: self.u420info}
 
     def process(self, task):
         
@@ -94,14 +97,12 @@ class blur_gpu(Module):
 
             # deal with nv12 special case
             if (in_frame.frame().format() == hmp.PixelFormat.kPF_NV12):
-
-                self.i420_in = hmp.Frame(in_frame.width, in_frame.height, self.i420info, device='cuda')
-                self.i420_out = hmp.Frame(in_frame.width, in_frame.height, self.i420info, device='cuda')
-                hmp.img.yuv_to_yuv(self.i420_in.data(), in_frame.frame().data(), self.i420info, in_frame.frame().pix_info())
-                in_list = [x.torch() for x in self.i420_in.data()]
-                out_list = [x.torch() for x in self.i420_out.data()]
-                # cvimg_batch.pushback([cvcuda.as_image(x) for x in in_list])
-                # cvimg_batch_out.pushback([cvcuda.as_image(x) for x in out_list])
+                pinfo = self.pinfo_map[in_frame.frame().format()]
+                in_420 = hmp.Frame(in_frame.width, in_frame.height, pinfo, device='cuda')
+                out_420 = hmp.Frame(in_frame.width, in_frame.height, pinfo, device='cuda')
+                hmp.img.yuv_to_yuv(in_420.data(), in_frame.frame().data(), pinfo, in_frame.frame().pix_info())
+                in_list = [x.torch() for x in in_420.data()]
+                out_list = [x.torch() for x in out_420.data()]
 
             # other pixel formats, e.g. yuv420, rgb
             else:
@@ -124,7 +125,7 @@ class blur_gpu(Module):
             self.blur_op(cvimg_batch_out, cvimg_batch, *self.op_args, stream=cvstream)
 
             if (in_frame.frame().format() == hmp.PixelFormat.kPF_NV12):
-                hmp.img.yuv_to_yuv(frame_out.data(), self.i420_out.data(), frame_out.pix_info(), self.i420_out.pix_info())
+                hmp.img.yuv_to_yuv(frame_out.data(), out_420.data(), frame_out.pix_info(), out_420.pix_info())
 
             videoframe_out = VideoFrame(frame_out)
             videoframe_out.pts = in_frame.pts

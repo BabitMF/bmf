@@ -232,10 +232,7 @@ private:
 
     PixelInfo NV12 = PixelInfo(hmp::PF_NV12, hmp::CS_BT470BG);
     PixelInfo H420 = PixelInfo(hmp::PF_YUV420P, hmp::CS_BT709);
-<<<<<<< HEAD
-=======
     PixelInfo RGB = PixelInfo(hmp::PF_RGB24, hmp::CS_BT709);
->>>>>>> master
 };
 
 REGISTER_MODULE_CLASS(jpeg_encoder)

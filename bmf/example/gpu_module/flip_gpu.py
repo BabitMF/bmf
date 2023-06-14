@@ -38,8 +38,11 @@ class flip_gpu(Module):
         # self.uv_tensor_out = torch.empty((2, self.h // 2, self.w // 2), dtype=torch.uint8, device='cuda')
 
         self.i420info = hmp.PixelInfo(hmp.PixelFormat.kPF_YUV420P, hmp.ColorSpace.kCS_BT470BG, hmp.ColorRange.kCR_MPEG)
+        self.u420info = hmp.PixelInfo(hmp.PixelFormat.kPF_YUV420P10LE, hmp.ColorSpace.kCS_BT2020_CL, hmp.ColorRange.kCR_MPEG)
         # self.i420_out = hmp.Frame(self.w, self.h, self.i420info, device='cuda')
         self.i420_out = None
+        self.pinfo_map = {hmp.PixelFormat.kPF_NV12: self.i420info,
+                          hmp.PixelFormat.kPF_P010LE: self.u420info}
         t3 = torch.ones((4,), dtype=torch.int32, device='cuda') * self.flip_code
         self.flip_tensor = cvcuda.as_tensor(t3)
     
@@ -64,27 +67,29 @@ class flip_gpu(Module):
                 in_frame = in_frame.cuda()
             tensor_list = in_frame.frame().data()
             frame_out = hmp.Frame(in_frame.width, in_frame.height, in_frame.frame().pix_info(), device='cuda')
-            self.i420_out = hmp.Frame(in_frame.width, in_frame.height, self.i420info, device='cuda')
+            out_420 = hmp.Frame(in_frame.width, in_frame.height, self.pinfo_map[in_frame.frame().format()], device='cuda')
 
             out_list = frame_out.data()
             stream = hmp.current_stream(hmp.kCUDA)
             cvstream = cvcuda.cuda.as_stream(stream.handle())
 
             # deal with nv12 special case
-            if (in_frame.frame().format() == hmp.PixelFormat.kPF_NV12):
+            if (in_frame.frame().format() == hmp.PixelFormat.kPF_NV12 or
+                in_frame.frame().format() == hmp.PixelFormat.kPF_P010LE):
                 cvimg_batch = cvcuda.ImageBatchVarShape(3)
                 cvimg_batch_out = cvcuda.ImageBatchVarShape(3)
 
-                self.i420_in = hmp.Frame(in_frame.width, in_frame.height, self.i420info, device='cuda')
-                hmp.img.yuv_to_yuv(self.i420_in.data(), in_frame.frame().data(), self.i420info, in_frame.frame().pix_info())
-                in_list = self.i420_in.data()
-                out_list = self.i420_out.data()
+                in_420 = hmp.Frame(in_frame.width, in_frame.height, self.pinfo_map[in_frame.frame().format()], device='cuda')
+                hmp.img.yuv_to_yuv(in_420.data(), in_frame.frame().data(), self.pinfo_map[in_frame.frame().format()], in_frame.frame().pix_info())
+                # in_420 = in_frame.frame().reformat(self.pinfo_map[in_frame.frame().format()])
+                in_list = in_420.data()
+                out_list = out_420.data()
                 cvimg_batch.pushback([cvcuda.as_image(x) for x in in_list])
                 cvimg_batch_out.pushback([cvcuda.as_image(x) for x in out_list])
 
                 cvcuda.flip_into(cvimg_batch_out, cvimg_batch, flipCode=self.flip_tensor, stream=cvstream)
 
-                hmp.img.yuv_to_yuv(frame_out.data(), self.i420_out.data(), frame_out.pix_info(), self.i420_out.pix_info())
+                hmp.img.yuv_to_yuv(frame_out.data(), out_420.data(), frame_out.pix_info(), out_420.pix_info())
 
 
             # other pixel formats, e.g. yuv420, rgb

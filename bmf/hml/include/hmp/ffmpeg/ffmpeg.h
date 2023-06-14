@@ -23,6 +23,7 @@ extern "C"{
 #include <libavutil/pixdesc.h>
 #ifdef HMP_ENABLE_CUDA
 #include <libavutil/hwcontext_cuda.h>
+#include <hmp/cuda/allocator.h>
 #endif
 
 } //extern "C"
@@ -543,6 +544,18 @@ static AVFrame* to_video_frame(const Frame &frame,
     HMP_REQUIRE(!frame.pix_desc().defined() ||
         (frame.pix_desc().dtype() == frame.dtype()), "to_video_frame: invalid dtype of Frame");
     HMP_REQUIRE(!avf_ref || is_video_frame(avf_ref), "to_video_frame: AVFrame contains no video data");
+
+    if (frame.device().type() == kCUDA && (!avf_ref || (avf_ref && !avf_ref->hw_frames_ctx))) {
+        HMP_REQUIRE(frame.pix_info().format() == hmp::PF_NV12, "cuda hardware encode need NV12 frame");
+        auto nv12 = bmf_sdk::PixelInfo(hmp::PF_NV12, hmp::CS_BT709);
+        AVFrame* hw_frm = hmp::ffmpeg::hw_avframe_from_device(kCUDA, frame.width(), frame.height(),
+                                                              nv12);
+        hmp::cuda::d2d_memcpy(hw_frm->data[0], hw_frm->linesize[0], frame.plane(0).data<uint8_t>(),
+                              frame.width(), frame.width(), frame.height());
+        hmp::cuda::d2d_memcpy(hw_frm->data[1], hw_frm->linesize[1], frame.plane(1).data<uint8_t>(),
+                              frame.width(), frame.width(), frame.height() / 2);
+        return hw_frm;
+    }
 
     if(hw_frames_ctx){
         auto avf_device = av_hw_frames_ctx_to_device(hw_frames_ctx);

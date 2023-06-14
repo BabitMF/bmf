@@ -43,6 +43,8 @@ BEGIN_BMF_ENGINE_NS
             p->quit_gracefully();
     }
 
+    
+
     Graph::Graph(GraphConfig graph_config, std::map<int, std::shared_ptr<Module> > pre_modules,
                  std::map<int, std::shared_ptr<ModuleCallbackLayer> > callback_bindings) {
         std::signal(SIGTERM, terminate);
@@ -63,7 +65,12 @@ BEGIN_BMF_ENGINE_NS
         callback_bindings_ = callback_bindings;
         mode_ = graph_config.get_mode();
 
-        scheduler_count_ = 2;
+        int max_scheduler_index = 0;
+        for (auto &node_config:graph_config_.get_nodes()) {
+            max_scheduler_index = std::max(node_config.get_scheduler(), max_scheduler_index);
+        }
+        scheduler_count_ = max_scheduler_index + 1;
+
         if (graph_config.get_option().json_value_.count("scheduler_count"))
             scheduler_count_ = graph_config.get_option().json_value_.at("scheduler_count").get<int>();
 

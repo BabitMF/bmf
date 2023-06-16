@@ -21,13 +21,14 @@ def test_gpu_transcode():
                            }})
     (
         bmf.encode(
-            video["video"].module("scale_cvcuda", {"size": "1280x720"}),
+            video["video"].module("scale_gpu", {"size": "1280x720"}),
             video["audio"],
             {
                 "output_path": output_video_path,
                 "video_params": {
                     "codec": "h264_nvenc",
                     "preset": "p6",
+                    "pix_fmt": "cuda",
                     "tune": "hq",
                     "bit_rate": 5000000,
                 },
@@ -47,13 +48,14 @@ def test_gpu_transcode_1_to_n():
                               "hwaccel": "cuda",
                            }})
     bmf.encode(
-        video["video"].module("scale_cvcuda", {"size": "1280x720"}),
+        video["video"].module("scale_gpu", {"size": "1280x720"}),
         video["audio"],
         {
             "output_path": output_video_path_1,
             "video_params": {
                 "codec": "h264_nvenc",
                 "preset": "p6",
+                "pix_fmt": "cuda",
                 "tune": "hq",
                 "bit_rate": 5000000,
             },
@@ -61,13 +63,14 @@ def test_gpu_transcode_1_to_n():
     )
 
     bmf.encode(
-        video["video"].module("scale_cvcuda", {"size": "960x540"}),
+        video["video"].module("scale_gpu", {"size": "960x540"}),
         video["audio"],
         {
             "output_path": output_video_path_2,
             "video_params": {
                 "codec": "h264_nvenc",
                 "preset": "p4",
+                "pix_fmt": "cuda",
                 "tune": "hq",
                 "bit_rate": 5000000,
             },
@@ -150,15 +153,14 @@ def test_gpu_transcode_with_scale_cuda():
                           }})
     (
         bmf.encode(
-            video["video"].ff_filter("scale_cuda", w=1280, h=720)
-                          .ff_filter("hwdownload")
-                          .ff_filter("format", "nv12"),
+            video["video"].ff_filter("scale_cuda", w=1280, h=720),
             video["audio"],
             {
                 "output_path": output_video_path,
                 "video_params": {
                     "codec": "h264_nvenc",
                     "preset": "p6",
+                    "pix_fmt": "cuda",
                     "tune": "hq",
                     "bit_rate": 5000000,
                 },
@@ -175,15 +177,14 @@ def test_gpu_transcode_with_hwupload():
     (
         bmf.encode(
             video["video"].ff_filter("hwupload_cuda")
-                          .ff_filter("scale_cuda", w=1280, h=720)
-                          .ff_filter("hwdownload")
-                          .ff_filter("format","yuv420p"),
+                          .ff_filter("scale_cuda", w=1280, h=720),
             video["audio"],
             {
                 "output_path": output_video_path,
                 "video_params": {
                     "codec": "h264_nvenc",
                     "preset": "p6",
+                    "pix_fmt": "cuda",
                     "tune": "hq",
                     "bit_rate": 5000000,
                 },
@@ -202,15 +203,14 @@ def test_gpu_transcode_with_scale_npp():
                           }})
     (
         bmf.encode(
-            video["video"].ff_filter("scale_npp", w=1280, h=720)
-                          .ff_filter("hwdownload")
-                          .ff_filter("format", "nv12"),
+            video["video"].ff_filter("scale_npp", w=1280, h=720),
             video["audio"],
             {
                 "output_path": output_video_path,
                 "video_params": {
                     "codec": "h264_nvenc",
                     "preset": "p6",
+                    "pix_fmt": "cuda",
                     "tune": "hq",
                     "bit_rate": 5000000,
                 },
@@ -230,15 +230,14 @@ def test_gpu_transcode_with_yadif_cuda():
     (
         bmf.encode(
             video["video"].ff_filter("scale_cuda", w=1280, h=720)
-                          .ff_filter("yadif_cuda")
-                          .ff_filter("hwdownload")
-                          .ff_filter("format", "nv12"),
+                          .ff_filter("yadif_cuda"),
             video["audio"],
             {
                 "output_path": output_video_path,
                 "video_params": {
                     "codec": "h264_nvenc",
                     "preset": "p6",
+                    "pix_fmt": "cuda",
                     "tune": "hq",
                     "bit_rate": 5000000,
                 },
@@ -298,11 +297,11 @@ def test_gpu_transcode_with_overlay_cuda():
     
 
 if __name__ == "__main__":
-    #test_gpu_transcode()
-    #test_gpu_transcode_1_to_n()
-    #test_gpu_transcode_multi_thread_perf()
-    #test_gpu_transcode_with_scale_cuda()
-    #test_gpu_transcode_with_hwupload()
-    #test_gpu_transcode_with_scale_npp()
-    #test_gpu_transcode_with_yadif_cuda()
+    test_gpu_transcode()
+    test_gpu_transcode_1_to_n()
+    test_gpu_transcode_multi_thread_perf()
+    test_gpu_transcode_with_scale_cuda()
+    test_gpu_transcode_with_hwupload()
+    test_gpu_transcode_with_scale_npp()
+    test_gpu_transcode_with_yadif_cuda()
     test_gpu_transcode_with_overlay_cuda()

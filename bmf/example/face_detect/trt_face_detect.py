@@ -16,7 +16,7 @@ from PIL import Image
 sys.path.append("../../")
 
 from bmf import *
-import hmp as mp
+import bmf.hml.hmp as mp
 
 class DetectResult(object):
     def __init__(self,x1,y1,x2,y2,label,score,pts=0):

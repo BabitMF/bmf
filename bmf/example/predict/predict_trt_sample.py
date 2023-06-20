@@ -9,10 +9,11 @@ if __name__ == "__main__":
     Log.set_log_level(LogLevel.ERROR)
 
     input_video_path = "../files/img_s.mp4"
-    output_video_path = "out.mp4"
+    output_video_path = "trt_out.mp4"
 
     # create trt sr module once
-    trt_sr_mod = bmf.create_module("trt_sr", {"model_path": "v1_orig.engine",
+    # v1.engine can be built by the command: trtexec --onnx=v1.onnx --minShapes=input:0:1x360x640x21 --optShapes=input:0:1x360x640x21 --maxShapes=input:0:1x360x640x21 --buildOnly --fp16 --saveEngine=v1.engine
+    trt_sr_mod = bmf.create_module("trt_sr", {"model_path": "v1.engine",
                                               "input_shapes": {"input:0": [1, 360, 640, 21]},
                                               "in_frame_num": 7,
                                               "out_frame_num": 3})
@@ -27,6 +28,7 @@ if __name__ == "__main__":
                            "video_params": {
                                "codec": "h264_nvenc",
                                "preset": "p6",
+                               "pix_fmt": "cuda",
                                "tune": "hq",
                                "bit_rate": 5000000,
                                }})

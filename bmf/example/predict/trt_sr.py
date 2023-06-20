@@ -6,9 +6,8 @@ import tensorrt as trt
 from cuda import cudart
 
 sys.path.append("../../")
-sys.path.append("../tensorrt/")
 from bmf import *
-import hmp as mp
+import bmf.hml.hmp as mp
 
 if sys.version_info.major == 2:
     from Queue import Queue
@@ -117,27 +116,26 @@ class trt_sr(Module):
         output_tensor = torch.squeeze(output_tensor)
         output_tensor = torch.split(output_tensor, self.out_frame_num_, dim=2)
 
-        out_frames = []
+        out_vframes = []
 
         for i in range(self.out_frame_num_):
-            H420 = mp.PixelInfo(mp.kPF_YUV420P)
-
-            rgb = mp.PixelInfo(mp.kPF_RGB24)
-            frame = mp.Frame(mp.from_torch(output_tensor[i].contiguous()), rgb)
-            out_frame = VideoFrame(frame).reformat(H420)
-            # TODO remove it when the nvenc bug fixed
-            out_frame = out_frame.cpu() # for hw encode
+            NV12 = mp.PixelInfo(mp.PixelFormat.kPF_NV12, mp.ColorSpace.kCS_BT470BG, mp.ColorRange.kCR_MPEG)
+            RGB = mp.PixelInfo(mp.PixelFormat.kPF_RGB24, mp.ColorSpace.kCS_BT709, mp.ColorRange.kCR_MPEG)
+            frame = mp.Frame(mp.from_torch(output_tensor[i].contiguous()), RGB)
+            out_frame = mp.Frame(frame.width(), frame.height(), NV12, device='cuda')
+            mp.img.rgb_to_yuv(out_frame.data(), frame.plane(0), NV12, mp.kNHWC)
 
             if self.frame_cache_.empty():
                 break
 
+            out_vframe = VideoFrame(out_frame)
             input_frame = self.frame_cache_.get()
-            out_frame.pts = input_frame.pts
-            out_frame.time_base = input_frame.time_base
+            out_vframe.pts = input_frame.pts
+            out_vframe.time_base = input_frame.time_base
 
-            out_frames.append(out_frame)
+            out_vframes.append(out_vframe)
 
-        return out_frames
+        return out_vframes
 
     def process(self, task):
         # get input and output packet queue
@@ -171,4 +169,3 @@ class trt_sr(Module):
             task.timestamp = Timestamp.DONE
         
         return ProcessResult.OK
-

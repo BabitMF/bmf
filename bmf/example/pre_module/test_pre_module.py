@@ -30,9 +30,9 @@ def create_node_test(module_name, option, input_video_path, output_path, pre_mod
 class TestPreModule(BaseTestCase):
     @timeout_decorator.timeout(seconds=120)
     def test_pre_module(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../files/big_bunny_10s_30fps.mp4"
         output_path = "./output.mp4"
-        expect_result = '../pre_module/output.mp4|200|300|7.550000|MOV,MP4,M4A,3GP,3G2,MJ2|208824|197078|h264|' \
+        expect_result = '../pre_module/output.mp4|200|300|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|62956|78695|h264|' \
                         '{"fps": "30.0662251656"}'
         self.remove_result_data(output_path)
         # pre_allocate a module

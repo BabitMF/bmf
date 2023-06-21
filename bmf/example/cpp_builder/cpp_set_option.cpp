@@ -17,7 +17,7 @@ TEST(cpp_set_option, set_option) {
     auto graph = bmf::builder::Graph(bmf::builder::NormalMode, bmf_sdk::JsonParam(graph_para));
 
     bmf_nlohmann::json decode_para = {
-        {"input_path", "../../example/files/img.mp4"}
+        {"input_path", "../../example/files/big_bunny_10s_30fps.mp4"}
     };
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
 

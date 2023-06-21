@@ -112,7 +112,7 @@ class TestPushData(BaseTestCase):
         input_video_content = "../files/video_content.txt"
         input_content_size = "../files/video_length.txt"
         output_path = "./push_pkt_output.mp4"
-        expect_result = '../transcode/push_pkt_output.mp4|480|640|7.60|MOV,MP4,M4A,3GP,3G2,MJ2|911360|851968|h264|{"fps": "27.63"}'
+        expect_result = '../transcode/push_pkt_output.mp4|480|640|9.7|MOV,MP4,M4A,3GP,3G2,MJ2|200132|242661|h264|{"fps": "27.63"}'
 
         self.remove_result_data(output_path)
 
@@ -136,7 +136,6 @@ class TestPushData(BaseTestCase):
                     "codec": "h264",
                     "width": 640,
                     "height": 480,
-                    "max_fr": 30,
                     "crf": "23",
                     "preset": "veryfast"
                 }
@@ -169,15 +168,15 @@ class TestPushData(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_push_pkt_into_decoder_multi_output(self):
-        input_file1 = "../files/lark_stream0.flv"
+        input_file1 = "../files/big_bunny_stream0.flv"
         output_path = "./stream_copy.mp4"
-        expect_result = 'stream_copy.mp4|1080|1920|5.920000|MOV,MP4,M4A,3GP,3G2,MJ2|2834318|2097396|h264|{"fps": "29.998265996185193"}'
+        expect_result = 'stream_copy.mp4|1080|1920|10.03|MOV,MP4,M4A,3GP,3G2,MJ2|2039125|2556553|h264|{"fps": "29.998265996185193"}'
         output_path1 = "./output1.mp4"
-        expect_result1 = 'output1.mp4|1080|1920|5.944000|MOV,MP4,M4A,3GP,3G2,MJ2|980537|728539|h264|{"fps": "30.0"}'
+        expect_result1 = 'output1.mp4|1080|1920|10.034|MOV,MP4,M4A,3GP,3G2,MJ2|1914024|2400665|h264|{"fps": "30.0"}'
         output_path2 = "./output2.mp4"
-        expect_result2 = 'output2.mp4|720|1080|5.944000|MOV,MP4,M4A,3GP,3G2,MJ2|427518|317646|h264|{"fps": "30.0"}'
+        expect_result2 = 'output2.mp4|720|1080|10.034|MOV,MP4,M4A,3GP,3G2,MJ2|741110|929538|h264|{"fps": "30.0"}'
         output_path3 = "./output3.mp4"
-        expect_result3 = 'output3.mp4|360|540|5.944000|MOV,MP4,M4A,3GP,3G2,MJ2|222822|165557|h264|{"fps": "30.0"}'
+        expect_result3 = 'output3.mp4|360|540|10.034|MOV,MP4,M4A,3GP,3G2,MJ2|332311|416802|h264|{"fps": "30.0"}'
         self.remove_result_data(output_path)
         self.remove_result_data(output_path1)
         self.remove_result_data(output_path2)
@@ -237,16 +236,16 @@ class TestPushData(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_cut_off_stream_graph(self):
-        input_file1 = "../files/lark_stream0.flv"
-        input_file2 = "../files/lark_stream1.flv"
+        input_file1 = "../files/big_bunny_stream0.flv"
+        input_file2 = "../files/big_bunny_stream1.flv"
         output_path = "./stream_copy.mp4"
-        expect_result = 'stream_copy.mp4|1080|1920|29.493000|MOV,MP4,M4A,3GP,3G2,MJ2|4158975|15332582|h264|{"fps": "29.99488141955298"}'
+        expect_result = 'stream_copy.mp4|1080|1920|20.092|MOV,MP4,M4A,3GP,3G2,MJ2|2374954|5964699|h264|{"fps": "29.99488141955298"}'
         output_path1 = "./output1.mp4"
-        expect_result1 = 'output1.mp4|1080|1920|29.567000|MOV,MP4,M4A,3GP,3G2,MJ2|3713941|13726264|h264|{"fps": "30.0"}'
+        expect_result1 = 'output1.mp4|1080|1920|20.092|MOV,MP4,M4A,3GP,3G2,MJ2|2183009|5484811|h264|{"fps": "30.0"}'
         output_path2 = "./output2.mp4"
-        expect_result2 = 'output2.mp4|720|1080|29.567000|MOV,MP4,M4A,3GP,3G2,MJ2|2244088|8293869|h264|{"fps": "30.0"}'
+        expect_result2 = 'output2.mp4|720|1080|20.092|MOV,MP4,M4A,3GP,3G2,MJ2|914524|2297742|h264|{"fps": "30.0"}'
         output_path3 = "./output3.mp4"
-        expect_result3 = 'output3.mp4|360|540|29.567000|MOV,MP4,M4A,3GP,3G2,MJ2|690303|2551274|h264|{"fps": "30.0"}'
+        expect_result3 = 'output3.mp4|360|540|20.092|MOV,MP4,M4A,3GP,3G2,MJ2|387482|973550|h264|{"fps": "30.0"}'
  
         self.remove_result_data(output_path)
         self.remove_result_data(output_path1)
@@ -318,7 +317,7 @@ class TestPushData(BaseTestCase):
         input_audio_content = "../files/audio_content.txt"
         input_content_size = "../files/audio_length.txt"
         output_path = "./push_audio_output.mp4"
-        expect_result = './push_audio_output.mp4|0|0|7.617000|MOV,MP4,M4A,3GP,3G2,MJ2|136092|129577||{}'
+        expect_result = './push_audio_output.mp4|0|0|10.031|MOV,MP4,M4A,3GP,3G2,MJ2|132429|166050||{}'
         self.remove_result_data(output_path)
 
         graph = bmf.graph({"dump_graph": 1})

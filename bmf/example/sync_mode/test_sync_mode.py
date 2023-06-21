@@ -121,7 +121,7 @@ class TestSyncMode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_audioframe(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../files/big_bunny_10s_30fps.mp4"
         output_path = "./audioframe.mp4"
         expect_result = './audioframe.mp4|0|0|0.024|MOV,MP4,M4A,3GP,3G2,MJ2|271000|795||{}'
         self.remove_result_data(output_path)
@@ -156,7 +156,7 @@ class TestSyncMode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_audioframe_by_graph(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../files/big_bunny_10s_30fps.mp4"
         output_path = "./audioframe_by_graph.mp4"
         expect_result = './audioframe_by_graph.mp4|0|0|0.024|MOV,MP4,M4A,3GP,3G2,MJ2|271000|795||{}'
         self.remove_result_data(output_path)
@@ -195,9 +195,9 @@ class TestSyncMode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_video(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../files/big_bunny_10s_30fps.mp4"
         output_path = "./video.mp4"
-        expect_result = './video.mp4|250|320|7.617|MOV,MP4,M4A,3GP,3G2,MJ2|418486|398451|h264|{"fps": "30"}'
+        expect_result = './video.mp4|250|320|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|224724|281130|h264|{"fps": "30"}'
         self.remove_result_data(output_path)
 
         # create sync modules
@@ -236,9 +236,9 @@ class TestSyncMode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_video_by_graph(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../files/big_bunny_10s_30fps.mp4"
         output_path = "./video_by_graph.mp4"
-        expect_result = './video_by_graph.mp4|250|320|7.617|MOV,MP4,M4A,3GP,3G2,MJ2|418486|398451|h264|{"fps": "30"}'
+        expect_result = './video_by_graph.mp4|250|320|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|224724|281130|h264|{"fps": "30"}'
         self.remove_result_data(output_path)
 
         graph = bmf.graph()
@@ -284,9 +284,9 @@ class TestSyncMode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_video_by_pkts(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../files/big_bunny_10s_30fps.mp4"
         output_path = "./video_simple_interface.mp4"
-        expect_result = './video.mp4|250|320|7.617|MOV,MP4,M4A,3GP,3G2,MJ2|418486|398451|h264|{"fps": "30"}'
+        expect_result = './video.mp4|250|320|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|224724|281130|h264|{"fps": "30"}'
         self.remove_result_data(output_path)
 
         # create sync modules
@@ -325,9 +325,9 @@ class TestSyncMode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_video_only_situation(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../files/big_bunny_10s_30fps.mp4"
         output_path = "./video_only_situation.mp4"
-        expect_result = './video_only_situation.mp4|250|320|7.617|MOV,MP4,M4A,3GP,3G2,MJ2|285867|270681|h264|{"fps": "30"}'
+        expect_result = './video_only_situation.mp4|250|320|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|87753|109692|h264|{"fps": "30"}'
         self.remove_result_data(output_path)
 
         graph = bmf.graph()
@@ -368,9 +368,9 @@ class TestSyncMode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_audio(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../files/big_bunny_10s_30fps.mp4"
         output_path = "./audio.mp4"
-        expect_result = './audio.mp4|0|0|7.617|MOV,MP4,M4A,3GP,3G2,MJ2|131882|125569||{}'
+        expect_result = './audio.mp4|0|0|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|131882|166192||{}'
         self.remove_result_data(output_path)
 
         # create sync modules
@@ -397,9 +397,9 @@ class TestSyncMode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_audio_by_graph(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../files/big_bunny_10s_30fps.mp4"
         output_path = "./audio_by_graph.mp4"
-        expect_result = './audio_by_graph.mp4|0|0|7.617|MOV,MP4,M4A,3GP,3G2,MJ2|131882|125569||{}'
+        expect_result = './audio_by_graph.mp4|0|0|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|131882|166192||{}'
         self.remove_result_data(output_path)
 
         graph = bmf.graph()
@@ -433,7 +433,7 @@ class TestSyncMode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_eof_flush_data(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../files/big_bunny_10s_30fps.mp4"
         output_path = "./videoframe.jpg"
         expect_result = './videoframe.jpg|240|320|0.04|IMAGE2|950000|4750|mjpeg|' \
                         '{"fps": "0.0"}'

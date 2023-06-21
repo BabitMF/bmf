@@ -7,7 +7,7 @@ import json
 sys.path.append("../../../")
 import bmf
 def test_dynmaical_reset():
-    input_video_path = '../files/img.mp4'
+    input_video_path = '../files/big_bunny_10s_30fps.mp4'
     output_path = "./output.mp4"
 
     main_graph = bmf.graph()
@@ -42,8 +42,8 @@ def test_dynmaical_reset():
     main_graph.close()
 
 def test_dynmaical_graph():
-    input_video_path = '../files/img.mp4'
-    input_video_path2 = '../files/img.mp4'
+    input_video_path = '../files/big_bunny_10s_30fps.mp4'
+    input_video_path2 = '../files/big_bunny_10s_30fps.mp4'
     output_path = "./output.mp4"
 
     main_graph = bmf.graph()
@@ -103,7 +103,7 @@ class dy_action:
 
 def action_thread(main_graph):
     global actions
-    input_video_path2 = '../files/img.mp4'
+    input_video_path2 = '../files/big_bunny_10s_30fps.mp4'
     output_path = "./cb.mp4"
     count = 0;
     print("====== action thread started ====== ")
@@ -146,7 +146,7 @@ def action_thread(main_graph):
             time.sleep(0.1)
 
 def test_dynamical_graph_cb():
-    input_video_path = "../files/img.mp4"
+    input_video_path = "../files/big_bunny_10s_30fps.mp4"
 
     # create graph
     main_graph = bmf.graph()
@@ -168,7 +168,7 @@ def test_dynamical_graph_cb():
     thread = threading.Thread(target=action_thread, args=(main_graph,))
     thread.start()
 
-    input_video_path = '../files/img.mp4'
+    input_video_path = '../files/big_bunny_10s_30fps.mp4'
     output_path = "./output.mp4"
 
     video1 = main_graph.decode({'input_path': input_video_path, 'alias': "decoder0"})

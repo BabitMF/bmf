@@ -24,15 +24,15 @@ class TestServer(BaseTestCase):
     @timeout_decorator.timeout(seconds=120)
     def test_single_video(self):
 
-        input_video_path_1 = "../files/img.mp4"
+        input_video_path_1 = "../files/big_bunny_10s_30fps.mp4"
         output_path_1 = "./output_video_dir/1/output.mp4"
-        expect_result_1 = '../server/output_video_dir/1/output.mp4|480|640|7.615000|MOV,MP4,M4A,3GP,3G2,MJ2|' \
-                          '1056397|1005558|h264|{"fps": "30.0662251656"}'
+        expect_result_1 = '../server/output_video_dir/1/output.mp4|480|640|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|' \
+                          '328621|411106|h264|{"fps": "30.0662251656"}'
 
         input_video_path_2 = '../files/header.mp4'
         output_path_2 = "./output_video_dir/2/output.mp4"
-        expect_result_2 = '../server/output_video_dir/2/output.mp4|480|640|7.615000|MOV,MP4,M4A,3GP,3G2,MJ2|' \
-                          '1056397|1005558|h264|{"fps": "30.0662251656"}'
+        expect_result_2 = '../server/output_video_dir/2/output.mp4|480|640|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|' \
+                          '328621|411106|h264|{"fps": "30.0662251656"}'
 
         self.remove_result_data(output_path_1)
         self.remove_result_data(output_path_2)
@@ -155,7 +155,7 @@ class TestServer(BaseTestCase):
     #     expect_result_1 = '../server/output_video_dir/1/output.mp4|480|640|7.615000|MOV,MP4,M4A,3GP,3G2,MJ2|' \
     #                       '1056397|1005558|h264|{"fps": "30.0662251656"}'
     #
-    #     input_video_path_2 = '../files/img.mp4'
+    #     input_video_path_2 = '../files/big_bunny_10s_30fps.mp4'
     #     output_path_2 = "./output_video_dir/2/output.mp4"
     #     expect_result_2 = '../server/output_video_dir/2/output.mp4|480|640|7.615000|MOV,MP4,M4A,3GP,3G2,MJ2|' \
     #                       '1056397|1005558|h264|{"fps": "30.0662251656"}'
@@ -213,10 +213,10 @@ class TestServer(BaseTestCase):
     def test_filter_condition(self):
         input_video_path_1 = "../files/header.mp4"
         output_path_1 = "./output_filter_condition_dir/1/output.mp4"
-        expect_result_1 = '../server/output_filter_condition_dir/1/output.mp4|480|640|7.617000|MOV,MP4,M4A,3GP,3G2,MJ2|' \
-                          '684566|651793|h264|{"fps": "30.102640722109747"}'
+        expect_result_1 = '../server/output_filter_condition_dir/1/output.mp4|480|640|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|' \
+                          '244133|305411|h264|{"fps": "30.102640722109747"}'
 
-        input_video_path_2 = '../files/img.mp4'
+        input_video_path_2 = '../files/big_bunny_10s_30fps.mp4'
         output_path_2 = "./output_filter_condition_dir/2/output.mp4"
         expect_result_2 = '../server/output_filter_condition_dir/2/output.mp4|480|640|3.042000|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                           '822840|312885|h264|{"fps": "120.33426183844011"}'
@@ -300,11 +300,11 @@ class TestServer(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_all_results_at_one_time(self):
-        input_video_path_1 = "../files/img.mp4"
-        expect_result_1 = '../server/output_video_dir/1/output.mp4|480|640|7.541|MOV,MP4,M4A,3GP,3G2,MJ2|' \
-                          '913996|861556|h264|{"fps": "30.10"}'
-        expect_result_2 = '../server/output_video_dir/2/output.mp4|480|640|7.541|MOV,MP4,M4A,3GP,3G2,MJ2|' \
-                          '913996|861556|h264|{"fps": "30.10"}'
+        input_video_path_1 = "../files/big_bunny_10s_30fps.mp4"
+        expect_result_1 = '../server/output_video_dir/1/output.mp4|480|640|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|' \
+                          '188188|235235|h264|{"fps": "30.10"}'
+        expect_result_2 = '../server/output_video_dir/2/output.mp4|480|640|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|' \
+                          '188188|235235|h264|{"fps": "30.10"}'
         input_video_path_2 = '../files/header.mp4'
         expect_result_3 = '../server/output_video_dir/3/output.mp4|480|640|2.992|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                           '1363975|510127|h264|{"fps": "120.33"}'
@@ -366,7 +366,7 @@ class TestServer(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_specified_job_result_unblock(self):
-        input_video_path_1 = "../files/img.mp4"
+        input_video_path_1 = "../files/big_bunny_10s_30fps.mp4"
         input_video_path_2 = '../files/header.mp4'
 
         graph = bmf.graph({"dump_graph": 1})
@@ -412,10 +412,10 @@ class TestServer(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_specified_job_result_block(self):
-        input_video_path_1 = "../files/img.mp4"
+        input_video_path_1 = "../files/big_bunny_10s_30fps.mp4"
         input_video_path_2 = '../files/header.mp4'
-        expect_result_1 = '../server/output_video_dir/1/output.mp4|480|640|7.541|MOV,MP4,M4A,3GP,3G2,MJ2|' \
-                          '913996|861556|h264|{"fps": "30.10"}'
+        expect_result_1 = '../server/output_video_dir/1/output.mp4|480|640|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|' \
+                          '188188|235235|h264|{"fps": "30.10"}'
         output_path_1 = "./output_video_dir/1/output.mp4"
         self.remove_result_data(output_path_1)
 
@@ -463,10 +463,10 @@ class TestServer(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_pop_from_result_queue(self):
-        input_video_path_1 = "../files/img.mp4"
+        input_video_path_1 = "../files/big_bunny_10s_30fps.mp4"
         input_video_path_2 = '../files/header.mp4'
-        expect_result_1 = '../server/output_video_dir/1/output.mp4|480|640|7.541|MOV,MP4,M4A,3GP,3G2,MJ2|' \
-                          '913996|861556|h264|{"fps": "30.10"}'
+        expect_result_1 = '../server/output_video_dir/1/output.mp4|480|640|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|' \
+                          '188188|235235|h264|{"fps": "30.10"}'
         expect_result_2 = '../server/output_video_dir/3/output.mp4|480|640|2.992|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                           '1363975|510127|h264|{"fps": "120.33"}'
         output_path_1 = "./output_video_dir/1/output.mp4"

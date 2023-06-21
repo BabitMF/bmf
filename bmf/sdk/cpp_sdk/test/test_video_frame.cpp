@@ -340,7 +340,7 @@ TEST(video_frame, copy_props)
 
 TEST(video_frame, reformat)
 {
-    auto ori_vf = decode_one_frame("../files/img.mp4");
+    auto ori_vf = decode_one_frame("../files/big_bunny_10s_30fps.mp4");
     ASSERT_EQ(ori_vf.frame().format(), hmp::PF_YUV420P);
     EXPECT_EQ(ori_vf.height(), 1080);
     EXPECT_EQ(ori_vf.width(), 1920);
@@ -415,7 +415,7 @@ TEST(video_frame, reformat)
 #ifdef BMF_ENABLE_FFMPEG
 TEST(video_frame, reformat_by_ffmpeg)
 {
-    auto ori_vf = decode_one_frame("../files/img.mp4");
+    auto ori_vf = decode_one_frame("../files/big_bunny_10s_30fps.mp4");
     ASSERT_EQ(ori_vf.frame().format(), hmp::PF_YUV420P);
     EXPECT_EQ(ori_vf.height(), 1080);
     EXPECT_EQ(ori_vf.width(), 1920);

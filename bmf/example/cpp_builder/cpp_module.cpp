@@ -29,7 +29,7 @@ TEST(cpp_modules, module_python) {
 
     BMF_CPP_FILE_CHECK(
         output_file, 
-        "|1080|1920|7.615000|MOV,MP4,M4A,3GP,3G2,MJ2|4483427|4267663|h264|{\"fps\": \"30.0662251656\"}"
+        "|1080|1920|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|1918874|2400512|h264|{\"fps\": \"30.0662251656\"}"
     );
 }
 

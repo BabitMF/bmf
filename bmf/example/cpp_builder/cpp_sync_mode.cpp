@@ -180,7 +180,7 @@ TEST(cpp_sync_mode, sync_video_by_pkts) {
     graph.Close(volume);
     graph.Close(encoder);
 
-    BMF_CPP_FILE_CHECK(output_file, "./video_simple_interface.mp4|250|320|7.617|MOV,MP4,M4A,3GP,3G2,MJ2|418486|398451|h264|{\"fps\": \"30\"}");
+    BMF_CPP_FILE_CHECK(output_file, "./video_simple_interface.mp4|250|320|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|224724|281130|h264|{\"fps\": \"30\"}");
 }
 
 TEST(cpp_sync_mode, sync_audio) {
@@ -223,7 +223,7 @@ TEST(cpp_sync_mode, sync_audio) {
         encoder.ProcessPkts(input_encoder);
     }
 
-    BMF_CPP_FILE_CHECK(output_file, "./audio.mp4|0|0|7.617|MOV,MP4,M4A,3GP,3G2,MJ2|131882|125569||{}");
+    BMF_CPP_FILE_CHECK(output_file, "./audio.mp4|0|0|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|131882|166192||{}");
 }
 
 TEST(cpp_sync_mode, sync_video) {
@@ -234,7 +234,7 @@ TEST(cpp_sync_mode, sync_video) {
 
     // create sync modules
     bmf_nlohmann::json decoder_option = {
-        {"input_path", "../../example/files/img.mp4"}
+        {"input_path", "../../example/files/big_bunny_10s_30fps.mp4"}
     };
     auto decoder = graph.Sync(std::vector<int> {}, std::vector<int> {0,1}, decoder_option, "c_ffmpeg_decoder");
 
@@ -302,7 +302,7 @@ TEST(cpp_sync_mode, sync_video) {
     graph.Close(volume);
     graph.Close(encoder);
 
-    BMF_CPP_FILE_CHECK(output_file, "./video_simple_interface.mp4|250|320|7.617|MOV,MP4,M4A,3GP,3G2,MJ2|418486|398451|h264|{\"fps\": \"30\"}");
+    BMF_CPP_FILE_CHECK(output_file, "./video_simple_interface.mp4|250|320|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|224724|281130|h264|{\"fps\": \"30\"}");
 }
 
 TEST(cpp_sync_mode, sync_eof_flush_data) {
@@ -310,7 +310,7 @@ TEST(cpp_sync_mode, sync_eof_flush_data) {
 
     // create decoder
     bmf_nlohmann::json decoder_option = {
-        {"input_path", "../../example/files/img.mp4"}
+        {"input_path", "../../example/files/big_bunny_10s_30fps.mp4"}
     };
     auto decoder = graph.Sync(std::vector<int> {}, std::vector<int> {0}, 
         bmf_sdk::JsonParam(decoder_option), "c_ffmpeg_decoder");

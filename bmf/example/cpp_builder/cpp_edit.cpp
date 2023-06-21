@@ -80,7 +80,7 @@ TEST(cpp_edit, edit_concat) {
 
     BMF_CPP_FILE_CHECK(
         output_file, 
-        "../edit/video_concat.mp4|720|1280|15.022000|MOV,MP4,M4A,3GP,3G2,MJ2|2959335|5556892|h264|{\"fps\": \"30.0166759311\"}"
+        "../edit/video_concat.mp4|720|1280|15.022000|MOV,MP4,M4A,3GP,3G2,MJ2|385322|722480|h264|{\"fps\": \"30.0166759311\"}"
     );
 }
 
@@ -125,13 +125,13 @@ TEST(cpp_edit, edit_overlay) {
             {overlay}, 
             "x=if(between(t,0,7),0,NAN):y=if(between(t,0,7),0,NAN):repeatlast=1"
         )
-        .EncodeAsVideo(video["audio"], bmf_sdk::JsonParam(encode_para));
+        .EncodeAsVideo(bmf_sdk::JsonParam(encode_para));
 
     graph.Run();
 
     BMF_CPP_FILE_CHECK(
         output_file, 
-        "../edit/overlays.mp4|480|640|6.984000|MOV,MP4,M4A,3GP,3G2,MJ2|989234|863602|h264|{\"fps\": \"30.0715990453\"}"
+        "../edit/overlays.mp4|480|640|6.984000|MOV,MP4,M4A,3GP,3G2,MJ2|132817|116215|h264|{\"fps\": \"30.0715990453\"}"
     );
 }
 

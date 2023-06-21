@@ -43,6 +43,6 @@ TEST(cpp_premodule, premodule) {
         analyzed.EncodeAsVideo(bmf_sdk::JsonParam(encode_para));
         graph.Run();
 
-        BMF_CPP_FILE_CHECK(output_file, "../pre_module/output.mp4|200|300|7.550000|MOV,MP4,M4A,3GP,3G2,MJ2|208824|197078|h264|{\"fps\": \"30.0662251656\"}");
+        BMF_CPP_FILE_CHECK(output_file, "../pre_module/output.mp4|200|300|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|62956|78695|h264|{\"fps\": \"30.0662251656\"}");
     }
 }

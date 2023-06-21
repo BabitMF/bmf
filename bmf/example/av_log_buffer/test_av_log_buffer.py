@@ -12,7 +12,7 @@ from base_test.media_info import MediaInfo
 
 class TestAVLog(BaseTestCase):
     def test_avlog(self):
-        input_video_path = '../files/img.mp4'
+        input_video_path = '../files/big_bunny_10s_30fps.mp4'
         output_path = "./out.mp4"
 
         # create graph

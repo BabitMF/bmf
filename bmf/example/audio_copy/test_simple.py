@@ -14,9 +14,9 @@ from base_test.media_info import MediaInfo
 class TestAudioCModule(BaseTestCase):
     @timeout_decorator.timeout(seconds=120)
     def test_audio_c_module(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../files/big_bunny_10s_30fps.mp4"
         output_path = "./audio_c_module.mp4"
-        expect_result = 'audio_c_module.mp4|0|0|7.617000|MOV,MP4,M4A,3GP,3G2,MJ2|136031|129519||{}'
+        expect_result = 'audio_c_module.mp4|0|0|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|132840|166183||{}'
         self.remove_result_data(output_path)
         audio = bmf.graph().decode({'input_path': input_video_path})['audio'].module('my_module')
         bmf.encode(None, audio, {"output_path": output_path}).run()
@@ -24,7 +24,7 @@ class TestAudioCModule(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_exception_in_python_module(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../files/big_bunny_10s_30fps.mp4"
         output_path = "./test_exception_in_python_module.mp4"
         self.remove_result_data(output_path)
         audio = bmf.graph().decode({'input_path': input_video_path})['audio'].module('my_module', {"exception": 1})

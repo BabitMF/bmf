@@ -2,7 +2,7 @@ import bmf
 
 input_video_path_1 = "../files/header.mp4"
 input_video_path_2 = "../files/header.mp4"
-input_video_path_3 = '../files/img.mp4'
+input_video_path_3 = '../files/big_bunny_10s_30fps.mp4'
 logo_video_path_1 = "../files/xigua_prefix_logo_x.mov"
 logo_video_path_2 = "../files/xigua_loop_logo2_x.mov"
 output_path = "./video.mp4"

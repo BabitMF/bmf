@@ -1,0 +1,142 @@
+{
+  "mode": "normal",
+  "input_streams": [],
+  "output_streams": [],
+  "option": {
+    "dump_graph": 1
+  },
+  "nodes": [
+    {
+      "id": 0,
+      "option": {
+        "input_path": "../files/big_bunny_10s_30fps.mp4"
+      },
+      "input_streams": [],
+      "output_streams": [
+        {
+          "identifier": "audio:ffmpeg_decoder_0_2",
+          "alias": ""
+        },
+        {
+          "identifier": "video:ffmpeg_decoder_0_1",
+          "alias": ""
+        }
+      ],
+      "module_info": {
+        "name": "c_ffmpeg_decoder",
+        "type": "",
+        "path": "",
+        "entry": ""
+      },
+      "input_manager": "immediate",
+      "scheduler": 0,
+      "meta_info": {
+        "premodule_id": -1,
+        "callback_bindings": []
+      }
+    },
+    {
+      "id": 1,
+      "option": {
+        "name": "scale",
+        "para": "100:200"
+      },
+      "input_streams": [
+        {
+          "identifier": "ffmpeg_decoder_0_1",
+          "alias": ""
+        }
+      ],
+      "output_streams": [
+        {
+          "identifier": "ffmpeg_filter_1_0",
+          "alias": ""
+        }
+      ],
+      "module_info": {
+        "name": "c_ffmpeg_filter",
+        "type": "",
+        "path": "",
+        "entry": ""
+      },
+      "input_manager": "immediate",
+      "scheduler": 0,
+      "meta_info": {
+        "premodule_id": -1,
+        "callback_bindings": []
+      }
+    },
+    {
+      "id": 2,
+      "option": {
+        "name": "vflip"
+      },
+      "input_streams": [
+        {
+          "identifier": "ffmpeg_filter_1_0",
+          "alias": ""
+        }
+      ],
+      "output_streams": [
+        {
+          "identifier": "ffmpeg_filter_2_0",
+          "alias": ""
+        }
+      ],
+      "module_info": {
+        "name": "c_ffmpeg_filter",
+        "type": "",
+        "path": "",
+        "entry": ""
+      },
+      "input_manager": "immediate",
+      "scheduler": 0,
+      "meta_info": {
+        "premodule_id": -1,
+        "callback_bindings": []
+      }
+    },
+    {
+      "id": 3,
+      "option": {
+        "video_params": {
+          "width": 320,
+          "codec": "h264",
+          "crf": 23,
+          "preset": "veryfast",
+          "height": 240
+        },
+        "audio_params": {
+          "channels": 2,
+          "bit_rate": 128000,
+          "codec": "aac",
+          "sample_rate": 44100
+        },
+        "output_path": "../files/out.mp4"
+      },
+      "input_streams": [
+        {
+          "identifier": "ffmpeg_filter_2_0",
+          "alias": ""
+        },
+        {
+          "identifier": "ffmpeg_decoder_0_2",
+          "alias": ""
+        }
+      ],
+      "output_streams": [],
+      "module_info": {
+        "name": "c_ffmpeg_encoder",
+        "type": "",
+        "path": "",
+        "entry": ""
+      },
+      "input_manager": "immediate",
+      "scheduler": 1,
+      "meta_info": {
+        "premodule_id": -1,
+        "callback_bindings": []
+      }
+    }
+  ]
+}

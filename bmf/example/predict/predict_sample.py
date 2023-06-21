@@ -19,7 +19,7 @@ if __name__ == '__main__':
         # build bmf graph and run
         (
             bmf.graph()
-                .decode({'input_path': "../files/img_s.mp4"})['video']
+                .decode({'input_path': "../files/big_bunny_10s_30fps_640x360.mp4"})['video']
                 .module('onnx_sr', pre_module=sr_mod)
                 .encode(None, {"output_path": "../files/out.mp4", "video_params":{"max_fr":30}})
                 .run()

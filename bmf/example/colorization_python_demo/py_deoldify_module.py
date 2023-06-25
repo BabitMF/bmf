@@ -28,7 +28,7 @@ class py_deoldify_module(bmf.Module):
         if not torch.cuda.is_available():
             print('warning: GPU is not available, the computation is going to be very slow...')
 
-        weight_path=Path('/content/DeOldify')
+        weight_path=Path('./DeOldify')
         if option and 'model_path' in option.keys():
             model_path = option['model_path']
             if not model_path:

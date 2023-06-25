@@ -41,6 +41,12 @@ BEGIN_BMF_SDK_NS
         return 0;
     }
 
+    int JsonParam::store(std::string file_name) {
+        std::ofstream t(file_name);
+        t << json_value_;
+        return 0;
+    }
+
     int JsonParam::parse(std::string content) {
         json_value_ = bmf_nlohmann::json::parse(content);
         return 0;

@@ -151,23 +151,6 @@ public:
     int32_t node_id_ = -1;
 };
 
-
-/**
- * @brief Module factory interface class 
- * 
- */
-class ModuleFactoryI
-{
-public:
-    virtual const std::string &sdk_version() const = 0;
-
-    virtual std::shared_ptr<Module> make(int32_t node_id = -1,
-                                         const JsonParam &json_param = {}) = 0;
-
-    virtual ~ModuleFactoryI(){}
-}; //
-
-
 } //namespace bmf_sdk
 
 #endif //BMF_MODULE_H

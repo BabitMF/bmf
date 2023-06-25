@@ -1,4 +1,5 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
 #include <pybind11/stl.h>
 #include <map>
 #include <bmf/sdk/module_functor.h>
@@ -247,6 +248,26 @@ void module_sdk_bind(py::module &m)
     ;
 
 
+    // ModuleTag
+    py::enum_<ModuleTag>(m, "ModuleTag")
+        .value("TAG_NONE", ModuleTag::BMF_TAG_NONE)
+        .value("TAG_DECODER", ModuleTag::BMF_TAG_DECODER)
+        .value("TAG_ENCODER", ModuleTag::BMF_TAG_ENCODER)
+        .value("TAG_FILTER", ModuleTag::BMF_TAG_FILTER)
+        .value("TAG_MUXER", ModuleTag::BMF_TAG_MUXER)
+        .value("TAG_IMAGE_PROCESSOR", ModuleTag::BMF_TAG_IMAGE_PROCESSOR)
+        .value("TAG_AUDIO_PROCESSOR", ModuleTag::BMF_TAG_AUDIO_PROCESSOR)
+        .value("TAG_VIDEO_PROCESSOR", ModuleTag::BMF_TAG_VIDEO_PROCESSOR)
+        .value("TAG_DEVICE_HWACCEL", ModuleTag::BMF_TAG_DEVICE_HWACCEL)
+        .value("TAG_AI", ModuleTag::BMF_TAG_AI)
+        .value("TAG_UTILS", ModuleTag::BMF_TAG_UTILS)
+        .value("TAG_DONE", ModuleTag::BMF_TAG_DONE)
+        .export_values()
+        .def(py::self | py::self)
+        .def(py::self |= py::self)
+    ;
+
+
     // OpaqueDataSet
     py::enum_<OpaqueDataKey::Key>(m, "OpaqueDataKey")
         .value("kAVFrame", OpaqueDataKey::kAVFrame)
@@ -258,6 +279,18 @@ void module_sdk_bind(py::module &m)
         .value("kReserved_6", OpaqueDataKey::kReserved_6)
         .value("kReserved_7", OpaqueDataKey::kReserved_7)
         .export_values();
+
+
+    // ModuleInfo
+    py::class_<ModuleInfo>(m, "ModuleInfo")
+        .def_readwrite("module_name", &ModuleInfo::module_name)
+        .def_readwrite("module_entry", &ModuleInfo::module_entry)
+        .def_readwrite("module_path", &ModuleInfo::module_path)
+        .def_readwrite("module_type", &ModuleInfo::module_type)
+        .def_readwrite("module_description", &ModuleInfo::module_description)
+        .def_readwrite("module_tag", &ModuleInfo::module_tag)
+    ;
+
 
     py::class_<OpaqueDataSet>(m, "OpaqueDataSet")
         .def("private_merge", &OpaqueDataSet::private_merge, py::arg("from"))

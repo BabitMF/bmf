@@ -20,6 +20,8 @@ typedef bmf_sdk::Task* bmf_Task;
 typedef bmf_sdk::Packet* bmf_Packet;
 typedef bmf_sdk::TypeInfo* bmf_TypeInfo;
 typedef bmf_sdk::Module* bmf_Module;
+typedef bmf_sdk::ModuleTag* bmf_ModuleTag;
+typedef bmf_sdk::ModuleInfo* bmf_ModuleInfo;
 typedef bmf_sdk::ModuleFunctor *bmf_ModuleFunctor;
 
 extern "C"{
@@ -33,6 +35,8 @@ typedef void* bmf_JsonParam;
 typedef void* bmf_Task;
 typedef void* bmf_Packet;
 typedef void* bmf_TypeInfo;
+typedef void* bmf_ModuleTag;
+typedef void* bmf_ModuleInfo;
 typedef void* bmf_ModuleFunctor;
 
 #endif //__cplusplus
@@ -182,6 +186,17 @@ BMF_API int bmf_task_get_node(bmf_Task task);
 
 
 ////////// Module ///////////
+
+
+////////// ModuleTag ///////////
+BMF_API bmf_ModuleTag bmf_module_tag_make(int64_t tag);
+BMF_API void bmf_module_tag_free(bmf_ModuleTag tag);
+
+////////// ModuleInfo ///////////
+BMF_API bmf_ModuleInfo bmf_module_info_make();
+BMF_API void bmf_module_info_free(bmf_ModuleInfo);
+BMF_API void bmf_module_info_set_description(bmf_ModuleInfo info, const char *description);
+BMF_API void bmf_module_info_set_tag(bmf_ModuleInfo info, const bmf_ModuleTag tag);
 
 
 ///////// ModuleFunctor /////////////

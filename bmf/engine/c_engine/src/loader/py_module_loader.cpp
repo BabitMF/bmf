@@ -4,6 +4,8 @@
 #include <bmf/sdk/module.h>
 #include <bmf/sdk/log.h>
 #include "../../../python/py_type_cast.h"
+#include <tuple>
+#include <bmf/sdk/module_manager.h>
 
 
 namespace py = pybind11;
@@ -200,7 +202,7 @@ public:
 class PyModuleFactory : public ModuleFactoryI
 {
 public:
-    using FactoryFunc = std::function<std::shared_ptr<Module>(int, const JsonParam&)>;
+    using FactoryFunc = std::function<std::tuple<py::object, py::object>()>;
 
     PyModuleFactory(const FactoryFunc &factory) : factory_(factory)
     {
@@ -209,7 +211,19 @@ public:
 
     std::shared_ptr<Module> make(int32_t node_id, const JsonParam &json_param) override
     {
-        return factory_(node_id, json_param);
+        auto [module_cls, _] = factory_();
+        return std::make_shared<bmf_sdk::PyModule>(module_cls, node_id, json_param);
+    }
+
+    const bool module_info(ModuleInfo &info) const override
+    {
+        auto [_, module_register] = factory_();
+        if (module_register.is_none())
+           return false;
+
+        py::gil_scoped_acquire gil;
+        module_register(&info);
+        return true;
     }
 
     const std::string &sdk_version() const override
@@ -274,10 +288,16 @@ extern "C" bmf_sdk::ModuleFactoryI* bmf_import_py_module(
 
         //
         std::string cls_s(cls);
-        auto module_factory = [=](int node_id, const bmf_sdk::JsonParam &json_param){
+        std::string register_info_func = "register_" + cls_s + "_info";
+        auto module_factory = [=]() -> std::tuple<py::object, py::object> {
             py::gil_scoped_acquire gil;
-            auto module_cls = py::module_::import(temp_module_name.c_str()).attr(cls_s.c_str());
-            return std::make_shared<bmf_sdk::PyModule>(module_cls, node_id, json_param);
+            auto py_module = py::module_::import(temp_module_name.c_str());
+            auto module_cls = py_module.attr(cls_s.c_str());
+            py::object module_info_register = py::none();
+            if (hasattr(py_module, register_info_func.c_str())) {
+                module_info_register = py_module.attr(register_info_func.c_str());
+            }
+            return std::make_tuple(module_cls, module_info_register);
         };
 
         return new bmf_sdk::PyModuleFactory(module_factory);

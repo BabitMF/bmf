@@ -283,7 +283,7 @@ Packet CFFFilter::convert_avframe_to_packet(AVFrame *frame, int index) {
         av_dict_set(&frame->metadata, "copyts", "1", 0);
 
     if (frame->width > 0) {
-	    auto video_frame = ffmpeg::to_video_frame(frame);
+        auto video_frame = ffmpeg::to_video_frame(frame);
         video_frame.set_time_base(Rational(tb.num, tb.den));
         video_frame.set_pts(frame->pts);
         auto packet = Packet(video_frame);
@@ -590,4 +590,13 @@ int CFFFilter::reset() {
     b_graph_inited_ = false;
     clean();
     return 0;
+}
+
+REGISTER_MODULE_CLASS(CFFFilter);
+REGISTER_MODULE_INFO(CFFFilter, info) {
+    info.module_description = "Builtin FFmpeg-based filting module.";
+    info.module_tag = ModuleTag::BMF_TAG_FILTER|
+        ModuleTag::BMF_TAG_IMAGE_PROCESSOR|
+        ModuleTag::BMF_TAG_AUDIO_PROCESSOR|
+        ModuleTag::BMF_TAG_VIDEO_PROCESSOR;
 }

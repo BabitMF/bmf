@@ -6,14 +6,15 @@
 #include <bmf/sdk/module_registry.h>
 #include <bmf/sdk/module_manager.h>
 #include <bmf/sdk/shared_library.h>
-#include <bmf/sdk/compat/path.h>
+
 
 namespace bmf_sdk{
 
-
-
-const char * s_bmf_sys_root = "/opt/tiger/bmf/";
-const char * s_bmf_repo_root = "/opt/tiger/bmf_mods/";
+#ifdef _WIN32
+const fs::path BMF_API s_bmf_repo_root = "C:\\Users\\Public\\bmf_mods";
+#else
+const fs::path BMF_API s_bmf_repo_root = "/opt/tiger/bmf_mods/";
+#endif
 
 static void string_split(std::vector<std::string> &tokens,
 	const std::string &str, const std::string &seps)
@@ -35,7 +36,7 @@ static void string_split(std::vector<std::string> &tokens,
 
 static std::string unique_name(const ModuleInfo &info)
 {
-    return fmt::format("{}:{}:{}", info.module_type, info.module_path, info.module_entry);
+    return fmt::format("{}:{}:{}:{}", info.module_type, info.module_path, info.module_entry, info.module_revision);
 }
 
 class CPPModuleFactory : public ModuleFactoryI
@@ -65,6 +66,17 @@ public:
         return sdk_version_;
     }
 
+    const bool module_info(ModuleInfo &info) const override
+    {
+        std::string dump_func_symbol = "register_" + class_name_ + "_info";
+        if (lib_.has(dump_func_symbol)) {
+            auto dump_func = lib_.symbol<void(*)(ModuleInfo&)>(dump_func_symbol);
+            dump_func(info);
+            return true;
+        }
+        return false;
+    }
+
     std::shared_ptr<Module> make(int32_t node_id = -1,
                                          const JsonParam &json_param = {}) override
     {
@@ -75,12 +87,11 @@ public:
     }
 };
 
-
-
 struct ModuleManager::Private
 {
     bmf_nlohmann::json builtin_config;
     std::string builtin_root;
+    std::vector<std::string> repo_roots;
 
     // cached module info
     std::map<std::string, ModuleInfo> known_modules;
@@ -95,39 +106,34 @@ struct ModuleManager::Private
 
 ModuleManager::ModuleManager()
 {
-    self = std::make_unique<Private>();
-
-    //locate BUILTIN_CONFIG.json
-    std::vector<std::string> roots;
-    roots.push_back(s_bmf_sys_root);
-    auto lib_path = fs::path(SharedLibrary::this_line_location()).parent_path();
-    roots.push_back(lib_path);
-    roots.push_back(lib_path.parent_path());
-    roots.push_back(fs::current_path());
-
-    auto fn = std::string("BUILTIN_CONFIG.json");
-    for(auto &p : roots){
-        auto fp = fs::path(p) / fn;
-        if(fs::exists(fp) && !fs::is_directory(fp)){
-            self->builtin_root = p;
-            break;
-        }
+    if (false == inited) {
+        init();
     }
-
-    //
-    fn = fs::path(self->builtin_root) / fn;
-    if(!fs::exists(fn)){
-        return;
-    }
-    std::ifstream fp(fn);
-    fp >> self->builtin_config;
-
-    // initialize cpp/py/go loader lazily
 }
 
+bool ModuleManager::set_repo_root(const std::string &path)
+{
+    std::lock_guard<std::mutex> guard(m_mutex);
+    self->repo_roots.push_back(path);
+    return true;
+}
+
+std::function<ModuleFactoryI*(const ModuleInfo&)> ModuleManager::get_loader(const std::string module_type)
+{
+    if(self->loaders.find(module_type) == self->loaders.end()){
+        throw std::runtime_error("loader not found.");
+    }
+    return self->loaders.at(module_type);
+}
 
 const ModuleInfo* ModuleManager::resolve_module_info(const std::string &module_name)
 {
+    std::lock_guard<std::mutex> guard(m_mutex);
+
+#if defined(__APPLE__)
+    BMFLOG(BMF_INFO) << "if APPLE, Module Mananger resolve_module_info, return nullptr.\n";
+    return nullptr;
+#endif
     // check if it has already cached
     if(self->known_modules.find(module_name) != self->known_modules.end()){
         return &self->known_modules.at(module_name);
@@ -149,6 +155,14 @@ const ModuleInfo* ModuleManager::resolve_module_info(const std::string &module_n
 
     return nullptr;
 }
+
+const std::map<std::string, ModuleInfo> ModuleManager::resolve_all_modules()
+{
+    std::lock_guard<std::mutex> guard(m_mutex);
+    load_all_modules();
+    return self->known_modules;
+}
+
 
 std::shared_ptr<ModuleFactoryI> ModuleManager::load_module(const ModuleInfo &info, ModuleInfo *info_out)
 {
@@ -180,6 +194,7 @@ std::shared_ptr<ModuleFactoryI> ModuleManager::load_module(
         module_info = *tmp_module_info;
     }
 
+    std::lock_guard<std::mutex> guard(m_mutex);
     // merge module info
     if(!module_type.empty()){
         module_info.module_type = module_type;
@@ -197,7 +212,6 @@ std::shared_ptr<ModuleFactoryI> ModuleManager::load_module(
         return self->factories.at(module_id);
     }
 
-    //
     BMFLOG(BMF_INFO) << "Module info " << module_info.module_name << " " << module_info.module_type << " "
             << module_info.module_entry << " " << module_info.module_path << std::endl;
 
@@ -219,6 +233,34 @@ std::shared_ptr<ModuleFactoryI> ModuleManager::load_module(
     return factory;
 }
 
+void ModuleManager::load_all_modules()
+{
+    std::vector<std::string> keys;
+    for (const auto &item : self->builtin_config.items()) {
+        keys.emplace_back(item.key());
+    }
+
+    ModuleInfo info;
+    for (const auto &key : keys) {
+        if (resolve_from_builtin(key, info)) {
+            self->known_modules[info.module_name] = info;
+        }
+    }
+
+    for(auto &root : self->repo_roots) {
+        auto r = fs::path(root);
+        std::string module_prefix = (r / "Module_").string();
+        for (const auto &dir_entry : fs::directory_iterator(r)) {
+            if (fs::is_directory(dir_entry) and dir_entry.path().string().rfind(module_prefix, 0) == 0) {
+                std::string module_name = dir_entry.path().string().erase(0, module_prefix.length());
+                if (resolve_from_meta(module_name, info)) {
+                    self->known_modules[info.module_name] = info;
+                }
+            }
+        }
+    }
+}
+
 
 bool ModuleManager::resolve_from_builtin(const std::string &module_name, ModuleInfo &info) const
 {
@@ -233,6 +275,7 @@ bool ModuleManager::resolve_from_builtin(const std::string &module_name, ModuleI
     auto module_path = vget("path", "");
     auto module_type = vget("type", "");
     auto module_class = vget("class", "");
+    auto module_revision = vget("revision", "");
     std::string module_file;
     if (module_type.empty())
     {
@@ -247,8 +290,8 @@ bool ModuleManager::resolve_from_builtin(const std::string &module_name, ModuleI
     {
         if (module_type == "c++")
         {
-            module_path = fs::path(self->builtin_root) / (std::string("lib/libbuiltin_modules") + SharedLibrary::default_extension());
-            module_file = "libbuiltin_modules";
+            module_path = (fs::path(self->builtin_root) / std::string(SharedLibrary::default_shared_dir()) / (std::string(SharedLibrary::default_prefix()) + "builtin_modules" + SharedLibrary::default_extension())).string();
+            module_file = std::string(SharedLibrary::default_prefix()) + "builtin_modules";
         }
         else if (module_type == "python")
         {
@@ -262,12 +305,12 @@ bool ModuleManager::resolve_from_builtin(const std::string &module_name, ModuleI
         {
             if (!module_class.empty())
             {
-                module_path = fs::path(self->builtin_root) / std::string("lib") / (module_class + SharedLibrary::default_extension());
+                module_path = (fs::path(self->builtin_root) / std::string(SharedLibrary::default_shared_dir()) / (module_class + SharedLibrary::default_extension())).string();
                 module_file = module_class;
             }
             else
             {
-                module_path = fs::path(self->builtin_root) / std::string("lib") / (module_name + SharedLibrary::default_extension());
+                module_path = (fs::path(self->builtin_root) / std::string(SharedLibrary::default_shared_dir()) / (module_name + SharedLibrary::default_extension())).string();
                 module_file = module_name;
             }
         }
@@ -279,78 +322,78 @@ bool ModuleManager::resolve_from_builtin(const std::string &module_name, ModuleI
     BMFLOG(BMF_INFO) << module_name << " " << module_type << " " << module_path << " " << module_entry
                      << std::endl;
 
-    info = ModuleInfo(module_name, module_type, module_entry, module_path);
+    info = ModuleInfo(module_name, module_type, module_entry, module_path, module_revision);
     return true;
 }
 
 
 bool ModuleManager::resolve_from_meta(const std::string &module_name, ModuleInfo &info) const
 {
-    std::vector<const char*> roots{
-        s_bmf_repo_root,
-        "./"
-    };
-    std::string meta_path;
-    for(auto &r : roots){
+    for(auto &r : self->repo_roots) {
+        std::string meta_path;
         auto p = fs::path(r) / fmt::format("Module_{}", module_name) / std::string("meta.info");
         if(fs::exists(p)){
-            meta_path = p;
-            break;
+            meta_path = p.string();
         }
-    }
-    if(meta_path.empty()){
-        return false;
-    }
+        if(meta_path.empty()){
+            continue;
+        }
 
-    //read meta file
-    std::string pth, cls;
-    JsonParam meta;
-    meta.load(meta_path);
+        //read meta file
+        std::string pth, cls;
+        JsonParam meta;
+        meta.load(meta_path);
 
-    std::string module_type = meta.get<std::string>("type");
-    if (module_type == "PYTHON" || module_type == "python3"){
-        info.module_type = "python";
-    }
-    if (module_type == "binary"){
-        info.module_type = "c++";
-    }
-    if (module_type == "golang"){
-        info.module_type = "go";
-    }
-    info.module_entry = meta.get<std::string>("entry");
-    auto module_path = fs::path(meta_path).parent_path();
+        std::string module_type = meta.get<std::string>("type");
+        if (module_type == "PYTHON" || module_type == "python3"){
+            info.module_type = "python";
+        }
+        if (module_type == "binary" || module_type == "c++"){
+            info.module_type = "c++";
+        }
+        if (module_type == "golang" || module_type == "go"){
+            info.module_type = "go";
+        }
+        info.module_entry = meta.get<std::string>("entry");
+        auto module_path = fs::path(meta_path).parent_path();
 
-    //
-    if (info.module_entry.empty()){
-        info.module_entry = module_name + "." + module_name;
-    }
-    std::vector<std::string> entry_path;
-    string_split(entry_path, info.module_entry, ".:");
-    auto module_class = entry_path[entry_path.size() - 1];
-    entry_path.pop_back();
-    for(auto &e : entry_path){
-        module_path /= e;
-    }
-    info.module_entry = entry_path[entry_path.size() - 1] + "." + module_class;
+        //
+        if (info.module_entry.empty()){
+            info.module_entry = module_name + "." + module_name;
+        }
+        std::vector<std::string> entry_path;
+        string_split(entry_path, info.module_entry, ".:");
+        auto module_class = entry_path[entry_path.size() - 1];
+        entry_path.pop_back();
+        for(auto &e : entry_path){
+            module_path /= e;
+        }
+        info.module_entry = entry_path[entry_path.size() - 1] + "." + module_class;
 
-    //fix module path
-    if (info.module_type == "python"){
-        module_path = module_path.parent_path();
-    }
-    else if (info.module_type == "c++"){
-        module_path =
-            module_path.parent_path() /
-            module_path.filename().replace_extension(SharedLibrary::default_extension());
-    }
-    else if (info.module_type == "go"){
-        module_path =
-            module_path.parent_path() /
-            module_path.filename().replace_extension(SharedLibrary::default_extension());
-    }
-    info.module_path = module_path;
-    info.module_name = module_name;
+        //fix module path
+        if (info.module_type == "python"){
+            module_path = module_path.parent_path();
+        }
+        else if (info.module_type == "c++"){
+            module_path =
+                module_path.parent_path() /
+                module_path.filename().replace_extension(SharedLibrary::default_extension());
+        }
+        else if (info.module_type == "go"){
+            module_path =
+                module_path.parent_path() /
+                module_path.filename().replace_extension(SharedLibrary::default_extension());
+        }
+        info.module_path = module_path.string();
+        info.module_name = module_name;
 
-    return true;
+        if (meta.has_key("revision")) {
+            info.module_revision = meta.get<std::string>("revision");
+        }
+
+        return true;
+    }
+    return false;
 }
 
 
@@ -369,7 +412,7 @@ bool ModuleManager::initialize_loader(const std::string &module_type)
         return true;
     }
     if(module_type == "python"){
-        auto lib_name = std::string("libbmf_py_loader") + SharedLibrary::default_extension();
+        auto lib_name = std::string(SharedLibrary::default_prefix()) + "bmf_py_loader" + SharedLibrary::default_extension();
         auto loader_path = fs::path(SharedLibrary::this_line_location()).parent_path() / lib_name;
         auto lib = std::make_shared<SharedLibrary>(loader_path, 
                             SharedLibrary::LAZY | SharedLibrary::GLOBAL);
@@ -392,7 +435,7 @@ bool ModuleManager::initialize_loader(const std::string &module_type)
         return true;
     }
     else if(module_type == "go"){
-        auto lib_name = std::string("libbmf_go_loader") + SharedLibrary::default_extension();
+        auto lib_name = std::string(SharedLibrary::default_prefix()) + "bmf_go_loader" + SharedLibrary::default_extension();
         auto loader_path = fs::path(SharedLibrary::this_line_location()).parent_path() / lib_name;
         auto lib = std::make_shared<SharedLibrary>(loader_path, 
                             SharedLibrary::LAZY | SharedLibrary::GLOBAL);
@@ -436,7 +479,7 @@ std::tuple<std::string, std::string> ModuleManager::parse_entry(const std::strin
 std::string ModuleManager::infer_module_type(const std::string &path)
 {
     if (fs::path(path).extension() == SharedLibrary::default_extension()){
-        if (SharedLibrary(path).raw_symbol("ConstructorRegister")){ //FIMXE:
+        if (SharedLibrary(path).raw_symbol("ConstructorRegister")){ //FIXME:
             return "go";
         }
         else{
@@ -446,13 +489,49 @@ std::string ModuleManager::infer_module_type(const std::string &path)
     return "python";
 }
 
+void ModuleManager::init()
+{
+    {
+        std::lock_guard<std::mutex> guard(m_mutex);
+        self = std::make_unique<Private>();
+
+        //locate BUILTIN_CONFIG.json
+        std::vector<std::string> roots;
+        auto lib_path = fs::path(SharedLibrary::this_line_location()).parent_path();
+        roots.push_back(lib_path.string());
+        roots.push_back(lib_path.parent_path().string());
+        roots.push_back(fs::current_path().string());
+
+        auto fn = std::string("BUILTIN_CONFIG.json");
+        for(auto &p : roots){
+            auto fp = fs::path(p) / fn;
+            if(fs::exists(fp) && !fs::is_directory(fp)){
+                self->builtin_root = p;
+                break;
+            }
+        }
+
+        fn = (fs::path(self->builtin_root) / fn).string();
+        if(fs::exists(fn)){
+            std::ifstream fp(fn);
+            fp >> self->builtin_config;
+        } else {
+            BMFLOG(BMF_ERROR) << "Module Mananger can not find:" << fn << "\n";
+        }
+
+
+        inited = true;
+        // initialize cpp/py/go loader lazily
+    }
+    set_repo_root(s_bmf_repo_root.string());
+    set_repo_root(fs::current_path().string());
+}
 
 ModuleManager &ModuleManager::instance()
 {
     static ModuleManager m;
     return m; 
 }
-
 
 
 } //namespace bmf_sdk

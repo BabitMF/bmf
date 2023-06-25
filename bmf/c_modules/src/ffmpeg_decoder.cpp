@@ -25,6 +25,7 @@
 #include "libavutil/timestamp.h"
 #include <bmf/sdk/exception_factory.h>
 #include <bmf/sdk/error_define.h>
+#include <bmf/sdk/module_tag.h>
 using json = bmf_nlohmann::json;
 
 #define BMF_CONV_FP(x) ((double) (x)) / (1 << 16)
@@ -2244,3 +2245,11 @@ int CFFDecoder::process(Task &task) {
 }
 
 REGISTER_MODULE_CLASS(CFFDecoder)
+REGISTER_MODULE_INFO(CFFDecoder, info) {
+    info.module_description = "Builtin FFmpeg-based decoding module.";
+    info.module_tag = ModuleTag::BMF_TAG_DECODER|
+        ModuleTag::BMF_TAG_DEMUXER| 
+        ModuleTag::BMF_TAG_IMAGE_PROCESSOR|
+        ModuleTag::BMF_TAG_AUDIO_PROCESSOR|
+        ModuleTag::BMF_TAG_VIDEO_PROCESSOR;
+}

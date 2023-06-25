@@ -29,9 +29,20 @@ target_link_libraries(trace_format_log
     bmf_module_sdk
 )
 
+# module manager
+file(GLOB MODULE_MANAGER_SRCS src/module_manager.cpp)
+
+add_executable(module_manager ${MODULE_MANAGER_SRCS})
+
+target_link_libraries(module_manager
+    PRIVATE
+    engine
+    bmf_module_sdk
+)
+
 # Build targets
     
-install(TARGETS run_bmf_graph trace_format_log
+install(TARGETS run_bmf_graph trace_format_log module_manager
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}

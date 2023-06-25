@@ -191,7 +191,6 @@ public:
     int streamcopy(AVPacket *ipkt, AVPacket *opkt, int idx);
 };
 
-REGISTER_MODULE_CLASS(CFFEncoder)
 
 /** @page ModuleEncoder Build-in Encode Module
  * @ingroup EncM

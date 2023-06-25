@@ -738,6 +738,45 @@ int bmf_task_get_node(bmf_Task task)
 
 
 
+////////// ModuleTag ///////////
+bmf_ModuleTag bmf_module_tag_make(int64_t tag)
+{
+    BMF_PROTECT(
+        return new ModuleTag(static_cast<ModuleTag>(tag));
+    )
+    return nullptr;
+}
+
+void bmf_module_tag_free(bmf_ModuleTag tag)
+{
+    if(tag)
+        free(tag);
+}
+
+
+////////// ModuleInfo ///////////
+bmf_ModuleInfo bmf_module_info_make()
+{
+    BMF_PROTECT(
+        return new ModuleInfo();
+    )
+    return nullptr;
+}
+void bmf_module_info_free(bmf_ModuleInfo info)
+{
+    if (info)
+        free(info);
+}
+void bmf_module_info_set_description(bmf_ModuleInfo info, const char *description)
+{
+    info->module_description = description;
+}
+void bmf_module_info_set_tag(bmf_ModuleInfo info, const bmf_ModuleTag tag)
+{
+    info->module_tag = *tag;
+}
+
+
 //////////////// ModuleFunctor ////////////
 bmf_ModuleFunctor bmf_module_functor_make(
             const char* name, const char* type, const char* path, 

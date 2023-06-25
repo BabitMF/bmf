@@ -1794,3 +1794,13 @@ int CFFEncoder::process(Task &task) {
 void CFFEncoder::set_callback(std::function<CBytes(int64_t,CBytes)> callback_endpoint) {
     callback_endpoint_ = callback_endpoint;
 }
+
+REGISTER_MODULE_CLASS(CFFEncoder)
+REGISTER_MODULE_INFO(CFFEncoder, info) {
+    info.module_description = "Builtin FFmpeg-based encoding module.";
+    info.module_tag = ModuleTag::BMF_TAG_ENCODER|
+        ModuleTag::BMF_TAG_MUXER|
+        ModuleTag::BMF_TAG_IMAGE_PROCESSOR|
+        ModuleTag::BMF_TAG_AUDIO_PROCESSOR|
+        ModuleTag::BMF_TAG_VIDEO_PROCESSOR;
+}

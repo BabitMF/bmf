@@ -78,7 +78,6 @@ public:
     int get_cache_frame(int index, AVFrame * &frame, int &choose_index);
 };
 
-REGISTER_MODULE_CLASS(CFFFilter);
 
 /** @page ModuleFilter Build-in Filter Module
  * @ingroup FiltM

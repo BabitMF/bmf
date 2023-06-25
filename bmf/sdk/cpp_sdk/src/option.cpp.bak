@@ -1,0 +1,5 @@
+#include <bmf/sdk/option.h>
+
+namespace bmf_sdk{
+    Option::Option(std::string name, std::string help, enum OptionType type, void *default_value) : name_(name), help_(help), type_(type), default_value_(default_value) {}
+} //namespace bmf_sdk

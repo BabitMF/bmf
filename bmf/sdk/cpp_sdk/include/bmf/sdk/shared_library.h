@@ -42,6 +42,11 @@ public:
         return ptr;
     }
 
+    bool has(const std::string &name) const
+    {
+        return raw_symbol(name) != nullptr;
+    }
+
     bool is_open() const{
         return handler_ != nullptr;
     }
@@ -68,6 +73,32 @@ public:
     static std::string this_line_location()
     {
         return symbol_location((void*)(&this_line_location));
+    }
+
+    static const char* default_shared_dir()
+    {
+#ifdef __unix__
+        return "lib";
+#elif defined(__APPLE__)
+        return "lib";
+#elif defined(__MINGW32__) || defined(_WIN32)
+        return "bin";
+#else
+#error "unsupported os"
+#endif
+    }
+
+    static const char* default_prefix()
+    {
+#ifdef __unix__
+        return "lib";
+#elif defined(__APPLE__)
+        return "lib";
+#elif defined(__MINGW32__) || defined(_WIN32)
+        return "";
+#else
+#error "unsupported os"
+#endif
     }
 
     static const char* default_extension()

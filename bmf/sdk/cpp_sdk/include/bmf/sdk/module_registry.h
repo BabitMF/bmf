@@ -39,6 +39,7 @@ namespace std {
 
 #include <bmf/sdk/common.h>
 #include <bmf/sdk/module.h>
+#include <bmf/sdk/module_manager.h>
 #include <bmf/sdk/json_param.h>
 
 #ifndef BMF_ENGINE_MODULE_REGISTRY_H
@@ -86,6 +87,9 @@ std::shared_ptr<::bmf_sdk::Module> Constructor_##module_name##Module(int node_id
 return std::shared_ptr<::bmf_sdk::Module>(new module_name(node_id,json_param));\
 }\
 REGISTER_MODULE_CONSTRUCTOR(module_name,Constructor_##module_name##Module);
+
+#define REGISTER_MODULE_INFO(module_name, info) \
+    extern "C" BMF_API void register_##module_name##_info(ModuleInfo &info)
 
 // make sure static module library is linked
 #define BMF_DECLARE_MODULE(module_name) HMP_DECLARE_TAG(r_constructor_##module_name);

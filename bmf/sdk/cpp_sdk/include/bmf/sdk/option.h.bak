@@ -1,0 +1,33 @@
+//
+// Created by bytedance on 2023/5/25.
+//
+
+#pragma once
+
+#include <bmf/sdk/common.h>
+#include <string>
+
+namespace bmf_sdk{
+/** @ingroup CppMdSDK
+    */
+enum class BMF_API OptionType {
+    OPT_TYPE_OBJECT,
+    OPT_TYPE_ARRAY,
+    OPT_TYPE_STRING,
+    OPT_TYPE_NUMBER,
+    OPT_TYPE_BOOL,
+    OPT_TYPE_NULL,
+};
+
+class BMF_API Option {
+public:
+    Option(std::string name, std::string help, enum OptionType type, void *default_value);
+
+private:
+    std::string name_;
+    std::string help_;
+    enum OptionType type_;
+    void *default_value_;
+};
+
+} //namespace bmf_sdk

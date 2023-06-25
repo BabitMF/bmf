@@ -1,0 +1,132 @@
+//
+// Created by bytedance on 2023/5/25.
+//
+
+#pragma once
+
+#include <string_view>
+
+namespace bmf_sdk{
+/** @ingroup CppMdSDK
+    */
+template <class T>
+constexpr std::string_view getRawTypeName() {
+#if defined(_MSC_VER)
+  return __FUNCSIG__;
+#elif defined(__clang__)
+  return __PRETTY_FUNCTION__;
+#elif defined(__GNUC__)
+  return __PRETTY_FUNCTION__;
+#else
+#error "unsupported compiler"
+#endif
+}
+
+namespace probe {
+constexpr auto probeRawTypeName = getRawTypeName<int>();
+constexpr size_t probeRawTypeNameLength = probeRawTypeName.size();
+constexpr size_t probeRawTypeLength = std::string_view("int").size();
+constexpr size_t prefixLength = probeRawTypeName.find("int");
+static_assert(prefixLength != std::string_view::npos,
+              "cannot extract typename from function signature");
+constexpr size_t suffixLength =
+    probeRawTypeNameLength - prefixLength - probeRawTypeLength;
+} // namespace probe
+
+template <int mode, std::string_view const &first,
+          std::string_view const &...others>
+class join {
+  static constexpr auto impl() noexcept {
+    if constexpr (mode == 1) {
+      // join strings in one line, not ended with '\0'
+      /*
+       *        first.size(): the size of type_name
+       *      +others.size(): the size of other string
+       *     +sizeof(others): adding '\t' after all strings
+       */
+      constexpr std::size_t cap = ((first.size() + sizeof...(others)) + ... + others.size());
+      std::array<char, cap> arr{};
+      auto append = [i = 0, &arr](auto const &s) mutable {
+        for (int j = 0; j < s.size(); j++)
+          arr[i++] = s[j];
+	if (i < cap)
+          arr[i++] = '\t';
+      };
+      append(first);
+      (append(others), ...);
+      return arr;
+    } else if constexpr (mode == 2) {
+      // join all strings
+      /*
+       *                  1: ended with '\0'
+       * +sizeof...(others): add '\t' into the front of every string
+       *                 +1: add '\n' into the end of prefix string
+       * +sizeof...(others): add '\n' into the end of every string
+       *      +first.size(): the size of type_name, including the endding '\0'
+       *                 -1: do not add '\n' at the end
+       *     +others.size(): the sum size of all str
+       */
+
+      constexpr std::size_t cap =
+          (others.size() + ... +
+           (1 + sizeof...(others) + 1 + sizeof...(others) + first.size() - 1));
+      std::array<char, cap> arr{};
+      auto append = [i = 0, &arr](auto const &s) mutable {
+        i == 0 ? true : arr[i++] = '\t';
+        for (int j = 0; j < s.size(); j++)
+          arr[i++] = s[j];
+        i == cap - 2 ? true : arr[i++] = '\n';
+      };
+
+      append(first);
+      (append(others), ...);
+      arr[cap - 1] = 0;
+      return arr;
+    } else {
+	    //join strings in one line with ':'
+	   constexpr std::size_t cap =
+		   (others.size() + ... + (first.size() + 1));
+	   std::array<char, cap> arr{};
+	   auto append = [i = 0, &arr](auto const &s) mutable {
+		   bool is_start = i == 0;
+		   for (int j = 0; j < s.size(); j++)
+			   arr[i++] = s[j];
+		   if (is_start)
+			   arr[i++] = ':';
+	   };
+	   
+	   append(first);
+	   (append(others), ...);
+	   return arr;
+    }
+  }
+
+public:
+  static constexpr std::array arr = impl();
+  static constexpr std::string_view str = {arr.data(), arr.size()};
+};
+
+template <class T> class type_name {
+  static constexpr auto impl() noexcept {
+    constexpr std::string_view name = getRawTypeName<T>();
+    /*
+     * +2: add '<' and '>' around the type_name
+     */
+    constexpr std::size_t cap =
+        name.size() - probe::prefixLength - probe::suffixLength + 2;
+    std::array<char, cap> arr{};
+    for (std::size_t i = 0; i < cap; i++) {
+      if (i != 0 && i != cap - 1)
+        arr[i] = *(name.data() + probe::prefixLength + i - 1);
+      else
+        arr[i] = i == 0 ? '<' : '>';
+    }
+    return arr;
+  }
+
+public:
+  static constexpr std::array arr = impl();
+  static constexpr std::string_view str = {arr.data(), arr.size()};
+};
+
+} //namespace bmf_sdk

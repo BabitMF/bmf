@@ -3,6 +3,7 @@
 #include <bmf/sdk/shared_library.h>
 #include <bmf/sdk/module.h>
 #include <bmf/sdk/log.h>
+#include <bmf/sdk/module_manager.h>
 
 namespace bmf_sdk{
 namespace {
@@ -125,7 +126,7 @@ public:
 
         auto cstr = lib_->symbol<const char*(*)()>("BmfSdkVersion")();
         sdk_version_ = std::string(cstr);
-        free((void*)cstr);
+        lib_->symbol<void(*)(const char*)>("FreeCString")(cstr);
     }
 
     const std::string &sdk_version() const override
@@ -150,6 +151,17 @@ public:
         }
 
         return std::make_shared<GoModule>(id, lib_);
+    }
+
+    const bool module_info(ModuleInfo &info) const override
+    {
+        int32_t(* module_info_func)(const char*, ModuleInfo*);
+        try {
+            module_info_func = lib_->symbol<decltype(module_info_func)>("GetModuleInfoRegister");
+        } catch (const std::exception &e) {
+            return false;
+        }
+        return module_info_func(cls_.c_str(), &info);
     }
 }; //
 

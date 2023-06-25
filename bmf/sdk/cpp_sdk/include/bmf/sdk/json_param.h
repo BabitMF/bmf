@@ -74,6 +74,12 @@ BEGIN_BMF_SDK_NS
             */
         int load(std::string file_name);
 
+        /** @brief store json content to file
+         *  @param file_name file name of json content
+         *  @return 0 for success, else failed
+            */
+        int store(std::string file_name);
+
         /** @brief parse json content string
          *  @param content json string
          *  @return 0 for success, else failed
@@ -92,7 +98,7 @@ BEGIN_BMF_SDK_NS
             */
         int erase(std::string name);
 
-        /** @brief erase the key content from json param
+        /** @brief get all content from json param
          *  @param name name of key
          *  @return 0 for success, else for failed
             */

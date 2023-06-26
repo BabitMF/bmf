@@ -73,7 +73,7 @@ TEST(cpp_modules, module_cpp) {
 
     BMF_CPP_FILE_CHECK(
         output_file, 
-        "../c_module/output.mp4|1080|1920|7.615000|MOV,MP4,M4A,3GP,3G2,MJ2|4483410|4267646|h264|{\"fps\": \"30.0662251656\"}"
+        "../c_module/output.mp4|1080|1920|10.008000|MOV,MP4,M4A,3GP,3G2,MJ2|1918880|2400520|h264|{\"fps\": \"30.0662251656\"}"
     );
 }
 
@@ -87,7 +87,7 @@ TEST(cpp_modules, audio_python_module) {
     auto graph = bmf::builder::Graph(bmf::builder::NormalMode, bmf_sdk::JsonParam(graph_para));
 
     bmf_nlohmann::json decode_para = {
-        {"input_path", "../../example/files/img.mp4"}
+        {"input_path", "../../example/files/big_bunny_10s_30fps.mp4"}
     };
     auto audio = graph.Decode(bmf_sdk::JsonParam(decode_para))["audio"];
 
@@ -103,7 +103,7 @@ TEST(cpp_modules, audio_python_module) {
 
     BMF_CPP_FILE_CHECK(
         output_file, 
-        "../audio_copy/audio_c_module.mp4|0|0|7.617000|MOV,MP4,M4A,3GP,3G2,MJ2|136031|129519||{}"
+        "../audio_copy/audio_c_module.mp4|0|0|10.008000|MOV,MP4,M4A,3GP,3G2,MJ2|136031|166183||{}"
     );
 }
 
@@ -116,7 +116,7 @@ TEST(cpp_modules, test_exception_in_python_module) {
     auto graph = bmf::builder::Graph(bmf::builder::NormalMode, bmf_sdk::JsonParam(graph_para));
 
     bmf_nlohmann::json decode_para = {
-        {"input_path", "../../example/files/img.mp4"}
+        {"input_path", "../../example/files/big_bunny_10s_30fps.mp4"}
     };
     auto audio = graph.Decode(bmf_sdk::JsonParam(decode_para))["audio"];
 

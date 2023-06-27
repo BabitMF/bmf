@@ -238,10 +238,7 @@ int CFFFilter::init_filtergraph() {
         auto ctx = it.second.front()->hw_frames_ctx;
         if (ctx) {
             filter_graph_->hw_frames_ctx_map_[it.first] = av_buffer_ref(ctx);
-
-        } else {
-            filter_graph_->hw_frames_ctx_map_[it.first] = NULL;
-        }
+        } 
     }
 
     ret = filter_graph_->config_graph(g_desc_, config_, out_cfgs);

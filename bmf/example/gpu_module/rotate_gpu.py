@@ -20,15 +20,15 @@ class rotate_gpu(Module):
     # TODO: Add radians as defalut rotation
     def __get_rotation(self, option):
         self.angle_deg = 0
-        self.shift = [0, 0]
+        self.shift = None
         self.algo = cvcuda.Interp.LINEAR
         if 'angle' in option.keys():
             self.angle_deg = eval(option['angle'].lower()) * 180 / pi
         if 'angle_deg' in option.keys():
             self.angle_deg = option['angle_deg']
         if 'shift' in option.keys():
-            split = re.split('\*|x|,|:', option.shift())
-            self.shift = split
+            split = re.split('\*|x|,|:', option['shift'])
+            self.shift = (int(split[0]), int(split[1]))
         if 'algo' in option.keys():
             self.algo = self.__get_algo(option['algo'])
 
@@ -47,16 +47,17 @@ class rotate_gpu(Module):
 
         self.i420info = hmp.PixelInfo(hmp.PixelFormat.kPF_YUV420P, hmp.ColorSpace.kCS_BT470BG, hmp.ColorRange.kCR_MPEG)
         self.u420info = hmp.PixelInfo(hmp.PixelFormat.kPF_YUV420P10LE, hmp.ColorSpace.kCS_BT2020_CL, hmp.ColorRange.kCR_MPEG)
-        self.shift_tensor = torch.tensor(self.shift, dtype=torch.double, device='cuda')
+        if self.shift is not None:
+            self.shift_tensor = torch.tensor(self.shift, dtype=torch.double, device='cuda')
         # self.i420_out = hmp.Frame(self.w, self.h, self.i420info, device='cuda')
         self.i420_out = None
         self.pinfo_map = {hmp.PixelFormat.kPF_NV12: self.i420info,
                           hmp.PixelFormat.kPF_P010LE: self.u420info}
-        shift = torch.ones((4,2), dtype=torch.double, device='cuda') * self.shift_tensor
+        # self.shift = torch.ones((4,2), dtype=torch.double, device='cuda') * self.shift_tensor
         anglet = torch.ones((4,), dtype=torch.double, device='cuda') * self.angle_deg
-        self.cvshift = cvcuda.as_tensor(shift)
+        # self.cvshift = cvcuda.as_tensor(shift)
         self.cvangle = cvcuda.as_tensor(anglet)
-    
+
     def process(self, task):
         
         # get input and output packet queue
@@ -84,19 +85,38 @@ class rotate_gpu(Module):
             stream = hmp.current_stream(hmp.kCUDA)
             cvstream = cvcuda.cuda.as_stream(stream.handle())
 
+            # if (in_frame.frame().format() == hmp.PixelFormat.kPF_NV12 or
+            #     in_frame.frame().format() == hmp.PixelFormat.kPF_P010LE or
+            #     in_frame.frame().format() == hmp.PixelFormat.kPF_YUV420P or
+            #     in_frame.frame().format() == hmp.PixelFormat.kPF_YUV420P10):
+            
+            if (self.shift is None):
+                shift_tensor = torch.tensor((-in_frame.width // 4, in_frame.height // 4), dtype=torch.double, device='cuda')
+                shift = torch.ones((4,2), dtype=torch.double, device='cuda') * shift_tensor
+                # cvshift = cvcuda.as_tensor(self.shift)
+
             # deal with nv12 special case
             if (in_frame.frame().format() == hmp.PixelFormat.kPF_NV12 or
                 in_frame.frame().format() == hmp.PixelFormat.kPF_P010LE):
                 cvimg_batch = cvcuda.ImageBatchVarShape(3)
                 cvimg_batch_out = cvcuda.ImageBatchVarShape(3)
 
+                # self.shift = tuple(sh // 2 for sh in self.shift)
+                shift[1:3] //= 2
+                cvshift = cvcuda.as_tensor(shift)
+
                 # in_420 = hmp.Frame(in_frame.width, in_frame.height, self.i420info, device='cuda')
                 pinfo = self.pinfo_map[in_frame.frame().format()]
                 in_420 = hmp.Frame(in_frame.width, in_frame.height, pinfo, device='cuda')
                 out_420 = hmp.Frame(in_frame.width, in_frame.height, pinfo, device='cuda')
                 hmp.img.yuv_to_yuv(in_420.data(), in_frame.frame().data(), pinfo, in_frame.frame().pix_info())
-                in_list = [x.torch() for x in in_420.data()]
-                out_list = [x.torch().zero_() for x in out_420.data()]
+                # in_list = [x.torch() for x in in_420.data()]
+                # out_list = [x.torch().zero_() for x in out_420.data()]
+                in_list = in_420.data()
+                out_list = out_420.data()
+                torch.from_dlpack(out_list[0])[:] = 0
+                torch.from_dlpack(out_list[1])[:] = 127
+                torch.from_dlpack(out_list[2])[:] = 127
                 cvimg_batch.pushback([cvcuda.as_image(x) for x in in_list])
                 cvimg_batch_out.pushback([cvcuda.as_image(x) for x in out_list])
 
@@ -107,7 +127,7 @@ class rotate_gpu(Module):
                 # pdb.set_trace()
 
                 cvcuda.rotate_into(cvimg_batch_out, cvimg_batch, 
-                                   angle_deg=self.cvangle, shift=self.cvshift, 
+                                   angle_deg=self.cvangle, shift=cvshift,
                                    interpolation=self.algo, stream=cvstream)
 
                 hmp.img.yuv_to_yuv(frame_out.data(), out_420.data(), frame_out.pix_info(), out_420.pix_info())
@@ -117,15 +137,19 @@ class rotate_gpu(Module):
                 cvimg_batch = cvcuda.ImageBatchVarShape(in_frame.frame().nplanes())
                 cvimg_batch_out = cvcuda.ImageBatchVarShape(in_frame.frame().nplanes())
                 # t3 = torch.ones((in_frame.frame().nplanes(),), dtype=torch.double, device='cuda') * self.flip_code
+                if (in_frame.frame().format() == hmp.PixelFormat.kPF_YUV420P or
+                    in_frame.frame().format() == hmp.PixelFormat.kPF_YUV420P10):
+                    shift[1:3] //= 2
+                    cvshift = cvcuda.as_tensor(shift)
 
                 for t, f in zip(tensor_list, out_list):
-                    cvimg = cvcuda.as_image(t.torch())
-                    cvimg_out = cvcuda.as_image(f.torch())
+                    cvimg = cvcuda.as_image(t)
+                    cvimg_out = cvcuda.as_image(f)
                     cvimg_batch.pushback(cvimg)
                     cvimg_batch_out.pushback(cvimg_out)
 
                 cvcuda.rotate_into(cvimg_batch_out, cvimg_batch, 
-                                   angle_deg=self.cvangle, shift=self.cvshift, 
+                                   angle_deg=self.cvangle, shift=cvshift, 
                                    interpolation=self.algo, stream=cvstream)
             
             videoframe_out = VideoFrame(frame_out)

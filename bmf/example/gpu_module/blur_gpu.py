@@ -101,13 +101,18 @@ class blur_gpu(Module):
                 in_420 = hmp.Frame(in_frame.width, in_frame.height, pinfo, device='cuda')
                 out_420 = hmp.Frame(in_frame.width, in_frame.height, pinfo, device='cuda')
                 hmp.img.yuv_to_yuv(in_420.data(), in_frame.frame().data(), pinfo, in_frame.frame().pix_info())
-                in_list = [x.torch() for x in in_420.data()]
-                out_list = [x.torch() for x in out_420.data()]
+                # in_list = [x.torch() for x in in_420.data()]
+                # out_list = [x.torch() for x in out_420.data()]
+                in_list = in_420.data()
+                out_list = out_420.data()
 
             # other pixel formats, e.g. yuv420, rgb
             else:
-                in_list = [x.torch() for x in tensor_list]
-                out_list = [x.torch() for x in out_tensor_list]
+                # in_list = [x.torch() for x in tensor_list]
+                # out_list = [x.torch() for x in out_tensor_list]
+                in_list = tensor_list
+                out_list = out_tensor_list
+
 
             for index, (in_tensor, out_tensor) in enumerate(zip(in_list, out_list)):
                 # chroma_shift = 0

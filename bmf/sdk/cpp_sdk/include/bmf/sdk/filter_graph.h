@@ -63,6 +63,7 @@ class FilterGraph {
     bool b_init_;
 public:
     AVFilterGraph *filter_graph_;
+    std::map<int, AVBufferRef*> hw_frames_ctx_map_;
     std::map<int, AVFilterContext*> buffer_src_ctx_;
     std::map<int, AVFilterContext*> buffer_sink_ctx_;
 
@@ -100,11 +101,17 @@ public:
 
     int clean() {
         if (filter_graph_)
-        avfilter_graph_free(&filter_graph_);
+            avfilter_graph_free(&filter_graph_);
         if (inputs_)
             avfilter_inout_free(&inputs_);
         if (outputs_)
             avfilter_inout_free(&outputs_);
+        for(auto it : hw_frames_ctx_map_) {
+            if(it.second) {
+                av_buffer_unref(&it.second);
+                hw_frames_ctx_map_[it.first] = NULL;
+            }
+        }
         b_init_ = false;
 
         return 0;
@@ -223,6 +230,16 @@ public:
             ret = avfilter_graph_create_filter(&buffersrc_ctx, buffersrc, fname.c_str(),
                                             args.str, NULL, filter_graph_);
             av_bprint_finalize(&args, NULL);
+            if (type == AVMEDIA_TYPE_VIDEO) {
+                if (hw_frames_ctx_map_.find(st) != hw_frames_ctx_map_.end() && hw_frames_ctx_map_[st] != NULL) {
+                    AVBufferSrcParameters *par = av_buffersrc_parameters_alloc();
+                    memset(par, 0, sizeof(*par));
+                    par->format = AV_PIX_FMT_NONE;
+                    par->hw_frames_ctx = hw_frames_ctx_map_[st];
+                    av_buffersrc_parameters_set(buffersrc_ctx, par);
+                }
+            }
+
             if (ret < 0) {
                 BMFLOG(BMF_ERROR) << "Cannot create buffer source";
                 goto end;

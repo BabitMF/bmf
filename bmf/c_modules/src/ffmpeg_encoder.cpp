@@ -1507,6 +1507,11 @@ int CFFEncoder::handle_video_frame(AVFrame *frame, bool is_flushing, int index) 
                  width_, height_, av_get_pix_fmt_name(pix_fmt_));
         std::string args_str = args;
         std::string descr = "[i0_0]" + args_str + "[o0_0]";
+
+        if (frame->hw_frames_ctx) {
+            output_video_filter_graph_->hw_frames_ctx_map_[0] = av_buffer_ref(frame->hw_frames_ctx);
+        }
+
         if (output_video_filter_graph_->config_graph(descr, in_cfgs, out_cfgs) != 0) {
             BMFLOG_NODE(BMF_ERROR, node_id_) << "output video filter graph config failed";
             return -1;

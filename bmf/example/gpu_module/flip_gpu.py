@@ -67,7 +67,6 @@ class flip_gpu(Module):
                 in_frame = in_frame.cuda()
             tensor_list = in_frame.frame().data()
             frame_out = hmp.Frame(in_frame.width, in_frame.height, in_frame.frame().pix_info(), device='cuda')
-            out_420 = hmp.Frame(in_frame.width, in_frame.height, self.pinfo_map[in_frame.frame().format()], device='cuda')
 
             out_list = frame_out.data()
             stream = hmp.current_stream(hmp.kCUDA)
@@ -78,6 +77,7 @@ class flip_gpu(Module):
                 in_frame.frame().format() == hmp.PixelFormat.kPF_P010LE):
                 cvimg_batch = cvcuda.ImageBatchVarShape(3)
                 cvimg_batch_out = cvcuda.ImageBatchVarShape(3)
+                out_420 = hmp.Frame(in_frame.width, in_frame.height, self.pinfo_map[in_frame.frame().format()], device='cuda')
 
                 in_420 = hmp.Frame(in_frame.width, in_frame.height, self.pinfo_map[in_frame.frame().format()], device='cuda')
                 hmp.img.yuv_to_yuv(in_420.data(), in_frame.frame().data(), self.pinfo_map[in_frame.frame().format()], in_frame.frame().pix_info())

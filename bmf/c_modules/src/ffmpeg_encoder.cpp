@@ -961,7 +961,7 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
     out_stream = output_stream_[idx];
     streams_idx_[idx] = out_stream->index;
 
-    if (!ost_[idx].encoding_needed) {
+    if (!ost_[idx].encoding_needed && push_output_ != OutputMode::OUTPUT_FRAME) {
         AVCodecParameters *par_dst = out_stream->codecpar;
         AVCodecParameters *par_src = avcodec_parameters_alloc();
         uint32_t codec_tag = par_dst->codec_tag;
@@ -1419,64 +1419,64 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
     } else if (frame && device_ref) {
         enc_ctxs_[idx]->hw_device_ctx = av_buffer_ref(device_ref);
     }
-    ret = avcodec_open2(enc_ctxs_[idx], codecs_[idx], &enc_opts);
-    if (ret < 0) {
-        BMFLOG_NODE(BMF_ERROR, node_id_) << "avcodec_open2 result: " << ret;
-        BMFLOG_NODE(BMF_ERROR, node_id_)
-            << "Cannot open video/audio encoder for stream #" << idx;
-        return ret;
-    } else if (av_dict_count(enc_opts) > 0) {
-        AVDictionaryEntry *t = NULL;
-        std::string warning_msg;
-        if (idx == 0)
-            warning_msg = "Encoder video_params contains incorrect key :";
-        else if (idx == 1)
-            warning_msg = "Encoder audio_params contains incorrect key :";
-        while ((t = av_dict_get(enc_opts, "", t, AV_DICT_IGNORE_SUFFIX))) {
-            warning_msg.append(" ");
-            warning_msg.append(t->key);
+    if (push_output_ != OutputMode::OUTPUT_FRAME) {
+        ret = avcodec_open2(enc_ctxs_[idx], codecs_[idx], &enc_opts);
+        if (ret < 0) {
+            BMFLOG_NODE(BMF_ERROR, node_id_) << "avcodec_open2 result: " << ret;
+            BMFLOG_NODE(BMF_ERROR, node_id_)
+                << "Cannot open video/audio encoder for stream #" << idx;
+            return ret;
+        } else if (av_dict_count(enc_opts) > 0) {
+            AVDictionaryEntry *t = NULL;
+            std::string warning_msg;
+            if (idx == 0)
+                warning_msg = "Encoder video_params contains incorrect key :";
+            else if (idx == 1)
+                warning_msg = "Encoder audio_params contains incorrect key :";
+            while ((t = av_dict_get(enc_opts, "", t, AV_DICT_IGNORE_SUFFIX))) {
+                warning_msg.append(" ");
+                warning_msg.append(t->key);
+            }
+            av_dict_free(&enc_opts);
+            BMFLOG_NODE(BMF_WARNING, node_id_) << warning_msg;
         }
         av_dict_free(&enc_opts);
-        BMFLOG_NODE(BMF_WARNING, node_id_) << warning_msg;
-    }
-    av_dict_free(&enc_opts);
 
-    ret = avcodec_parameters_from_context(out_stream->codecpar, enc_ctxs_[idx]);
-    if (ret < 0) {
-        BMFLOG_NODE(BMF_ERROR, node_id_)
-            << "Failed to copy encoder parameters to output stream";
-        return ret;
-    }
-
-    if (idx == 0) {
-        if (not vtag_.empty()) {
-            char *next;
-            uint32_t tag = strtol(vtag_.c_str(), &next, 0);
-            if (*next)
-                tag = AV_RL32(vtag_.c_str());
-            out_stream->codecpar->codec_tag = enc_ctxs_[idx]->codec_tag = tag;
+        ret = avcodec_parameters_from_context(out_stream->codecpar, enc_ctxs_[idx]);
+        if (ret < 0) {
+            BMFLOG_NODE(BMF_ERROR, node_id_) << "Failed to copy encoder parameters to output stream";
+            return ret;
         }
 
-        enc_ctxs_[0]->framerate = video_frame_rate_;
-        out_stream->r_frame_rate = video_frame_rate_;
-        out_stream->avg_frame_rate = video_frame_rate_;
-    }
-    if (idx == 1) {
-        if (not atag_.empty()) {
-            char *next;
-            uint32_t tag = strtol(atag_.c_str(), &next, 0);
-            if (*next)
-                tag = AV_RL32(atag_.c_str());
-            out_stream->codecpar->codec_tag = enc_ctxs_[idx]->codec_tag = tag;
+        if (idx == 0) {
+            if (not vtag_.empty()) {
+                char *next;
+                uint32_t tag = strtol(vtag_.c_str(), &next, 0);
+                if (*next)
+                    tag = AV_RL32(vtag_.c_str());
+                out_stream->codecpar->codec_tag =
+                enc_ctxs_[idx]->codec_tag = tag;
+            }
+
+            enc_ctxs_[0]->framerate = video_frame_rate_;
+            out_stream->r_frame_rate = video_frame_rate_;
+            out_stream->avg_frame_rate = video_frame_rate_;
         }
+        if (idx == 1) {
+            if (not atag_.empty()) {
+                char *next;
+                uint32_t tag = strtol(atag_.c_str(), &next, 0);
+                if (*next)
+                    tag = AV_RL32(atag_.c_str());
+                out_stream->codecpar->codec_tag =
+                enc_ctxs_[idx]->codec_tag = tag;
+            }
+        }
+
+        out_stream->codec->time_base = enc_ctxs_[idx]->time_base;
     }
 
     out_stream->time_base = enc_ctxs_[idx]->time_base;
-    #ifdef BMF_FFMPEG_VERSION
-        #if BMF_FFMPEG_VERSION < 50
-            out_stream->codec->time_base = enc_ctxs_[idx]->time_base;
-        #endif
-    #endif
 
     ret = 0;
     if (num_input_streams_ == codec_init_touched_num_)
@@ -1627,8 +1627,7 @@ int CFFEncoder::handle_video_frame(AVFrame *frame, bool is_flushing,
     std::vector<AVFrame *> filter_frames;
     std::vector<AVFrame *> sync_frames;
 
-    if (output_video_filter_graph_ == NULL &&
-        need_output_video_filter_graph(frame)) {
+    if (push_output_ != OutputMode::OUTPUT_FRAME && output_video_filter_graph_ == NULL && need_output_video_filter_graph(frame)) {
         std::map<int, FilterConfig> in_cfgs;
         std::map<int, FilterConfig> out_cfgs;
         output_video_filter_graph_ = std::make_shared<FilterGraph>();
@@ -1660,9 +1659,8 @@ int CFFEncoder::handle_video_frame(AVFrame *frame, bool is_flushing,
         }
     }
 
-    if (output_video_filter_graph_) {
-        ret = output_video_filter_graph_->get_filter_frame(frame, 0, 0,
-                                                           filter_frames);
+    if (push_output_ != OutputMode::OUTPUT_FRAME && output_video_filter_graph_) {
+        ret = output_video_filter_graph_->get_filter_frame(frame, 0, 0, filter_frames);
         if (ret != 0 && ret != AVERROR_EOF) {
             std::string err_msg =
                 "Failed to inject frame into filter network, in encoder";
@@ -1906,6 +1904,10 @@ int CFFEncoder::process(Task &task) {
             if (ret < 0) {
                 BMFLOG_NODE(BMF_ERROR, node_id_) << "frame writable error";
                 continue;
+            }
+
+            if (push_output_ == OutputMode::OUTPUT_FRAME) {
+                ost_[index].encoding_needed = false;
             }
 
             if (!codecs_[index]) {

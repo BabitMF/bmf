@@ -33,8 +33,8 @@ struct OpaqueDataKey
         kJsonParam,
 
         // for future use
-        kReserved_3,
-        kReserved_4,
+        kBMFVideoFrame,
+        kATTensor,
         kReserved_5,
         kReserved_6,
         kReserved_7,

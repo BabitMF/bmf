@@ -1900,11 +1900,17 @@ int CFFEncoder::process(Task &task) {
                 continue;
             }
 
+            //need to save frame w/h as av_hwframe_get_buffer may change the width or height according to the hw_frames_ctx.
+            int tmp_width = frame->width;
+            int tmp_height = frame->height;
             ret = av_frame_make_writable(frame);
             if (ret < 0) {
                 BMFLOG_NODE(BMF_ERROR, node_id_) << "frame writable error";
                 continue;
             }
+            //set width and height
+            frame->width = tmp_width;
+            frame->height = tmp_height;
 
             if (push_output_ == OutputMode::OUTPUT_FRAME) {
                 ost_[index].encoding_needed = false;

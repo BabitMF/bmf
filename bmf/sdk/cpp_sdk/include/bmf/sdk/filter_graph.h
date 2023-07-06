@@ -79,7 +79,6 @@ public:
         outputs_ = NULL;
         inputs_ = NULL;
         filter_graph_ = avfilter_graph_alloc();
-        hw_frames_ctx_ = NULL;
         b_init_ = true;
         if (!filter_graph_) {
             BMFLOG(BMF_ERROR) << "Graph alloc error: ENOMEM";

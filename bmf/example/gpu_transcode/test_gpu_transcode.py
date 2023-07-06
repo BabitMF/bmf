@@ -414,6 +414,7 @@ def test_gpu_transcode_with_overlay_cuda():
                               "hwaccel": "cuda"
                          }
                      })["video"]
+             .ff_filter("scale_npp", format="yuv420p")
     )
 
     logo = (

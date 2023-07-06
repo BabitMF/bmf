@@ -233,9 +233,15 @@ int CFFFilter::init_filtergraph() {
     filter_graph_ = new FilterGraph();
     std::map<int, FilterConfig> out_cfgs;
 
-    AVFrame *frame = input_cache_.begin()->second.front();
-    if (frame->hw_frames_ctx) {
-        filter_graph_->hw_frames_ctx_ = av_buffer_ref(frame->hw_frames_ctx);
+    //AVFrame *frame = input_cache_.begin()->second.front();
+    for (auto it : input_cache_) {
+        auto ctx = it.second.front()->hw_frames_ctx;
+        if (ctx) {
+            filter_graph_->hw_frames_ctx_map_[it.first] = av_buffer_ref(ctx);
+
+        } else {
+            filter_graph_->hw_frames_ctx_map_[it.first] = NULL;
+        }
     }
 
     ret = filter_graph_->config_graph(g_desc_, config_, out_cfgs);

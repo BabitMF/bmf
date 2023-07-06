@@ -25,7 +25,7 @@ def task(proc_idx, input_video_path, frames_dict):
     frames_dict[str(proc_idx)] = num_frames
 
 def test_gpu_decode_multi_proc_perf():
-    input_video_path = "../files/perf_1080p_10k.h264"
+    input_video_path = "../files/lark_stream0.flv"
     num_processes = 2
     processes = []
     frames_dict = multiprocessing.Manager().dict()

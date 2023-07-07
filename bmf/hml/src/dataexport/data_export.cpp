@@ -9,30 +9,24 @@ static DLDataType getDLDataType(const Tensor& t) {
     dtype.bits = sizeof_scalar_type(t.scalar_type()) * 8;
     switch (t.scalar_type()) {
         case ScalarType::UInt8:
+        case ScalarType::UInt16:
+        // case ScalarType::UInt32:
+        // case ScalarType::UInt64:
         dtype.code = DLDataTypeCode::kDLUInt;
         break;
         case ScalarType::Int8:
-        dtype.code = DLDataTypeCode::kDLInt;
-        break;
-        case ScalarType::Float64:
-        dtype.code = DLDataTypeCode::kDLFloat;
-        break;
-        case ScalarType::Float32:
-        dtype.code = DLDataTypeCode::kDLFloat;
-        break;
+        case ScalarType::Int16:
         case ScalarType::Int32:
-        dtype.code = DLDataTypeCode::kDLInt;
-        break;
         case ScalarType::Int64:
         dtype.code = DLDataTypeCode::kDLInt;
         break;
-        case ScalarType::Int16:
-        dtype.code = DLDataTypeCode::kDLInt;
-        break;
+        case ScalarType::Float64:
+        case ScalarType::Float32:
         case ScalarType::Half:
         dtype.code = DLDataTypeCode::kDLFloat;
         break;
         case ScalarType::Undefined:
+        default:
         HMP_REQUIRE(false, "Undefined is not a valid ScalarType");
     }
     return dtype;
@@ -71,10 +65,10 @@ DLManagedTensor* to_dlpack(const Tensor& src) {
     hmpDLMTensor->handle = src;
     hmpDLMTensor->tensor.manager_ctx = hmpDLMTensor;
     hmpDLMTensor->tensor.deleter = &deleter;
-    hmpDLMTensor->tensor.dl_tensor.data = src.data<uint8_t>();
+    hmpDLMTensor->tensor.dl_tensor.data = src.unsafe_data();
     int64_t device_id = 0;
     if (src.is_cuda()) {
-    device_id = src.device_index();
+        device_id = src.device_index();
     }
     hmpDLMTensor->tensor.dl_tensor.device = getDLDevice(src, device_id);
     hmpDLMTensor->tensor.dl_tensor.ndim = src.dim();

@@ -143,6 +143,7 @@ enum PixelFormat{
     _(PF_RGBA64)                      \
     _(PF_P010LE)                      \
     _(PF_P016LE)                      \
+    _(PF_YUV420P10LE)                 \
 
 
 HMP_API std::string stringfy(const PixelFormat &format);

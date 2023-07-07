@@ -35,12 +35,13 @@ namespace hmp{
     _(NV12)                         \
     _(NV21)                         \
     _(RGBA)                         \
-    _(NV12_BT709)                   \
-    _(NV21_BT709)                   \
     _(P010)                         \
     _(U420)                         \
     _(U422)                         \
-    _(U444)
+    _(U444)                         \
+    _(NV12_BT709)                   \
+    _(NV21_BT709)
+
 //internal use only
 enum class PPixelFormat : uint8_t{
     //update sPixelFormatMetas if you modify this structure

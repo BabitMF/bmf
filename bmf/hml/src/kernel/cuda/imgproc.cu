@@ -38,6 +38,10 @@ namespace{
         PIXEL_FORMAT_CASE(Op, NV12, Cformat)                                                   \
         PIXEL_FORMAT_CASE(Op, NV21_BT709, Cformat)                                                   \
         PIXEL_FORMAT_CASE(Op, NV12_BT709, Cformat)                                                   \
+        PIXEL_FORMAT_CASE(Op, U420, Cformat)                                                   \
+        PIXEL_FORMAT_CASE(Op, U422, Cformat)                                                   \
+        PIXEL_FORMAT_CASE(Op, U444, Cformat)                                                   \
+        PIXEL_FORMAT_CASE(Op, P010, Cformat)                                                   \
         default:                                                                                \
             HMP_REQUIRE(false, "{} : unsupported PPixelFormat {}", name, format);                \
      }
@@ -81,6 +85,47 @@ TensorList &rgb_to_yuv_cuda(TensorList &dst, const Tensor &src, PPixelFormat for
     return dst;
 }
 
+TensorList &yuv_to_yuv_cuda(TensorList &dst, const TensorList &src, PPixelFormat dformat, PPixelFormat sformat)
+{
+    auto batch = src[0].size(0);
+    auto height = src[0].size(1);
+    auto width = src[0].size(2);
+
+    HMP_DISPATCH_IMAGE_TYPES_AND_HALF(src[0].scalar_type(), "yuv_to_yuv_cuda", [&](){
+        if ((dformat == PPixelFormat::NV12 || dformat == PPixelFormat::NV12_BT709) &&
+            (sformat == PPixelFormat::H420 || sformat == PPixelFormat::I420)) {
+            YUV2YUV<scalar_t, PPixelFormat::NV12, PPixelFormat::H420> yuv2yuv(dst, src);
+            cuda::invoke_img_elementwise_kernel([=]HMP_HOST_DEVICE(int batch, int w, int h) mutable{
+                yuv2yuv(batch, w, h);
+            }, batch, width, height);
+        }
+        else if ((dformat == PPixelFormat::H420 || dformat == PPixelFormat::I420) &&
+                (sformat == PPixelFormat::NV12 || sformat == PPixelFormat::NV12_BT709)) {
+            YUV2YUV<scalar_t, PPixelFormat::H420, PPixelFormat::NV12> yuv2yuv(dst, src);
+            cuda::invoke_img_elementwise_kernel([=]HMP_HOST_DEVICE(int batch, int w, int h) mutable{
+                yuv2yuv(batch, w, h);
+            }, batch, width, height);
+        }
+        else if (dformat == PPixelFormat::P010 || sformat == PPixelFormat::U420) {
+            YUV2YUV<scalar_t, PPixelFormat::P010, PPixelFormat::U420> yuv2yuv(dst, src);
+            cuda::invoke_img_elementwise_kernel([=]HMP_HOST_DEVICE(int batch, int w, int h) mutable{
+                yuv2yuv(batch, w, h);
+            }, batch, width, height);
+        }
+        
+        else if (dformat == PPixelFormat::U420 || sformat == PPixelFormat::P010) {
+            YUV2YUV<scalar_t, PPixelFormat::U420, PPixelFormat::P010> yuv2yuv(dst, src);
+            cuda::invoke_img_elementwise_kernel([=]HMP_HOST_DEVICE(int batch, int w, int h) mutable{
+                yuv2yuv(batch, w, h);
+            }, batch, width, height);
+        }
+        else {
+            HMP_REQUIRE(false, "Only supports conversion between nv12 and yuv420p or between p010 and yuv420p10.");
+        }
+    });
+ 
+    return dst;
+}
 
 Tensor &img_resize_cuda(Tensor &dst, const Tensor &src, ImageFilterMode mode, ChannelFormat cformat)
 {
@@ -260,6 +305,7 @@ Tensor& img_normalize_cuda(Tensor &dst, const Tensor &src, const Tensor &mean, c
 
 HMP_DEVICE_DISPATCH(kCUDA, yuv_to_rgb_stub, &yuv_to_rgb_cuda)
 HMP_DEVICE_DISPATCH(kCUDA, rgb_to_yuv_stub, &rgb_to_yuv_cuda)
+HMP_DEVICE_DISPATCH(kCUDA, yuv_to_yuv_stub, &yuv_to_yuv_cuda)
 HMP_DEVICE_DISPATCH(kCUDA, yuv_resize_stub, &yuv_resize_cuda)
 HMP_DEVICE_DISPATCH(kCUDA, yuv_mirror_stub, &yuv_mirror_cuda)
 HMP_DEVICE_DISPATCH(kCUDA, yuv_rotate_stub, &yuv_rotate_cuda)

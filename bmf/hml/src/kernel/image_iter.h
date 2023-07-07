@@ -327,15 +327,21 @@ struct YUVIter<T, format,
                      format==PPixelFormat::H444 ||
                      format==PPixelFormat::I420 ||
                      format==PPixelFormat::I422 ||
-                     format==PPixelFormat::I444
+                     format==PPixelFormat::I444 ||
+                     format==PPixelFormat::U420 ||
+                     format==PPixelFormat::U422 ||
+                     format==PPixelFormat::U444
                      >>
 {
     const static int hshift = format==PPixelFormat::H420 ||
-                              format==PPixelFormat::I420;
+                              format==PPixelFormat::I420 ||
+                              format==PPixelFormat::U420;
     const static int wshift = format==PPixelFormat::H420 ||
                               format==PPixelFormat::H422 ||
                               format==PPixelFormat::I420 ||
-                              format==PPixelFormat::I422;
+                              format==PPixelFormat::I422 ||
+                              format==PPixelFormat::U420 ||
+                              format==PPixelFormat::U422;
 
     using value_type = Vector<T, 1>;
     using Iter = ImageSeqIter<value_type>;
@@ -390,7 +396,8 @@ struct YUVIter<T, format,
     std::enable_if_t<format==PPixelFormat::NV21 ||
                      format==PPixelFormat::NV12 ||
                      format==PPixelFormat::NV21_BT709 || 
-                     format==PPixelFormat::NV12_BT709
+                     format==PPixelFormat::NV12_BT709 ||
+                     format==PPixelFormat::P010
                      >>
 {
     const static int wshift = 1;

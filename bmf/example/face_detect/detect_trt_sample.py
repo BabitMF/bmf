@@ -8,6 +8,7 @@ from bmf import Log,LogLevel
 
 def main():
 
+    # v1.engine can be built by the command: trtexec --onnx=version-RFB-640.engine --buildOnly --saveEngine=version-RFB-640.engine
     trt_face_detect = bmf.create_module("trt_face_detect", {
         "model_path": "version-RFB-640.engine",
         "label_to_frame": 1,
@@ -24,8 +25,6 @@ def main():
             .encode(None, {"output_path": "./trt_out.mp4",
                            "video_params": {
                                "codec": "h264_nvenc",
-                               "preset": "p6",
-                               "tune": "hq",
                                "bit_rate": 5000000,
                                }})
             .run()
@@ -33,3 +32,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

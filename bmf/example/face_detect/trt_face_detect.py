@@ -194,7 +194,7 @@ class trt_face_detect(Module):
             self.context_.set_tensor_address(self.tensor_names_[i], int(input_tensor.contiguous().data_ptr()))
 
         for i in range(self.num_inputs_, self.num_io_tensors_):
-            self.context_.set_tensor_address(self.tensor_names_[i], int(self.output_dict_[self.tensor_names_[i]].torch().data_ptr()))
+            self.context_.set_tensor_address(self.tensor_names_[i], int(self.output_dict_[self.tensor_names_[i]].data_ptr()))
 
         self.context_.execute_async_v3(self.stream_.handle())
 
@@ -244,7 +244,3 @@ class trt_face_detect(Module):
             task.timestamp = Timestamp.DONE
 
         return ProcessResult.OK
-
-
-
-            

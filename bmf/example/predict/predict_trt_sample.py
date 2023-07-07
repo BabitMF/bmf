@@ -27,9 +27,7 @@ if __name__ == "__main__":
             .encode(None, {"output_path": output_video_path,
                            "video_params": {
                                "codec": "h264_nvenc",
-                               "preset": "p6",
                                "pix_fmt": "cuda",
-                               "tune": "hq",
                                "bit_rate": 5000000,
                                }})
             .run()

@@ -180,6 +180,8 @@ static PPixelFormat infer_ppixel_format(const PixelInfo &info)
                 return PPixelFormat::U422;
             case PF_YUV444P10LE:
                 return PPixelFormat::U444;
+            default:
+                HMP_REQUIRE(false, "Unsupport PixelInfo");
         }
     }
     HMP_REQUIRE(false, "Unsupport PixelInfo");
@@ -268,10 +270,12 @@ TensorList yuv_to_yuv(const TensorList &src, const PixelInfo &dpix_info, const P
     // auto width = src[0].size(wdim);
     // auto height = src[0].size(hdim);
     int shift = 0;
-    if (dpix_info.format() == PF_NV12 && spix_info.format() == PF_YUV420P) {
+    if ((dpix_info.format() == PF_NV12 || dpix_info.format() == PF_NV12 || dpix_info.format() == PF_P010LE) &&
+        (spix_info.format() == PF_YUV420P || spix_info.format() == PF_YUV420P10LE)) {
         shift = 0;
     }
-    else if (dpix_info.format() == PF_YUV420P && spix_info.format() == PF_NV12) {
+    else if ((dpix_info.format() == PF_YUV420P ||  dpix_info.format() == PF_YUV420P10LE) &&
+            (spix_info.format() == PF_NV12 || spix_info.format() == PF_NV12 || spix_info.format() == PF_P010LE)) {
         shift = 1;
     }
     else {

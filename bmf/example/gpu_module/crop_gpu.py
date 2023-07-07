@@ -1,13 +1,11 @@
 import re
 from math import pi, cos, tan, sqrt
+import numpy
 
 from bmf import *
-import hmp
+import bmf.hml.hmp as hmp
 from cuda import cuda
 import cvcuda
-import torch
-
-import pdb
 
 class crop_gpu(Module):
     # TODO: Add radians as defalut rotation
@@ -47,7 +45,10 @@ class crop_gpu(Module):
         self.__get_crop(option)
 
         self.i420info = hmp.PixelInfo(hmp.PixelFormat.kPF_YUV420P, hmp.ColorSpace.kCS_BT470BG, hmp.ColorRange.kCR_MPEG)
+        self.u420info = hmp.PixelInfo(hmp.PixelFormat.kPF_YUV420P10LE, hmp.ColorSpace.kCS_BT2020_CL, hmp.ColorRange.kCR_MPEG)
         self.i420_out = None
+        self.pinfo_map = {hmp.PixelFormat.kPF_NV12: self.i420info,
+                          hmp.PixelFormat.kPF_P010LE: self.u420info}
 
     def process(self, task):
         
@@ -92,16 +93,22 @@ class crop_gpu(Module):
 
             # deal with nv12 special case
             if (in_frame.frame().format() == hmp.PixelFormat.kPF_NV12):
-                self.i420_in = hmp.Frame(in_frame.width, in_frame.height, self.i420info, device='cuda')
-                hmp.img.yuv_to_yuv(self.i420_in.data(), in_frame.frame().data(), self.i420info, in_frame.frame().pix_info())
-                in_list = [x.torch() for x in self.i420_in.data()]
-                out_list = [x.torch() for x in self.i420_out.data()]
+                # in_420 = hmp.Frame(in_frame.width, in_frame.height, self.i420info, device='cuda')
+                pinfo = self.pinfo_map[in_frame.frame().format()]
+                in_420 = hmp.Frame(in_frame.width, in_frame.height, pinfo, device='cuda')
+                out_420 = hmp.Frame(self.width, self.height, pinfo, device='cuda')
+                hmp.img.yuv_to_yuv(in_420.data(), in_frame.frame().data(), pinfo, in_frame.frame().pix_info())
+                # in_list = [x.torch() for x in in_420.data()]
+                # out_list = [x.torch() for x in out_420.data()]
+                in_list = in_420.data()
+                out_list = out_420.data()
 
             # other pixel formats, e.g. yuv420, rgb
             else:
-                
-                in_list = [x.torch() for x in tensor_list]
-                out_list = [x.torch() for x in out_tensor_list]
+                # in_list = [x.torch() for x in tensor_list]
+                # out_list = [x.torch() for x in out_tensor_list]
+                in_list = tensor_list
+                out_list = out_tensor_list
 
             
             for index, (in_tensor, out_tensor) in enumerate(zip(in_list, out_list)):
@@ -118,7 +125,7 @@ class crop_gpu(Module):
                                        rect=rect, stream=cvstream)
 
             if (in_frame.frame().format() == hmp.PixelFormat.kPF_NV12):
-                hmp.img.yuv_to_yuv(frame_out.data(), self.i420_out.data(), frame_out.pix_info(), self.i420_out.pix_info())
+                hmp.img.yuv_to_yuv(frame_out.data(), out_420.data(), frame_out.pix_info(), out_420.pix_info())
 
             videoframe_out = VideoFrame(frame_out)
             videoframe_out.pts = in_frame.pts

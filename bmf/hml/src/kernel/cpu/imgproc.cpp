@@ -97,13 +97,6 @@ TensorList &yuv_to_yuv_cpu(TensorList &dst, const TensorList &src, PPixelFormat 
     auto width = src[0].size(2);
 
     HMP_DISPATCH_IMAGE_TYPES_AND_HALF(src[0].scalar_type(), "yuv_to_yuv_cpu", [&](){
-        // if(cformat == kNCHW){
-        //     PIXEL_FORMAT_DISPATCH(YUV2RGB, format, kNCHW, "yuv_to_yuv_cpu");
-        // }
-        // else{
-        //     PIXEL_FORMAT_DISPATCH(YUV2RGB, format, ChannelFormat::NHWC, "yuv_to_yuv_cpu");
-        // }
-        // PIXEL_FORMAT_DISPATCH(YUV2YUV, sformat, dformat, "yuv_to_yuv_cpu");
         if (dformat == PPixelFormat::NV12 && (sformat == PPixelFormat::H420 || sformat == PPixelFormat::I420)) {
             YUV2YUV<scalar_t, PPixelFormat::NV12, PPixelFormat::H420> yuv2yuv(dst, src);
             cpu::invoke_img_elementwise_kernel([=]HMP_HOST_DEVICE(int batch, int w, int h) mutable{
@@ -116,20 +109,21 @@ TensorList &yuv_to_yuv_cpu(TensorList &dst, const TensorList &src, PPixelFormat 
                 yuv2yuv(batch, w, h);
             }, batch, width, height);
         }
-        // else if (dformat == PPixelFormat::NV12 && sformat == PPixelFormat::I420) {
-        //     YUV2YUV<scalar_t, PPixelFormat::NV12, PPixelFormat::H420> yuv2yuv(dst, src);
-        //     cpu::invoke_img_elementwise_kernel([=]HMP_HOST_DEVICE(int batch, int w, int h) mutable{
-        //         yuv2yuv(batch, w, h);
-        //     }, batch, width, height);
-        // }
-        // else if (dformat == PPixelFormat::I420 && sformat == PPixelFormat::NV12) {
-        //     YUV2YUV<scalar_t, PPixelFormat::H420, PPixelFormat::NV12> yuv2yuv(dst, src);
-        //     cpu::invoke_img_elementwise_kernel([=]HMP_HOST_DEVICE(int batch, int w, int h) mutable{
-        //         yuv2yuv(batch, w, h);
-        //     }, batch, width, height);
-        // }
+        else if (dformat == PPixelFormat::P010 || sformat == PPixelFormat::U420) {
+            YUV2YUV<scalar_t, PPixelFormat::P010, PPixelFormat::U420> yuv2yuv(dst, src);
+            cpu::invoke_img_elementwise_kernel([=]HMP_HOST_DEVICE(int batch, int w, int h) mutable{
+                yuv2yuv(batch, w, h);
+            }, batch, width, height);
+        }
+        
+        else if (dformat == PPixelFormat::U420 || sformat == PPixelFormat::P010) {
+            YUV2YUV<scalar_t, PPixelFormat::U420, PPixelFormat::P010> yuv2yuv(dst, src);
+            cpu::invoke_img_elementwise_kernel([=]HMP_HOST_DEVICE(int batch, int w, int h) mutable{
+                yuv2yuv(batch, w, h);
+            }, batch, width, height);
+        }
         else {
-            HMP_REQUIRE(false, "Only supports conversion between nv12 and yuv420p.");
+            HMP_REQUIRE(false, "Only supports conversion between nv12 and yuv420p or between p010 and yuv420p10.");
         }
     });
  

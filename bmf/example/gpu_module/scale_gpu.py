@@ -1,7 +1,7 @@
 import re
 
 from bmf import *
-import hmp
+import bmf.hml.hmp as hmp
 from cuda import cuda
 import cvcuda
 

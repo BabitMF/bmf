@@ -2,6 +2,8 @@
 
 [中文文档](./readme_cn.md)
 
+![](./broadcaster.gif)
+
 ## The graph of the broadcaster demo
 
 ![](./broadcaster.png)

@@ -2,6 +2,8 @@
 
 [English Doc](./readme.md)
 
+![](./broadcaster.gif)
+
 ## 导播demo的graph组成
 
 ![](./broadcaster.png)

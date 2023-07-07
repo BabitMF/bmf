@@ -6,3 +6,7 @@ This demo implement two bmf modules:
 * composition_module, overlay the super-resolution results and the original video
 
 
+you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/example/video_enhance_demo/bmf-enhance-demo.ipynb).
+
+
+

@@ -4,6 +4,7 @@ add_subdirectory(sdk)
 add_subdirectory(engine)
 add_subdirectory(c_modules)
 add_subdirectory(example/c_module)
+add_subdirectory(example/gpu_module)
 
 if(NOT APPLE OR "${DEPLOYMENT_TARGET}" VERSION_GREATER_EQUAL "13.0" AND NOT ANDROID)
     add_subdirectory(example/cpp_builder)
@@ -23,7 +24,7 @@ endif()
 
 ## Assemble BMF runtime(put all libs, incs and other resources under ${BMF_ASSEMBE_ROOT})
 add_custom_target(bmf_assem ALL
-    DEPENDS engine copy_module
+    DEPENDS engine copy_module cvtcolor
     ${CMAKE_CURRENT_BINARY_DIR}/__always_update
 )
 
@@ -98,6 +99,10 @@ add_custom_command(TARGET bmf_assem
 add_custom_command(TARGET bmf_assem
     POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:copy_module> ${BMF_ASSEMBLE_ROOT}/example/c_module)
+
+add_custom_command(TARGET bmf_assem
+    POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cvtcolor> ${BMF_ASSEMBLE_ROOT}/example/gpu_module)
 
 # json
 add_custom_command(TARGET bmf_assem

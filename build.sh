@@ -94,8 +94,8 @@ else
     echo "Without ffmpeg"
 fi
 
-cp -a $PWD/3rd_party/ffmpeg_bin/linux/build/lib/. /usr/local/lib/
-cp -a $PWD/3rd_party/ffmpeg_bin/linux/build/include/. /usr/local/include/
+# cp -a $PWD/3rd_party/ffmpeg_bin/linux/build/lib/. /usr/local/lib/
+# cp -a $PWD/3rd_party/ffmpeg_bin/linux/build/include/. /usr/local/include/
 
 # Generate BMF version
 source ./version.sh
@@ -205,6 +205,7 @@ else
         -DCOVERAGE=${COVERAGE_OPTION} \
         -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
         -DBMF_ENABLE_BREAKPAD=ON \
+        -DCMAKE_PREFIX_PATH=/bmf/libtorch \
         -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ..
     make -j8
 

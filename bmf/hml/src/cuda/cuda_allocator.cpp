@@ -315,7 +315,7 @@ public:
         auto it = blocks.begin();
         while(it != blocks.end()){
             auto block = *it;
-            if(block->is_split()){
+            if(!block->is_split()){
                 HMP_CUDA_CHECK(free_(block->ptr));
                 
                 auto cur = it;
@@ -469,5 +469,9 @@ DeviceMemoryStats host_memory_stats()
     return sDefaultCPUAllocator.stats();
 }
 
+int d2d_memcpy(void* dst, size_t dpitch, const void* src, size_t spitch, size_t width, size_t height){
+    cudaMemcpy2D(dst, dpitch, src, spitch, width, height, cudaMemcpyDeviceToDevice);
+    return 0;
+}
 
 }} //namespace

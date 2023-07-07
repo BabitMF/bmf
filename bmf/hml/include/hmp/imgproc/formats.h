@@ -95,15 +95,15 @@ enum ColorRange{
 
 enum PixelFormat{
     PF_NONE         = -1,
-    PF_YUV420P      = 0, 
-    PF_YUV422P      = 4, 
-    PF_YUV444P      = 5, 
+    PF_YUV420P      = 0,
+    PF_YUV422P      = 4,
+    PF_YUV444P      = 5,
     PF_NV12         = 23,
     PF_NV21         = 24,
 
-    PF_GRAY8        = 8, 
-    PF_RGB24        = 2, 
-    PF_BGR24        = 3, 
+    PF_GRAY8        = 8,
+    PF_RGB24        = 2,
+    PF_BGR24        = 3,
 
     PF_YUVJ420P     = 12,
 
@@ -122,6 +122,7 @@ enum PixelFormat{
     PF_P016LE       = 172,
     PF_YUV422P10LE  = 66,
     PF_YUV420P10LE  = 64,
+    PF_YUV444P10LE  = 68,
 };
 
 #define HMP_FORALL_PIXEL_FORMATS(_)  \
@@ -142,6 +143,7 @@ enum PixelFormat{
     _(PF_RGBA64)                      \
     _(PF_P010LE)                      \
     _(PF_P016LE)                      \
+    _(PF_YUV420P10LE)                 \
 
 
 HMP_API std::string stringfy(const PixelFormat &format);

@@ -142,17 +142,28 @@ Frame Frame::crop(int left, int top, int w, int h) const
     return Frame(out, w, h, pix_info_);
 }
 
+PixelFormat format420_list[] = {PF_YUV420P, PF_NV12, PF_NV21, PF_P010LE, PF_YUV420P10LE};
+static bool is_420(const PixelFormat &pix_fmt) {
+    for (auto i : format420_list) {
+        if (pix_fmt == i) return true;
+    }
+    return false;
+}
+
 Frame Frame::reformat(const PixelInfo &pix_info)
 {
-    if (pix_info_.format() == PF_RGB24) {
+    if (pix_info_.format() == PF_RGB24 || pix_info_.format() == PF_RGB48) {
         auto yuv = img::rgb_to_yuv(data_[0], pix_info, kNHWC);
         return Frame(yuv, width_, height_, pix_info);
 
-    } else if (pix_info.format() == PF_RGB24) {
+    } else if (pix_info.format() == PF_RGB24 || pix_info.format() == PF_RGB48) {
         auto rgb = img::yuv_to_rgb(data_, pix_info_, kNHWC);
         return Frame({rgb}, width_, height_, pix_info);
+    } else if (is_420(pix_info.format()) && is_420(pix_info_.format())) {
+        auto yuv = img::yuv_to_yuv(data_, pix_info, pix_info_);
+        return Frame(yuv, width_, height_, pix_info);
     }
-
+    
     HMP_REQUIRE(false, "{} to {} not support", stringfy(pix_info_.format()), stringfy(pix_info.format()));
 }
 

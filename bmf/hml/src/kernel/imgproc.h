@@ -35,6 +35,10 @@ namespace hmp{
     _(NV12)                         \
     _(NV21)                         \
     _(RGBA)                         \
+    _(P010)                         \
+    _(U420)                         \
+    _(U422)                         \
+    _(U444)                         \
     _(NV12_BT709)                   \
     _(NV21_BT709)
 
@@ -56,6 +60,8 @@ HMP_DECLARE_DISPATCH_STUB(yuv_to_rgb_stub,
         Tensor&(*)(Tensor&, const TensorList&, PPixelFormat, ChannelFormat));
 HMP_DECLARE_DISPATCH_STUB(rgb_to_yuv_stub, 
         TensorList&(*)(TensorList&, const Tensor&, PPixelFormat, ChannelFormat));
+HMP_DECLARE_DISPATCH_STUB(yuv_to_yuv_stub, 
+        TensorList&(*)(TensorList&, const TensorList&, PPixelFormat, PPixelFormat));
 HMP_DECLARE_DISPATCH_STUB(yuv_resize_stub, 
         TensorList&(*)(TensorList&, const TensorList&, PPixelFormat, ImageFilterMode));
 HMP_DECLARE_DISPATCH_STUB(yuv_rotate_stub, 
@@ -93,6 +99,7 @@ HMP_DECLARE_DISPATCH_STUB(img_warp_perspective_stub,
 
 Tensor &yuv_to_rgb(Tensor &dst, const TensorList &src, PPixelFormat pformat, ChannelFormat cformat);
 TensorList &rgb_to_yuv(TensorList &dst, const Tensor &src, PPixelFormat pformat, ChannelFormat cformat);
+TensorList &yuv_to_yuv(TensorList &dst, const TensorList &src, PPixelFormat sformat, PPixelFormat dformat);
 
 TensorList &yuv_resize(TensorList &dst, const TensorList &src,
                           PPixelFormat format, ImageFilterMode mode = ImageFilterMode::Bilinear);

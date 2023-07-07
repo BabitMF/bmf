@@ -1,12 +1,7 @@
-import re
-
 from bmf import *
 import hmp
 from cuda import cuda
 import cvcuda
-import torch
-
-import pdb
 
 class flip_gpu(Module):
 
@@ -18,12 +13,6 @@ class flip_gpu(Module):
             'vertical': 0,
             'both': -1,
         }.get(flip_str, None)
-    
-    def __get_op(self, op_str):
-        return {
-            'flip': cvcuda.flip,
-            'rotate': cvcuda.rotate,
-        }.get(op_str, None)
 
     def __init__(self, node, option=None):
         self.node_ = node
@@ -43,7 +32,7 @@ class flip_gpu(Module):
         self.i420_out = None
         self.pinfo_map = {hmp.PixelFormat.kPF_NV12: self.i420info,
                           hmp.PixelFormat.kPF_P010LE: self.u420info}
-        t3 = torch.ones((4,), dtype=torch.int32, device='cuda') * self.flip_code
+        t3 = hmp.ones((4,), dtype=hmp.kInt32, device='cuda') * self.flip_code
         self.flip_tensor = cvcuda.as_tensor(t3)
     
     def process(self, task):

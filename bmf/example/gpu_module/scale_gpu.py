@@ -4,9 +4,6 @@ from bmf import *
 import hmp
 from cuda import cuda
 import cvcuda
-import torch
-
-import pdb
 
 class scale_gpu(Module):
     def __get_size(self, size_str):
@@ -35,7 +32,7 @@ class scale_gpu(Module):
         if 'algo' in option.keys():
             self.algo = self.__get_algo(option['algo'])
 
-        self.uv_tensor_out = torch.empty((2, self.h // 2, self.w // 2), dtype=torch.uint8, device='cuda')
+        # self.uv_tensor_out = numpy.empty((2, self.h // 2, self.w // 2), dtype='uint8')
         self.i420info = hmp.PixelInfo(hmp.PixelFormat.kPF_YUV420P, hmp.ColorSpace.kCS_BT470BG, hmp.ColorRange.kCR_MPEG)
         self.u420info = hmp.PixelInfo(hmp.PixelFormat.kPF_YUV420P10LE, hmp.ColorSpace.kCS_BT2020_CL, hmp.ColorRange.kCR_MPEG)
         self.i420_out = hmp.Frame(self.w, self.h, self.i420info, device='cuda')

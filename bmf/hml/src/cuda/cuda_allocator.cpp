@@ -178,9 +178,10 @@ public:
         //try alloc in pool
         Block *block = nullptr;
         size = round_size(size);
-        std::lock_guard<std::recursive_mutex> l(mutex_);
         auto& pool = get_pool(size);
         {
+            std::lock_guard<std::recursive_mutex> l(mutex_);
+
             Block search_key(size);
             auto find_free_block = [&](){
                 Block *block = nullptr;
@@ -244,6 +245,10 @@ public:
         //
         std::lock_guard<std::recursive_mutex> l(mutex_);
         auto &pool = *block->pool;
+
+        //merge block aggressively
+        while(try_merge_blocks(block, block->prev, pool) > 0);
+        while(try_merge_blocks(block, block->next, pool) > 0);
 
         pool.insert(block);
 
@@ -322,6 +327,37 @@ public:
                 ++it;
             }
         }
+    }
+
+
+    size_t try_merge_blocks(Block *dst, Block *src, BlockPool &pool)
+    {
+        if (!src || src->allocated || src->event_count > 0){
+            return 0;
+        }
+
+        HMP_REQUIRE(dst->is_split() && src->is_split(), "CUDAAllocator: internal error");
+
+        if (dst->prev == src){
+            dst->ptr = src->ptr;
+            dst->prev = src->prev;
+            if (dst->prev){
+                dst->prev->next = dst;
+            }
+        }
+        else{
+            dst->next = src->next;
+            if (dst->next){
+                dst->next->prev = dst;
+            }
+        }
+
+        const size_t subsumed_size = src->size;
+        dst->size += subsumed_size;
+        pool.erase(src);
+        delete src;
+
+        return subsumed_size;
     }
 
     bool should_split(const Block *block, size_t size)

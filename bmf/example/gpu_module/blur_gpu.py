@@ -1,21 +1,22 @@
 import re
 from math import pi, cos, tan, sqrt
+import numpy
 
 from bmf import *
 import hmp
 from cuda import cuda
 import cvcuda
-import torch
-
-import pdb
 
 class blur_gpu(Module):
     def __get_blur(self, option):
         self.size = option['size'] if 'size' in option else [1, 1]
         self.planes = option['planes'] if 'planes' in option else 0xf
         self.border = option['border'] if 'border' in option else cvcuda.Border.CONSTANT
-        size_tensor = torch.tensor(self.size, dtype=torch.int, device='cuda')
-        sizet = torch.ones((4, 2), dtype=torch.int, device='cuda') * size_tensor
+        # size_tensor = torch.tensor(self.size, dtype=torch.int, device='cuda')
+        # sizet = torch.ones((4, 2), dtype=torch.int, device='cuda') * size_tensor
+        size_tensor = numpy.array(self.size, dtype='int32')
+        sizet = numpy.ones((4, 2), dtype='int32') * size_tensor
+        sizet = hmp.from_numpy(sizet).cuda()
         if 'op' in option.keys():
             op = option['op']
         else:
@@ -24,21 +25,24 @@ class blur_gpu(Module):
             self.blur_op = cvcuda.gaussian_into
             self.sigma = option['sigma'] if 'sigma' in option else [0.5, 0.5]
             self.steps = option['steps'] if 'steps' in option else 1
-            sigma_tensor = torch.tensor(self.sigma, dtype=torch.double, device='cuda')
-            sigmat = torch.ones((4,2), dtype=torch.double, device='cuda') * sigma_tensor
+            sigma_tensor = numpy.array(self.sigma, dtype='double')
+            sigmat = numpy.ones((4,2), dtype='double') * sigma_tensor
+            sigmat = hmp.from_numpy(sigmat).cuda()
             self.op_args = [self.size, cvcuda.as_tensor(sizet), cvcuda.as_tensor(sigmat), self.border]
         elif 'avgblur' == op:
             self.blur_op = cvcuda.averageblur_into
             self.anchor = option['anchor'] if 'anchor' in option else [-1, -1]
-            anchor_tensor = torch.tensor(self.anchor, dtype=torch.int, device='cuda')
-            anchort = torch.ones((4,2), dtype=torch.int, device='cuda') * anchor_tensor
+            anchor_tensor = numpy.array(self.anchor, dtype=int)
+            anchort = numpy.ones((4,2), dtype=int) * anchor_tensor
+            anchort = hmp.from_numpy(anchort).cuda()
             self.op_args = [self.size, cvcuda.as_tensor(sizet), cvcuda.as_tensor(anchort), self.border]
         elif 'median' == op:
             self.blur_op = cvcuda.median_blur_into
             self.percentile = option['percentile'] if 'percentile' in option else 0.5
             self.size = option['radius'] if 'radius' in option else self.size
-            size_tensor = torch.tensor(self.size, dtype=torch.int, device='cuda')
-            sizet = torch.ones((4, 2), dtype=torch.int, device='cuda') * size_tensor
+            size_tensor = numpy.array(self.size, dtype=int)
+            sizet = numpy.ones((4, 2), dtype=int) * size_tensor
+            sizet = hmp.from_numpy(sizet).cuda()
             self.op_args = [cvcuda.as_tensor(sizet)]
         else:
             Log.log(LogLevel.ERROR, "Unsupported blur operating")
@@ -67,19 +71,11 @@ class blur_gpu(Module):
             in_pkt = input_queue.get()
 
             if in_pkt.timestamp == Timestamp.EOF:
-                # we should done all frames processing in following loop
+                # we should do all frames processing in following loop
                 self.eof_received_ = True
                 continue
 
             in_frame = in_pkt.get(VideoFrame)
-
-            # validate crop parameters
-            # if (not 0 <= self.x < in_frame.width - 1) or (not 0 <= self.y < in_frame.height - 1):
-            #     Log.log(LogLevel.ERROR, "Invalid crop position")
-            # if (self.x + self.width >= in_frame.width):
-            #     Log.log(LogLevel.ERROR, "Crop width is out of image bound")
-            # if (self.y + self.height >= in_frame.height):
-            #     Log.log(LogLevel.ERROR, "Crop height is out of image bound")
 
             if (in_frame.frame().device() == hmp.Device('cpu')):
                 in_frame = in_frame.cuda()
@@ -101,28 +97,17 @@ class blur_gpu(Module):
                 in_420 = hmp.Frame(in_frame.width, in_frame.height, pinfo, device='cuda')
                 out_420 = hmp.Frame(in_frame.width, in_frame.height, pinfo, device='cuda')
                 hmp.img.yuv_to_yuv(in_420.data(), in_frame.frame().data(), pinfo, in_frame.frame().pix_info())
-                # in_list = [x.torch() for x in in_420.data()]
-                # out_list = [x.torch() for x in out_420.data()]
+
                 in_list = in_420.data()
                 out_list = out_420.data()
 
             # other pixel formats, e.g. yuv420, rgb
             else:
-                # in_list = [x.torch() for x in tensor_list]
-                # out_list = [x.torch() for x in out_tensor_list]
                 in_list = tensor_list
                 out_list = out_tensor_list
 
 
             for index, (in_tensor, out_tensor) in enumerate(zip(in_list, out_list)):
-                # chroma_shift = 0
-                # # rect = cvcuda.RectI(self.x, self.y, self.width, self.height)
-                # if ((index in range(1,3)) and
-                #     (in_frame.frame().format() == hmp.PixelFormat.kPF_NV12 or
-                #      in_frame.frame().format() == hmp.PixelFormat.kPF_YUV420P)):
-                #     chroma_shift = 1
-                # rect = cvcuda.RectI(self.x >> chroma_shift, self.y >> chroma_shift,
-                #                     self.width >> chroma_shift, self.height >> chroma_shift)
                 if (((1 << index) & self.planes) != 0):
                     cvimg_batch.pushback(cvcuda.as_image(in_tensor))
                     cvimg_batch_out.pushback(cvcuda.as_image(out_tensor))

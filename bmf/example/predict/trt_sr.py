@@ -108,11 +108,11 @@ class trt_sr(Module):
             self.context_.set_tensor_address(self.tensor_names_[i], int(input_tensor.data_ptr()))
 
         for i in range(self.num_inputs_, self.num_io_tensors_):
-            self.context_.set_tensor_address(self.tensor_names_[i], int(self.output_dict_[self.tensor_names_[i]].torch().data_ptr()))
+            self.context_.set_tensor_address(self.tensor_names_[i], int(self.output_dict_[self.tensor_names_[i]].data_ptr()))
 
         self.context_.execute_async_v3(self.stream_.handle())
 
-        output_tensor = self.output_dict_[self.tensor_names_[-1]].torch()
+        output_tensor = torch.from_dlpack(self.output_dict_[self.tensor_names_[-1]])
         output_tensor = torch.squeeze(output_tensor)
         output_tensor = torch.split(output_tensor, self.out_frame_num_, dim=2)
 

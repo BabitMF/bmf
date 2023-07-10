@@ -183,7 +183,7 @@ class trt_face_detect(Module):
             input_frames.append(vf)
 
             rgb = mp.PixelInfo(mp.kPF_RGB24)
-            torch_vf = vf.reformat(rgb).frame().plane(0).torch()
+            torch_vf = torch.from_dlpack(vf.reformat(rgb).frame().plane(0))
             numpy_vf = torch_vf.cpu().numpy()
             torch_image_array.append(torch_vf)
             pil_image_array.append(PIL.Image.fromarray(numpy_vf))

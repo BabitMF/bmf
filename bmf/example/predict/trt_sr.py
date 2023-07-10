@@ -97,7 +97,7 @@ class trt_sr(Module):
             input_frames.append(vf)
             
             rgb = mp.PixelInfo(mp.kPF_RGB24)
-            torch_vf = vf.reformat(rgb).frame().plane(0).torch()
+            torch_vf = torch.from_dlpack(vf.reformat(rgb).frame().plane(0))
             input_torch_array.append(torch_vf)
         for i in range(self.in_frame_num_, frame_num):
             input_torch_array.append(input_torch_array[-1])

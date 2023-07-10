@@ -2,6 +2,8 @@
 
 [中文文档](./readme_cn.md)
 
+This demo uses BMF framework to construct a simple broadcast service. The service provides an API that enables dynamic video source pulling, video layout control, audio mixing, and ultimately streaming the output to an RTMP server. This demo showcases the modularity of BMF, multi-language development, and the ability of dynamically adjusting the pipeline.
+
 ![](./broadcaster.gif)
 
 ## The graph of the broadcaster demo

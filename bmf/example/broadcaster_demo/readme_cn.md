@@ -2,6 +2,9 @@
 
 [English Doc](./readme.md)
 
+本demo使用bmf框架组建了一个简单的导播服务，该服务提供api，能动态拉取视频输入源，控制视频布局，进行音频调音，最后输出流到一个RTMP服务器。这个demo展示了bmf的模块化，多语言开发和动态调整pipeline的特性。
+
+
 ![](./broadcaster.gif)
 
 ## 导播demo的graph组成

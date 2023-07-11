@@ -25,13 +25,13 @@ The examples are list below, we will explain them in detail.
 
 In the BMF, enabling GPU decoding is really simple. What you need to do is to add `"hwaccel": "cuda"` in the `"video_params"`.
 
-You should note that if you use GPU to decode videos, the decoded frames are in the GPU memory. So if you want to manipulate at the cpu side, don't forget copy these frames into cpu memory. In the BMF, you can set GPU decoding followed by a `cpu_gpu_trans_module` or followed by a `hwdownload` filter.
+You should note that if you use GPU to decode videos, the decoded frames are in the GPU memory. So if you want to manipulate them at the cpu side, don't forget to copy these frames into cpu memory. In the BMF, you can set GPU decoding followed by a `cpu_gpu_trans_module` or followed by a `hwdownload` filter.
 
 See more details in the `test_gpu_decode()`.
 
 ## Encode
 
-In the BMF, you can add `"codec": "h264_nvenc"` or `"codec": "h264_hevc"` in the encode module's `video_params` to enable GPU encoding. If the inputs of the encoder are in the GPU memory, you should add `"pix_fmt": "cuda"` to the `video_params`.
+In the BMF, you can add `"codec": "h264_nvenc"` or `"codec": "hevc_nvenc"` in the encode module's `video_params` to enable GPU encoding. If the inputs of the encoder are in the GPU memory, you should add `"pix_fmt": "cuda"` to the `video_params`.
 
 See more details in the `test_gpu_encode()` and `test_gpu_transcode()`.
 
@@ -41,13 +41,13 @@ For GPU transcoding, you should combine the GPU encoding and GPU encoding metion
 
 See more details in the `test_gpu_transcode()`.
 
-`test_gpu_transcode_1_to_n()` shows the BMF can transcode one video to several videos in the same time. Just add more encode module with different parameters after the same decode module.
+`test_gpu_transcode_1_to_n()` shows that BMF can transcode one video to several videos in the same time. Just add more encode modules with different parameters after the same decode module.
 
 ## Transcode with FFmpeg CUDA filters
 
 There're many CUDA filters in the FFmepg that can be used in the BMF through `ff_filter`. Using CUDA filters eliminates the copy overhead exits in the CPU filters when we are using GPU transcoding.
 
-Using these filters is really simple. just pass filter'name and paramters to the `ff_filter`. But you should be careful about where the data reserves. For example, in the `test_gpu_transcode_with_overlay_cuda()`, the logo is png and is decoded and processed in the CPU. The video is decoded by the GPU so the frames are in the GPU. Because we will use CUDA filters and GPU encoding, we should upload the result of logo to the GPU. Here we use hwupload_cuda filter.
+Using these filters is really simple. Just pass filter'name and paramters to the `ff_filter`. But you should be careful about where the data reserves. For example, in the `test_gpu_transcode_with_overlay_cuda()`, the logo is png and is decoded and processed in the CPU. The video is decoded by the GPU so the frames are in the GPU. Because we will use CUDA filters and GPU encoding, we should upload the result of logo to the GPU. Here we use hwupload_cuda filter.
 
 ## Multiple threads and multiple processes
 
@@ -59,9 +59,22 @@ We should `import bmf` in the task function rather than at the beginning of the 
 
 ## TensorRT Inference
 
-For video processing that use deep learning models, they can use [NVIDIA TensorRT](https://developer.nvidia.com/tensorrt) to accelerate inference. TensorRT is an SDK for high-performance deep learning inference, includes a deep learning inference optimizer and runtime that delivers low latency and high throuphput for inference applications.
+For video processings that use deep learning models, they can use [NVIDIA TensorRT](https://developer.nvidia.com/tensorrt) to accelerate inference. TensorRT is an SDK for high-performance deep learning inference, includes a deep learning inference optimizer and runtime that delivers low latency and high throuphput for inference applications.
 
 We provide two examples to show how to use TensorRT in BMF. One is the face detection, you can find it in the `examples/face_detect` folder. Another is the super resolution, it locates in the `examples/predict` folder.
+
+### Install TensorRT
+
+If you don't want to use TensorRT C++ APIs or to compile plugins written in C++. The simplest way to install TensorRT is by python package index installation.
+
+```python
+python3 -m pip install --upgrade tensorrt
+```
+
+The above pip command will pull in all the required CUDA libraries and cuDNN in Python wheel format from PyPI because they are dependencies of the TensorRT Python wheel. Also, it will upgrade tensorrt to the latest version if you had a previous version installed.
+
+If you want to access TensorRT C++ APIs, it's recommened to install TensorRT by `.tar` file or `.deb`, `.rpm` package. For more information, please refer to the official documentation: https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing
+
 
 ### Build a TensorRT engine
 
@@ -114,7 +127,7 @@ for i in range(self.num_inputs_, self.num_io_tensors_):
                                                         dtype=self.to_scalar_types(self.engine_.get_tensor_dtype(self.tensor_names_[i])))
 ```
 
-The inputs of TensorRT are usually from the decoded frames. If we need do some image preprocessing, we can convert the frames to the torch tensors. So, we can use torch operations to do preprocessing. During the inference, we should pass set the pointer bindings of inputs and outputs. Both torch tensor and bmf tensor can obtained raw pointers through `data_ptr()`.
+The inputs of TensorRT are usually from the decoded frames. If we need to do some image preprocessing, we can convert the frames to the torch tensors. So, we can use torch operations to do preprocessing. During the inference, we should set the pointer bindings of inputs and outputs. Both torch tensor and bmf tensor can obtained raw pointers through `data_ptr()`.
 
 ```python
 for i in range(self.num_inputs_):
@@ -129,7 +142,7 @@ After setting the input/output bindings, we can start TensorRT execution by:
 self.context_.execute_async_v3(self.stream_.handle())
 ```
 
-The outputs are BMF tensor since we create output buffer using `mp.empty`. If you want to process these outputs, you can convert these BMF tensors to Torch tensors.
+The outputs are BMF tensors since we create output buffer using `mp.empty`. If you want to process these outputs, you can convert these BMF tensors to Torch tensors.
 ```python
 output_tensor = torch.from_dlpack(self.output_dict_[self.tensor_names_[-1]])
 ```

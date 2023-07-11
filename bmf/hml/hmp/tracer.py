@@ -1,5 +1,5 @@
 # Red
-import hmp as mp
+import bmf.hml.hmp as mp
 
 
 def singleton(class_):

@@ -20,7 +20,7 @@
 #include <bmf/sdk/module_manager.h>
 #include <bmf/sdk/module_registry.h>
 
-#include <bmf_nlohmann/json_fwd.hpp>
+#include <nlohmann/json_fwd.hpp>
 
 #include <dlfcn.h>
 #include <memory>
@@ -53,9 +53,9 @@ BEGIN_BMF_ENGINE_NS
 
     JsonParam
     ModuleFactory::create_and_get_subgraph_config(std::string module_info, int node_id, std::string option) {
-        auto tmp = bmf_nlohmann::json::parse(module_info);
+        auto tmp = nlohmann::json::parse(module_info);
         auto info = ModuleConfig(tmp);
-        auto opt = JsonParam(bmf_nlohmann::json::parse(option));
+        auto opt = JsonParam(nlohmann::json::parse(option));
         std::shared_ptr<Module> module;
         create_module(info.module_name, node_id, opt, info.module_type, info.module_path, info.module_entry, module);
         // get graph_config of subgraph
@@ -70,9 +70,9 @@ BEGIN_BMF_ENGINE_NS
 
     std::pair<bool, std::shared_ptr<Module>>
     ModuleFactory::create_and_test_subgraph(std::string module_info, int node_id, std::string option) {
-        auto tmp = bmf_nlohmann::json::parse(module_info);
+        auto tmp = nlohmann::json::parse(module_info);
         auto info = ModuleConfig(tmp);
-        auto opt = JsonParam(bmf_nlohmann::json::parse(option));
+        auto opt = JsonParam(nlohmann::json::parse(option));
         std::shared_ptr<Module> module_instance;
         create_module(info.module_name, node_id, opt, info.module_type, info.module_path, info.module_entry,
                       module_instance);

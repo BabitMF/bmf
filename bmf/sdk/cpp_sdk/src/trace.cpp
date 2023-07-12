@@ -2,7 +2,7 @@
 #include <bmf/sdk/trace.h>
 
 #include <unistd.h>
-#include <bmf_nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 
 BEGIN_BMF_SDK_NS
 
@@ -337,7 +337,7 @@ BEGIN_BMF_SDK_NS
         std::map<std::string, std::map<std::string, uint16_t> > queue_info;
         std::map<std::string, std::map<std::string, std::pair<long long, uint16_t> > > throughput;
 
-        bmf_nlohmann::json flog;
+        nlohmann::json flog;
         char line[1024];
         long long init_time = LLONG_MAX;
         long long start_time = LLONG_MAX;
@@ -351,7 +351,7 @@ BEGIN_BMF_SDK_NS
                 FILE* fp = fopen(filename.c_str(), "r");
 
                 while (fgets(line, sizeof(line), fp)) {
-                    bmf_nlohmann::json linelog;
+                    nlohmann::json linelog;
 
                     // Line by line decoding
                     std::stringstream ss(line);
@@ -430,7 +430,7 @@ BEGIN_BMF_SDK_NS
                                     if (ts_completed.count(linelog["name"]) 
                                         && ts_completed[linelog["name"]].count(last_ts)) {
                                         // Duplicate an event for "B" and slot in
-                                        bmf_nlohmann::json duplog;
+                                        nlohmann::json duplog;
                                         duplog["pid"] = linelog["pid"];
                                         duplog["tid"] = linelog["tid"];
                                         duplog["ts"] = last_ts;
@@ -483,7 +483,7 @@ BEGIN_BMF_SDK_NS
                             // Create user info for first occurrence of user info
                             // within the event log
                             if (term_count == 6) {
-                                bmf_nlohmann::json user_info;
+                                nlohmann::json user_info;
                                 linelog["args"] = user_info;
                             }
 
@@ -647,22 +647,22 @@ BEGIN_BMF_SDK_NS
 
         // Output Trace statistics
         if (include_info) {
-            bmf_nlohmann::json logstats;
+            nlohmann::json logstats;
             logstats["ts"] = get_duration();
             logstats["name"] = "Trace Log";
             logstats["pid"] = process_name_;
             logstats["tid"] = thread_name_;
             logstats["cat"] = categories[2];
             logstats["ph"] = phases[0];
-            logstats["args"] = bmf_nlohmann::json::object();
-            logstats["args"]["buffer_stats"] = bmf_nlohmann::json::array();
+            logstats["args"] = nlohmann::json::object();
+            logstats["args"]["buffer_stats"] = nlohmann::json::array();
             logstats["args"]["buffer_size"] = trace_get_buffer_size();
             logstats["args"]["buffer_count"] = queue_map_.size();
 
             int buffer_allocated = 0;
 
             for (int i = 0; i < queue_map_.size(); i++) {
-                bmf_nlohmann::json queue_info;
+                nlohmann::json queue_info;
                 queue_info["tid"] = queue_map_[i].thread_name;
                 queue_info["overflowed_events"] = queue_map_[i].overflowed();
                 queue_info["total_events"] = queue_map_[i].total_count();

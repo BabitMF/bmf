@@ -1,5 +1,5 @@
 #include "builder.hpp"
-#include "bmf_nlohmann/json.hpp"
+#include "nlohmann/json.hpp"
 
 #include "cpp_test_helper.h"
 
@@ -10,14 +10,14 @@ TEST(cpp_sync_mode, sync_videoframe) {
     bmf::builder::Graph graph = bmf::builder::Graph(bmf::builder::NormalMode);
 
     // create decoder
-    bmf_nlohmann::json decoder_option = {
+    nlohmann::json decoder_option = {
         {"input_path", "../../example/files/overlay.png"}
     };
     auto decoder = graph.Sync(std::vector<int> {}, std::vector<int> {0}, 
         bmf_sdk::JsonParam(decoder_option), "c_ffmpeg_decoder");
 
     // create scale
-    bmf_nlohmann::json scale_option = {
+    nlohmann::json scale_option = {
         {"name", "scale"},
         {"para", "320:240"}
     };
@@ -25,7 +25,7 @@ TEST(cpp_sync_mode, sync_videoframe) {
         bmf_sdk::JsonParam(scale_option), "c_ffmpeg_filter");
 
     // create encoder
-    bmf_nlohmann::json encoder_option = {
+    nlohmann::json encoder_option = {
         {"output_path", output_file},
         {"format", "mjpeg"},
         {"video_params", {
@@ -70,20 +70,20 @@ TEST(cpp_sync_mode, sync_audioframe) {
     bmf::builder::Graph graph = bmf::builder::Graph(bmf::builder::NormalMode);
 
     // create decoder
-    bmf_nlohmann::json decoder_option = {
+    nlohmann::json decoder_option = {
         {"input_path", "../../example/files/img.mp4"}
     };
     auto decoder = graph.Sync(std::vector<int> {}, std::vector<int> {1}, decoder_option, "c_ffmpeg_decoder");
 
     // create volume
-    bmf_nlohmann::json volume_option = {
+    nlohmann::json volume_option = {
         {"name", "volume"},
         {"para", "volume=3"}
     };
     auto volume = graph.Sync(std::vector<int> {0}, std::vector<int> {0}, volume_option, "c_ffmpeg_filter");
 
     // create encoder
-    bmf_nlohmann::json encoder_option = {
+    nlohmann::json encoder_option = {
         {"output_path", output_file}
     };
     auto encoder = graph.Sync(std::vector<int> {0,1}, std::vector<int> {}, encoder_option, "c_ffmpeg_encoder");
@@ -114,25 +114,25 @@ TEST(cpp_sync_mode, sync_video_by_pkts) {
     bmf::builder::Graph graph = bmf::builder::Graph(bmf::builder::NormalMode);
 
     // create sync modules
-    bmf_nlohmann::json decoder_option = {
+    nlohmann::json decoder_option = {
         {"input_path", "../../example/files/img.mp4"}
     };
     auto decoder = graph.Sync(std::vector<int> {}, std::vector<int> {0,1}, decoder_option, "c_ffmpeg_decoder");
 
-    bmf_nlohmann::json scale_option = {
+    nlohmann::json scale_option = {
         {"name", "scale"},
         {"para", "320:250"}
     };
     auto scale = graph.Sync(std::vector<int> {0}, std::vector<int> {0}, 
         bmf_sdk::JsonParam(scale_option), "c_ffmpeg_filter");
 
-    bmf_nlohmann::json volume_option = {
+    nlohmann::json volume_option = {
         {"name", "volume"},
         {"para", "volume=3"}
     };
     auto volume = graph.Sync(std::vector<int> {0}, std::vector<int> {0}, volume_option, "c_ffmpeg_filter");
 
-    bmf_nlohmann::json encoder_option = {
+    nlohmann::json encoder_option = {
         {"output_path", output_file}
     };
     auto encoder = graph.Sync(std::vector<int> {0,1}, std::vector<int> {}, encoder_option, "c_ffmpeg_encoder");
@@ -190,18 +190,18 @@ TEST(cpp_sync_mode, sync_audio) {
     bmf::builder::Graph graph = bmf::builder::Graph(bmf::builder::NormalMode);
 
     // create sync modules
-    bmf_nlohmann::json decoder_option = {
+    nlohmann::json decoder_option = {
         {"input_path", "../../example/files/img.mp4"}
     };
     auto decoder = graph.Sync(std::vector<int> {}, std::vector<int> {1}, decoder_option, "c_ffmpeg_decoder");
 
-    bmf_nlohmann::json volume_option = {
+    nlohmann::json volume_option = {
         {"name", "volume"},
         {"para", "volume=3"}
     };
     auto volume = graph.Sync(std::vector<int> {0}, std::vector<int> {0}, volume_option, "c_ffmpeg_filter");
 
-    bmf_nlohmann::json encoder_option = {
+    nlohmann::json encoder_option = {
         {"output_path", output_file}
     };
     auto encoder = graph.Sync(std::vector<int> {0,1}, std::vector<int> {}, encoder_option, "c_ffmpeg_encoder");
@@ -233,25 +233,25 @@ TEST(cpp_sync_mode, sync_video) {
     bmf::builder::Graph graph = bmf::builder::Graph(bmf::builder::NormalMode);
 
     // create sync modules
-    bmf_nlohmann::json decoder_option = {
+    nlohmann::json decoder_option = {
         {"input_path", "../../example/files/big_bunny_10s_30fps.mp4"}
     };
     auto decoder = graph.Sync(std::vector<int> {}, std::vector<int> {0,1}, decoder_option, "c_ffmpeg_decoder");
 
-    bmf_nlohmann::json scale_option = {
+    nlohmann::json scale_option = {
         {"name", "scale"},
         {"para", "320:250"}
     };
     auto scale = graph.Sync(std::vector<int> {0}, std::vector<int> {0}, 
         bmf_sdk::JsonParam(scale_option), "c_ffmpeg_filter");
 
-    bmf_nlohmann::json volume_option = {
+    nlohmann::json volume_option = {
         {"name", "volume"},
         {"para", "volume=3"}
     };
     auto volume = graph.Sync(std::vector<int> {0}, std::vector<int> {0}, volume_option, "c_ffmpeg_filter");
 
-    bmf_nlohmann::json encoder_option = {
+    nlohmann::json encoder_option = {
         {"output_path", output_file}
     };
     auto encoder = graph.Sync(std::vector<int> {0,1}, std::vector<int> {}, encoder_option, "c_ffmpeg_encoder");
@@ -309,7 +309,7 @@ TEST(cpp_sync_mode, sync_eof_flush_data) {
     bmf::builder::Graph graph = bmf::builder::Graph(bmf::builder::NormalMode);
 
     // create decoder
-    bmf_nlohmann::json decoder_option = {
+    nlohmann::json decoder_option = {
         {"input_path", "../../example/files/big_bunny_10s_30fps.mp4"}
     };
     auto decoder = graph.Sync(std::vector<int> {}, std::vector<int> {0}, 

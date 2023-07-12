@@ -25,8 +25,8 @@ enum class BMF_API ModuleTag : module_tag_type {
   BMF_TAG_DONE = 0x01LL << (sizeof(module_tag_type) * 8 - 1),
 };
 
-ModuleTag operator|(ModuleTag tag1, ModuleTag tag2);
-ModuleTag operator|=(ModuleTag &tag1, ModuleTag tag2);
-std::ostream &operator<<(std::ostream &os, const ModuleTag &tag);
+ModuleTag BMF_API operator|(ModuleTag tag1, ModuleTag tag2);
+ModuleTag BMF_API operator|=(ModuleTag &tag1, ModuleTag tag2);
+std::ostream BMF_API &operator<<(std::ostream &os, const ModuleTag &tag);
 
 } // namespace bmf_sdk

@@ -18,7 +18,7 @@
 
 #include <bmf/sdk/log.h>
 
-#include <bmf_nlohmann/json_fwd.hpp>
+#include <nlohmann/json_fwd.hpp>
 
 #include <iostream>
 #include <string>
@@ -35,11 +35,11 @@ BEGIN_BMF_ENGINE_NS
         init(stream_config.json_value_);
     }
 
-    StreamConfig::StreamConfig(bmf_nlohmann::json &stream_config) {
+    StreamConfig::StreamConfig(nlohmann::json &stream_config) {
         init(stream_config);
     }
 
-    void StreamConfig::init(bmf_nlohmann::json &stream_config) {
+    void StreamConfig::init(nlohmann::json &stream_config) {
         identifier = stream_config.at("identifier").get<std::string>();
         auto p = identifier.find(':');
         if (p != std::string::npos) {
@@ -64,8 +64,8 @@ BEGIN_BMF_ENGINE_NS
         return alias;
     }
 
-    bmf_nlohmann::json StreamConfig::to_json(){
-        bmf_nlohmann::json json_stream_info;
+    nlohmann::json StreamConfig::to_json(){
+        nlohmann::json json_stream_info;
         json_stream_info["identifier"] = identifier;
         json_stream_info["notify"] = notify;
         json_stream_info["alias"] = alias;
@@ -76,11 +76,11 @@ BEGIN_BMF_ENGINE_NS
         init(module_config.json_value_);
     }
 
-    ModuleConfig::ModuleConfig(bmf_nlohmann::json &module_config) {
+    ModuleConfig::ModuleConfig(nlohmann::json &module_config) {
         init(module_config);
     }
 
-    void ModuleConfig::init(bmf_nlohmann::json &module_config) {
+    void ModuleConfig::init(nlohmann::json &module_config) {
         if (module_config.count("name"))
             module_name = module_config.at("name").get<std::string>();
         if (module_config.count("type"))
@@ -107,8 +107,8 @@ BEGIN_BMF_ENGINE_NS
         return module_entry;
     }
 
-    bmf_nlohmann::json ModuleConfig::to_json(){
-        bmf_nlohmann::json json_module_info;
+    nlohmann::json ModuleConfig::to_json(){
+        nlohmann::json json_module_info;
         json_module_info["name"] = module_name;
         json_module_info["type"] = module_type;
         json_module_info["path"] = module_path;
@@ -120,11 +120,11 @@ BEGIN_BMF_ENGINE_NS
         init(node_meta.json_value_);
     }
 
-    NodeMetaInfo::NodeMetaInfo(bmf_nlohmann::json &node_meta) {
+    NodeMetaInfo::NodeMetaInfo(nlohmann::json &node_meta) {
         init(node_meta);
     }
 
-    void NodeMetaInfo::init(bmf_nlohmann::json &node_meta) {
+    void NodeMetaInfo::init(nlohmann::json &node_meta) {
         if (node_meta.count("bundle_id"))
             bundle = node_meta.at("bundle_id").get<int32_t>();
         if (node_meta.count("premodule_id"))
@@ -158,10 +158,10 @@ BEGIN_BMF_ENGINE_NS
         return callback_binding;
     }
 
-    bmf_nlohmann::json NodeMetaInfo::to_json(){
-        bmf_nlohmann::json json_meta_info;
+    nlohmann::json NodeMetaInfo::to_json(){
+        nlohmann::json json_meta_info;
         json_meta_info["premodule_id"] = premodule_id;
-        json_meta_info["callback_binding"] = bmf_nlohmann::json(std::vector<std::string>());
+        json_meta_info["callback_binding"] = nlohmann::json(std::vector<std::string>());
         for (auto &it:callback_binding){
             json_meta_info["callback_binding"].push_back(std::to_string(it.first)+":"+std::to_string(it.second));
         }
@@ -172,7 +172,7 @@ BEGIN_BMF_ENGINE_NS
         init(node_config.json_value_);
     }
 
-    NodeConfig::NodeConfig(bmf_nlohmann::json &node_config) {
+    NodeConfig::NodeConfig(nlohmann::json &node_config) {
         init(node_config);
     }
 
@@ -184,7 +184,7 @@ BEGIN_BMF_ENGINE_NS
         return action;
     }
 
-    void NodeConfig::init(bmf_nlohmann::json &node_config) {
+    void NodeConfig::init(nlohmann::json &node_config) {
         if (node_config.count("id"))
             id = node_config.at("id").get<int>();
 
@@ -256,8 +256,8 @@ BEGIN_BMF_ENGINE_NS
         return scheduler;
     }
 
-    bmf_nlohmann::json NodeConfig::to_json() {
-        bmf_nlohmann::json json_node_config;
+    nlohmann::json NodeConfig::to_json() {
+        nlohmann::json json_node_config;
         json_node_config["id"] = id;
         json_node_config["scheduler"] = scheduler;
         json_node_config["input_manager"] = input_manager;
@@ -265,12 +265,12 @@ BEGIN_BMF_ENGINE_NS
         json_node_config["meta_info"] = meta.to_json();
         json_node_config["option"] = option.json_value_;
 
-        json_node_config["input_streams"] = bmf_nlohmann::json(std::vector<bmf_nlohmann::json>());
+        json_node_config["input_streams"] = nlohmann::json(std::vector<nlohmann::json>());
         for (StreamConfig input_stream:input_streams){
             json_node_config["input_streams"].push_back(input_stream.to_json());
         }
 
-        json_node_config["output_streams"] = bmf_nlohmann::json(std::vector<bmf_nlohmann::json>());
+        json_node_config["output_streams"] = nlohmann::json(std::vector<nlohmann::json>());
         for (StreamConfig output_stream:output_streams){
             json_node_config["output_streams"].push_back(output_stream.to_json());
         }
@@ -282,7 +282,7 @@ BEGIN_BMF_ENGINE_NS
         if (config_file == "")
             throw std::logic_error("No config file for graph config!");
 
-        bmf_nlohmann::json graph_json;
+        nlohmann::json graph_json;
         std::ifstream gs(config_file);
         gs >> graph_json;
         init(graph_json);
@@ -292,12 +292,12 @@ BEGIN_BMF_ENGINE_NS
         init(graph_config.json_value_);
     }
 
-    GraphConfig::GraphConfig(bmf_nlohmann::json &graph_config) {
+    GraphConfig::GraphConfig(nlohmann::json &graph_config) {
         init(graph_config);
     }
 
-    void GraphConfig::init(bmf_nlohmann::json &graph_config) {
-        auto validate = [](bmf_nlohmann::json graph) -> void {
+    void GraphConfig::init(nlohmann::json &graph_config) {
+        auto validate = [](nlohmann::json graph) -> void {
             std::unordered_map<std::string, std::string> input_streams;
             std::unordered_map<std::string, std::string> output_streams;
             std::unordered_map<std::string, std::unordered_set<std::string> > edges;
@@ -483,8 +483,8 @@ BEGIN_BMF_ENGINE_NS
         return output_streams;
     }
 
-    bmf_nlohmann::json GraphConfig::to_json(){
-        bmf_nlohmann::json json_graph_config;
+    nlohmann::json GraphConfig::to_json(){
+        nlohmann::json json_graph_config;
         json_graph_config["option"] = option.json_value_;
 
         if (mode == BmfMode::NORMAL_MODE){
@@ -499,18 +499,18 @@ BEGIN_BMF_ENGINE_NS
             json_graph_config["mode"] = "Pushdata";
         }
 
-        json_graph_config["input_streams"] = bmf_nlohmann::json(std::vector<bmf_nlohmann::json>());
+        json_graph_config["input_streams"] = nlohmann::json(std::vector<nlohmann::json>());
 
         for (StreamConfig input_stream:input_streams){
             json_graph_config["input_streams"].push_back(input_stream.to_json());
         }
 
-        json_graph_config["output_streams"] = bmf_nlohmann::json(std::vector<bmf_nlohmann::json>());
+        json_graph_config["output_streams"] = nlohmann::json(std::vector<nlohmann::json>());
         for (StreamConfig output_stream:output_streams){
             json_graph_config["output_streams"].push_back(output_stream.to_json());
         }
 
-        json_graph_config["nodes"] = bmf_nlohmann::json(std::vector<bmf_nlohmann::json>());
+        json_graph_config["nodes"] = nlohmann::json(std::vector<nlohmann::json>());
         for (NodeConfig node_config:nodes){
             json_graph_config["nodes"].push_back(node_config.to_json());
         }

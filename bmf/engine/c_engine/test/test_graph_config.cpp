@@ -23,7 +23,7 @@
 USE_BMF_ENGINE_NS
 USE_BMF_SDK_NS
 TEST(graph_config, graph_config) {
-    bmf_nlohmann::json graph_json;
+    nlohmann::json graph_json;
     std::string config_file = "../../../output/example/run_by_config/config.json";
     std::ifstream gs(config_file);
     gs >> graph_json;

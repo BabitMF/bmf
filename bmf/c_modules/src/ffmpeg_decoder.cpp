@@ -26,7 +26,7 @@
 #include <bmf/sdk/exception_factory.h>
 #include <bmf/sdk/error_define.h>
 #include <bmf/sdk/module_tag.h>
-using json = bmf_nlohmann::json;
+using json = nlohmann::json;
 
 #define BMF_CONV_FP(x) ((double) (x)) / (1 << 16)
 

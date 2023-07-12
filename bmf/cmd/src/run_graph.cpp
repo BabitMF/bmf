@@ -1,6 +1,6 @@
 #include <fstream>
 #include <iostream>
-#include <bmf_nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 #include <bmf/sdk/compat/path.h>
 #ifdef BMF_USE_MEDIACODEC
 #include <jni.h>
@@ -38,7 +38,7 @@ int main(int argc, char ** argv) {
 
     // Load file
     std::cout << "Loading graph config from " << filepath << std::endl;
-    bmf_nlohmann::json graph_json;
+    nlohmann::json graph_json;
     std::ifstream gs(filepath);
     gs >> graph_json;
     GraphConfig graph_config(graph_json);

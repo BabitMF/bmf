@@ -61,7 +61,7 @@ TEST(json_param, basic_type){
 
 TEST(json_param, basic_list_type){
     std::string str = "{\"int_list\":[1,2,3,4,5,6],\"double_list\":[0.001,0.002,0.003],\"string_list\":[\"test_str_001\",\"test_str_002\"]}";
-    bmf_nlohmann::json json_value = bmf_nlohmann::json::parse(str);
+    nlohmann::json json_value = nlohmann::json::parse(str);
     JsonParam json_param = JsonParam(json_value);
 
     std::vector<int> int_list;

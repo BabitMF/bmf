@@ -17,7 +17,7 @@
 #ifndef BMF_PARSE_JSON_H
 #define BMF_PARSE_JSON_H
 
-#include <bmf_nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <bmf/sdk/common.h>
 #include <bmf/sdk/bmf_type_info.h>
@@ -46,7 +46,7 @@ BEGIN_BMF_SDK_NS
         /** @overide
          *  @param json_value json value
             */
-        explicit JsonParam(bmf_nlohmann::json json_value);
+        explicit JsonParam(nlohmann::json json_value);
 
         template<typename T>
         JsonParam operator[](T name) {
@@ -66,7 +66,7 @@ BEGIN_BMF_SDK_NS
         /** @brief set value of json value
          *  @param json_value json value
             */
-        void set_value(bmf_nlohmann::json &value);
+        void set_value(nlohmann::json &value);
 
         /** @brief load file of json content
          *  @param file_name file name of json content
@@ -178,7 +178,7 @@ BEGIN_BMF_SDK_NS
         void merge_patch(const JsonParam& json_patch);
 
     public:
-        bmf_nlohmann::json json_value_;
+        nlohmann::json json_value_;
 
     };
 

@@ -1,5 +1,5 @@
 #include "builder.hpp"
-#include "bmf_nlohmann/json.hpp"
+#include "nlohmann/json.hpp"
 
 #include "cpp_test_helper.h"
 
@@ -7,12 +7,12 @@ TEST(cpp_edit, edit_concat) {
     std::string output_file = "./video_concat.mp4";
     BMF_CPP_FILE_REMOVE(output_file);
 
-    bmf_nlohmann::json graph_para = {
+    nlohmann::json graph_para = {
         {"dump_graph", 0}
     };
     auto graph = bmf::builder::Graph(bmf::builder::NormalMode, bmf_sdk::JsonParam(graph_para));
 
-    bmf_nlohmann::json decode_para = {
+    nlohmann::json decode_para = {
         {"input_path", "../../example/files/img.mp4"}
     };
 
@@ -67,7 +67,7 @@ TEST(cpp_edit, edit_concat) {
     auto concat_video = graph.Concat(video_concat_streams, "n=3:v=1:a=0");
     auto concat_audio = graph.Concat(audio_concat_streams, "n=3:v=0:a=1");
 
-    bmf_nlohmann::json encode_para = {
+    nlohmann::json encode_para = {
         {"output_path", output_file},
         {"video_params", {
             {"width", 1280},
@@ -88,17 +88,17 @@ TEST(cpp_edit, edit_overlay) {
     std::string output_file = "./overlays.mp4";
     BMF_CPP_FILE_REMOVE(output_file);
 
-    bmf_nlohmann::json graph_para = {
+    nlohmann::json graph_para = {
         {"dump_graph", 0}
     };
     auto graph = bmf::builder::Graph(bmf::builder::NormalMode, bmf_sdk::JsonParam(graph_para));
 
-    bmf_nlohmann::json decode_para = {
+    nlohmann::json decode_para = {
         {"input_path", "../../example/files/img.mp4"}
     };
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
 
-    bmf_nlohmann::json logoPara = {
+    nlohmann::json logoPara = {
         {"input_path", "../../example/files/xigua_prefix_logo_x.mov"}
     };
     auto logo = graph.Decode(bmf_sdk::JsonParam(logoPara));
@@ -111,7 +111,7 @@ TEST(cpp_edit, edit_overlay) {
         .Loop("loop=0:size=10000")
         .Setpts("PTS+0/TB");
 
-    bmf_nlohmann::json encode_para = {
+    nlohmann::json encode_para = {
         {"output_path", output_file},
         {"video_params", {
             {"width", 640},

@@ -22,10 +22,10 @@
 TEST(builder, decode_encode) {
     BMFLOG_SET_LEVEL(BMF_INFO);
 
-    bmf_nlohmann::json decoder_para;
+    nlohmann::json decoder_para;
     decoder_para["input_path"] = "../files/img.mp4";
 
-    bmf_nlohmann::json video_para, audio_para;
+    nlohmann::json video_para, audio_para;
     video_para["codec"] = "h264";
     video_para["width"] = 320;
     video_para["height"] = 240;
@@ -35,7 +35,7 @@ TEST(builder, decode_encode) {
     audio_para["bit_rate"] = 128000;
     audio_para["sample_rate"] = 44100;
     audio_para["channels"] = 2;
-    bmf_nlohmann::json encoder_para;
+    nlohmann::json encoder_para;
     encoder_para["output_path"] = "./output.mp4";
     encoder_para["video_params"] = video_para;
     encoder_para["audio_params"] = audio_para;
@@ -52,10 +52,10 @@ TEST(builder, decode_encode) {
 TEST(builder, decode_passthrough_encode) {
     BMFLOG_SET_LEVEL(BMF_INFO);
 
-    bmf_nlohmann::json decoder_para;
+    nlohmann::json decoder_para;
     decoder_para["input_path"] = "../files/img.mp4";
 
-    bmf_nlohmann::json video_para, audio_para;
+    nlohmann::json video_para, audio_para;
     video_para["codec"] = "h264";
     video_para["width"] = 320;
     video_para["height"] = 240;
@@ -65,7 +65,7 @@ TEST(builder, decode_passthrough_encode) {
     audio_para["bit_rate"] = 128000;
     audio_para["sample_rate"] = 44100;
     audio_para["channels"] = 2;
-    bmf_nlohmann::json encoder_para;
+    nlohmann::json encoder_para;
     encoder_para["output_path"] = "./output.mp4";
     encoder_para["video_params"] = video_para;
     encoder_para["audio_params"] = audio_para;
@@ -82,10 +82,10 @@ TEST(builder, decode_passthrough_encode) {
 
 TEST(builder, decode_filter_encode) {
     BMFLOG_SET_LEVEL(BMF_INFO);
-    bmf_nlohmann::json decoder_para;
+    nlohmann::json decoder_para;
     decoder_para["input_path"] = "../files/img.mp4";
 
-    bmf_nlohmann::json video_para, audio_para;
+    nlohmann::json video_para, audio_para;
     video_para["codec"] = "h264";
     video_para["width"] = 320;
     video_para["height"] = 240;
@@ -95,7 +95,7 @@ TEST(builder, decode_filter_encode) {
     audio_para["bit_rate"] = 128000;
     audio_para["sample_rate"] = 44100;
     audio_para["channels"] = 2;
-    bmf_nlohmann::json encoder_para;
+    nlohmann::json encoder_para;
     encoder_para["output_path"] = "./with_null_audio.mp4";
     encoder_para["video_params"] = video_para;
     encoder_para["audio_params"] = audio_para;
@@ -116,10 +116,10 @@ TEST(builder, decode_filter_encode) {
 TEST(builder, custom_module) {
     google::InitGoogleLogging("main");
     google::SetStderrLogging(google::INFO);
-    bmf_nlohmann::json decoder_para;
+    nlohmann::json decoder_para;
     decoder_para["input_path"] = "../files/img.mp4";
 
-    bmf_nlohmann::json video_para, audio_para;
+    nlohmann::json video_para, audio_para;
     video_para["codec"] = "h264";
     video_para["width"] = 320;
     video_para["height"] = 240;
@@ -129,7 +129,7 @@ TEST(builder, custom_module) {
     audio_para["bit_rate"] = 128000;
     audio_para["sample_rate"] = 44100;
     audio_para["channels"] = 2;
-    bmf_nlohmann::json encoder_para;
+    nlohmann::json encoder_para;
     encoder_para["output_path"] = "./output.mp4";
     encoder_para["video_params"] = video_para;
     encoder_para["audio_params"] = audio_para;

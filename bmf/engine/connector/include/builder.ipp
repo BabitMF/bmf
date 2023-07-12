@@ -19,7 +19,7 @@ namespace bmf::builder {
     template<typename T,
             typename std::enable_if<std::is_integral<T>{} || std::is_floating_point<T>{} ||
                                     std::is_convertible<T, std::string const &>{} ||
-                                    std::is_convertible<T, bmf_nlohmann::json>{}, bool>::type>
+                                    std::is_convertible<T, nlohmann::json>{}, bool>::type>
     Node Stream::FFMpegFilter(std::vector<Stream> inStreams, std::string const &filterName, T filterPara,
                               std::string const &alias) {
         bmf_sdk::JsonParam realPara;
@@ -106,7 +106,7 @@ namespace bmf::builder {
     template<typename T,
             typename std::enable_if<std::is_integral<T>{} || std::is_floating_point<T>{} ||
                                     std::is_convertible<T, std::string const &>{} ||
-                                    std::is_convertible<T, bmf_nlohmann::json>{}, bool>::type>
+                                    std::is_convertible<T, nlohmann::json>{}, bool>::type>
     Node Node::FFMpegFilter(std::vector<class Stream> inStreams, std::string const &filterName, T filterPara,
                             std::string const &alias) {
         bmf_sdk::JsonParam realPara;
@@ -193,7 +193,7 @@ namespace bmf::builder {
     template<typename T,
             typename std::enable_if<std::is_integral<T>{} || std::is_floating_point<T>{} ||
                                     std::is_convertible<T, std::string const &>{} ||
-                                    std::is_convertible<T, bmf_nlohmann::json>{}, bool>::type>
+                                    std::is_convertible<T, nlohmann::json>{}, bool>::type>
     Node Graph::FFMpegFilter(std::vector<Stream> inStreams, std::string const &filterName, T filterPara,
                              std::string const &alias) {
         bmf_sdk::JsonParam realPara;

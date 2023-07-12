@@ -30,12 +30,12 @@
 #include "../include/connector.hpp"
 
 
-#include <bmf_nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 
 #include <functional>
 #include <memory>
 
-using json_t = bmf_nlohmann::json;
+using json_t = nlohmann::json;
 
 namespace bmf {
     BMFGraph::BMFGraph(const std::string &graph_config, bool is_path, bool need_merge) {

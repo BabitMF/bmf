@@ -275,7 +275,7 @@ void module_sdk_bind(py::module &m)
         .value("kJsonParam", OpaqueDataKey::kJsonParam)
         .value("kBMFVideoFrame", OpaqueDataKey::kBMFVideoFrame)
         .value("kATTensor", OpaqueDataKey::kATTensor)
-        .value("kReserved_5", OpaqueDataKey::kReserved_5)
+        .value("kCVMat", OpaqueDataKey::kCVMat)
         .value("kReserved_6", OpaqueDataKey::kReserved_6)
         .value("kReserved_7", OpaqueDataKey::kReserved_7)
         .export_values();

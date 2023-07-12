@@ -73,6 +73,12 @@ target_link_libraries(test_bmf_module_sdk
         gtest
 )
 
+if(HMP_ENABLE_OPENCV)
+    # need by ffmpeg for hwframe support
+    target_link_libraries(test_bmf_module_sdk
+        PUBLIC hmp)
+endif()
+
 
 if(BMF_ENABLE_CUDA)
     # need by ffmpeg for hwframe support

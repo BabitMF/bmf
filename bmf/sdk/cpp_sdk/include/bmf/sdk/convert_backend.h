@@ -11,16 +11,17 @@ class Convertor
 public:
     Convertor();
     virtual ~Convertor() {}
-    virtual int media_cvt(VideoFrame &src, MediaDesc &dp);
-    virtual VideoFrame format_cvt(VideoFrame &src, MediaDesc &dp);
-    virtual VideoFrame device_cvt(VideoFrame &src, MediaDesc &dp);
+    virtual int media_cvt(VideoFrame &src, const MediaDesc &dp);
+    virtual int media_cvt_to_videoframe(VideoFrame &src, const MediaDesc &dp);
+    virtual VideoFrame format_cvt(VideoFrame &src, const MediaDesc &dp);
+    virtual VideoFrame device_cvt(VideoFrame &src, const MediaDesc &dp);
 };
 
 
-BMF_API void set_convertor(const MediaType &media_type, Convertor convertor);
-BMF_API Convertor *get_convertor(std::string &media_type);
+BMF_API void set_convertor(const MediaType &media_type, Convertor* convertor);
+BMF_API Convertor *get_convertor(const MediaType &media_type);
 
-BMF_API VideoFrame bmf_convert(VideoFrame vf, MediaDesc &dp);
+BMF_API VideoFrame bmf_convert(VideoFrame& src_vf, const MediaDesc &src_dp, const MediaDesc &dst_dp);
 
 template<typename ...Args>
 struct Register {

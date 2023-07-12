@@ -30,7 +30,7 @@ option(HMP_ENABLE_TORCH "Enable Troch support" ON)
 option(HMP_ENABLE_PYTHON "Enable Python support" ON)
 option(HMP_ENABLE_JNI "Enable build with JNI support" ON)
 option(HMP_ENABLE_MOBILE "Enable build for mobile device" OFF)
-set(HMP_CUDA_ARCH_FLAGS 7.0 7.5)
+set(HMP_CUDA_ARCH_FLAGS 7.0 7.5 8.0 8.6)
 
 
 ### version

@@ -209,7 +209,6 @@ TEST(video_frame, hardware_avframe_csc_resize)
     Tensor t_img = vf_rgb.frame().plane(0);
     hmp::img::yuv_to_rgb(t_img, vf.frame().data(), NV12, kNHWC);
     EXPECT_TRUE(t_img.device() == kCUDA);
-
     auto vf_yuv_from_rgb = VideoFrame::make(width, height, H420, kCUDA);
     TensorList tl = vf_yuv_from_rgb.frame().data();
     hmp::img::rgb_to_yuv(tl, vf_rgb.frame().data()[0], H420, kNHWC);

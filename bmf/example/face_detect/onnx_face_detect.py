@@ -127,8 +127,13 @@ class onnx_face_detect(Module):
                 detect_result = detect_result_list[index_frame][index_box]
                 draw.rectangle([detect_result.x1_, detect_result.y1_, detect_result.x2_,detect_result.y2_])
             del draw
+
             img = np.asarray(image)
-            output_frame = VideoFrame.from_ndarray(img,"rgb24")
+            H420 = mp.PixelInfo(mp.kPF_YUV420P)
+            rgb = mp.PixelInfo(mp.kPF_RGB24)
+
+            frame = mp.Frame(mp.from_numpy(img), rgb) 
+            output_frame = VideoFrame(frame).reformat(H420)
             output_frame.pts = input_frames[index_frame].pts
             output_frame.time_base = input_frames[index_frame].time_base
             output_frame_list.append(output_frame)
@@ -141,9 +146,12 @@ class onnx_face_detect(Module):
         if frame_num==0:
             return [],[]
         for i in range(frame_num):
-            frame = self.frame_cache_.get()
-            input_frames.append(frame)
-            input_pil_arrays.append(Image.fromarray(np.uint8(frame.to_ndarray(format="rgb24"))))
+            vf = self.frame_cache_.get()
+            input_frames.append(vf)
+
+            rgb = mp.PixelInfo(mp.kPF_RGB24)
+            numpy_vf = vf.reformat(rgb).frame().plane(0).numpy()
+            input_pil_arrays.append(Image.fromarray(numpy_vf))
 
         input_tensor = self.pre_process(input_pil_arrays)
         scores,boxes = self.sess_.run(self.output_names_, {self.input_names_[0]: input_tensor})
@@ -161,26 +169,24 @@ class onnx_face_detect(Module):
 
         while not input_queue.empty():
             pkt = input_queue.get()
-            if pkt.get_timestamp() == Timestamp.EOF:
+            if pkt.timestamp == Timestamp.EOF:
                 # we should done all frames processing in following loop
                 self.eof_received_ = True
-            if pkt.get_data() is not None:
-                self.frame_cache_.put(pkt.get_data())
+            if pkt.is_(VideoFrame):
+                self.frame_cache_.put(pkt.get(VideoFrame))
         # detect processing
         while self.frame_cache_.qsize() >= self.in_frame_num_ or \
                 self.eof_received_:
             data_list,extra_data_list = self.detect()
             for index in range(len(data_list)):
                 # add sr output frame to task output queue
-                pkt = Packet()
-                pkt.set_timestamp(data_list[index].pts)
-                pkt.set_data(data_list[index])
+                pkt = Packet(data_list[index])
+                pkt.timestamp = data_list[index].pts
                 task.get_outputs()[0].put(pkt)
                 # push output
                 if(output_queue_size>=2):
-                    pkt = Packet()
-                    pkt.set_timestamp(data_list[index].pts)
-                    pkt.set_data(extra_data_list[index])
+                    pkt = Packet(extra_data_list[index])
+                    pkt.timestamp = data_list[index].pts
                     task.get_outputs()[1].put(pkt)
 
             # all frames processed, quit the loop

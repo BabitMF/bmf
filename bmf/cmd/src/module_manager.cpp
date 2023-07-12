@@ -6,7 +6,7 @@
 #include <bmf/sdk/module.h>
 #include <bmf/sdk/module_manager.h>
 #include <bmf/sdk/shared_library.h>
-#include <bmf_nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 #include <cerrno>
 #include <cstring>
 #include <fstream>
@@ -127,7 +127,7 @@ int install_module(const bmf_sdk::ModuleInfo &info, bool force) {
   fs::copy(original_path, installed_path);
 
   // bmf_sdk::JsonParam meta;
-  bmf_nlohmann::json meta;
+  nlohmann::json meta;
   meta["name"] = info.module_name;
   meta["revision"] = info.module_revision;
   meta["type"] = info.module_type;

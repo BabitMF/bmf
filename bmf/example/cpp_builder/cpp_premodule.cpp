@@ -1,5 +1,5 @@
 #include "builder.hpp"
-#include "bmf_nlohmann/json.hpp"
+#include "nlohmann/json.hpp"
 
 #include "cpp_test_helper.h"
 
@@ -7,7 +7,7 @@ TEST(cpp_premodule, premodule) {
     std::string output_file = "./output.mp4";
     BMF_CPP_FILE_REMOVE(output_file);
 
-    bmf_nlohmann::json pre_module_option = {
+    nlohmann::json pre_module_option = {
         {"name", "analysis_SR"},
         {"para", "analysis_SR"}
     };
@@ -20,10 +20,10 @@ TEST(cpp_premodule, premodule) {
     );
 
     for (int i = 0; i < 3; i++) {
-        bmf_nlohmann::json graph_para = {
+        nlohmann::json graph_para = {
             {"dump_graph", 1}
         };
-        bmf_nlohmann::json decode_para = {
+        nlohmann::json decode_para = {
             {"input_path", "../../example/files/img.mp4"}
         };
         auto graph = bmf::builder::Graph(bmf::builder::NormalMode, bmf_sdk::JsonParam(graph_para));
@@ -33,7 +33,7 @@ TEST(cpp_premodule, premodule) {
         auto analyzed = output.PythonModule({}, "analysis", bmf_sdk::JsonParam());
         analyzed.SetPreModule(pre_module);
 
-        bmf_nlohmann::json encode_para = {
+        nlohmann::json encode_para = {
             {"output_path", output_file},
             {"video_params", {
                 {"width", 300},

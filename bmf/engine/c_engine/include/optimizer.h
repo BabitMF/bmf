@@ -22,7 +22,7 @@
 #include <bmf/sdk/module.h>
 #include "../include/graph_config.h"
 #include "../include/module_factory.h"
-#include <bmf_nlohmann/json_fwd.hpp>
+#include <nlohmann/json_fwd.hpp>
 #include <iostream>
 #include <string>
 #include <list>
@@ -32,7 +32,7 @@
 #include <unordered_set>
 #include <unordered_map>
 
-using json = bmf_nlohmann::json;
+using json = nlohmann::json;
 
 #define Py_ADD_GIL PyGILState_STATE gstate = PyGILState_Ensure();{
 #define Py_RELEASE_GIL }PyGILState_Release(gstate);

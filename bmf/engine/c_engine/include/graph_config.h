@@ -17,7 +17,7 @@
 #ifndef BMF_GRAPH_CONFIG_H
 #define BMF_GRAPH_CONFIG_H
 
-#include <bmf_nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 
 #include <bmf/sdk/common.h>
 #include <bmf/sdk/json_param.h>
@@ -32,7 +32,7 @@ BEGIN_BMF_ENGINE_NS
     public:
         ModuleConfig() = default;
 
-        ModuleConfig(bmf_nlohmann::json &module_config);
+        ModuleConfig(nlohmann::json &module_config);
 
         ModuleConfig(JsonParam &module_config);
 
@@ -41,7 +41,7 @@ BEGIN_BMF_ENGINE_NS
         std::string get_module_path();
         std::string get_module_entry();
 
-        bmf_nlohmann::json to_json();
+        nlohmann::json to_json();
 
         std::string module_name;
         std::string module_type;
@@ -55,14 +55,14 @@ BEGIN_BMF_ENGINE_NS
 
 
     private:
-        void init(bmf_nlohmann::json &module_config);
+        void init(nlohmann::json &module_config);
     };
 
     class StreamConfig {
     public:
         StreamConfig() = default;
 
-        StreamConfig(bmf_nlohmann::json &stream_config);
+        StreamConfig(nlohmann::json &stream_config);
 
         StreamConfig(JsonParam &stream_config);
 
@@ -72,7 +72,7 @@ BEGIN_BMF_ENGINE_NS
 
         std::string get_notify();
 
-        bmf_nlohmann::json to_json();
+        nlohmann::json to_json();
 
         std::string identifier;
         std::string alias;
@@ -83,7 +83,7 @@ BEGIN_BMF_ENGINE_NS
         }
 
     private:
-        void init(bmf_nlohmann::json &stream_config);
+        void init(nlohmann::json &stream_config);
     };
 
     class NodeMetaInfo {
@@ -92,7 +92,7 @@ BEGIN_BMF_ENGINE_NS
 
         NodeMetaInfo(JsonParam &node_meta);
 
-        NodeMetaInfo(bmf_nlohmann::json &node_meta);
+        NodeMetaInfo(nlohmann::json &node_meta);
 
         int32_t get_premodule_id();
 
@@ -102,7 +102,7 @@ BEGIN_BMF_ENGINE_NS
 
         std::map<int64_t, uint32_t> get_callback_binding();
 
-        bmf_nlohmann::json to_json();
+        nlohmann::json to_json();
 
         bool operator==(NodeMetaInfo const &rhs){
            return this->premodule_id==rhs.premodule_id && this->bundle==rhs.bundle &&
@@ -110,7 +110,7 @@ BEGIN_BMF_ENGINE_NS
         }
 
     private:
-        void init(bmf_nlohmann::json &node_meta);
+        void init(nlohmann::json &node_meta);
 
         int32_t premodule_id = -1;
         int32_t bundle = -1;
@@ -122,7 +122,7 @@ BEGIN_BMF_ENGINE_NS
     public:
         NodeConfig() = default;
 
-        NodeConfig(bmf_nlohmann::json &node_config);
+        NodeConfig(nlohmann::json &node_config);
 
         NodeConfig(JsonParam &node_config);
 
@@ -152,7 +152,7 @@ BEGIN_BMF_ENGINE_NS
 
         std::string get_action();
 
-        bmf_nlohmann::json to_json();
+        nlohmann::json to_json();
 
         bool operator==(NodeConfig const &rhs){
            return this->id==rhs.id && this->module==rhs.module && this->meta==rhs.meta;
@@ -169,7 +169,7 @@ BEGIN_BMF_ENGINE_NS
         std::string alias;
         std::string action;
     private:
-        void init(bmf_nlohmann::json &node_config);
+        void init(nlohmann::json &node_config);
     };
 
     class GraphConfig {
@@ -178,7 +178,7 @@ BEGIN_BMF_ENGINE_NS
 
         GraphConfig(std::string config_file);
 
-        GraphConfig(bmf_nlohmann::json &graph_config);
+        GraphConfig(nlohmann::json &graph_config);
 
         GraphConfig(JsonParam &graph_json);
 
@@ -192,7 +192,7 @@ BEGIN_BMF_ENGINE_NS
 
         std::vector<StreamConfig> get_output_streams();
 
-        bmf_nlohmann::json to_json();
+        nlohmann::json to_json();
 
         std::vector<NodeConfig> nodes;
         BmfMode mode;
@@ -201,7 +201,7 @@ BEGIN_BMF_ENGINE_NS
         JsonParam option;
 
     private:
-        void init(bmf_nlohmann::json &graph_config);
+        void init(nlohmann::json &graph_config);
     };
 END_BMF_ENGINE_NS
 

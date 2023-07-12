@@ -1,13 +1,13 @@
 #include "builder.hpp"
-#include "bmf_nlohmann/json.hpp"
+#include "nlohmann/json.hpp"
 
 void rgb2video() {
-    bmf_nlohmann::json graph_para = {
+    nlohmann::json graph_para = {
         {"dump_graph", 1}
     };
     auto graph = bmf::builder::Graph(bmf::builder::NormalMode, bmf_sdk::JsonParam(graph_para));
 
-    bmf_nlohmann::json decode_para = {
+    nlohmann::json decode_para = {
         {"input_path", "/opt/tiger/bmf/example/files/test_rgba_806x654.rgb"},
         {"s", "806:654"},
         {"pix_fmt", "rgba"}
@@ -16,7 +16,7 @@ void rgb2video() {
 
     auto video_stream = stream["video"].FFMpegFilter({}, "loop", "loop=50:size=1");
 
-    bmf_nlohmann::json encode_para = {
+    nlohmann::json encode_para = {
         {"output_path", "./rgb2video.mp4"},
     };
 

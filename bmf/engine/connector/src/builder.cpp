@@ -70,8 +70,8 @@ namespace bmf::builder {
                                                           moduleEntry, inputStreamManager, scheduler);
         }
 
-        bmf_nlohmann::json RealStream::Dump() {
-            bmf_nlohmann::json info;
+        nlohmann::json RealStream::Dump() {
+            nlohmann::json info;
 
             info["identifier"] = (notify_.empty() ? "" : (notify_ + ":")) + name_;
             info["alias"] = alias_;
@@ -89,8 +89,8 @@ namespace bmf::builder {
                 : moduleName_(std::move(moduleName)), moduleType_(moduleType), modulePath_(std::move(modulePath)),
                   moduleEntry_(std::move(moduleEntry)) {}
 
-        bmf_nlohmann::json RealNode::ModuleMetaInfo::Dump() {
-            bmf_nlohmann::json info;
+        nlohmann::json RealNode::ModuleMetaInfo::Dump() {
+            nlohmann::json info;
 
             switch (moduleType_) {
                 case C:
@@ -113,11 +113,11 @@ namespace bmf::builder {
             return info;
         }
 
-        bmf_nlohmann::json RealNode::NodeMetaInfo::Dump() {
-            bmf_nlohmann::json info;
+        nlohmann::json RealNode::NodeMetaInfo::Dump() {
+            nlohmann::json info;
 
             info["premodule_id"] = preModuleUID_;
-            info["callback_bindings"] = bmf_nlohmann::json::object();
+            info["callback_bindings"] = nlohmann::json::object();
             for (auto &kv:callbackBinding_)
             {
                 info["callback_bindings"][kv.first] = kv.second;
@@ -217,17 +217,17 @@ namespace bmf::builder {
                                             moduleEntry, inputStreamManager, scheduler);
         }
 
-        bmf_nlohmann::json RealNode::Dump() {
-            bmf_nlohmann::json info;
+        nlohmann::json RealNode::Dump() {
+            nlohmann::json info;
 
             info["id"] = id_;
             info["alias"] = alias_;
             info["module_info"] = moduleInfo_.Dump();
             info["meta_info"] = metaInfo_.Dump();
-            info["input_streams"] = bmf_nlohmann::json::array();
+            info["input_streams"] = nlohmann::json::array();
             for (auto &s:inputStreams_)
                 info["input_streams"].push_back(s->Dump());
-            info["output_streams"] = bmf_nlohmann::json::array();
+            info["output_streams"] = nlohmann::json::array();
             for (auto &s:outputStreams_)
                 info["output_streams"].push_back(s->Dump());
             info["option"] = option_.json_value_;
@@ -324,12 +324,12 @@ namespace bmf::builder {
             return placeholderNode_->Stream(placeholderNode_->outputStreams_.size());
         }
 
-        bmf_nlohmann::json RealGraph::Dump() {
-            bmf_nlohmann::json info;
+        nlohmann::json RealGraph::Dump() {
+            nlohmann::json info;
 
-            info["input_streams"] = bmf_nlohmann::json::array();
-            info["output_streams"] = bmf_nlohmann::json::array();
-            info["nodes"] = bmf_nlohmann::json::array();
+            info["input_streams"] = nlohmann::json::array();
+            info["output_streams"] = nlohmann::json::array();
+            info["nodes"] = nlohmann::json::array();
             info["option"] = graphOption_.json_value_;
             switch (mode_) {
                 case NormalMode:
@@ -526,7 +526,7 @@ namespace bmf::builder {
 
     Node Stream::FFMpegFilter(const std::vector<Stream> &inStreams, std::string const &filterName,
                               bmf_sdk::JsonParam filterPara, std::string const &alias) {
-        bmf_nlohmann::json realPara;
+        nlohmann::json realPara;
         realPara["name"] = filterName;
         realPara["para"] = filterPara.json_value_;
         filterPara = bmf_sdk::JsonParam(realPara);
@@ -653,7 +653,7 @@ namespace bmf::builder {
 
     Node Node::FFMpegFilter(const std::vector<class Stream> &inStreams, std::string const &filterName,
                             bmf_sdk::JsonParam filterPara, std::string const &alias) {
-        bmf_nlohmann::json realPara;
+        nlohmann::json realPara;
         realPara["name"] = filterName;
         realPara["para"] = filterPara.json_value_;
         filterPara = bmf_sdk::JsonParam(realPara);
@@ -687,7 +687,7 @@ namespace bmf::builder {
     Graph::Graph(GraphMode runMode, bmf_sdk::JsonParam graphOption)
             : graph_(std::make_shared<internal::RealGraph>(runMode, graphOption)) {}
 
-    Graph::Graph(GraphMode runMode, bmf_nlohmann::json graphOption)
+    Graph::Graph(GraphMode runMode, nlohmann::json graphOption)
             : graph_(std::make_shared<internal::RealGraph>(runMode, bmf_sdk::JsonParam(graphOption))) {}
 
     bmf::BMFGraph Graph::Instantiate(bool dumpGraph, bool needMerge) {
@@ -798,7 +798,7 @@ namespace bmf::builder {
     Graph::FFMpegFilter(const std::vector<Stream> &inStreams, std::string const &filterName,
                         const bmf_sdk::JsonParam &filterPara,
                         std::string const &alias) {
-        bmf_nlohmann::json realPara;
+        nlohmann::json realPara;
         realPara["name"] = filterName;
         realPara["para"] = filterPara.json_value_;
         return NewNode(alias, bmf_sdk::JsonParam(realPara), inStreams, "c_ffmpeg_filter", CPP, "", "", Immediate,
@@ -849,21 +849,21 @@ namespace bmf::builder {
                 module_type = "c++";
         }
         if (moduleName.compare("c_ffmpeg_filter") == 0) {
-            bmf_nlohmann::json inputOption;
-            bmf_nlohmann::json outputOption;
+            nlohmann::json inputOption;
+            nlohmann::json outputOption;
             for (auto id : inStreams) {
-                bmf_nlohmann::json stream = {
+                nlohmann::json stream = {
                     {"identifier", moduleName + std::to_string(id)}
                 };
                 inputOption.push_back(stream);
             }
             for (auto id : outStreams) {
-                bmf_nlohmann::json stream = {
+                nlohmann::json stream = {
                     {"identifier", moduleName + std::to_string(id)}
                 };
                 outputOption.push_back(stream);
             }
-            bmf_nlohmann::json option = {
+            nlohmann::json option = {
                 {"option", moduleOption.json_value_},
                 {"input_streams", inputOption},
                 {"output_streams", outputOption},
@@ -883,7 +883,7 @@ namespace bmf::builder {
 
     SyncModule 
     Graph::Sync(const std::vector<int> inStreams, const std::vector<int> outStreams, 
-                bmf_nlohmann::json moduleOption, std::string const &moduleName, ModuleType moduleType, 
+                nlohmann::json moduleOption, std::string const &moduleName, ModuleType moduleType, 
                 std::string const &modulePath, std::string const &moduleEntry, std::string const &alias, 
                 InputManagerType inputStreamManager, int scheduler) {
         return Sync(inStreams, outStreams, bmf_sdk::JsonParam(moduleOption), moduleName, moduleType,

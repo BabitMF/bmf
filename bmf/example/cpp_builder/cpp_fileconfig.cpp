@@ -1,5 +1,5 @@
 #include "builder.hpp"
-#include "bmf_nlohmann/json.hpp"
+#include "nlohmann/json.hpp"
 #include "graph_config.h"
 #include <fstream>
 #include <iostream>
@@ -11,7 +11,7 @@ TEST(cpp_fileconfig, run_by_config) {
     std::string output_file = "../files/out.mp4";
     BMF_CPP_FILE_REMOVE(output_file);
 
-    bmf_nlohmann::json graph_para = {
+    nlohmann::json graph_para = {
         {"dump_graph", 1}
     };
     // auto graph = bmf::builder::Graph(bmf::builder::NormalMode, bmf_sdk::JsonParam(graph_para));

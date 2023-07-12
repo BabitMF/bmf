@@ -24,7 +24,7 @@
 USE_BMF_ENGINE_NS
 USE_BMF_SDK_NS
 TEST(graph, start) {
-    bmf_nlohmann::json graph_json;
+    nlohmann::json graph_json;
     std::string config_file = "../files/graph_start.json";
     std::ifstream gs(config_file);
     gs >> graph_json;
@@ -74,7 +74,7 @@ TEST(graph, decode_encode) {
     BMFLOG_SET_LEVEL(BMF_INFO);
 
     time_t time1 = clock();
-    bmf_nlohmann::json graph_json;
+    nlohmann::json graph_json;
     std::string config_file = "../files/graph.json";
     std::ifstream gs(config_file);
     gs >> graph_json;
@@ -95,7 +95,7 @@ TEST(graph, c_decode_encode) {
     BMFLOG_SET_LEVEL(BMF_INFO);
 
     time_t time1 = clock();
-    bmf_nlohmann::json graph_json;
+    nlohmann::json graph_json;
     std::string config_file = "../files/graph_c.json";
     std::ifstream gs(config_file);
     gs >> graph_json;
@@ -172,7 +172,7 @@ TEST(graph, dynamic_remove) {
 
 TEST(graph, decode_filter_encode) {
     BMFLOG_SET_LEVEL(BMF_INFO);
-    bmf_nlohmann::json graph_json;
+    nlohmann::json graph_json;
     std::string config_file = "../files/filter_opt_graph.json";
     std::ifstream gs(config_file);
     gs >> graph_json;
@@ -187,7 +187,7 @@ TEST(graph, decode_filter_encode) {
 TEST(graph, c_decode_filter_encode) {
     BMFLOG_SET_LEVEL(BMF_INFO);
 
-    bmf_nlohmann::json graph_json;
+    nlohmann::json graph_json;
     std::string config_file = "../files/filter_opt_graph_c.json";
     std::ifstream gs(config_file);
     gs >> graph_json;

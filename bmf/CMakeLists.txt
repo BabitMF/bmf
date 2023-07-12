@@ -200,8 +200,8 @@ if(IOS)
                             ${IOS_ASSEMBLE_ROOT}/include/fmt
         COMMAND 
         ${CMAKE_COMMAND} -E copy_directory 
-                            ${BMF_ASSEMBLE_ROOT}/bmf/include/bmf_nlohmann
-                            ${IOS_ASSEMBLE_ROOT}/include/bmf_nlohmann
+                            ${BMF_ASSEMBLE_ROOT}/bmf/include/nlohmann
+                            ${IOS_ASSEMBLE_ROOT}/include/nlohmann
         COMMAND 
         ${CMAKE_COMMAND} -E copy_directory 
                             ${CMAKE_CURRENT_SOURCE_DIR}/object-c/include/bmf/oc

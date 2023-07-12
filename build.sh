@@ -50,31 +50,17 @@ then
         BUILD_TYPE="Debug"
         COVERAGE_OPTION=1
     fi
-
-    # Use BMF 3rd_party/FFMPEG
-    if [ "$1" = "bmf_ffmpeg" ]
-    then
-        export USE_BMF_FFMPEG=1
-    fi
 fi
 
 mkdir -p output
 
 git submodule update --init --recursive
-
-
+(cd 3rd_party/dlpack && cmake . && make && make install && cd -)
 if [ ! -d "3rd_party/breakpad" ]
 then
-    echo "Extracting 3rd_party"
-    (cd 3rd_party/ && tar xvf 3rd_party.tar.xz)
-    (cd 3rd_party/dlpack && cmake . && make && make install)
-fi
-
-if [ "$USE_BMF_FFMPEG" = "1" ]
-then
-    echo "Using ffmpeg lib"
-else
-    echo "Without ffmpeg"
+    cd 3rd_party/
+    tar xvf 3rd_party.tar.gz
+    cd -
 fi
 
 # cp -a $PWD/3rd_party/ffmpeg_bin/linux/build/lib/. /usr/local/lib/
@@ -206,12 +192,3 @@ else
     fi
 fi
 
-if [ "$USE_BMF_FFMPEG" = "1" ]
-then
-    # Cater for CI and SCM install
-    mkdir -p output/3rd_party/lib output/3rd_party/bin output/3rd_party/include
-    cp -a -r 3rd_party/ffmpeg_bin/linux/build/lib/. output/3rd_party/lib
-    cp -a -r 3rd_party/ffmpeg_bin/linux/build/bin/. output/3rd_party/bin
-    cp -a -r 3rd_party/ffmpeg_bin/linux/build/include/. output/3rd_party/include
-
-fi

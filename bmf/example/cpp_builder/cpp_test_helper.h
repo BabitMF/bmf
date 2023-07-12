@@ -9,7 +9,7 @@
 #include <openssl/md5.h>
 
 #include "gtest/gtest.h"
-#include "bmf_nlohmann/json.hpp"
+#include "nlohmann/json.hpp"
 
 #define BMF_CPP_FILE_CHECK(output_file, expected_results) \
     EXPECT_EQ(true, MediaInfo(output_file).MediaCompareEquals(expected_results))
@@ -24,7 +24,7 @@ public:
     bool MediaCompareEquals(std::string expected);
     bool MediaCompareMD5(const std::string& md5);
 private:
-    bmf_nlohmann::json mediaJson;
+    nlohmann::json mediaJson;
     std::string filePath;
 };
 

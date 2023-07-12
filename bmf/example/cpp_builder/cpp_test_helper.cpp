@@ -21,7 +21,7 @@ MediaInfo::MediaInfo(std::string filepath) {
     std::cout << result << std::endl;
 
     // Deserialize results
-    mediaJson = bmf_nlohmann::json::parse(result);
+    mediaJson = nlohmann::json::parse(result);
 }
 
 bool MediaInfo::MediaCompareEquals(std::string expected) {
@@ -32,9 +32,9 @@ bool MediaInfo::MediaCompareEquals(std::string expected) {
         expected_comps.push_back(token);
     }
 
-    bmf_nlohmann::json extraInfo;
+    nlohmann::json extraInfo;
     if (expected_comps.size() == 9)
-        extraInfo = bmf_nlohmann::json::parse(expected_comps[8]);
+        extraInfo = nlohmann::json::parse(expected_comps[8]);
 
     for (int i = 0; i < mediaJson["streams"].size(); i++) {
         if (mediaJson["streams"][i]["codec_type"] == "video") {

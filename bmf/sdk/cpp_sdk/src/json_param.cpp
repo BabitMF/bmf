@@ -27,12 +27,12 @@ BEGIN_BMF_SDK_NS
         json_value_ = json_param.json_value_;
     }
 
-    JsonParam::JsonParam(bmf_nlohmann::json json_value) {
+    JsonParam::JsonParam(nlohmann::json json_value) {
         json_value_ = json_value;
     }
 
     JsonParam::JsonParam(std::string opt_str) {
-        json_value_ = bmf_nlohmann::json::parse(opt_str);
+        json_value_ = nlohmann::json::parse(opt_str);
     }
 
     int JsonParam::load(std::string file_name) {
@@ -48,7 +48,7 @@ BEGIN_BMF_SDK_NS
     }
 
     int JsonParam::parse(std::string content) {
-        json_value_ = bmf_nlohmann::json::parse(content);
+        json_value_ = nlohmann::json::parse(content);
         return 0;
     }
 
@@ -79,13 +79,13 @@ BEGIN_BMF_SDK_NS
         return 0;
     }
 
-    void JsonParam::set_value(bmf_nlohmann::json &value) {
+    void JsonParam::set_value(nlohmann::json &value) {
         json_value_ = value;
     }
 
     int JsonParam::get_object(std::string name, JsonParam &result) {
         if (has_key(name)) {
-            bmf_nlohmann::json value = json_value_[name];
+            nlohmann::json value = json_value_[name];
             result.set_value(value);
             return 0;
         }

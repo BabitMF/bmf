@@ -90,7 +90,7 @@ namespace bmf::builder {
             void SetAlias(std::string const &alias);
             void Start();
 
-            bmf_nlohmann::json Dump();
+            nlohmann::json Dump();
 
             std::shared_ptr<RealNode>
             AddModule(std::string const &alias, const bmf_sdk::JsonParam& option,
@@ -142,7 +142,7 @@ namespace bmf::builder {
 
             void AddCallback(long long key, bmf::BMFCallback callbackInstance);
 
-            bmf_nlohmann::json Dump();
+            nlohmann::json Dump();
 
             std::shared_ptr<RealNode>
             AddModule(std::string const &alias, const bmf_sdk::JsonParam& option,
@@ -162,7 +162,7 @@ namespace bmf::builder {
                 ModuleMetaInfo(std::string moduleName, ModuleType moduleType, std::string modulePath,
                                std::string moduleEntry);
 
-                bmf_nlohmann::json Dump();
+                nlohmann::json Dump();
 
                 std::string moduleName_;
                 ModuleType moduleType_;
@@ -174,7 +174,7 @@ namespace bmf::builder {
             public:
                 NodeMetaInfo() = default;
 
-                bmf_nlohmann::json Dump();
+                nlohmann::json Dump();
 
                 unsigned int preModuleUID_ = 0;
                 std::map<long long, unsigned int> callbackBinding_;
@@ -211,7 +211,7 @@ namespace bmf::builder {
 
             void GiveNodeAlias(std::shared_ptr<RealNode> node, std::string const &alias);
 
-            bmf_nlohmann::json Dump();
+            nlohmann::json Dump();
 
             std::shared_ptr<RealNode>
             AddModule(std::string const &alias, const bmf_sdk::JsonParam& option,
@@ -324,7 +324,7 @@ namespace bmf::builder {
         template<typename T,
                 typename std::enable_if<std::is_integral<T>{} || std::is_floating_point<T>{} ||
                                         std::is_convertible<T, std::string const &>{} ||
-                                        std::is_convertible<T, bmf_nlohmann::json>{}, bool>::type = true>
+                                        std::is_convertible<T, nlohmann::json>{}, bool>::type = true>
         BMF_FUNC_VIS Node FFMpegFilter(std::vector<Stream> inStreams, std::string const &filterName, T filterPara,
                                        std::string const &alias = "");
 
@@ -462,7 +462,7 @@ namespace bmf::builder {
         template<typename T,
                 typename std::enable_if<std::is_integral<T>{} || std::is_floating_point<T>{} ||
                                         std::is_convertible<T, std::string const &>{} ||
-                                        std::is_convertible<T, bmf_nlohmann::json>{}, bool>::type = true>
+                                        std::is_convertible<T, nlohmann::json>{}, bool>::type = true>
         BMF_FUNC_VIS Node FFMpegFilter(std::vector<class Stream> inStreams, std::string const &filterName, T filterPara,
                                        std::string const &alias = "");
 
@@ -549,7 +549,7 @@ namespace bmf::builder {
     public:
         BMF_FUNC_VIS explicit Graph(GraphMode runMode, bmf_sdk::JsonParam graphOption);
 
-        BMF_FUNC_VIS explicit Graph(GraphMode runMode, bmf_nlohmann::json graphOption = {});
+        BMF_FUNC_VIS explicit Graph(GraphMode runMode, nlohmann::json graphOption = {});
 
         BMF_FUNC_VIS Graph() = delete;
 
@@ -627,7 +627,7 @@ namespace bmf::builder {
         template<typename T,
                 typename std::enable_if<std::is_integral<T>{} || std::is_floating_point<T>{} ||
                                         std::is_convertible<T, std::string const &>{} ||
-                                        std::is_convertible<T, bmf_nlohmann::json>{}, bool>::type = true>
+                                        std::is_convertible<T, nlohmann::json>{}, bool>::type = true>
         BMF_FUNC_VIS Node FFMpegFilter(std::vector<Stream> inStreams, std::string const &filterName, T filterPara,
                                        std::string const &alias = "");
 
@@ -685,7 +685,7 @@ namespace bmf::builder {
                                InputManagerType inputStreamManager = Immediate, int scheduler = 0);
         
         BMF_FUNC_VIS SyncModule Sync(const std::vector<int> inStreams, const std::vector<int> outStreams, 
-                               bmf_nlohmann::json moduleOption, std::string const &moduleName, 
+                               nlohmann::json moduleOption, std::string const &moduleName, 
                                ModuleType moduleType = CPP, std::string const &modulePath = "",
                                std::string const &moduleEntry = "", std::string const &alias = "",
                                InputManagerType inputStreamManager = Immediate, int scheduler = 0);

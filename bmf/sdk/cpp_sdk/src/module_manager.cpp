@@ -89,7 +89,7 @@ public:
 
 struct ModuleManager::Private
 {
-    bmf_nlohmann::json builtin_config;
+    nlohmann::json builtin_config;
     std::string builtin_root;
     std::vector<std::string> repo_roots;
 

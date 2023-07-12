@@ -20,7 +20,7 @@
 #include <bmf/sdk/common.h>
 #include <bmf/sdk/json_param.h>
 
-#include <bmf_nlohmann/json_fwd.hpp>
+#include <nlohmann/json_fwd.hpp>
 
 #include <string>
 #include <vector>
@@ -35,7 +35,7 @@ namespace bmf {
         int64_t timestamp;
 
         JsonParam jsonify() {
-            bmf_nlohmann::json ret;
+            nlohmann::json ret;
             ret["data_type"] = data_type;
             ret["class_type"] = class_type;
             ret["class_name"] = class_name;
@@ -50,9 +50,9 @@ namespace bmf {
         std::vector<PacketInfo> packets;
 
         JsonParam jsonify() {
-            bmf_nlohmann::json ret;
+            nlohmann::json ret;
             ret["id"] = id;
-            ret["packets"] = bmf_nlohmann::json::array();
+            ret["packets"] = nlohmann::json::array();
             for (auto &p:packets)
                 ret["packets"].push_back(p.jsonify().json_value_);
 
@@ -68,14 +68,14 @@ namespace bmf {
         std::vector<uint64_t> output_streams;
 
         JsonParam jsonify() {
-            bmf_nlohmann::json ret;
+            nlohmann::json ret;
             ret["node_id"] = node_id;
             ret["timestamp"] = timestamp;
             ret["priority"] = priority;
-            ret["input_streams"] = bmf_nlohmann::json::array();
+            ret["input_streams"] = nlohmann::json::array();
             for (auto &s:input_streams)
                 ret["input_streams"].push_back(s.jsonify().json_value_);
-            ret["output_streams"] = bmf_nlohmann::json::array();
+            ret["output_streams"] = nlohmann::json::array();
             for (auto s:output_streams)
                 ret["output_streams"].push_back(s);
 
@@ -91,12 +91,12 @@ namespace bmf {
         std::vector<TaskInfo> tasks;
 
         JsonParam jsonify() {
-            bmf_nlohmann::json ret;
+            nlohmann::json ret;
             ret["id"] = id;
             ret["state"] = state;
             ret["started_at"] = started_at;
             ret["queue_size"] = queue_size;
-            ret["tasks"] = bmf_nlohmann::json::array();
+            ret["tasks"] = nlohmann::json::array();
             for (auto &t:tasks)
                 ret["tasks"].push_back(t.jsonify().json_value_);
 
@@ -110,7 +110,7 @@ namespace bmf {
         uint64_t ref_count;
 
         JsonParam jsonify() {
-            bmf_nlohmann::json ret;
+            nlohmann::json ret;
             ret["id"] = id;
             ret["last_scheduled_time"] = last_scheduled_time;
             ret["ref_count"] = ref_count;
@@ -125,12 +125,12 @@ namespace bmf {
         std::vector<SchedulerQueueInfo> scheduler_queues;
 
         JsonParam jsonify() {
-            bmf_nlohmann::json ret;
+            nlohmann::json ret;
             ret["last_schedule_success_time"] = last_schedule_success_time;
-            ret["scheduler_nodes"] = bmf_nlohmann::json::array();
+            ret["scheduler_nodes"] = nlohmann::json::array();
             for (auto &nd:scheduler_nodes)
                 ret["scheduler_nodes"].push_back(nd.jsonify().json_value_);
-            ret["scheduler_queues"] = bmf_nlohmann::json::array();
+            ret["scheduler_queues"] = nlohmann::json::array();
             for (auto &q:scheduler_queues)
                 ret["scheduler_queues"].push_back(q.jsonify().json_value_);
 
@@ -147,14 +147,14 @@ namespace bmf {
         std::vector<PacketInfo> packets;
 
         JsonParam jsonify() {
-            bmf_nlohmann::json ret;
+            nlohmann::json ret;
             ret["id"] = id;
             ret["prev_id"] = prev_id;
             ret["nex_id"] = nex_id;
             ret["max_size"] = max_size;
             ret["size"] = size;
             ret["name"] = name;
-            ret["packets"] = bmf_nlohmann::json::array();
+            ret["packets"] = nlohmann::json::array();
             for (auto &p:packets)
                 ret["packets"].push_back(p.jsonify().json_value_);
 
@@ -169,11 +169,11 @@ namespace bmf {
         std::vector<InputStreamInfo> down_streams;
 
         JsonParam jsonify() {
-            bmf_nlohmann::json ret;
+            nlohmann::json ret;
             ret["id"] = id;
             ret["prev_id"] = prev_id;
             ret["name"] = name;
-            ret["down_streams"] = bmf_nlohmann::json::array();
+            ret["down_streams"] = nlohmann::json::array();
             for (auto &s:down_streams)
                 ret["down_streams"].push_back(s.jsonify().json_value_);
 
@@ -188,7 +188,7 @@ namespace bmf {
         std::string module_path;
 
         JsonParam jsonify() {
-            bmf_nlohmann::json ret;
+            nlohmann::json ret;
             ret["module_name"] = module_name;
             ret["module_type"] = module_type;
             ret["module_entry"] = module_entry;
@@ -216,7 +216,7 @@ namespace bmf {
         std::vector<OutputStreamInfo> output_streams;
 
         JsonParam jsonify() {
-            bmf_nlohmann::json ret;
+            nlohmann::json ret;
             ret["id"] = id;
             ret["is_infinity"] = is_infinity ? "YES" : "NO";
             ret["is_source"] = is_source ? "YES" : "NO";
@@ -229,10 +229,10 @@ namespace bmf {
             ret["schedule_count"] = schedule_count;
             ret["schedule_success_count"] = schedule_success_count;
             ret["module_info"] = module_info.jsonify().json_value_;
-            ret["input_streams"] = bmf_nlohmann::json::array();
+            ret["input_streams"] = nlohmann::json::array();
             for (auto &s:input_streams)
                 ret["input_streams"].push_back(s.jsonify().json_value_);
-            ret["output_streams"] = bmf_nlohmann::json::array();
+            ret["output_streams"] = nlohmann::json::array();
             for (auto &s:output_streams)
                 ret["output_streams"].push_back(s.jsonify().json_value_);
 
@@ -251,26 +251,26 @@ namespace bmf {
         std::vector<NodeRunningInfo> nodes;
 
         JsonParam jsonify() {
-            bmf_nlohmann::json ret;
+            nlohmann::json ret;
             ret["id"] = id;
             ret["mode"] = mode;
             ret["state"] = state;
             ret["scheduler"] = scheduler.jsonify().json_value_;
-            ret["input_streams"] = bmf_nlohmann::json::array();
+            ret["input_streams"] = nlohmann::json::array();
             for (auto &ss:input_streams) {
-                auto tmp = bmf_nlohmann::json::array();
+                auto tmp = nlohmann::json::array();
                 for (auto &s:ss)
                     tmp.push_back(s.jsonify().json_value_);
                 ret["input_streams"].push_back(tmp);
             }
-            ret["output_streams"] = bmf_nlohmann::json::array();
+            ret["output_streams"] = nlohmann::json::array();
             for (auto &ss:output_streams) {
-                auto tmp = bmf_nlohmann::json::array();
+                auto tmp = nlohmann::json::array();
                 for (auto &s:ss)
                     tmp.push_back(s.jsonify().json_value_);
                 ret["output_streams"].push_back(tmp);
             }
-            ret["nodes"] = bmf_nlohmann::json::array();
+            ret["nodes"] = nlohmann::json::array();
             for (auto &nd:nodes)
                 ret["nodes"].push_back(nd.jsonify().json_value_);
 

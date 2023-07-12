@@ -43,7 +43,7 @@ void get_python_module_info(JsonParam &node_param, std::string &module_name, std
 void create_python_module_from_string(std::string module_name, std::string option,
                                       std::shared_ptr<PythonModule> &python_module) {
     std::istringstream s;
-    bmf_nlohmann::json opt;
+    nlohmann::json opt;
     s.str(option);
     s >> opt;
     python_module = std::make_shared<PythonModule>(module_name, module_name, 0, JsonParam(opt));

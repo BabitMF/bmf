@@ -38,7 +38,7 @@ public:
         return *media;
     }
 
-    const T &operator()() {
+    const T &operator()() const {
         return std::optional<T>::value();
     }
 
@@ -51,6 +51,7 @@ public:
     MediaParam<int> width{this};
     MediaParam<int> height{this};
     MediaParam<hmp::PixelFormat> pixel_format{this};
+    MediaParam<hmp::ColorSpace> color_space{this};
     MediaParam<hmp::Device> device{this};
     MediaParam<MediaType> media_type{this};
 };

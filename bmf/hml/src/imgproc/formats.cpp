@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include <map>
+#include <unordered_map>
 #include <hmp/core/logging.h>
 #include <hmp/imgproc.h>
 #include <hmp/imgproc/formats.h>
@@ -307,5 +308,18 @@ int PixelFormatDesc::infer_nitems(int width, int height, int plane) const
     return infer_width(width, plane) * infer_height(height, plane) * channels(plane);
 }
 
+static std::unordered_map<std::string, PixelFormat> PixelFormatStringfyMap {
+#define ADDPAIR(name) {"k"#name, name},
+    HMP_FORALL_PIXEL_FORMATS(ADDPAIR)
+#undef ADDPAIR
+};
+
+PixelFormat get_pixel_format(std::string pixfmt) {
+    auto it = PixelFormatStringfyMap.find(pixfmt);
+    if(it != PixelFormatStringfyMap.end()) {
+        return it->second;
+    }
+    return PF_NONE;
+}
 
 } //namespace hmp

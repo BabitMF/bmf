@@ -35,7 +35,7 @@ struct OpaqueDataKey
         // for future use
         kBMFVideoFrame,
         kATTensor,
-        kReserved_5,
+        kCVMat,
         kReserved_6,
         kReserved_7,
         kNumKeys
@@ -115,7 +115,7 @@ protected:
     virtual const OpaqueData& private_data(int key) const;
 
 private:
-    OpaqueData opaque_set_[OpaqueDataKey::kNumKeys];
+    OpaqueData opaque_set_[OpaqueDataKey::kNumKeys] = {nullptr};
 }; //
 
 

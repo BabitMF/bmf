@@ -109,13 +109,38 @@ public:
         for(auto it : hw_frames_ctx_map_) {
             if(it.second) {
                 av_buffer_unref(&it.second);
-                hw_frames_ctx_map_[it.first] = NULL;
             }
         }
+        hw_frames_ctx_map_.clear();
+
         b_init_ = false;
 
         return 0;
     };
+
+    bool check_hw_device_ctx_uniformity() {
+        if (hw_frames_ctx_map_.size() == 0)
+            return false;
+
+        auto it = hw_frames_ctx_map_.begin();
+
+        auto base_frames_ctx = (AVHWFramesContext*)it->second->data;
+        auto base_device_ctx = base_frames_ctx->device_ctx;
+
+        ++it;
+
+        for (;it != hw_frames_ctx_map_.end(); ++it) {
+            if(it->second) {
+                AVHWFramesContext *frame_ctx = (AVHWFramesContext*)it->second->data;
+                AVHWDeviceContext *device_ctx = frame_ctx->device_ctx;
+                if (device_ctx != base_device_ctx) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 
     int config_graph(std::string &graph_desc, std::map<int, FilterConfig> &config,
                      std::map<int, FilterConfig> &out_config) {
@@ -158,6 +183,17 @@ public:
             BMFLOG(BMF_ERROR) << "Graph parse2 error: " << graph_desc;
             goto end;
         }
+
+        //set hw device context of AVFilterContext 
+        if (check_hw_device_ctx_uniformity()) {
+            auto it = hw_frames_ctx_map_.begin();
+            auto base_frames_ctx = (AVHWFramesContext*)it->second->data;
+            AVBufferRef *base_device_ctx_buf = base_frames_ctx->device_ref;
+            for(int i = 0; i < filter_graph_->nb_filters; i++) {
+                filter_graph_->filters[i]->hw_device_ctx = av_buffer_ref(base_device_ctx_buf);
+            }
+        }
+
 
         curr = inputs_;
         while (curr) {
@@ -231,7 +267,7 @@ public:
                                             args.str, NULL, filter_graph_);
             av_bprint_finalize(&args, NULL);
             if (type == AVMEDIA_TYPE_VIDEO) {
-                if (hw_frames_ctx_map_.find(st) != hw_frames_ctx_map_.end() && hw_frames_ctx_map_[st] != NULL) {
+                if (hw_frames_ctx_map_.find(st) != hw_frames_ctx_map_.end()) {
                     AVBufferSrcParameters *par = av_buffersrc_parameters_alloc();
                     memset(par, 0, sizeof(*par));
                     par->format = AV_PIX_FMT_NONE;

@@ -4,7 +4,6 @@ import numpy
 
 from bmf import *
 import bmf.hml.hmp as hmp
-from cuda import cuda
 import cv2, cvcuda
 
 class rotate_gpu(Module):
@@ -15,7 +14,7 @@ class rotate_gpu(Module):
             'linear': cvcuda.Interp.LINEAR,
             'nearest': cvcuda.Interp.NEAREST
         }.get(algo_str, cvcuda.Interp.LINEAR)
-    # TODO: Add radians as defalut rotation
+    
     def __get_rotation(self, option):
         self.angle_deg = 0
         # self.shift = None
@@ -30,7 +29,7 @@ class rotate_gpu(Module):
             split = re.split('\*|x|,|:', option['center'])
             self.center = (int(split[0]), int(split[1]))
         if 'scale' in option.keys():
-            self.scale = self.__get_algo(option['scale'])
+            self.scale = option['scale']
         if 'algo' in option.keys():
             self.algo = self.__get_algo(option['algo'])
 

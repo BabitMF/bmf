@@ -5,7 +5,6 @@ import numpy
 from bmf import *
 import bmf.hml.hmp as hmp
 
-from cuda import cuda
 import cvcuda
 
 class blur_gpu(Module):

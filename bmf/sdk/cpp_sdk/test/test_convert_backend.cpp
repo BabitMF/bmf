@@ -1,3 +1,7 @@
+#ifdef BMF_ENABLE_TORCH
+#include <bmf/sdk/torch_convertor.h>
+#endif
+
 #include <bmf/sdk/media_description.h>
 #include <bmf/sdk/convert_backend.h>
 #include <gtest/gtest.h>
@@ -114,3 +118,55 @@ TEST(convert_backend, convert_OCV) {
 
 #endif
 
+#ifdef BMF_ENABLE_TORCH
+TEST(convert_backend, convert_torch) {
+    MediaDesc dp;
+    dp.width(1920).height(1080).pixel_format(hmp::PF_RGB24).media_type(MediaType::kATTensor);
+    auto yuvformat = hmp::PixelInfo(hmp::PF_YUV420P);
+    auto src_vf = VideoFrame::make(640, 320, yuvformat);
+
+    auto dst_vf = bmf_convert(src_vf, MediaDesc{}, dp);
+    EXPECT_TRUE(static_cast<bool>(dst_vf));
+
+    const at::Tensor *att = dst_vf.private_get<at::Tensor>();
+    EXPECT_TRUE(att != NULL);
+
+    at::Tensor *att_new = new at::Tensor(*att);
+
+    VideoFrame src_with_att;
+    src_with_att.private_attach<at::Tensor>(att_new);
+    MediaDesc src_dp;
+    src_dp.pixel_format(hmp::PF_RGB24).media_type(MediaType::kATTensor);
+    auto vf = bmf_convert(src_with_att, src_dp, MediaDesc{});
+    EXPECT_EQ(vf.width(), 1920);
+    EXPECT_EQ(vf.height(), 1080);
+    EXPECT_EQ(vf.frame().format(), hmp::PF_RGB24);
+}
+#endif
+
+#if defined(BMF_ENABLE_TORCH) && defined(BMF_ENABLE_CUDA)
+TEST(convert_backend, convert_torch_cuda) {
+    MediaDesc dp;
+    dp.width(1920).height(1080).pixel_format(hmp::PF_RGB24).device("cuda").media_type(MediaType::kATTensor);
+    auto yuvformat = hmp::PixelInfo(hmp::PF_YUV420P);
+    auto src_vf = VideoFrame::make(640, 320, yuvformat);
+
+    auto dst_vf = bmf_convert(src_vf, MediaDesc{}, dp);
+    EXPECT_TRUE(static_cast<bool>(dst_vf));
+
+    const at::Tensor *att = dst_vf.private_get<at::Tensor>();
+    EXPECT_TRUE(att != NULL);
+
+    at::Tensor *att_new = new at::Tensor(*att);
+
+    VideoFrame src_with_att;
+    src_with_att.private_attach<at::Tensor>(att_new);
+    MediaDesc src_dp;
+    src_dp.pixel_format(hmp::PF_RGB24).media_type(MediaType::kATTensor);
+    auto vf = bmf_convert(src_with_att, src_dp, MediaDesc{});
+    EXPECT_EQ(vf.width(), 1920);
+    EXPECT_EQ(vf.height(), 1080);
+    EXPECT_EQ(vf.frame().format(), hmp::PF_RGB24);
+    EXPECT_EQ(vf.device().type(), hmp::Device::Type::CUDA);
+}
+#endif

@@ -20,6 +20,7 @@ option(BMF_ENABLE_BREAKPAD "Enable build with breakpad support" OFF)
 
 
 option(BMF_ENABLE_CUDA "Enable CUDA support" ON)
+option(BMF_ENABLE_TORCH "Enable CUDA support" OFF)
 option(BMF_ENABLE_PYTHON "Enable build with python support" ON)
 option(BMF_ENABLE_GLOG "Enable build with glog support" OFF)
 option(BMF_ENABLE_JNI "Enable build with JNI support" ON)

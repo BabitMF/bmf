@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#pragma once
 #include <hmp/tensor.h>
 #include <torch/torch.h>
 

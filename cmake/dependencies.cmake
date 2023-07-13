@@ -62,7 +62,7 @@ endif()
 
 ## HML
 # disable torch build, as -D_GLIBCXX_USE_CXX11_ABI=0 will make gtest build failed
-set(HMP_ENABLE_TORCH OFF) 
+set(HMP_ENABLE_TORCH ${BMF_ENABLE_TORCH}) 
 set(HMP_ENABLE_FFMPEG OFF)  # remove ffmpeg dependencies
 set(HMP_ENABLE_OPENCV OFF)  # remove opencv dependencies
 set(HMP_ENABLE_OPENMP OFF)  # remove openmp dependencies

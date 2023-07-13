@@ -2,7 +2,6 @@ import re
 
 from bmf import *
 import bmf.hml.hmp as hmp
-from cuda import cuda
 import cvcuda
 
 class scale_gpu(Module):

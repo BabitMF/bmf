@@ -25,6 +25,6 @@
 [submodule "3rd_party/breakpad"]
 	path = 3rd_party/breakpad
 	url = https://github.com/google/breakpad.git
-[submodule "3rd_party/dlpack"]
-	path = 3rd_party/dlpack
+[submodule "bmf/hml/third_party/dlpack"]
+	path = bmf/hml/third_party/dlpack
 	url = https://github.com/dmlc/dlpack.git

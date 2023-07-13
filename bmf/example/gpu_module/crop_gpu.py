@@ -4,24 +4,9 @@ import numpy
 
 from bmf import *
 import bmf.hml.hmp as hmp
-from cuda import cuda
 import cvcuda
 
 class crop_gpu(Module):
-    # TODO: Add radians as defalut rotation
-    def __get_rotation(self, option):
-        self.angle_deg = 0
-        self.shift = [0, 0]
-        self.algo = cvcuda.Interp.LINEAR
-        if 'angle' in option.keys():
-            self.angle_deg = eval(option['angle'].lower()) * 180 / pi
-        if 'angle_deg' in option.keys():
-            self.angle_deg = option['angle_deg']
-        if 'shift' in option.keys():
-            split = re.split('\*|x|,', option.shift())
-            self.shift = split
-        if 'algo' in option.keys():
-            self.algo = self.__get_algo(option['algo'])
     
     def __get_crop(self, option):
         self.width = None
@@ -98,15 +83,12 @@ class crop_gpu(Module):
                 in_420 = hmp.Frame(in_frame.width, in_frame.height, pinfo, device='cuda')
                 out_420 = hmp.Frame(self.width, self.height, pinfo, device='cuda')
                 hmp.img.yuv_to_yuv(in_420.data(), in_frame.frame().data(), pinfo, in_frame.frame().pix_info())
-                # in_list = [x.torch() for x in in_420.data()]
-                # out_list = [x.torch() for x in out_420.data()]
+
                 in_list = in_420.data()
                 out_list = out_420.data()
 
             # other pixel formats, e.g. yuv420, rgb
             else:
-                # in_list = [x.torch() for x in tensor_list]
-                # out_list = [x.torch() for x in out_tensor_list]
                 in_list = tensor_list
                 out_list = out_tensor_list
 

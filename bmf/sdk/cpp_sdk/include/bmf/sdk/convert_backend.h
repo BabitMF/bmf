@@ -6,7 +6,7 @@
 
 namespace bmf_sdk {
 
-class Convertor
+class BMF_API Convertor
 {
 public:
     Convertor();

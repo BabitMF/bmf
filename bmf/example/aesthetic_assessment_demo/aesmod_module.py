@@ -46,17 +46,18 @@ def flex_resize_aesv2(img, desired_size=[448, 672], pad_color=[0, 0, 0]):
 
 
 class Aesmod:
-    def __init__(self, model_version, output_path):
+    def __init__(self, model_path, model_version, output_path):
         self._frm_idx = 0
         self._frm_scores = []
         self._model_version = model_version
         self._output_path = output_path
 
-        model_dir = osp.join(osp.abspath(osp.dirname("__file__")), "models")
+        # model_dir = osp.join(osp.abspath(osp.dirname("__file__")), "models")
+        # aesmod_ort_model_path = osp.realpath(
+        #    osp.join(model_dir, "aes_transonnx_update3.onnx")
+        # )
         self.use_gpu = False
-        aesmod_ort_model_path = osp.realpath(
-            osp.join(model_dir, "aes_transonnx_update3.onnx")
-        )
+        aesmod_ort_model_path = model_path
         print(aesmod_ort_model_path)
         LOGGER.info("loading aesthetic ort inference session")
         self.ort_session = ort.InferenceSession(aesmod_ort_model_path)
@@ -129,7 +130,8 @@ class BMFAesmod(SyncModule):
     def __init__(self, node=None, option=None):
         output_path = option.get("output_path", 0)
         model_version = option.get("model_version", "v1.0")
-        self._nrp = Aesmod(model_version, output_path)
+        model_path = option.get("model_path", "models/aes_transonnx_update3.onnx")
+        self._nrp = Aesmod(model_path, model_version, output_path)
         SyncModule.__init__(self, node, nb_in=1, in_fmt="rgb24", out_fmt="rgb24")
 
     def core_process(self, frames):

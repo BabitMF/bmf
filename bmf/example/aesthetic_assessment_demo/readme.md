@@ -4,4 +4,4 @@ Our aesthetic assessment model is trained on Aesthetic Visual Analysis dataset (
 
 Our deep learning model Aesmode has achieved a binary classification accuracy of 83.8% on AVA dataset, reaching the level of academic SOTA, and can be directly used to evaluate the aesthetic degree of videos by means of frame extraction processing.
 
-This demo shows how to invoke our aesthetic assessment model using bmf. Try on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1MxlCCzeHxw7tmAac9ii-u4tBHejtqNZY#scrollTo=3An0nCEm7zXD ).
+This demo shows how to invoke our aesthetic assessment model using bmf. Try on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/example/aesthetic_assessment_demo/aesmod_bmfv3_fin.ipynb).

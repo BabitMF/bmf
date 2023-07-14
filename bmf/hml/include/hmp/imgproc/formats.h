@@ -148,7 +148,7 @@ enum PixelFormat{
 
 
 HMP_API std::string stringfy(const PixelFormat &format);
-PixelFormat get_pixel_format(std::string pixfmt);
+PixelFormat HMP_API get_pixel_format(std::string pixfmt);
 
 
 class HMP_API ColorModel

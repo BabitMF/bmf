@@ -13,7 +13,7 @@ namespace bmf_sdk{
 #ifdef _WIN32
 const fs::path BMF_API s_bmf_repo_root = "C:\\Users\\Public\\bmf_mods";
 #else
-const fs::path BMF_API s_bmf_repo_root = "/opt/tiger/bmf_mods/";
+const fs::path BMF_API s_bmf_repo_root = "/usr/local/share/bmf_mods/";
 #endif
 
 static void string_split(std::vector<std::string> &tokens,

@@ -8,4 +8,4 @@ class Timestamp:
     EOF = sys.maxsize - 3  # indicate this is a EOF packet
     EOS = sys.maxsize - 2  # indicate this is a EOS packet
     INF_SRC = sys.maxsize - 1  # indicate this is a task of source node
-    DONE = sys.maxsize     # indicate this stream is done
+    DONE = sys.maxsize  # indicate this stream is done

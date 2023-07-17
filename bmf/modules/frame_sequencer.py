@@ -9,6 +9,7 @@ else:
 
 
 class frame_sequencer(Module):
+
     def __init__(self, node, option=None):
         self.node_ = node
         self.option_ = option
@@ -21,7 +22,8 @@ class frame_sequencer(Module):
 
     def process(self, task=None):
         if len(task.get_inputs()) != len(task.get_outputs()):
-            Log.log_node(LogLevel.ERROR, self.node_, 'Input count not match output count')
+            Log.log_node(LogLevel.ERROR, self.node_,
+                         'Input count not match output count')
             return ProcessResult.STOP
 
         # process input packets
@@ -33,16 +35,19 @@ class frame_sequencer(Module):
                     if pkt.get_timestamp() != Timestamp.UNSET:
                         task.get_outputs()[input_idx].put(pkt)
                         self.input_inited_[input_idx] = 1
-                        Log.log_node(LogLevel.DEBUG, self.node_, 'init', input_idx)
+                        Log.log_node(LogLevel.DEBUG, self.node_, 'init',
+                                     input_idx)
             else:
                 if input_idx not in self.input_cache_queue_:
                     self.input_cache_queue_[input_idx] = Queue()
                 while not pkt_queue.empty():
                     pkt = pkt_queue.get()
-                    if pkt.get_data() is not None or pkt.get_timestamp() == Timestamp.EOF:
+                    if pkt.get_data() is not None or pkt.get_timestamp(
+                    ) == Timestamp.EOF:
                         self.input_cache_queue_[input_idx].put(pkt)
-                        Log.log_node(LogLevel.DEBUG, self.node_, 'receive', pkt.get_data(), 'time', pkt.get_timestamp(),
-                                     'from', input_idx)
+                        Log.log_node(LogLevel.DEBUG, self.node_, 'receive',
+                                     pkt.get_data(), 'time',
+                                     pkt.get_timestamp(), 'from', input_idx)
 
         # process output packets
         for (output_idx, output_queue) in task.get_outputs().items():
@@ -61,14 +66,16 @@ class frame_sequencer(Module):
 
                 if pkt.get_timestamp() == Timestamp.EOF:
                     self.input_done_[output_idx] = 1
-                    Log.log_node(LogLevel.DEBUG, self.node_, 'sent eof to', output_idx)
+                    Log.log_node(LogLevel.DEBUG, self.node_, 'sent eof to',
+                                 output_idx)
                     output_queue.put(pkt)
                     processed_cnt += 1
                     break
 
                 if pkt.get_data() is not None:
                     output_queue.put(pkt)
-                    Log.log_node(LogLevel.DEBUG, self.node_, 'send', pkt.get_data(), 'to', output_idx)
+                    Log.log_node(LogLevel.DEBUG, self.node_, 'send',
+                                 pkt.get_data(), 'to', output_idx)
                     processed_cnt += 1
 
             return ProcessResult.OK

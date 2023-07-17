@@ -17,29 +17,35 @@ class FFmpegEngine(object):
     def get_decoder_command(self, node):
         decoder_command = ""
         if "start_time" in node.option.keys():
-            decoder_command = decoder_command + "-ss " + str(node.option["start_time"]) + " "
+            decoder_command = decoder_command + "-ss " + str(
+                node.option["start_time"]) + " "
         if "dec_params" in node.option.keys():
             for key, value in node.option["dec_params"].items():
-                decoder_command = decoder_command + "-" + key + " " + str(value) + " "
+                decoder_command = decoder_command + "-" + key + " " + str(
+                    value) + " "
 
         if "decryption_key" in node.option.keys():
-            decoder_command = decoder_command + " -decryption_key " + node.option["decryption_key"] + " "
+            decoder_command = decoder_command + " -decryption_key " + node.option[
+                "decryption_key"] + " "
         output_video_flag = False
         output_audio_flag = False
         for output_stream in node.get_output_stream_names():
             if output_stream.split(":")[0] == "video":
-                self.decoder_input_streams_[output_stream.split(":")[1]] = "[{}:v] ".format(self.decoder_index_)
+                self.decoder_input_streams_[output_stream.split(
+                    ":")[1]] = "[{}:v] ".format(self.decoder_index_)
                 output_video_flag = True
             elif output_stream.split(":")[0] == "audio":
                 output_audio_flag = True
-                self.decoder_input_streams_[output_stream.split(":")[1]] = "[{}:a] ".format(self.decoder_index_)
+                self.decoder_input_streams_[output_stream.split(
+                    ":")[1]] = "[{}:a] ".format(self.decoder_index_)
 
         if not output_audio_flag:
             decoder_command = decoder_command + "-an "
         if not output_video_flag:
             decoder_command = decoder_command + "-vn "
 
-        decoder_command = decoder_command + "-i " + node.option["input_path"] + " "
+        decoder_command = decoder_command + "-i " + node.option[
+            "input_path"] + " "
         self.decoder_index_ = self.decoder_index_ + 1
         return decoder_command
 
@@ -54,7 +60,8 @@ class FFmpegEngine(object):
         if "name" in node.option.keys():
             filter_command = filter_command + node.option["name"]
         if "para" in node.option.keys():
-            filter_command = filter_command + "=" + self.escaping_param(node.option["para"])
+            filter_command = filter_command + "=" + self.escaping_param(
+                node.option["para"])
         for output_stream in node.get_output_stream_names():
             filter_command = filter_command + "[{}]".format(output_stream)
 
@@ -90,32 +97,41 @@ class FFmpegEngine(object):
             elif key == "height":
                 height = param["height"]
             elif key == "bite_rate":
-                video_command = video_command + "-" + "b:v" + " " + str(value) + " "
+                video_command = video_command + "-" + "b:v" + " " + str(
+                    value) + " "
             elif key == "max_fr":
                 vsync = 'vfr'
                 for k, v in param.items():
                     if k == "vsync":
                         vsync = v
-                video_command = video_command + "-vsync" + " " + vsync + " -r" + " " + str(value) + " "
+                video_command = video_command + "-vsync" + " " + vsync + " -r" + " " + str(
+                    value) + " "
             else:
-                video_command = video_command + "-" + key + " " + str(value) + " "
+                video_command = video_command + "-" + key + " " + str(
+                    value) + " "
         if not (width == "" and height == ""):
-            video_command = video_command + "-s " + str(width) + "x" + str(height) + " "
+            video_command = video_command + "-s " + str(width) + "x" + str(
+                height) + " "
         return video_command
 
     def get_encoder_audio_param(self, param):
         audio_command = ""
         for key, value in param.items():
             if key == "codec":
-                audio_command = audio_command + "-" + "acodec" + " " + str(value) + " "
+                audio_command = audio_command + "-" + "acodec" + " " + str(
+                    value) + " "
             elif key == "bit_rate":
-                audio_command = audio_command + "-" + "b:a" + " " + str(value) + " "
+                audio_command = audio_command + "-" + "b:a" + " " + str(
+                    value) + " "
             elif key == "sample_rate":
-                audio_command = audio_command + "-" + "ar" + " " + str(value) + " "
+                audio_command = audio_command + "-" + "ar" + " " + str(
+                    value) + " "
             elif key == "channels":
-                audio_command = audio_command + "-" + "ac" + " " + str(value) + " "
+                audio_command = audio_command + "-" + "ac" + " " + str(
+                    value) + " "
             else:
-                audio_command = audio_command + "-" + key + " " + str(value) + " "
+                audio_command = audio_command + "-" + key + " " + str(
+                    value) + " "
         return audio_command
 
     def get_encoder_mux_param(self, param):
@@ -131,7 +147,8 @@ class FFmpegEngine(object):
         if "encoder" in input_streams[index]:
             return map_string
         if "c_ffmpeg_decoder" in input_streams[index]:
-            map_string = "-map " + self.decoder_input_streams_[input_streams[index]][1:-2] + " "
+            map_string = "-map " + self.decoder_input_streams_[
+                input_streams[index]][1:-2] + " "
             return map_string
         else:
             map_string = "-map '[" + input_streams[index] + "]' "
@@ -140,18 +157,22 @@ class FFmpegEngine(object):
 
     def get_encoder_command(self, node):
         # get video map
-        video_map_string = self.get_encoder_map(node.get_input_stream_names(), 0)
+        video_map_string = self.get_encoder_map(node.get_input_stream_names(),
+                                                0)
         video_command = ""
         if "video_params" in node.option.keys():
-            video_command = self.get_encoder_video_param(node.option["video_params"])
+            video_command = self.get_encoder_video_param(
+                node.option["video_params"])
         if video_command == "" and not video_map_string == "":
             video_command = "-vsync vfr  -r 120 "
 
         # get audio map
-        audio_map_string = self.get_encoder_map(node.get_input_stream_names(), 1)
+        audio_map_string = self.get_encoder_map(node.get_input_stream_names(),
+                                                1)
         audio_command = ""
         if "audio_params" in node.option.keys():
-            audio_command = self.get_encoder_audio_param(node.option["audio_params"])
+            audio_command = self.get_encoder_audio_param(
+                node.option["audio_params"])
 
         mux_command = ""
         if "mux_params" in node.option.keys():
@@ -159,7 +180,7 @@ class FFmpegEngine(object):
 
         format_command = ""
         if "format" in node.option.keys():
-            format_command = "-f " + node.option["format"]+" "
+            format_command = "-f " + node.option["format"] + " "
         else:
             format_command = "-f " + "mp4" + " "
 
@@ -193,10 +214,10 @@ class FFmpegEngine(object):
 
         for decoder_command in decoder_command_list:
             command = command + decoder_command
-        if len(filter_command_list)>0:
+        if len(filter_command_list) > 0:
             command = command + ' -filter_complex "' + filter_command_list[0]
             for index in range(1, len(filter_command_list)):
-                command = command + ";"+filter_command_list[index]
+                command = command + ";" + filter_command_list[index]
             command = command + '" '
         for encoder_command in encoder_command_list:
             command = command + encoder_command
@@ -205,9 +226,8 @@ class FFmpegEngine(object):
     def is_valid_for_ffmpeg(self, graph_config):
         for node in graph_config.get_nodes():
             md_name = node.get_module_info().get_name()
-            if not(md_name == "c_ffmpeg_decoder" or
-                   md_name == "c_ffmpeg_filter" or
-                   md_name == "c_ffmpeg_encoder"):
+            if not (md_name == "c_ffmpeg_decoder" or md_name
+                    == "c_ffmpeg_filter" or md_name == "c_ffmpeg_encoder"):
                 return False
         return True
 

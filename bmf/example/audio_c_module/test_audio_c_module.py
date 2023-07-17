@@ -14,6 +14,7 @@ from base_test.media_info import MediaInfo
 
 
 class TestAudioCModule(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_audio_c_module(self):
         input_video_path = "../files/img.mp4"
@@ -25,17 +26,17 @@ class TestAudioCModule(BaseTestCase):
         c_module_path = './'
         c_module_name = 'copy_module:CopyModule'
         # c module processing
-        audio_2 = (
-            video['audio'].c_module(c_module_path, c_module_name)
-        )
+        audio_2 = (video['audio'].c_module(c_module_path, c_module_name))
         # encode
-        (
-            bmf.encode(
-                video['video'],  # video stream, set to None
-                audio_2,
-                {"output_path": output_path, "audio_params": {"codec": "aac"}}
-            ).run()
-        )
+        (bmf.encode(
+            video['video'],  # video stream, set to None
+            audio_2,
+            {
+                "output_path": output_path,
+                "audio_params": {
+                    "codec": "aac"
+                }
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
 

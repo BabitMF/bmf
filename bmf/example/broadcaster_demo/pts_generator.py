@@ -3,6 +3,7 @@
 
 
 class PtsGenerator:
+
     def __init__(self, start_time, step):
         self.start_time = start_time
         self.step = step

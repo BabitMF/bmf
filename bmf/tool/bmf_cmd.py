@@ -3,12 +3,18 @@ import sys
 import bmf
 
 cmd_options = {
-    'decoder': ['i', 'v', 'a', 'map_v', 'map_a', 'start_time', 'end_time', 'fps', 'video_time_base', 'skip_frame',
-                'video_codec', 'audio_codec', 'dec_params', 'decryption_key', 'autorotate'],
+    'decoder': [
+        'i', 'v', 'a', 'map_v', 'map_a', 'start_time', 'end_time', 'fps',
+        'video_time_base', 'skip_frame', 'video_codec', 'audio_codec',
+        'dec_params', 'decryption_key', 'autorotate'
+    ],
     'encoder': ['map', 'o', 'fmt'],
-    'video_s': ['codec', 'crf', 'preset', 'width', 'height', 'x264-params', 'pix_fmt', 'threads', 'in_time_base',
-                'max_fr', 'qscale', 'vtag'],
-    'audio_s': ['codec', 'bit_rate', 'sample_rate', 'channels', 'qscale', 'atag'],
+    'video_s': [
+        'codec', 'crf', 'preset', 'width', 'height', 'x264-params', 'pix_fmt',
+        'threads', 'in_time_base', 'max_fr', 'qscale', 'vtag'
+    ],
+    'audio_s':
+    ['codec', 'bit_rate', 'sample_rate', 'channels', 'qscale', 'atag'],
     'filter': ['name', 'para'],
     'module': ['name', 'option', 'module_path', 'entry']
 }
@@ -140,7 +146,8 @@ def parse_encoder_option(opt_list):
             end_index = index
             tag = None
             while end_index < len(opt_list):
-                if opt_list[end_index] == "-map" or opt_list[end_index] == "-o" or opt_list[end_index] == "-fmt":
+                if opt_list[end_index] == "-map" or opt_list[
+                        end_index] == "-o" or opt_list[end_index] == "-fmt":
                     break
                 if tag is None and opt_list[end_index][:2] == "[v":
                     tag = "video_stream"
@@ -161,9 +168,11 @@ def parse_encoder_option(opt_list):
                 print("lost stream tag after param -map")
                 os._exit(1)
             if tag == "video_stream":
-                video_params = parse_video_option(opt_list[index + 1: end_index])
+                video_params = parse_video_option(opt_list[index +
+                                                           1:end_index])
             elif tag == "audio_stream":
-                audio_params = parse_audio_option(opt_list[index + 1: end_index])
+                audio_params = parse_audio_option(opt_list[index +
+                                                           1:end_index])
             index = end_index
         elif opt == "-o":
             output_path = opt_list[index]
@@ -222,7 +231,8 @@ def parse_single_filter_info(info):
         filter_input_streams.append(bmf_stream[src])
 
     # create filter output stream
-    filter_output_streams = bmf.module(filter_input_streams, "c_ffmpeg_filter", filter_option)
+    filter_output_streams = bmf.module(filter_input_streams, "c_ffmpeg_filter",
+                                       filter_option)
     for i in range(len(dst_list)):
         bmf_stream[dst_list[i]] = filter_output_streams[i]
 
@@ -244,7 +254,7 @@ def parse_filter_option(filter_options):
             if (src_tag_begin_idx > 0):
                 break
             src_tag_end_idx = filter_desc.find("]")
-            src_tag.append(filter_desc[1: src_tag_end_idx])
+            src_tag.append(filter_desc[1:src_tag_end_idx])
             filter_desc = filter_desc[src_tag_end_idx + 1:]
 
         if len(src_tag) == 0:
@@ -264,7 +274,7 @@ def parse_filter_option(filter_options):
             if (dst_tag_begin_idx < 0):
                 break
             dst_tag_end_idx = filter_desc.find("]")
-            dst_tag.append(filter_desc[dst_tag_begin_idx + 1: dst_tag_end_idx])
+            dst_tag.append(filter_desc[dst_tag_begin_idx + 1:dst_tag_end_idx])
             filter_desc = filter_desc[dst_tag_end_idx + 1:]
 
         # collect filter info
@@ -296,7 +306,7 @@ def parse_module_option(module_options):
         if (src_tag_begin_idx > 0):
             break
         src_tag_end_idx = option_desc.find("]")
-        src_tag.append(option_desc[1: src_tag_end_idx])
+        src_tag.append(option_desc[1:src_tag_end_idx])
         option_desc = option_desc[src_tag_end_idx + 1:]
 
     if len(src_tag) == 0:
@@ -316,7 +326,7 @@ def parse_module_option(module_options):
         if (dst_tag_begin_idx < 0):
             break
         dst_tag_end_idx = option_desc.find("]")
-        dst_tag.append(option_desc[dst_tag_begin_idx + 1: dst_tag_end_idx])
+        dst_tag.append(option_desc[dst_tag_begin_idx + 1:dst_tag_end_idx])
         option_desc = option_desc[dst_tag_end_idx + 1:]
 
     # record module option
@@ -350,7 +360,8 @@ def parse_module_option(module_options):
     option_dict = ast.literal_eval(option)
 
     # create output stream
-    module_output_streams = bmf.module(module_input_streams, name, option_dict, module_path, entry)
+    module_output_streams = bmf.module(module_input_streams, name, option_dict,
+                                       module_path, entry)
     for i in range(len(dst_tag)):
         bmf_stream[dst_tag[i]] = module_output_streams[i]
 
@@ -384,13 +395,14 @@ def parse_options(opt_list):
                 os._exit(1)
             end_index = index
             while end_index < len(opt_list):
-                if len(opt_list[end_index]) > 2 and opt_list[end_index][:2] == "--":
+                if len(opt_list[end_index]
+                       ) > 2 and opt_list[end_index][:2] == "--":
                     break
                 end_index += 1
             if end_index - index == 0:
                 print("incorrect option")
                 os._exit(1)
-            parse_option(opt[2:], opt_list[index: end_index])
+            parse_option(opt[2:], opt_list[index:end_index])
             index = end_index
         else:
             print("incorrect option")
@@ -405,4 +417,3 @@ if __name__ == '__main__':
 
     # run graph
     graph.run()
-

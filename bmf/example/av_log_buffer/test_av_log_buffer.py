@@ -10,7 +10,9 @@ sys.path.append("../")
 from base_test.base_test_case import BaseTestCase
 from base_test.media_info import MediaInfo
 
+
 class TestAVLog(BaseTestCase):
+
     def test_avlog(self):
         input_video_path = '../files/big_bunny_10s_30fps.mp4'
         output_path = "./out.mp4"
@@ -25,23 +27,18 @@ class TestAVLog(BaseTestCase):
         video1 = my_graph.decode({'input_path': input_video_path})
 
         # encode
-        (
-            bmf.encode(
-                video1['video'],
-                video1['audio'],
-                {
-                    "video_params": {
-                        "codec": "h264",
-                        "width": 320,
-                        "height": 240,
-                        "crf": 23,
-                        "preset": "veryfast",
-                        "x264-params": "ssim=1:psnr=1"
-                    },
-                    "output_path": output_path
-                }
-            ).run()
-        )
+        (bmf.encode(
+            video1['video'], video1['audio'], {
+                "video_params": {
+                    "codec": "h264",
+                    "width": 320,
+                    "height": 240,
+                    "crf": 23,
+                    "preset": "veryfast",
+                    "x264-params": "ssim=1:psnr=1"
+                },
+                "output_path": output_path
+            }).run())
 
         file_name = "avlog.txt"
         f = open(file_name, 'w')
@@ -58,6 +55,7 @@ class TestAVLog(BaseTestCase):
         check_file.close()
 
         self.assertEqual(found, 5)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -8,7 +8,8 @@ FFPROBE = 'ffprobe'
 
 def ff_probe(input_url, extra_options=""):
     show_options = " -show_format -show_streams " + extra_options
-    ff_cmd = "%s -hide_banner -loglevel quiet -print_format json %s %s" % (FFPROBE, show_options, input_url)
+    ff_cmd = "%s -hide_banner -loglevel quiet -print_format json %s %s" % (
+        FFPROBE, show_options, input_url)
     (status, raw_output) = subprocess.getstatusoutput(ff_cmd)
     if status:
         raise Exception('may be problem video, status_code %s != 0' % (status))
@@ -19,9 +20,11 @@ def ff_probe(input_url, extra_options=""):
         raise Exception('ffprobe no streams')
     av_out_info = dict_info
     for stream in dict_info['streams']:
-        if stream.get('codec_type') == 'video' and 'v_stream' not in av_out_info:
+        if stream.get(
+                'codec_type') == 'video' and 'v_stream' not in av_out_info:
             av_out_info['v_stream'] = stream
-        elif stream.get('codec_type') == 'audio' and 'a_stream' not in av_out_info:
+        elif stream.get(
+                'codec_type') == 'audio' and 'a_stream' not in av_out_info:
             av_out_info['a_stream'] = stream
     return av_out_info
 

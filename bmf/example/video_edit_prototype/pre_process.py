@@ -14,13 +14,12 @@ def preprocess_video_element(video_info, graph):
     # if no audio stream
     if 'audio_duration' not in video_info['initial_info']:
         processed_video = bmf.module([video_v], 'video_preprocess', video_info)
-        video_info['stream'] = {
-            'v': processed_video[0]
-        }
+        video_info['stream'] = {'v': processed_video[0]}
     # both video and audio stream
     else:
         video_a = video['audio']
-        processed_video = bmf.module([video_v, video_a], 'video_preprocess', video_info)
+        processed_video = bmf.module([video_v, video_a], 'video_preprocess',
+                                     video_info)
         video_info['stream'] = {
             'v': processed_video[0],
             'a': processed_video[1]
@@ -32,7 +31,8 @@ def preprocess_video_element(video_info, graph):
 def preprocess_image_element(image_info, graph):
     # TODO: download from remote
 
-    image = graph.decode({"input_path": image_info['Source']})['video'].module('image_preprocess', image_info)
+    image = graph.decode({"input_path": image_info['Source']
+                          })['video'].module('image_preprocess', image_info)
 
     image_info['stream'] = image
 
@@ -42,7 +42,8 @@ def preprocess_image_element(image_info, graph):
 def preprocess_audio_element(audio_info, graph):
     # TODO: download from remote
 
-    audio = graph.decode({"input_path": audio_info['Source']})['audio'].module('audio_preprocess', audio_info)
+    audio = graph.decode({"input_path": audio_info['Source']
+                          })['audio'].module('audio_preprocess', audio_info)
 
     audio_info['stream'] = audio
 

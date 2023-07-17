@@ -7,6 +7,7 @@ from .bmf_sync import SyncModule
 # edge is created by downstream node and add to outgoing edge list
 # of upstream node
 class BmfEdge:
+
     def __init__(self, upstream_stream, downstream_stream):
         self.upstream_stream_ = upstream_stream
         self.downstream_stream_ = downstream_stream
@@ -19,8 +20,14 @@ class BmfEdge:
 
 
 class BmfNode:
-    def __init__(self, module_info, option, upstream_streams, input_manager='default',
-                 pre_module=None, scheduler=0):
+
+    def __init__(self,
+                 module_info,
+                 option,
+                 upstream_streams,
+                 input_manager='default',
+                 pre_module=None,
+                 scheduler=0):
         if isinstance(module_info, dict):
             self.module_info_ = module_info
         else:
@@ -31,7 +38,7 @@ class BmfNode:
         # the input stream of current node and corresponding
         # output stream of upstream node point to same stream instance
         self.input_streams_ = {}
-        if  upstream_streams is not None:
+        if upstream_streams is not None:
             self.graph_ = self.init_input_streams(upstream_streams)
         else:
             from .bmf_graph import BmfGraph
@@ -67,7 +74,10 @@ class BmfNode:
 
         if upstream_stream is not None:
             # create input stream
-            input_stream = BmfStream(upstream_stream.get_name(), self, notify, stream_alias=upstream_stream.get_alias())
+            input_stream = BmfStream(upstream_stream.get_name(),
+                                     self,
+                                     notify,
+                                     stream_alias=upstream_stream.get_alias())
             self.input_streams_[notify] = input_stream
 
             # get graph
@@ -106,14 +116,16 @@ class BmfNode:
 
         elif isinstance(upstream_streams, dict):
             for (notify, upstream_stream) in upstream_streams.items():
-                graph = self.init_input_stream_and_edge(upstream_stream, notify)
+                graph = self.init_input_stream_and_edge(
+                    upstream_stream, notify)
 
         return graph
 
     def generate_stream_name(self):
         # stream name format: $(node_type)_$(node_id)_$(stream_index)
         self.output_stream_idx_mutex_.acquire()
-        stream_name = self.module_info_["name"] + '_' + str(self.id_) + '_' + str(self.output_stream_idx)
+        stream_name = self.module_info_["name"] + '_' + str(
+            self.id_) + '_' + str(self.output_stream_idx)
         self.output_stream_idx += 1
         self.output_stream_idx_mutex_.release()
         return stream_name
@@ -200,12 +212,15 @@ class BmfNode:
 
         # create module
         mod = engine.Module(self.module_info_["name"], node_option,
-                         self.module_info_["type"],
-                         self.module_info_["path"], self.module_info_["entry"])
+                            self.module_info_["type"],
+                            self.module_info_["path"],
+                            self.module_info_["entry"])
 
         # input stream list
         input_stream_id = []
-        if self.module_info_["name"] == "c_ffmpeg_encoder" and 1 in self.get_input_streams().keys():
+        if self.module_info_[
+                "name"] == "c_ffmpeg_encoder" and 1 in self.get_input_streams(
+                ).keys():
             input_stream_id.append(0)
             input_stream_id.append(1)
         else:

@@ -7,6 +7,7 @@ import sys
 
 
 class GraphConfigEncoder(JSONEncoder):
+
     def default(self, o):
         return o.__dict__
 
@@ -78,11 +79,13 @@ class GraphConfig:
 
         if 'option' in config_dict.keys():
             self.option = config_dict['option']
-            
 
     def unicode_convert(self, input):
         if isinstance(input, dict):
-            return {self.unicode_convert(key): self.unicode_convert(value) for key, value in input.items()}
+            return {
+                self.unicode_convert(key): self.unicode_convert(value)
+                for key, value in input.items()
+            }
         elif isinstance(input, list):
             return [self.unicode_convert(element) for element in input]
         elif sys.version_info.major == 2 and isinstance(input, unicode):
@@ -181,7 +184,8 @@ class NodeConfig:
                 self.scheduler = node_config_dict['scheduler']
 
             if 'module_info' in node_config_dict.keys():
-                self.module_info = ModuleConfig(node_config_dict['module_info'])
+                self.module_info = ModuleConfig(
+                    node_config_dict['module_info'])
 
             if 'meta_info' in node_config_dict.keys():
                 self.meta_info = MetaConfig(node_config_dict['meta_info'])
@@ -198,7 +202,8 @@ class NodeConfig:
 
             if 'output_streams' in node_config_dict.keys():
                 for output_stream_dict in node_config_dict['output_streams']:
-                    self.output_streams.append(StreamConfig(output_stream_dict))
+                    self.output_streams.append(
+                        StreamConfig(output_stream_dict))
 
     def add_input_stream(self, stream):
         self.input_streams.append(stream)
@@ -289,6 +294,7 @@ class StreamConfig:
             "stream_alias": "v0_video"
         }
     """
+
     def __init__(self, stream_config_dict=None):
         self.identifier = None
         self.stream_alias = None

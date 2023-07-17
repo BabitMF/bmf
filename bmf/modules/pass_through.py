@@ -3,6 +3,7 @@ from bmf import Module, Log, LogLevel, InputType, ProcessResult, Packet, Timesta
 
 
 class pass_through(Module):
+
     def __init__(self, node, option=None):
         self.node_ = node
 
@@ -16,11 +17,13 @@ class pass_through(Module):
             while not input_packets.empty():
                 pkt = input_packets.get()
                 if pkt.get_timestamp() == Timestamp.EOF:
-                    Log.log_node(LogLevel.DEBUG, task.get_node(), "Receive EOF")
+                    Log.log_node(LogLevel.DEBUG, task.get_node(),
+                                 "Receive EOF")
                     output_packets.put(Packet.generate_eof_packet())
                     task.set_timestamp(Timestamp.DONE)
                 elif pkt.get_timestamp() != Timestamp.UNSET:
-                    Log.log_node(LogLevel.DEBUG, task.get_node(), ' timestamp of this processing packet is: ',
+                    Log.log_node(LogLevel.DEBUG, task.get_node(),
+                                 ' timestamp of this processing packet is: ',
                                  pkt.get_timestamp())
                     output_packets.put(pkt)
         return ProcessResult.OK

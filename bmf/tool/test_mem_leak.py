@@ -1,6 +1,7 @@
 import os
 import json
 
+
 def get_case():
     case_file_name = "./mem_leak_case.json"
     with open(case_file_name, mode='r') as f:
@@ -22,5 +23,6 @@ for dir in dir_list:
         os.mkdir(log_dir)
     for case in dir["case"]:
         case_name = case.split(".")[-1]
-        cmd = "./mem_leak.sh " + dir["path"] + " " + log_dir + " " + case + " " + case_name
+        cmd = "./mem_leak.sh " + dir[
+            "path"] + " " + log_dir + " " + case + " " + case_name
         os.system(cmd)

@@ -13,6 +13,7 @@ from base_test.media_info import MediaInfo
 
 
 class TestEditModule(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_video_overlays(self):
         input_video_path = "../files/big_bunny_10s_30fps.mp4"
@@ -23,30 +24,27 @@ class TestEditModule(BaseTestCase):
         self.remove_result_data(output_path)
         dump_graph = 0
         # create graph
-        my_graph = bmf.graph({
-            "dump_graph": dump_graph
-        })
+        my_graph = bmf.graph({"dump_graph": dump_graph})
 
         overlay_option = {
-            "dump_graph": dump_graph,
+            "dump_graph":
+            dump_graph,
             "source": {
                 "start": 0,
                 "duration": 7,
                 "width": 1280,
                 "height": 720
             },
-            "overlays": [
-                {
-                    "start": 0,
-                    "duration": 4,
-                    "width": 300,
-                    "height": 200,
-                    "pox_x": 0,
-                    "pox_y": 0,
-                    "loop": 0,
-                    "repeat_last": 1
-                }
-            ]
+            "overlays": [{
+                "start": 0,
+                "duration": 4,
+                "width": 300,
+                "height": 200,
+                "pox_x": 0,
+                "pox_y": 0,
+                "loop": 0,
+                "repeat_last": 1
+            }]
         }
 
         # main video
@@ -56,20 +54,18 @@ class TestEditModule(BaseTestCase):
         logo_1 = my_graph.decode({'input_path': logo_path})['video']
 
         # call 'my_overlay' module to do overlay
-        output_streams = (
-            bmf.module([video['video'], logo_1], 'video_overlay', overlay_option)
-        )
+        output_streams = (bmf.module([video['video'], logo_1], 'video_overlay',
+                                     overlay_option))
 
-        (
-            output_streams[0].encode(None, {
+        (output_streams[0].encode(
+            None, {
                 "output_path": output_path,
                 "video_params": {
                     "width": 640,
                     "height": 480,
                     'codec': 'h264'
                 }
-            }).run()
-        )
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -84,16 +80,13 @@ class TestEditModule(BaseTestCase):
         my_graph = bmf.graph()
 
         option = {
-            "audios": [
-                {
-                    "start": 1,
-                    "duration": 5
-                },
-                {
-                    "start": 0,
-                    "duration": 5
-                }
-            ]
+            "audios": [{
+                "start": 1,
+                "duration": 5
+            }, {
+                "start": 0,
+                "duration": 5
+            }]
         }
 
         # main video
@@ -101,20 +94,18 @@ class TestEditModule(BaseTestCase):
         video2 = my_graph.decode({'input_path': input_video_path})
 
         # mix audio
-        audio_stream = (
-            bmf.module([video['audio'], video2['audio']], 'audio_mix', option)
-        )
+        audio_stream = (bmf.module([video['audio'], video2['audio']],
+                                   'audio_mix', option))
 
         # encode
-        (
-            video['video'].encode(audio_stream, {
+        (video['video'].encode(
+            audio_stream, {
                 "output_path": output_path,
                 "video_params": {
                     "width": 640,
                     "height": 480
                 }
-            }).run()
-        )
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -126,36 +117,34 @@ class TestEditModule(BaseTestCase):
         self.remove_result_data(output_path)
         dump_graph = 0
         # create graph
-        my_graph = bmf.graph({
-            "dump_graph": dump_graph
-        })
+        my_graph = bmf.graph({"dump_graph": dump_graph})
 
         option = {
-            "dump_graph": dump_graph,
-            "width": 1280,
-            "height": 720,
+            "dump_graph":
+            dump_graph,
+            "width":
+            1280,
+            "height":
+            720,
             # if have audio input
-            "has_audio": 1,
-            "video_list": [
-                {
-                    "start": 0,
-                    "duration": 7,
-                    "transition_time": 2,
-                    "transition_mode": 1
-                },
-                {
-                    "start": 0,
-                    "duration": 7,
-                    "transition_time": 2,
-                    "transition_mode": 1
-                },
-                {
-                    "start": 0,
-                    "duration": 7,
-                    "transition_time": 2,
-                    "transition_mode": 1
-                }
-            ]
+            "has_audio":
+            1,
+            "video_list": [{
+                "start": 0,
+                "duration": 7,
+                "transition_time": 2,
+                "transition_mode": 1
+            }, {
+                "start": 0,
+                "duration": 7,
+                "transition_time": 2,
+                "transition_mode": 1
+            }, {
+                "start": 0,
+                "duration": 7,
+                "transition_time": 2,
+                "transition_mode": 1
+            }]
         }
 
         # main video
@@ -166,27 +155,20 @@ class TestEditModule(BaseTestCase):
         video3 = my_graph.decode({'input_path': input_video_path})
 
         # concat video and audio streams with 'video_concat' module
-        concat_streams = (
-            bmf.module([
-                video1['video'],
-                video2['video'],
-                video3['video'],
-                video1['audio'],
-                video2['audio'],
-                video3['audio']
-            ], 'video_concat', option)
-        )
+        concat_streams = (bmf.module([
+            video1['video'], video2['video'], video3['video'], video1['audio'],
+            video2['audio'], video3['audio']
+        ], 'video_concat', option))
 
         # encode
-        (
-            bmf.encode(concat_streams[0], concat_streams[1], {
+        (bmf.encode(
+            concat_streams[0], concat_streams[1], {
                 "output_path": output_path,
                 "video_params": {
                     "width": 1280,
                     "height": 720
                 }
-            }).run()
-        )
+            }).run())
 
         self.check_video_diff(output_path, expect_result)
 
@@ -203,59 +185,56 @@ class TestEditModule(BaseTestCase):
         duration = 7
 
         overlay_option = {
-            "dump_graph": dump_graph,
+            "dump_graph":
+            dump_graph,
             "source": {
                 "start": 0,
                 "duration": duration,
                 "width": 1280,
                 "height": 720
             },
-            "overlays": [
-                {
-                    "start": 0,
-                    "duration": duration,
-                    "width": 300,
-                    "height": 200,
-                    "pox_x": 0,
-                    "pox_y": 0,
-                    "loop": 0,
-                    "repeat_last": 1
-                }
-            ]
+            "overlays": [{
+                "start": 0,
+                "duration": duration,
+                "width": 300,
+                "height": 200,
+                "pox_x": 0,
+                "pox_y": 0,
+                "loop": 0,
+                "repeat_last": 1
+            }]
         }
 
         concat_option = {
-            "dump_graph": dump_graph,
-            "width": 1280,
-            "height": 720,
+            "dump_graph":
+            dump_graph,
+            "width":
+            1280,
+            "height":
+            720,
             # if have audio input
-            "has_audio": 1,
-            "video_list": [
-                {
-                    "start": 0,
-                    "duration": duration,
-                    "transition_time": 2,
-                    "transition_mode": 1
-                },
-                {
-                    "start": 0,
-                    "duration": duration,
-                    "transition_time": 2,
-                    "transition_mode": 1
-                },
-                {
-                    "start": 0,
-                    "duration": duration,
-                    "transition_time": 2,
-                    "transition_mode": 1
-                }
-            ]
+            "has_audio":
+            1,
+            "video_list": [{
+                "start": 0,
+                "duration": duration,
+                "transition_time": 2,
+                "transition_mode": 1
+            }, {
+                "start": 0,
+                "duration": duration,
+                "transition_time": 2,
+                "transition_mode": 1
+            }, {
+                "start": 0,
+                "duration": duration,
+                "transition_time": 2,
+                "transition_mode": 1
+            }]
         }
 
         # create graph
-        my_graph = bmf.graph({
-            "dump_graph": dump_graph
-        })
+        my_graph = bmf.graph({"dump_graph": dump_graph})
 
         # three logo video
         logo_1 = my_graph.decode({'input_path': logo_path})['video']
@@ -269,33 +248,32 @@ class TestEditModule(BaseTestCase):
 
         # do overlay
         overlay_streams = list()
-        overlay_streams.append(bmf.module([video1['video'], logo_1], 'video_overlay', overlay_option)[0])
-        overlay_streams.append(bmf.module([video2['video'], logo_2], 'video_overlay', overlay_option)[0])
-        overlay_streams.append(bmf.module([video3['video'], logo_3], 'video_overlay', overlay_option)[0])
+        overlay_streams.append(
+            bmf.module([video1['video'], logo_1], 'video_overlay',
+                       overlay_option)[0])
+        overlay_streams.append(
+            bmf.module([video2['video'], logo_2], 'video_overlay',
+                       overlay_option)[0])
+        overlay_streams.append(
+            bmf.module([video3['video'], logo_3], 'video_overlay',
+                       overlay_option)[0])
 
         # do concat
-        concat_streams = (
-            bmf.module([
-                overlay_streams[0],
-                overlay_streams[1],
-                overlay_streams[2],
-                video1['audio'],
-                video2['audio'],
-                video3['audio']
-            ], 'video_concat', concat_option)
-        )
+        concat_streams = (bmf.module([
+            overlay_streams[0], overlay_streams[1], overlay_streams[2],
+            video1['audio'], video2['audio'], video3['audio']
+        ], 'video_concat', concat_option))
 
         # encode
-        (
-            bmf.encode(concat_streams[0], concat_streams[1], {
+        (bmf.encode(
+            concat_streams[0], concat_streams[1], {
                 "output_path": output_path,
                 "video_params": {
                     "width": 1280,
                     "height": 720,
                     'codec': 'h264'
                 }
-            }).run()
-        )
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
 

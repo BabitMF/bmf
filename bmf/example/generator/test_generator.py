@@ -7,20 +7,21 @@ import bmf
 import bmf.hml.hmp as mp
 import timeout_decorator
 
-
 sys.path.append("../")
 from base_test.base_test_case import BaseTestCase
 from base_test.media_info import MediaInfo
 
 
 class TestGenerator(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_generator(self):
         pkts = (
-            bmf.graph()
-                .decode({'input_path': "../files/big_bunny_10s_30fps.mp4"})['video']
-                .ff_filter('scale', 299, 299)  # or you can use '.scale(299, 299)'
-                .start()  # this will return a packet generator
+            bmf.graph().decode({
+                'input_path': "../files/big_bunny_10s_30fps.mp4"
+            })['video'].ff_filter('scale', 299,
+                                  299)  # or you can use '.scale(299, 299)'
+            .start()  # this will return a packet generator
         )
 
         for i, pkt in enumerate(pkts):
@@ -36,10 +37,11 @@ class TestGenerator(BaseTestCase):
 
     def test_generator_10_frame(self):
         pkts = (
-            bmf.graph()
-                .decode({'input_path': "../files/big_bunny_10s_30fps.mp4"})['video']
-                .ff_filter('scale', 299, 299)  # or you can use '.scale(299, 299)'
-                .start()  # this will return a packet generator
+            bmf.graph().decode({
+                'input_path': "../files/big_bunny_10s_30fps.mp4"
+            })['video'].ff_filter('scale', 299,
+                                  299)  # or you can use '.scale(299, 299)'
+            .start()  # this will return a packet generator
         )
 
         for i, pkt in enumerate(pkts):

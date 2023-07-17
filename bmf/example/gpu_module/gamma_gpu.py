@@ -6,15 +6,18 @@ import torch
 
 import pdb
 
+
 class gamma_gpu(Module):
+
     def __get_gamma(self, option):
         gamma = [1.0]
         # user-provided gamma value should have the same channel number as the image
         # e.g. [0.1, 0.2, 0.3, 0.4] for rgba images
         if 'gamma' in option.keys():
             gamma = option['gamma']
-            self.gamma = cvcuda.as_tensor(torch.tensor(gamma, device='cuda', dtype=torch.float))
-        
+            self.gamma = cvcuda.as_tensor(
+                torch.tensor(gamma, device='cuda', dtype=torch.float))
+
     def __init__(self, node, option=None):
         self.node_ = node
         self.option_ = option
@@ -22,16 +25,18 @@ class gamma_gpu(Module):
 
         self.__get_gamma(option)
 
-        self.i420info = hmp.PixelInfo(hmp.PixelFormat.kPF_YUV420P, hmp.ColorSpace.kCS_BT470BG, hmp.ColorRange.kCR_MPEG)
+        self.i420info = hmp.PixelInfo(hmp.PixelFormat.kPF_YUV420P,
+                                      hmp.ColorSpace.kCS_BT470BG,
+                                      hmp.ColorRange.kCR_MPEG)
         self.i420_out = None
-        self.fmt_list = [hmp.PixelFormat.kPF_BGR24,
-                         hmp.PixelFormat.kPF_BGRA32,
-                         hmp.PixelFormat.kPF_RGB24,
-                         hmp.PixelFormat.kPF_RGBA32,
-                         hmp.PixelFormat.kPF_GRAY8]
+        self.fmt_list = [
+            hmp.PixelFormat.kPF_BGR24, hmp.PixelFormat.kPF_BGRA32,
+            hmp.PixelFormat.kPF_RGB24, hmp.PixelFormat.kPF_RGBA32,
+            hmp.PixelFormat.kPF_GRAY8
+        ]
 
     def process(self, task):
-        
+
         # get input and output packet queue
         input_queue = task.get_inputs()[0]
         output_queue = task.get_outputs()[0]
@@ -58,7 +63,10 @@ class gamma_gpu(Module):
             if (in_frame.frame().device() == hmp.Device('cpu')):
                 in_frame = in_frame.cuda()
             tensor_list = in_frame.frame().data()
-            frame_out = hmp.Frame(in_frame.width, in_frame.height, in_frame.frame().pix_info(), device='cuda')
+            frame_out = hmp.Frame(in_frame.width,
+                                  in_frame.height,
+                                  in_frame.frame().pix_info(),
+                                  device='cuda')
 
             out_tensor_list = frame_out.data()
             stream = hmp.current_stream(hmp.kCUDA)
@@ -75,9 +83,15 @@ class gamma_gpu(Module):
                 cvimg_batch.pushback(in_img)
                 cvimg_batch_out.pushback(out_img)
 
-                cvcuda.gamma_contrast_into(cvimg_batch_out, cvimg_batch, self.gamma, stream=cvstream)
+                cvcuda.gamma_contrast_into(cvimg_batch_out,
+                                           cvimg_batch,
+                                           self.gamma,
+                                           stream=cvstream)
             else:
-                Log.log(LogLevel.ERROR, "Unsupported pixel format. Gamma module only supports rgb/rgba formats")
+                Log.log(
+                    LogLevel.ERROR,
+                    "Unsupported pixel format. Gamma module only supports rgb/rgba formats"
+                )
                 sys.exit(1)
             '''
             # deal with nv12 special case
@@ -123,8 +137,7 @@ class gamma_gpu(Module):
 
         if self.eof_received_:
             output_queue.put(Packet.generate_eof_packet())
-            Log.log_node(LogLevel.DEBUG, self.node_,
-                         'output stream', 'done')
+            Log.log_node(LogLevel.DEBUG, self.node_, 'output stream', 'done')
             task.set_timestamp(Timestamp.DONE)
 
         return ProcessResult.OK

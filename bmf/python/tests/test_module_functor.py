@@ -1,8 +1,9 @@
-
 import bmf.hml.hmp as mp
 import bmf
 
+
 class MockDecoderModule(bmf.Module):
+
     def __init__(self, node=None, option=None):
         super().__init__(node=node, option=option)
         if 'mark_done' in option:
@@ -19,7 +20,6 @@ class MockDecoderModule(bmf.Module):
             self.npkts = option['npkts']
         else:
             self.npkts = 1
-
 
     def process(self, task):
         if self.mark_done:
@@ -38,6 +38,7 @@ class MockDecoderModule(bmf.Module):
 
 
 class MockProbeModule(bmf.Module):
+
     def __init__(self, node=None, option=None):
         super().__init__(node=node, option=option)
 
@@ -55,66 +56,79 @@ class MockProbeModule(bmf.Module):
 
 def test_make_sync_func():
     decoder = bmf.make_sync_func(name='MockDecoderModule',
-                       entry='test_module_functor.MockDecoderModule',
-                       itypes=(), otypes=(bmf.VideoFrame,))
+                                 entry='test_module_functor.MockDecoderModule',
+                                 itypes=(),
+                                 otypes=(bmf.VideoFrame, ))
     probe = bmf.make_sync_func(name='MockProbeModule',
-                       entry='test_module_functor.MockProbeModule',
-                       itypes=(bmf.VideoFrame,), otypes=(dict,))
-    assert(decoder is not None)
-    assert(probe is not None)
+                               entry='test_module_functor.MockProbeModule',
+                               itypes=(bmf.VideoFrame, ),
+                               otypes=(dict, ))
+    assert (decoder is not None)
+    assert (probe is not None)
 
     vf, = decoder()
-    assert(isinstance(vf, bmf.VideoFrame))
+    assert (isinstance(vf, bmf.VideoFrame))
     info, = probe(vf)
-    assert(isinstance(info, dict))
-    assert(info['width'] == 1920)
-    assert(info['height'] == 1080)
+    assert (isinstance(info, dict))
+    assert (info['width'] == 1920)
+    assert (info['height'] == 1080)
 
 
 def test_make_sync_func_exception():
+
     def expect_raise(f, e):
         try:
             f()
-            assert(False)
+            assert (False)
         except e as v:
             return v
 
-    decoder0 = bmf.make_sync_func(name='MockDecoderModule',
-                       entry='test_module_functor.MockDecoderModule',
-                       itypes=(), otypes=(bmf.VideoFrame,),
-                       option={'gen_eof': False, 'mark_done': True})
+    decoder0 = bmf.make_sync_func(
+        name='MockDecoderModule',
+        entry='test_module_functor.MockDecoderModule',
+        itypes=(),
+        otypes=(bmf.VideoFrame, ),
+        option={
+            'gen_eof': False,
+            'mark_done': True
+        })
     e = expect_raise(decoder0, bmf.ProcessDone)
-    assert(str(e) == "Task done")
+    assert (str(e) == "Task done")
 
-
-    decoder1 = bmf.make_sync_func(name='MockDecoderModule',
-                       entry='test_module_functor.MockDecoderModule',
-                       itypes=(), otypes=(bmf.VideoFrame,),
-                       option={'gen_eof': True, 'mark_done': False})
+    decoder1 = bmf.make_sync_func(
+        name='MockDecoderModule',
+        entry='test_module_functor.MockDecoderModule',
+        itypes=(),
+        otypes=(bmf.VideoFrame, ),
+        option={
+            'gen_eof': True,
+            'mark_done': False
+        })
     e = expect_raise(decoder1, bmf.ProcessDone)
-    assert(str(e) == "Receive EOF packet")
+    assert (str(e) == "Receive EOF packet")
 
 
 def test_make_sync_func_irregular_outputs():
-    decoder0 = bmf.make_sync_func(name='MockDecoderModule',
-                       entry='test_module_functor.MockDecoderModule',
-                       itypes=(), otypes=(bmf.VideoFrame,),
-                       option={'npkts': 0})
+    decoder0 = bmf.make_sync_func(
+        name='MockDecoderModule',
+        entry='test_module_functor.MockDecoderModule',
+        itypes=(),
+        otypes=(bmf.VideoFrame, ),
+        option={'npkts': 0})
     out0 = decoder0.execute().fetch(0)
-    assert(len(out0) == 0)
+    assert (len(out0) == 0)
 
-    decoder1 = bmf.make_sync_func(name='MockDecoderModule',
-                       entry='test_module_functor.MockDecoderModule',
-                       itypes=(), otypes=(bmf.VideoFrame,),
-                       option={'npkts': 2})
+    decoder1 = bmf.make_sync_func(
+        name='MockDecoderModule',
+        entry='test_module_functor.MockDecoderModule',
+        itypes=(),
+        otypes=(bmf.VideoFrame, ),
+        option={'npkts': 2})
     out1 = decoder1.execute().fetch(0)
-    assert(len(out1) == 2)
-                    
+    assert (len(out1) == 2)
 
 
 if __name__ == '__main__':
     test_make_sync_func()
     test_make_sync_func_exception()
     test_make_sync_func_irregular_outputs()
-
-

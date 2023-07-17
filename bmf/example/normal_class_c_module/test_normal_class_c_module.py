@@ -13,6 +13,7 @@ from base_test.media_info import MediaInfo
 
 
 class TestNormalCModule(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_normal_c_module(self):
         c_module_path = './'
@@ -22,9 +23,8 @@ class TestNormalCModule(BaseTestCase):
         # decode
         produce_image_info = graph.module("produce_image_info", {"num": 100})
 
-        (
-            produce_image_info.c_module(c_module_path, c_module_name).upload().run()
-        )
+        (produce_image_info.c_module(c_module_path,
+                                     c_module_name).upload().run())
 
 
 if __name__ == '__main__':

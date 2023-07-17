@@ -1,4 +1,3 @@
-
 from .module_functor import make_sync_func, ProcessDone
 from .timestamp import Timestamp
 from .module import Module, InputType, ProcessResult

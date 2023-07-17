@@ -3,6 +3,7 @@ from bmf import Module, Log, LogLevel, InputType, ProcessResult, Packet, Timesta
 
 
 class simple_source(Module):
+
     def __init__(self, node, option=None):
         self.node_ = node
         self.global_timestamp_ = 1
@@ -24,7 +25,8 @@ class simple_source(Module):
                 pkt = Packet()
                 pkt.set_timestamp(self.global_timestamp_)
                 output_queue.put(pkt)
-            Log.log_node(LogLevel.DEBUG, task.get_node(), "simple_source generate data time:",
+            Log.log_node(LogLevel.DEBUG, task.get_node(),
+                         "simple_source generate data time:",
                          output_queue.queue[0].get_timestamp())
             self.global_timestamp_ += 1
             return ProcessResult.OK

@@ -12,6 +12,7 @@ from base_test.media_info import MediaInfo
 
 
 class TestTranscode(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_audio(self):
         input_video_path = "../files/big_bunny_10s_30fps.mp4"
@@ -22,27 +23,18 @@ class TestTranscode(BaseTestCase):
         graph = bmf.graph()
 
         # decode
-        video = graph.decode({
-            "input_path": input_video_path
-        })
+        video = graph.decode({"input_path": input_video_path})
 
-
-        (
-            bmf.encode(
-                None,
-                video['audio'],
-                {
-                    "output_path": output_path,
-                    "audio_params": {
-                        "codec": "aac",
-                        "bit_rate": 128000,
-                        "sample_rate": 44100,
-                        "channels": 2
-                    }
+        (bmf.encode(
+            None, video['audio'], {
+                "output_path": output_path,
+                "audio_params": {
+                    "codec": "aac",
+                    "bit_rate": 128000,
+                    "sample_rate": 44100,
+                    "channels": 2
                 }
-            )
-                .run()
-        )
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -53,7 +45,7 @@ class TestTranscode(BaseTestCase):
         self.remove_result_data(output_path)
         mygraph = bmf.graph()
         streams = mygraph.decode({'input_path': input_video_path})
-        bmf.encode(None,streams["audio"], {"output_path": output_path}).run()
+        bmf.encode(None, streams["audio"], {"output_path": output_path}).run()
 
     @timeout_decorator.timeout(seconds=120)
     def test_with_encode_with_audio_stream_but_no_audio_frame(self):
@@ -64,7 +56,9 @@ class TestTranscode(BaseTestCase):
         self.remove_result_data(output_path)
         mygraph = bmf.graph()
         streams = mygraph.decode({'input_path': input_video_path})
-        bmf.encode(streams["video"],streams["audio"], {"output_path": output_path}).run()
+        bmf.encode(streams["video"], streams["audio"], {
+            "output_path": output_path
+        }).run()
 
     @timeout_decorator.timeout(seconds=120)
     def test_with_null_audio(self):
@@ -77,36 +71,29 @@ class TestTranscode(BaseTestCase):
         graph = bmf.graph()
 
         # decode
-        video = graph.decode({
-            "input_path": input_video_path
-        })
+        video = graph.decode({"input_path": input_video_path})
 
         # create a null audio stream
-        audio_stream = graph.anullsrc('r=48000', 'cl=2').atrim('start=0', 'end=6')
+        audio_stream = graph.anullsrc('r=48000',
+                                      'cl=2').atrim('start=0', 'end=6')
 
-        (
-            bmf.encode(
-                video['video'],
-                audio_stream,
-                {
-                    "output_path": output_path,
-                    "video_params": {
-                        "codec": "h264",
-                        "width": 320,
-                        "height": 240,
-                        "crf": 23,
-                        "preset": "veryfast"
-                    },
-                    "audio_params": {
-                        "codec": "aac",
-                        "bit_rate": 128000,
-                        "sample_rate": 44100,
-                        "channels": 2
-                    }
+        (bmf.encode(
+            video['video'], audio_stream, {
+                "output_path": output_path,
+                "video_params": {
+                    "codec": "h264",
+                    "width": 320,
+                    "height": 240,
+                    "crf": 23,
+                    "preset": "veryfast"
+                },
+                "audio_params": {
+                    "codec": "aac",
+                    "bit_rate": 128000,
+                    "sample_rate": 44100,
+                    "channels": 2
                 }
-            )
-                .run()
-        )
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -121,34 +108,26 @@ class TestTranscode(BaseTestCase):
         graph = bmf.graph()
 
         # decode
-        video = graph.decode({
-            "input_path": input_video_path
-        })
+        video = graph.decode({"input_path": input_video_path})
 
-        (
-            bmf.encode(
-                video['video'],
-                video['audio'],
-                {
-                    "output_path": output_path,
-                    "video_params": {
-                        "psnr": 1,
-                        "codec": "h264",
-                        "width": 320,
-                        "height": 240,
-                        "crf": 23,
-                        "preset": "veryfast"
-                    },
-                    "audio_params": {
-                        "codec": "aac",
-                        "bit_rate": 128000,
-                        "sample_rate": 44100,
-                        "channels": 2
-                    }
+        (bmf.encode(
+            video['video'], video['audio'], {
+                "output_path": output_path,
+                "video_params": {
+                    "psnr": 1,
+                    "codec": "h264",
+                    "width": 320,
+                    "height": 240,
+                    "crf": 23,
+                    "preset": "veryfast"
+                },
+                "audio_params": {
+                    "codec": "aac",
+                    "bit_rate": 128000,
+                    "sample_rate": 44100,
+                    "channels": 2
                 }
-            )
-                .run()
-        )
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -163,19 +142,15 @@ class TestTranscode(BaseTestCase):
 
         def cb(para):
             print(para)
-            return bytes("OK","ASCII")
+            return bytes("OK", "ASCII")
 
         graph.add_user_callback(bmf.BmfCallBackType.LATEST_TIMESTAMP, cb)
 
         # decode
-        video = graph.decode({
-            "input_path": input_video_path
-        })
+        video = graph.decode({"input_path": input_video_path})
 
         bmf.encode(
-            video['video'],
-            video['audio'],
-            {
+            video['video'], video['audio'], {
                 "output_path": output_path,
                 "video_params": {
                     "codec": "h264",
@@ -184,8 +159,8 @@ class TestTranscode(BaseTestCase):
                     "crf": "23",
                     "preset": "veryfast"
                 }
-            }
-        ).node_.add_user_callback(bmf.BmfCallBackType.LATEST_TIMESTAMP,cb)
+            }).node_.add_user_callback(bmf.BmfCallBackType.LATEST_TIMESTAMP,
+                                       cb)
         graph.run()
         self.check_video_diff(output_path, expect_result)
 
@@ -200,25 +175,18 @@ class TestTranscode(BaseTestCase):
         graph = bmf.graph()
 
         # decode
-        video = graph.decode({
-            "input_path": input_video_path
-        })
+        video = graph.decode({"input_path": input_video_path})
 
-        (
-            bmf.encode(
-                video['video'],
-                video['audio'],
-                {
-                    "output_path": "./out.hls",
-                    "format": "hls",
-                    "mux_params": {
-                        "hls_list_size": "0",
-                        "hls_time": "10",
-                        "hls_segment_filename": "./file%03d.ts"
-                    }
+        (bmf.encode(
+            video['video'], video['audio'], {
+                "output_path": "./out.hls",
+                "format": "hls",
+                "mux_params": {
+                    "hls_list_size": "0",
+                    "hls_time": "10",
+                    "hls_segment_filename": "./file%03d.ts"
                 }
-            ).run()
-        )
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -234,24 +202,21 @@ class TestTranscode(BaseTestCase):
 
         # decode
         video = graph.decode({
-            "input_path": input_video_path,
-            "decryption_key": "b23e92e4d603468c9ec7be7570b16229"
+            "input_path":
+            input_video_path,
+            "decryption_key":
+            "b23e92e4d603468c9ec7be7570b16229"
         })
 
-        (
-            bmf.encode(
-                video['video'],
-                video['audio'],
-                {
-                    "output_path": output_path,
-                    "mux_params": {
-                        "encryption_scheme": "cenc-aes-ctr",
-                        "encryption_key": "76a6c65c5ea762046bd749a2e632ccbb",
-                        "encryption_kid": "a7e61c373e219033c21091fa607bf3b8"
-                    }
+        (bmf.encode(
+            video['video'], video['audio'], {
+                "output_path": output_path,
+                "mux_params": {
+                    "encryption_scheme": "cenc-aes-ctr",
+                    "encryption_key": "76a6c65c5ea762046bd749a2e632ccbb",
+                    "encryption_kid": "a7e61c373e219033c21091fa607bf3b8"
                 }
-            ).run()
-        )
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -266,39 +231,31 @@ class TestTranscode(BaseTestCase):
 
         # decode
         # start_time in seconds
-        video = graph.decode({
-            "input_path": input_video_path,
-            "start_time": 2
-        })
+        video = graph.decode({"input_path": input_video_path, "start_time": 2})
 
-        (
-            bmf.encode(
-                video['video'],
-                video['audio'],
-                {
-                    "output_path": output_path,
-                    "video_params": {
-                        "codec": "h264",
-                        "width": 1280,
-                        "height": 720,
-                        "preset": "fast",
-                        "crf": "23",
-                        "x264-params": "ssim=1:psnr=1"
-                    },
-                    "audio_params": {
-                        "codec": "aac",
-                        "bit_rate": 128000,
-                        "sample_rate": 44100,
-                        "channels": 2
-                    },
-                    "mux_params": {
-                        "fflags": "+igndts",
-                        "movflags": "+faststart+use_metadata_tags",
-                        "max_interleave_delta": "0"
-                    }
+        (bmf.encode(
+            video['video'], video['audio'], {
+                "output_path": output_path,
+                "video_params": {
+                    "codec": "h264",
+                    "width": 1280,
+                    "height": 720,
+                    "preset": "fast",
+                    "crf": "23",
+                    "x264-params": "ssim=1:psnr=1"
+                },
+                "audio_params": {
+                    "codec": "aac",
+                    "bit_rate": 128000,
+                    "sample_rate": 44100,
+                    "channels": 2
+                },
+                "mux_params": {
+                    "fflags": "+igndts",
+                    "movflags": "+faststart+use_metadata_tags",
+                    "max_interleave_delta": "0"
                 }
-            ).run()
-        )
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -307,20 +264,17 @@ class TestTranscode(BaseTestCase):
         output_path = "./image.jpg"
         expect_result = 'image.jpg|240|320|0.040000|IMAGE2|975400|4877|mjpeg|{"fps": "0"}'
         self.remove_result_data(output_path)
-        (
-            bmf.graph()
-                .decode({'input_path': input_video_path})['video']
-                .scale(320, 240)
-                .encode(None, {
-                "output_path": output_path,
-                "format": "mjpeg",
-                "video_params": {
-                    "codec": "jpg",
-                    "width": 320,
-                    "height": 240
-                }
-            }).run()
-        )
+        (bmf.graph().decode({'input_path': input_video_path
+                             })['video'].scale(320, 240).encode(
+                                 None, {
+                                     "output_path": output_path,
+                                     "format": "mjpeg",
+                                     "video_params": {
+                                         "codec": "jpg",
+                                         "width": 320,
+                                         "height": 240
+                                     }
+                                 }).run())
         # retrieve log
         self.check_video_diff(output_path, expect_result)
 
@@ -354,72 +308,59 @@ class TestTranscode(BaseTestCase):
         video = my_graph.decode({'input_path': input_video_path_3})
 
         # logo video
-        logo_1 = (
-            my_graph.decode({'input_path': logo_video_path_1})['video']
-                .scale(logo_width, logo_height)
-        )
-        logo_2 = (
-            my_graph.decode({'input_path': logo_video_path_2})['video']
-                .scale(logo_width, logo_height)
-                .ff_filter('loop', loop=-1, size=991)
-                .ff_filter('setpts', 'PTS+3.900/TB')
-        )
+        logo_1 = (my_graph.decode({'input_path': logo_video_path_1
+                                   })['video'].scale(logo_width, logo_height))
+        logo_2 = (my_graph.decode({
+            'input_path': logo_video_path_2
+        })['video'].scale(logo_width, logo_height).ff_filter(
+            'loop', loop=-1, size=991).ff_filter('setpts', 'PTS+3.900/TB'))
 
         # main video processing
-        main_video = (
-            video['video'].scale(output_width, output_height)
-                .overlay(logo_1, repeatlast=0)
-                .overlay(logo_2,
-                         x='if(gte(t,3.900),960,NAN)',
-                         y=0,
-                         shortest=1)
-        )
+        main_video = (video['video'].scale(
+            output_width, output_height).overlay(logo_1, repeatlast=0).overlay(
+                logo_2, x='if(gte(t,3.900),960,NAN)', y=0, shortest=1))
 
         # concat video
-        concat_video = (
-            bmf.concat(header['video'].scale(output_width, output_height),
-                       main_video,
-                       tail['video'].scale(output_width, output_height),
-                       n=3)
-        )
+        concat_video = (bmf.concat(header['video'].scale(
+            output_width, output_height),
+                                   main_video,
+                                   tail['video'].scale(output_width,
+                                                       output_height),
+                                   n=3))
 
         # concat audio
-        concat_audio = (
-            bmf.concat(header['audio'],
-                       video['audio'],
-                       tail['audio'],
-                       n=3, v=0, a=1)
-        )
+        concat_audio = (bmf.concat(header['audio'],
+                                   video['audio'],
+                                   tail['audio'],
+                                   n=3,
+                                   v=0,
+                                   a=1))
 
-        (
-            bmf.encode(concat_video,
-                       concat_audio,
-                       {
-                           "output_path": output_path,
-                           "video_params": {
-                               "codec": "h264",
-                               "width": 1280,
-                               "height": 720,
-                               "preset": "veryfast",
-                               "crf": "23",
-                               "x264-params": "ssim=1:psnr=1",
-                               "vsync": "vfr",
-                               "max_fr": 60
-                           },
-                           "audio_params": {
-                               "codec": "aac",
-                               "bit_rate": 128000,
-                               "sample_rate": 48000,
-                               "channels": 2
-                           },
-                           "mux_params": {
-                               "fflags": "+igndts",
-                               "movflags": "+faststart+use_metadata_tags",
-                               "max_interleave_delta": "0"
-                           }
-                       })
-                .run()
-        )
+        (bmf.encode(
+            concat_video, concat_audio, {
+                "output_path": output_path,
+                "video_params": {
+                    "codec": "h264",
+                    "width": 1280,
+                    "height": 720,
+                    "preset": "veryfast",
+                    "crf": "23",
+                    "x264-params": "ssim=1:psnr=1",
+                    "vsync": "vfr",
+                    "max_fr": 60
+                },
+                "audio_params": {
+                    "codec": "aac",
+                    "bit_rate": 128000,
+                    "sample_rate": 48000,
+                    "channels": 2
+                },
+                "mux_params": {
+                    "fflags": "+igndts",
+                    "movflags": "+faststart+use_metadata_tags",
+                    "max_interleave_delta": "0"
+                }
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -438,32 +379,20 @@ class TestTranscode(BaseTestCase):
         video2 = my_graph.decode({'input_path': input_video_path})
 
         # do concat
-        concat_video_stream = (
-            bmf.concat(
-                video1['video'],
-                video2['video'],
-            )
-        )
+        concat_video_stream = (bmf.concat(
+            video1['video'],
+            video2['video'],
+        ))
 
-        concat_audio_stream = (
-            bmf.concat(
-                video1['audio'],
-                video2['audio'],
-                v=0,
-                a=1
-            )
-        )
+        concat_audio_stream = (bmf.concat(video1['audio'],
+                                          video2['audio'],
+                                          v=0,
+                                          a=1))
 
         # encode
-        (
-            bmf.encode(
-                concat_video_stream,
-                concat_audio_stream,
-                {
-                    "output_path": output_path
-                }
-            ).run()
-        )
+        (bmf.encode(concat_video_stream, concat_audio_stream, {
+            "output_path": output_path
+        }).run())
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -479,32 +408,22 @@ class TestTranscode(BaseTestCase):
         graph = bmf.graph({'dump_graph': 1})
 
         # decode
-        video = graph.decode({
-            "input_path": input_video_path
-        })['video']
-        video2 = graph.decode({
-            "input_path": input_video_path2
-        })['video']
+        video = graph.decode({"input_path": input_video_path})['video']
+        video2 = graph.decode({"input_path": input_video_path2})['video']
 
         vout = video.concat(video2)
 
-        (
-            bmf.encode(
-                vout,
-                None,
-                {
-                    "output_path": output_path,
-                    "video_params": {
-                        "codec": "h264",
-                        "width": 320,
-                        "height": 240,
-                        "crf": 23,
-                        "preset": "veryfast"
-                    }
+        (bmf.encode(
+            vout, None, {
+                "output_path": output_path,
+                "video_params": {
+                    "codec": "h264",
+                    "width": 320,
+                    "height": 240,
+                    "crf": 23,
+                    "preset": "veryfast"
                 }
-            )
-                .run()
-        )
+            }).run())
 
     @timeout_decorator.timeout(seconds=120)
     def test_map_param(self):
@@ -528,13 +447,9 @@ class TestTranscode(BaseTestCase):
             "map_a": 2
         })
 
-        bmf.encode(
-            video1['video'],
-            video1['audio'],
-            {
-                "output_path": output_path_1,
-            }
-        )
+        bmf.encode(video1['video'], video1['audio'], {
+            "output_path": output_path_1,
+        })
 
         # decode video2
         video2 = graph.decode({
@@ -543,13 +458,9 @@ class TestTranscode(BaseTestCase):
             "map_a": 3
         })
 
-        bmf.encode(
-            video2['video'],
-            video2['audio'],
-            {
-                "output_path": output_path_2,
-            }
-        )
+        bmf.encode(video2['video'], video2['audio'], {
+            "output_path": output_path_2,
+        })
 
         graph.run()
 
@@ -604,9 +515,7 @@ class TestTranscode(BaseTestCase):
 
         video_stream = stream['video'].ff_filter('loop', loop=50, size=1)
 
-        video_stream.encode(None, {
-            "output_path": output_path
-        }).run()
+        video_stream.encode(None, {"output_path": output_path}).run()
 
         self.check_video_diff(output_path, expect_result)
 
@@ -633,61 +542,56 @@ class TestTranscode(BaseTestCase):
     def test_stream_audio_copy(self):
         input_path = "../files/big_bunny_10s_only_audio.flv"
         output_path = "./audio_copy.mp4"
-        expect_result = './transcode/audio_copy.mp4|0|0|10.031|MOV,MP4,M4A,3GP,3G2,MJ2|129999|163003||{"accurate": "b"}' # accurate could be "b" bitrate accurate check, "d" duration accurate check and "f" fps accurate check
-        stream = bmf.graph().decode(
-                             {
-                                'input_path': input_path,
-                                'video_codec': "copy",
-                                'audio_codec': "copy"
-                             })
+        expect_result = './transcode/audio_copy.mp4|0|0|10.031|MOV,MP4,M4A,3GP,3G2,MJ2|129999|163003||{"accurate": "b"}'  # accurate could be "b" bitrate accurate check, "d" duration accurate check and "f" fps accurate check
+        stream = bmf.graph().decode({
+            'input_path': input_path,
+            'video_codec': "copy",
+            'audio_codec': "copy"
+        })
 
-        (
-        bmf.encode(None, stream['audio'],
-                  {
-                    "output_path": output_path
-                  }
-                  ).run()
-        )
+        (bmf.encode(None, stream['audio'], {"output_path": output_path}).run())
 
         self.check_video_diff(output_path, expect_result)
-    
+
     @timeout_decorator.timeout(seconds=120)
     def test_extract_frames(self):
         input_path = "../files/big_bunny_10s_30fps.mp4"
         frames = (
-                bmf.graph()
-                    .decode({'input_path': "../files/big_bunny_10s_30fps.mp4", "video_params":{"extract_frames":{ "fps":0.5}} })['video']
-                    .start()  # this will return a packet generator
-            )
-        
+            bmf.graph().decode({
+                'input_path': "../files/big_bunny_10s_30fps.mp4",
+                "video_params": {
+                    "extract_frames": {
+                        "fps": 0.5
+                    }
+                }
+            })['video'].start()  # this will return a packet generator
+        )
+
         num = 0
         for i, frame in enumerate(frames):
             # convert frame to a nd array
             if frame is not None:
-                num = num+1
+                num = num + 1
 
                 # we can add some more processing here, e.g. predicting
             else:
                 break
-        assert(num == 6)
+        assert (num == 6)
 
     @timeout_decorator.timeout(seconds=120)
     def test_incorrect_stream_notify(self):
         output_path = "./incorrect_stream_notify.mp4"
 
         video = bmf.graph().decode({
-            "input_path": "../files/big_bunny_10s_30fps.mp4",
+            "input_path":
+            "../files/big_bunny_10s_30fps.mp4",
         })
 
         stream_notify = 'wrong_name'
         v = video[stream_notify]
 
         try:
-            bmf.encode(v, None,
-                {
-                    "output_path": output_path
-                }
-            ).run()
+            bmf.encode(v, None, {"output_path": output_path}).run()
         except Exception as e:
             print(e)
 
@@ -696,7 +600,8 @@ class TestTranscode(BaseTestCase):
         output_path = "./incorrect_encoder_param.mp4"
 
         video = bmf.graph().decode({
-            "input_path": "../files/big_bunny_10s_30fps.mp4",
+            "input_path":
+            "../files/big_bunny_10s_30fps.mp4",
         })
 
         v = video['video']
@@ -708,8 +613,8 @@ class TestTranscode(BaseTestCase):
         wrong_v_2 = 'wrong_value_2'
 
         try:
-            bmf.encode(v, a,
-                {
+            bmf.encode(
+                v, a, {
                     "output_path": output_path,
                     "video_params": {
                         "codec": "h264",
@@ -726,8 +631,7 @@ class TestTranscode(BaseTestCase):
                         wrong_k_1: wrong_v_1,
                         wrong_k_2: wrong_v_2
                     }
-                }
-            ).run()
+                }).run()
         except Exception as e:
             print(e)
 
@@ -738,31 +642,25 @@ class TestTranscode(BaseTestCase):
         expect_result = '../transcode/durations.mp4|240|320|4.54|MOV,MP4,M4A,3GP,3G2,MJ2|105089|59113|h264|' \
                         '{"fps": "16.67"}'
         graph = bmf.graph()
-        graph = bmf.graph({'dump_graph':1})
+        graph = bmf.graph({'dump_graph': 1})
 
         video = graph.decode({
             "input_path": input_video_path,
             "durations": [1.5, 3, 5, 6]
         })
-        (
-            bmf.encode(
-                video['video'],
-                video['audio'],
-                {
-                    "output_path": output_path,
-                    "video_params": {
-                        "codec": "h264",
-                        "width": 320,
-                        "height": 240,
-                        "crf": 23,
-                        "preset": "veryfast",
-                        "vsync": "vfr",
-                        "r": 30
-                    }
+        (bmf.encode(
+            video['video'], video['audio'], {
+                "output_path": output_path,
+                "video_params": {
+                    "codec": "h264",
+                    "width": 320,
+                    "height": 240,
+                    "crf": 23,
+                    "preset": "veryfast",
+                    "vsync": "vfr",
+                    "r": 30
                 }
-            )
-            .run()
-        )
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -774,19 +672,14 @@ class TestTranscode(BaseTestCase):
         video1 = my_graph.decode({'input_path': input_video_path})
 
         # get raw data of the video stream
-        raw_output = (
-            bmf.encode(
-                video1['video'],
-                None,
-                {
-                    "video_params": {
-                        "codec": "rawvideo",
-                    },
-                    "format": "rawvideo",
-                    "output_path": raw_output_path
-                }
-            )
-        ).run()
+        raw_output = (bmf.encode(
+            video1['video'], None, {
+                "video_params": {
+                    "codec": "rawvideo",
+                },
+                "format": "rawvideo",
+                "output_path": raw_output_path
+            })).run()
 
         self.check_md(raw_output_path, "992f929388f18c43c06c767d63eea15d")
 
@@ -796,20 +689,9 @@ class TestTranscode(BaseTestCase):
 
         graph = bmf.graph()
 
-        video = graph.decode({
-            "input_path": input_video_path
-        })
+        video = graph.decode({"input_path": input_video_path})
 
-        (
-            bmf.encode(
-                video['video'],
-                video['audio'],
-                {
-                    "null_output": 1
-                }
-            )
-            .run()
-        )
+        (bmf.encode(video['video'], video['audio'], {"null_output": 1}).run())
 
     @timeout_decorator.timeout(seconds=120)
     def test_vframes(self):
@@ -817,29 +699,23 @@ class TestTranscode(BaseTestCase):
         output_path = "./simple.mp4"
         expect_result = './transcode/simple.mp4|480|640|1.001000|MOV,MP4,M4A,3GP,3G2,MJ2|110976|13872|h264|' \
        '{"fps": "29.97"}'
-        graph = bmf.graph({'dump_graph':1})
+        graph = bmf.graph({'dump_graph': 1})
         video = graph.decode({
             "input_path": input_video_path,
             #"vframes": 30
         })
-        (
-            bmf.encode(
-                video['video'],
-                None,
-                {
-                    "output_path": output_path,
-                    "vframes": 30,
-                    "video_params": {
-                        "codec": "h264",
-                        "width": 640,
-                        "height": 480,
-                        "crf": 23,
-                        "preset": "veryfast"
-                    },
-                }
-            )
-            .run()
-        )
+        (bmf.encode(
+            video['video'], None, {
+                "output_path": output_path,
+                "vframes": 30,
+                "video_params": {
+                    "codec": "h264",
+                    "width": 640,
+                    "height": 480,
+                    "crf": 23,
+                    "preset": "veryfast"
+                },
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -851,25 +727,19 @@ class TestTranscode(BaseTestCase):
         expect_result2 = './transcode/simple_00001.mp4|1080|1920|8.313|MOV,MP4,M4A,3GP,3G2,MJ2|1102862|1146012|mpeg4|' \
        '{"fps": "29.97", "accurate": "d"}'
 
-        graph = bmf.graph({'dump_graph':1})
+        graph = bmf.graph({'dump_graph': 1})
         video = graph.decode({
             "input_path": input_video_path,
             'video_codec': "copy"
         })
-        (
-            bmf.encode(
-                video['video'],
-                video['audio'],
-                {
-                    "output_path": output_path,
-                    "format": "segment",
-                    "mux_params": {
-                        "segment_time": 4
-                    },
-                }
-            )
-            .run()
-        )
+        (bmf.encode(
+            video['video'], video['audio'], {
+                "output_path": output_path,
+                "format": "segment",
+                "mux_params": {
+                    "segment_time": 4
+                },
+            }).run())
         self.check_video_diff('./simple_00000.mp4', expect_result1)
         self.check_video_diff('./simple_00001.mp4', expect_result2)
 
@@ -877,29 +747,23 @@ class TestTranscode(BaseTestCase):
     def test_encoder_push_output_mp4(self):
         input_video_path = "../files/big_bunny_10s_30fps.mp4"
         output_path = "./simple_vframe_python.mp4"
-        graph = bmf.graph({'dump_graph':1})
+        graph = bmf.graph({'dump_graph': 1})
         video = graph.decode({
             "input_path": input_video_path,
         })
-        result = (
-            bmf.encode(
-                video['video'],
-                None,
-                {
-                    "output_path": output_path,
-                    "push_output": 1,
-                    "vframes": 60,
-                    "video_params": {
-                        "codec": "jpg",
-                        "width": 640,
-                        "height": 480,
-                        "crf": 23,
-                        "preset": "veryfast"
-                    },
-                }
-            )
-            .start()
-        )
+        result = (bmf.encode(
+            video['video'], None, {
+                "output_path": output_path,
+                "push_output": 1,
+                "vframes": 60,
+                "video_params": {
+                    "codec": "jpg",
+                    "width": 640,
+                    "height": 480,
+                    "crf": 23,
+                    "preset": "veryfast"
+                },
+            }).start())
         with open(output_path, "wb") as f:
             for i, packet in enumerate(result):
                 avpacket = packet.get(bmf.BMFAVPacket)
@@ -926,14 +790,14 @@ class TestTranscode(BaseTestCase):
                 }
                 """
                 data = avpacket.data.numpy()
-                if (offset > 0) :
+                if (offset > 0):
                     f.seek(offset, whence)
                 f.write(data)
 
     @timeout_decorator.timeout(seconds=120)
     def test_encoder_push_output_image2pipe(self):
         input_video_path = "../files/big_bunny_10s_30fps.mp4"
-        graph = bmf.graph({'dump_graph':1})
+        graph = bmf.graph({'dump_graph': 1})
         video = graph.decode({
             "input_path": input_video_path,
         })
@@ -946,7 +810,7 @@ class TestTranscode(BaseTestCase):
                     "push_output": 1,
                     "vframes": vframes_num,
                     "format": "image2pipe",
-                    "avio_buffer_size": 65536,#16*4096
+                    "avio_buffer_size": 65536,  #16*4096
                     "video_params": {
                         "codec": "jpg",
                         "width": 640,
@@ -954,16 +818,13 @@ class TestTranscode(BaseTestCase):
                         "crf": 23,
                         "preset": "veryfast"
                     },
-                }
-            )
-            .start()
-        )
+                }).start())
         write_num = 0
         for i, packet in enumerate(result):
             avpacket = packet.get(bmf.BMFAVPacket)
             data = avpacket.data.numpy()
             if write_num < vframes_num:
-                output_path = "./simple_image" + str(write_num)+ ".jpg"
+                output_path = "./simple_image" + str(write_num) + ".jpg"
                 write_num = write_num + 1
                 with open(output_path, "wb") as f:
                     f.write(data)
@@ -972,26 +833,20 @@ class TestTranscode(BaseTestCase):
     def test_encoder_push_output_audio_pcm_s16le(self):
         input_video_path = "../files/big_bunny_10s_30fps.mp4"
         output_path = "./test_audio_simple_pcm_s16le.wav"
-        graph = bmf.graph({'dump_graph':1})
+        graph = bmf.graph({'dump_graph': 1})
         video = graph.decode({
             "input_path": input_video_path,
             #'audio_codec': "copy",
         })
-        result = (
-            bmf.encode(
-                None,
-                video['audio'],
-                {
-                    "output_path": output_path,
-                    "format": "wav",
-                    "push_output": 1,
-                    "audio_params": {
-                        "codec": "pcm_s16le",
-                    },
-                }
-            )
-            .start()
-        )
+        result = (bmf.encode(
+            None, video['audio'], {
+                "output_path": output_path,
+                "format": "wav",
+                "push_output": 1,
+                "audio_params": {
+                    "codec": "pcm_s16le",
+                },
+            }).start())
         with open(output_path, "wb") as f:
             for i, packet in enumerate(result):
                 avpacket = packet.get(bmf.BMFAVPacket)
@@ -1010,29 +865,23 @@ class TestTranscode(BaseTestCase):
             '{"fps": "29.97"}'
         # 创建BMF Graph
         graph = bmf.graph()
-    
+
         # 构建解码流
         streams = graph.decode({
             "input_path": input_video_path,
-            "skip_frame" : 32
+            "skip_frame": 32
         })
 
-        (   
-            bmf.encode(
-                streams['video'],
-                None,
-                {
-                    "output_path": output_path,
-                    "video_params": {
-                        "codec": "h264",
-                        "crf": 23,
-                        "preset": "veryfast",
-                    }
+        (bmf.encode(
+            streams['video'], None, {
+                "output_path": output_path,
+                "video_params": {
+                    "codec": "h264",
+                    "crf": 23,
+                    "preset": "veryfast",
                 }
-            )
-            .run()
-        )
-        
+            }).run())
+
     @timeout_decorator.timeout(seconds=120)
     def test_encoder_push_unmuxed_output_mp4(self):
         input_video_path = "../files/big_bunny_10s_30fps.mp4"
@@ -1045,7 +894,7 @@ class TestTranscode(BaseTestCase):
         graph = bmf.graph()
 
         # decode
-        video = graph.decode({ #BmfStream
+        video = graph.decode({  #BmfStream
             "input_path": input_video_path
         })
 
@@ -1071,16 +920,9 @@ class TestTranscode(BaseTestCase):
                 }
             )
 
-        (
-            bmf.encode(
-                encoded_video['video'],
-                encoded_video['audio'],
-                {
-                    "output_path": output_path,
-                }
-            )
-                .run()
-        )
+        (bmf.encode(encoded_video['video'], encoded_video['audio'], {
+            "output_path": output_path,
+        }).run())
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -1088,44 +930,42 @@ class TestTranscode(BaseTestCase):
         input_video_path = "../files/resolution_change.mp4"
         output_path = "./simple.mp4"
 
-        graph = bmf.graph({'dump_graph':1})
+        graph = bmf.graph({'dump_graph': 1})
 
         video = graph.decode({
             "input_path": input_video_path,
             "max_width_height": 5000,
-            "max_limit_hits": 3 # will throw the exception when exceeded the number of frames
+            "max_limit_hits":
+            3  # will throw the exception when exceeded the number of frames
         })
 
         try:
-            (
-                bmf.encode(
-                    video['video'],
-                    video['audio'],
-                    {
-                        "output_path": output_path,
-                        "min_frames": 300,
-                        "video_params": {
-                            "codec": "h264",
-                            "width": 640,
-                            "height": 480,
-                            "crf": 23,
-                            "preset": "veryfast"
-                        },
-                        "audio_params": {
-                            "codec": "aac",
-                            "bit_rate": 128000,
-                            "sample_rate": 44100,
-                            "channels": 2
-                        }
+            (bmf.encode(
+                video['video'], video['audio'], {
+                    "output_path": output_path,
+                    "min_frames": 300,
+                    "video_params": {
+                        "codec": "h264",
+                        "width": 640,
+                        "height": 480,
+                        "crf": 23,
+                        "preset": "veryfast"
+                    },
+                    "audio_params": {
+                        "codec": "aac",
+                        "bit_rate": 128000,
+                        "sample_rate": 44100,
+                        "channels": 2
                     }
-                )
-                .run()
-            )
+                }).run())
         except Exception as e:
             print(e)
             return
 
-        raise Exception("shouldn't be here, max limit hits exception should be occured and catched")
+        raise Exception(
+            "shouldn't be here, max limit hits exception should be occured and catched"
+        )
+
 
 if __name__ == '__main__':
     unittest.main()

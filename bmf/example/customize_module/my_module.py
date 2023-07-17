@@ -3,6 +3,7 @@ from bmf import Module, Log, LogLevel, InputType, ProcessResult, Packet, Timesta
 
 
 class my_module(Module):
+
     def __init__(self, node, option=None):
         self.node_ = node
         self.option_ = option
@@ -19,7 +20,8 @@ class my_module(Module):
 
                 # process EOS
                 if pkt.timestamp == Timestamp.EOF:
-                    Log.log_node(LogLevel.DEBUG, task.get_node(), "Receive EOF")
+                    Log.log_node(LogLevel.DEBUG, task.get_node(),
+                                 "Receive EOF")
                     output_packets.put(Packet.generate_eof_packet())
                     task.timestamp = Timestamp.DONE
                     return ProcessResult.OK

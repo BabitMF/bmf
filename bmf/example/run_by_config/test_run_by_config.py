@@ -14,6 +14,7 @@ from base_test.media_info import MediaInfo
 
 
 class TestRunByConfig(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_run_by_config(self):
         input_video_path = "../files/big_bunny_10s_30fps.mp4"

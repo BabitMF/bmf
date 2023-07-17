@@ -2,7 +2,6 @@ from PIL import Image
 
 from bmf import Module, Log, LogLevel, InputType, ProcessResult, Packet, Timestamp, scale_av_pts, av_time_base, \
     BmfCallBackType, VideoFrame, AudioFrame
-
 '''
 Option example:
     option = {
@@ -15,6 +14,7 @@ Option example:
 
 
 class background_image(Module):
+
     def __init__(self, node, option=None):
         self.node_ = node
 
@@ -50,9 +50,7 @@ class background_image(Module):
         img.save(self.local_path_)
 
         # fill input info
-        input_info = {
-            "input_path": self.local_path_
-        }
+        input_info = {"input_path": self.local_path_}
 
         # prepare output data
         input_info_list = []

@@ -2,13 +2,14 @@ import json
 from bmf.lib._bmf import engine
 from .bmf_graph import BmfGraph
 
+
 ## @ingroup pyAPI
 ###@{
 #  To provide a BMF graph
 #  @param option: the option for the graph
 #  @return An BMF graph
 def graph(option=None):
-###@}
+    ###@}
     if option is None:
         option = {}
     return BmfGraph(option)
@@ -22,11 +23,14 @@ def graph(option=None):
 #  @param option: the option for the module
 #  @return An module object
 def create_module(module_info, option):
-###@}
+    ###@}
     if isinstance(module_info, str):
         return engine.Module(module_info, json.dumps(option), "", "", "")
-    return engine.Module(module_info["name"], json.dumps(option), module_info.get("type", ""),
-                            module_info.get("path", ""), module_info.get("entry", ""))
+    return engine.Module(module_info["name"], json.dumps(option),
+                         module_info.get("type", ""),
+                         module_info.get("path", ""),
+                         module_info.get("entry", ""))
+
 
 def get_module_file_dependencies(module_name):
     meta_file_name = "/opt/tiger/bmf_mods/Module_" + module_name + "/meta.info"

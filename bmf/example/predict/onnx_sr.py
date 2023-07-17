@@ -13,6 +13,7 @@ else:
 
 
 class onnx_sr(Module):
+
     def __init__(self, node=None, option=None):
         self.node_ = node
         self.option_ = option
@@ -36,17 +37,16 @@ class onnx_sr(Module):
         self.input_name_ = self.sess_.get_inputs()[0].name
         self.input_shape_ = self.sess_.get_inputs()[0].shape
         self.input_type_ = self.sess_.get_inputs()[0].type
-        Log.log(LogLevel.ERROR, "Input name", self.input_name_,
-                "input shape:", self.input_shape_,
-                "input type:", self.input_type_)
+        Log.log(LogLevel.ERROR, "Input name", self.input_name_, "input shape:",
+                self.input_shape_, "input type:", self.input_type_)
 
         # Let's see the output name and shape.
         self.output_name_ = self.sess_.get_outputs()[0].name
         self.output_shape_ = self.sess_.get_outputs()[0].shape
         self.output_type_ = self.sess_.get_outputs()[0].type
         Log.log(LogLevel.ERROR, "Output name", self.output_name_,
-                "output shape:", self.output_shape_,
-                "output type:", self.output_type_)
+                "output shape:", self.output_shape_, "output type:",
+                self.output_type_)
 
         # internal frame cache
         self.frame_cache_ = Queue()
@@ -88,15 +88,18 @@ class onnx_sr(Module):
         input_tensor = np.concatenate(input_nd_arrays, 2)
         input_tensor = np.expand_dims(input_tensor, 0)
         input_tensor = input_tensor.astype(np.uint8)
-        Log.log_node(LogLevel.DEBUG, self.node_, "Start processing, input shape", input_tensor.shape)
+        Log.log_node(LogLevel.DEBUG, self.node_,
+                     "Start processing, input shape", input_tensor.shape)
 
         # predict
-        output_tensor = self.sess_.run([self.output_name_], {self.input_name_: input_tensor})
+        output_tensor = self.sess_.run([self.output_name_],
+                                       {self.input_name_: input_tensor})
 
         # split output tensor to 3 frames
         output_tensor = np.array(output_tensor).squeeze()
         output_tensor = np.array(np.split(output_tensor, 3, axis=2))
-        Log.log_node(LogLevel.DEBUG, self.node_, "Finish processing, output shape", output_tensor.shape)
+        Log.log_node(LogLevel.DEBUG, self.node_,
+                     "Finish processing, output shape", output_tensor.shape)
 
         # create output frames
         out_frames = []
@@ -144,7 +147,7 @@ class onnx_sr(Module):
                     pkt = Packet(frame)
                     pkt.timestamp = frame.pts
                     output_queue.put(pkt)
-                    
+
             # all frames processed, quit the loop
             if self.frame_cache_.empty():
                 break
@@ -152,8 +155,7 @@ class onnx_sr(Module):
         # add eof packet to output
         if self.eof_received_:
             output_queue.put(Packet.generate_eof_packet())
-            Log.log_node(LogLevel.DEBUG, self.node_,
-                         'output stream', 'done')
+            Log.log_node(LogLevel.DEBUG, self.node_, 'output stream', 'done')
             task.timestamp = Timestamp.DONE
 
         return ProcessResult.OK

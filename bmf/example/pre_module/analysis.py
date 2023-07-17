@@ -11,13 +11,13 @@ if sys.version_info.major == 2:
     from Queue import Queue
 else:
     from queue import Queue
-
 '''
 perform as a analysis module for self_test
 '''
 
 
 class analysis(Module):
+
     def __init__(self, node, option=None):
         self.node_ = node
 
@@ -45,7 +45,8 @@ class analysis(Module):
             while not input_packets.empty():
                 pkt = input_packets.get()
                 if pkt.timestamp == Timestamp.EOF:
-                    Log.log_node(LogLevel.DEBUG, task.get_node(), "Receive EOF")
+                    Log.log_node(LogLevel.DEBUG, task.get_node(),
+                                 "Receive EOF")
                     output_packets.put(Packet.generate_eof_packet())
                     task.timestamp = Timestamp.DONE
                 if pkt.timestamp != Timestamp.UNSET and pkt.defined():

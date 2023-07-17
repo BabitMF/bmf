@@ -5,6 +5,7 @@ from .timestamp import Timestamp
 
 
 class SubGraph(Module):
+
     @abc.abstractmethod
     def create_graph(self, option=None):
         # use self.graph to build a processing graph
@@ -81,8 +82,9 @@ class SubGraph(Module):
                 if output_pkt is not None and output_pkt.defined():
                     # add the packet to output queue to let outside graph process
                     output_queue.put(output_pkt)
-                    Log.log_node(LogLevel.DEBUG, self.node_id_, 'output', i, 'send packet',
-                                 output_pkt.get_data(), 'time', output_pkt.get_timestamp())
+                    Log.log_node(LogLevel.DEBUG, self.node_id_, 'output', i,
+                                 'send packet', output_pkt.get_data(), 'time',
+                                 output_pkt.get_timestamp())
                     if output_pkt.get_timestamp() == Timestamp.EOF:
                         self.stream_done[i] = 1
                 else:
@@ -92,7 +94,8 @@ class SubGraph(Module):
         if len(self.stream_done) == len(self.output_streams):
             # consider that sub-graph could be made of some infinity nodes
             # force to close sub graph
-            Log.log_node(LogLevel.DEBUG, self.node_id_, 'start close sub-graph')
+            Log.log_node(LogLevel.DEBUG, self.node_id_,
+                         'start close sub-graph')
             self.graph.force_close()
             self.graph = None
 
@@ -107,6 +110,7 @@ class SubGraph(Module):
 
     def close(self):
         if self.graph is not None:
-            Log.log_node(LogLevel.DEBUG, self.node_id_, 'sub-graph force closed')
+            Log.log_node(LogLevel.DEBUG, self.node_id_,
+                         'sub-graph force closed')
             self.graph.force_close()
             self.graph = None

@@ -50,6 +50,7 @@ def prepare_model(model_name, file_url):
 
 
 class EnhanceModule(Module):
+
     def __init__(self, node=None, option=None):
         self._node = node
         if not option:
@@ -96,7 +97,8 @@ class EnhanceModule(Module):
 
             video_frame = pkt.get(VideoFrame)
             # use ffmpeg
-            frame = ffmpeg.reformat(video_frame, "rgb24").frame().plane(0).numpy()
+            frame = ffmpeg.reformat(video_frame,
+                                    "rgb24").frame().plane(0).numpy()
 
             output, _ = self.upsampler.enhance(frame, self.output_scale)
             Log.log_node(

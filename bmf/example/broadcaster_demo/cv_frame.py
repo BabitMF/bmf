@@ -16,7 +16,6 @@ from edit_layout import create_layout_extra
 
 MIN_WH = 8
 
-
 # def process_logo_frame_thread(frame_list, idx_list, layout_param_list):
 #     from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 #     executor = ThreadPoolExecutor(max_workers=2)
@@ -67,11 +66,12 @@ def process_logo_frame(logo_frame, watermark_param):
         return
 
     pos = watermark_param.get('pos')
-    resolution_fill = watermark_param.get('crop_mode') or watermark_param.get('resolution_fill', 'pad')
+    resolution_fill = watermark_param.get('crop_mode') or watermark_param.get(
+        'resolution_fill', 'pad')
 
     rotate = watermark_param.get('rotate', 0)
     if rotate in [90, -90, 180, 270]:
-        _k = (rotate % 360)/90
+        _k = (rotate % 360) / 90
         logo_frame = np.rot90(logo_frame, k=_k)
         # logo_frame = cv2.rotate(logo_frame, cv2.ROTATE_90_CLOCKWISE if _k==1 else cv2.ROTATE_90_COUNTERCLOCKWISE)
 
@@ -144,7 +144,9 @@ def inner_frame_scale(frame, width, height):
     if sw == width and sh == height:
         return frame
 
-    new_frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_LINEAR)  # INTER_AREA  INTER_NEAREST  INTER_LINEAR  INTER_CUBIC
+    new_frame = cv2.resize(
+        frame, (width, height), interpolation=cv2.INTER_LINEAR
+    )  # INTER_AREA  INTER_NEAREST  INTER_LINEAR  INTER_CUBIC
     return new_frame
 
 
@@ -152,21 +154,21 @@ def inner_frame_pad_simulate(frame, width, height):
     if width < MIN_WH or height < MIN_WH:
         return
     sh, sw, dim = frame.shape
-    aspect_ratio = 1.0*width/height
+    aspect_ratio = 1.0 * width / height
     # print("[inner_frame_pad]sw=%s, sh=%s, dim=%s, aspect_ratio=%s" % (sw, sh, dim, aspect_ratio))
 
-    if abs(1.0*sw/sh - aspect_ratio) < 0.001:
+    if abs(1.0 * sw / sh - aspect_ratio) < 0.001:
         new_w = width
         new_h = height
         pos = [0, 0, new_w, new_h]
-    elif 1.0*sw/sh > aspect_ratio:
+    elif 1.0 * sw / sh > aspect_ratio:
         new_w = width
-        new_h = int(new_w *sh / sw)
-        pos = [0, int((height-new_h)/2), new_w, new_h]
+        new_h = int(new_w * sh / sw)
+        pos = [0, int((height - new_h) / 2), new_w, new_h]
     else:
         new_h = height
-        new_w = int(new_h*sw/sh)
-        pos = [int((width-new_w)/2), 0, new_w, new_h]
+        new_w = int(new_h * sw / sh)
+        pos = [int((width - new_w) / 2), 0, new_w, new_h]
 
     new_frame = inner_frame_scale(frame, new_w, new_h)
     return {'frame': new_frame, 'pos': pos}
@@ -177,30 +179,36 @@ def inner_frame_pad(frame, width, height, color):
     if width < MIN_WH or height < MIN_WH:
         return
     sh, sw, dim = frame.shape
-    aspect_ratio = 1.0*width/height
+    aspect_ratio = 1.0 * width / height
     # print("[inner_frame_pad]sw=%s, sh=%s, dim=%s, aspect_ratio=%s" % (sw, sh, dim, aspect_ratio))
 
-    if abs(1.0*sw/sh - aspect_ratio) < 0.001:
+    if abs(1.0 * sw / sh - aspect_ratio) < 0.001:
         # print("[inner_frame_pad]just scale")
         new_frame = inner_frame_scale(frame, width, height)
     else:
         _top, _bottom, _left, _right = 0, 0, 0, 0
-        if 1.0*sw/sh > aspect_ratio:
+        if 1.0 * sw / sh > aspect_ratio:
             _w = width
-            _h = int(_w*sh/sw)
-            _top = int((height-_h)/2)
-            _bottom = height-_h-_top
+            _h = int(_w * sh / sw)
+            _top = int((height - _h) / 2)
+            _bottom = height - _h - _top
 
         else:
             _h = height
-            _w = int(_h*sw/sh)
-            _left = int((width-_w)/2)
-            _right = width-_w-_left
+            _w = int(_h * sw / sh)
+            _left = int((width - _w) / 2)
+            _right = width - _w - _left
 
         scale_frame = inner_frame_scale(frame, _w, _h)
         color = colors_to_rgb(color)
         bgr_color = list(reversed(color))
-        new_frame = cv2.copyMakeBorder(scale_frame, _top, _bottom, _left, _right, cv2.BORDER_CONSTANT, value=bgr_color)  # cv2.BORDER_DEFAULT
+        new_frame = cv2.copyMakeBorder(scale_frame,
+                                       _top,
+                                       _bottom,
+                                       _left,
+                                       _right,
+                                       cv2.BORDER_CONSTANT,
+                                       value=bgr_color)  # cv2.BORDER_DEFAULT
 
         # full_frame = np.full((height, width, dim), color, dtype=np.uint8)
         # xx = int((width-_w)/2)
@@ -213,12 +221,12 @@ def inner_frame_crop(frame, width, height):
     if width < MIN_WH or height < MIN_WH:
         return
     sh, sw, dim = frame.shape
-    aspect_ratio = 1.0*width/height
+    aspect_ratio = 1.0 * width / height
 
-    if abs(1.0*sw/sh - aspect_ratio) < 0.001:
+    if abs(1.0 * sw / sh - aspect_ratio) < 0.001:
         new_frame = inner_frame_scale(frame, width, height)
     else:
-        if 1.0*sw/sh > aspect_ratio:
+        if 1.0 * sw / sh > aspect_ratio:
             _h = height
             _w = int(_h * sw / sh)
         else:
@@ -238,7 +246,7 @@ def inner_frame_crop(frame, width, height):
             pos = [int((sw - new_w) / 2), 0, new_w, sh]
 
         # roi = im[y1:y2, x1:x2] (x1,y1) top-left vertex and (x2,y2) as bottom-right vertex of a rectangle region within that image
-        new_frame = scale_frame[pos[1]:pos[1]+pos[3], pos[0]:pos[0]+pos[2]]
+        new_frame = scale_frame[pos[1]:pos[1] + pos[3], pos[0]:pos[0] + pos[2]]
     return new_frame
 
 
@@ -248,17 +256,26 @@ def get_layout_extra(frame_num, layout_option):
     background_color = layout_option.get('background_color', "#000000")
     layout_mode = layout_option.get('layout_mode', 'speaker')
     layout_location = layout_option.get('layout_location', 'right')
-    crop_mode = layout_option.get('crop_mode') or layout_option.get('resolution_fill') or 'pad'
+    crop_mode = layout_option.get('crop_mode') or layout_option.get(
+        'resolution_fill') or 'pad'
     main_stream_crop_mode = layout_option.get('main_stream_crop_mode', '')
     interspace = layout_option.get('interspace', 0)
 
     rotate_list = layout_option.get('rotate_list')
 
-    if layout_mode in ['custom'] and layout_option.get('layout_extra') and layout_option.get('layout_extra', {}).get('layout_param_list'):
+    if layout_mode in [
+            'custom'
+    ] and layout_option.get('layout_extra') and layout_option.get(
+            'layout_extra', {}).get('layout_param_list'):
         layout_extra = layout_option.get('layout_extra')
     else:
-        layout_extra = create_layout_extra(frame_num=frame_num, width=width, height=height, color=background_color, resolution_fill=crop_mode,
-                                       layout_location=layout_location, layout_mode=layout_mode)
+        layout_extra = create_layout_extra(frame_num=frame_num,
+                                           width=width,
+                                           height=height,
+                                           color=background_color,
+                                           resolution_fill=crop_mode,
+                                           layout_location=layout_location,
+                                           layout_mode=layout_mode)
 
     if layout_extra:
         layout_param_list = layout_extra.get('layout_param_list')
@@ -267,9 +284,15 @@ def get_layout_extra(frame_num, layout_option):
             if interspace > 0:
                 if layout_mode in ['speaker']:
                     if i > 0:
-                        pos = [pos[0] + interspace, pos[1] + interspace, pos[2] - 2 * interspace, pos[3] - 2 * interspace]
+                        pos = [
+                            pos[0] + interspace, pos[1] + interspace,
+                            pos[2] - 2 * interspace, pos[3] - 2 * interspace
+                        ]
                 else:
-                    pos = [pos[0] + interspace, pos[1] + interspace, pos[2] - 2 * interspace, pos[3] - 2 * interspace]
+                    pos = [
+                        pos[0] + interspace, pos[1] + interspace,
+                        pos[2] - 2 * interspace, pos[3] - 2 * interspace
+                    ]
                 layout_param['pos'] = pos
 
             if layout_mode in ['speaker'] and i == 0:
@@ -318,7 +341,11 @@ def bg_overlay_frames(frame_list, layout_option, g_monitor_change=None):
     layout_location = layout_option.get('layout_location', 'right')
     main_stream_idx = layout_option.get('main_stream_idx', 0)
     if not frame_list:
-        bg_frame = create_frame(width=width, height=height, dim=3, color=background_color, store_frame=0)
+        bg_frame = create_frame(width=width,
+                                height=height,
+                                dim=3,
+                                color=background_color,
+                                store_frame=0)
         return bg_frame
 
     frame_num = len(frame_list)
@@ -333,26 +360,37 @@ def bg_overlay_frames(frame_list, layout_option, g_monitor_change=None):
     if g_monitor_change:
         if frame_num != g_monitor_change.get(frame_num) or layout_mode != g_monitor_change.get('layout_mode') \
                 or layout_location != g_monitor_change.get('layout_location') or main_stream_idx != g_monitor_change.get('main_stream_idx'):
-                layout_extra = get_layout_extra(frame_num=frame_num, layout_option=layout_option)  # global
-                g_monitor_change['layout_extra'] = copy.deepcopy(layout_extra)
-                g_monitor_change['frame_num'] = frame_num
-                g_monitor_change['layout_mode'] = layout_mode
-                g_monitor_change['layout_location'] = layout_location
-                g_monitor_change['main_stream_idx'] = main_stream_idx
+            layout_extra = get_layout_extra(
+                frame_num=frame_num, layout_option=layout_option)  # global
+            g_monitor_change['layout_extra'] = copy.deepcopy(layout_extra)
+            g_monitor_change['frame_num'] = frame_num
+            g_monitor_change['layout_mode'] = layout_mode
+            g_monitor_change['layout_location'] = layout_location
+            g_monitor_change['main_stream_idx'] = main_stream_idx
         else:
             if g_monitor_change.get('layout_extra'):
                 layout_extra = g_monitor_change.get('layout_extra')
             else:
-                layout_extra = get_layout_extra(frame_num=frame_num, layout_option=layout_option)
+                layout_extra = get_layout_extra(frame_num=frame_num,
+                                                layout_option=layout_option)
     else:
-        layout_extra = get_layout_extra(frame_num=frame_num, layout_option=layout_option)
+        layout_extra = get_layout_extra(frame_num=frame_num,
+                                        layout_option=layout_option)
 
     if layout_extra:
-        if g_monitor_change and g_monitor_change.get('copy_frame', 0) and g_monitor_change.get('background_color') == background_color:
+        if g_monitor_change and g_monitor_change.get(
+                'copy_frame', 0) and g_monitor_change.get(
+                    'background_color') == background_color:
             bg_frame = g_monitor_change.get('background_frame').copy()
         else:
-            print("create_frame(width=%s, height=%s, dim=3, color=%s) | layout_extra=%s" % (width, height, background_color, str(layout_extra)))
-            bg_frame = create_frame(width=width, height=height, dim=3, color=background_color, store_frame=0)
+            print(
+                "create_frame(width=%s, height=%s, dim=3, color=%s) | layout_extra=%s"
+                % (width, height, background_color, str(layout_extra)))
+            bg_frame = create_frame(width=width,
+                                    height=height,
+                                    dim=3,
+                                    color=background_color,
+                                    store_frame=0)
             if g_monitor_change:
                 g_monitor_change['background_frame'] = bg_frame.copy()
                 g_monitor_change['background_color'] = background_color
@@ -361,11 +399,14 @@ def bg_overlay_frames(frame_list, layout_option, g_monitor_change=None):
         layout_param_list = layout_extra.get('layout_param_list')
         overlay_frame = bg_frame
         for i, layout_param in enumerate(layout_param_list):
-            overlay_frame = inner_frame_add_logo(overlay_frame, frame_list[idx_list[i]], layout_param)
+            overlay_frame = inner_frame_add_logo(overlay_frame,
+                                                 frame_list[idx_list[i]],
+                                                 layout_param)
         return overlay_frame
 
 
 ###############################
+
 
 def test_bg_overlay_frames():
     _starttime = time.time()
@@ -392,10 +433,12 @@ def test_bg_overlay_frames():
     # frame_list = [frame0]
     output_frame = bg_overlay_frames(frame_list, layout_option)
 
-    output_filename = 'test_cv2_logo_%s_%s.jpg' % (layout_option.get('main_stream_crop_mode', ''), uuid4().hex)
+    output_filename = 'test_cv2_logo_%s_%s.jpg' % (layout_option.get(
+        'main_stream_crop_mode', ''), uuid4().hex)
     cv2.imwrite(output_filename, output_frame)
 
-    print("cost time=%s, output_filename=%s" % (str(time.time()-_starttime), output_filename))
+    print("cost time=%s, output_filename=%s" %
+          (str(time.time() - _starttime), output_filename))
     return output_frame
 
 

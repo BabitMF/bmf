@@ -10,11 +10,9 @@ import bmf
 
 def run():
     graph = bmf.graph()
-    video = graph.decode(
-        {
-            "input_path": input_file,
-        }
-    )
+    video = graph.decode({
+        "input_path": input_file,
+    })
 
     enhance = bmf.module(
         [video["video"]],
@@ -47,7 +45,10 @@ def run():
                 "vsync": "vfr",
                 "max_fr": 30,
             },
-            "audio_params": {"sample_rate": 44100, "codec": "aac"},
+            "audio_params": {
+                "sample_rate": 44100,
+                "codec": "aac"
+            },
             "loglevel": "info",
             "output_path": output_file,
         },
@@ -64,7 +65,10 @@ def run():
                 "vsync": "vfr",
                 "max_fr": 30,
             },
-            "audio_params": {"sample_rate": 44100, "codec": "aac"},
+            "audio_params": {
+                "sample_rate": 44100,
+                "codec": "aac"
+            },
             "loglevel": "info",
             "output_path": output_compose_file,
         },

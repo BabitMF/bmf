@@ -3,6 +3,7 @@ from bmf import Module, Log, LogLevel, InputType, ProcessResult, Packet, Timesta
 
 
 class reset_pass_through(Module):
+
     def __init__(self, node, option=None):
         self.node_ = node
         self.eof_ = False
@@ -18,12 +19,12 @@ class reset_pass_through(Module):
         print(opt_reset)
         print("--------------------------------")
 
-
     def process(self, task):
         for (input_id, input_packets) in task.get_inputs().items():
             # output queue
             output_packets = None
-            if len(task.get_outputs()) > 0 and input_id < len(task.get_outputs()):
+            if len(task.get_outputs()) > 0 and input_id < len(
+                    task.get_outputs()):
                 output_packets = task.get_outputs()[input_id]
             while not input_packets.empty():
                 pkt = input_packets.get()
@@ -33,7 +34,8 @@ class reset_pass_through(Module):
                         output_packets.put(Packet.generate_eof_packet())
                     self.eof_ = True
                 elif pkt.get_timestamp() != Timestamp.UNSET:
-                    Log.log_node(LogLevel.DEBUG, task.get_node(), ' timestamp of this processing packet is: ',
+                    Log.log_node(LogLevel.DEBUG, task.get_node(),
+                                 ' timestamp of this processing packet is: ',
                                  pkt.get_timestamp())
                     if output_packets is not None:
                         output_packets.put(pkt)

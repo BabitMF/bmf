@@ -9,6 +9,7 @@ from .media_info import MediaInfo
 
 
 class BaseTestCase(unittest.TestCase):
+
     def set_ffmpeg_env(self):
         ffmpeg_path = os.getenv('FFMPEG_BIN_PATH')
         if ffmpeg_path is not None:
@@ -43,31 +44,39 @@ class BaseTestCase(unittest.TestCase):
 
         if encoded_height != expected_height or encoded_width != expected_width or encoded_format != expected_format \
                 or encoded_encoded_type != expected_encoded_type:
-            raise Exception('%s result not expected, one of height/width/format/encoded_type not the same,\
+            raise Exception(
+                '%s result not expected, one of height/width/format/encoded_type not the same,\
                             expected height:%s, width:%s, format:%s, encoded_type:%s, transcode height:%s, width:%s,\
-                            format:%s, encoded_type:%s' % (
-            output_path, expected_height, expected_width, expected_format,
-            expected_encoded_type, encoded_height, encoded_width,
-            encoded_format, encoded_encoded_type))
-        if encoded_duration < expected_duration * (1 - 0.1) or encoded_duration > expected_duration * (1 + 0.1):
+                            format:%s, encoded_type:%s' %
+                (output_path, expected_height, expected_width, expected_format,
+                 expected_encoded_type, encoded_height, encoded_width,
+                 encoded_format, encoded_encoded_type))
+        if encoded_duration < expected_duration * (
+                1 - 0.1) or encoded_duration > expected_duration * (1 + 0.1):
             raise Exception(
-                "%s result not expected, duration not the same, encoded_duration:%s != expected_duration:%s" % (
-                    output_path, encoded_duration, expected_duration))
-        if encoded_bitrate < expected_bitrate * (1 - 0.2) or encoded_bitrate > expected_bitrate * (1 + 0.2):
+                "%s result not expected, duration not the same, encoded_duration:%s != expected_duration:%s"
+                % (output_path, encoded_duration, expected_duration))
+        if encoded_bitrate < expected_bitrate * (
+                1 - 0.2) or encoded_bitrate > expected_bitrate * (1 + 0.2):
             raise Exception(
-                "%s result not expected, bitrate not the same, encoded_bitrate:%s != expected_bitrate:%s" % (
-                    output_path, encoded_bitrate, expected_bitrate))
-        if encoded_size < expected_size * (1 - 0.2) or encoded_size > expected_size * (1 + 0.2):
-            raise Exception("%s result not expected, size not the same, encoded_size:%s != expected_size:%s" % (
-                output_path, encoded_size, expected_size))
+                "%s result not expected, bitrate not the same, encoded_bitrate:%s != expected_bitrate:%s"
+                % (output_path, encoded_bitrate, expected_bitrate))
+        if encoded_size < expected_size * (
+                1 - 0.2) or encoded_size > expected_size * (1 + 0.2):
+            raise Exception(
+                "%s result not expected, size not the same, encoded_size:%s != expected_size:%s"
+                % (output_path, encoded_size, expected_size))
         if encoded_encoded_type == "":
             return
         if not encoded_extra:
-            raise Exception("%s result not expected, extra is null" % (output_path))
+            raise Exception("%s result not expected, extra is null" %
+                            (output_path))
         encoded_fps = float(encoded_extra.get('fps', 0))
-        if encoded_fps < expected_fps * (1 - 0.1) or encoded_fps > expected_fps * (1 + 0.1):
-            raise Exception("%s result not expected, fps not the same, encoded_fps:%s != expected_fps:%s" % (
-                output_path, encoded_fps, expected_fps))
+        if encoded_fps < expected_fps * (
+                1 - 0.1) or encoded_fps > expected_fps * (1 + 0.1):
+            raise Exception(
+                "%s result not expected, fps not the same, encoded_fps:%s != expected_fps:%s"
+                % (output_path, encoded_fps, expected_fps))
 
     def check_video_diff(self, output_path, expect_result):
         if os.path.exists(output_path):

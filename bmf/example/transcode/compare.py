@@ -1,8 +1,8 @@
 import sys
+
 sys.path.append("../../..")
 import bmf
 from bmf import *
-
 
 if __name__ == "__main__":
     import sys

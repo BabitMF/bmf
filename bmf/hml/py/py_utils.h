@@ -18,6 +18,8 @@
 #include <pybind11/pybind11.h>
 #include <hmp/tensor.h>
 
-hmp::TensorOptions parse_tensor_options(const pybind11::kwargs &kwargs, const hmp::TensorOptions &ref = {});
+hmp::TensorOptions parse_tensor_options(const pybind11::kwargs &kwargs,
+                                        const hmp::TensorOptions &ref = {});
 
-hmp::Device parse_device(const pybind11::object &obj, const hmp::Device &device = hmp::kCPU);
+hmp::Device parse_device(const pybind11::object &obj,
+                         const hmp::Device &device = hmp::kCPU);

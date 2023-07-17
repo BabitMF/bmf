@@ -1,5 +1,5 @@
 #import <Foundation/Foundation.h>
 
 @interface BmfAudioFrameTests : NSObject
-- (int) testAll;
+- (int)testAll;
 @end

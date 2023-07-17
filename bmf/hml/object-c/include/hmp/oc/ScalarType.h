@@ -16,8 +16,8 @@
 #ifndef _HMP_OC_SCALAR_TYPE_H
 #define _HMP_OC_SCALAR_TYPE_H
 
-typedef enum _HmpScalarType{
-	kUInt8,
+typedef enum _HmpScalarType {
+    kUInt8,
     kInt8,
     kUInt16,
     kInt16,
@@ -26,6 +26,6 @@ typedef enum _HmpScalarType{
     kFloat32,
     kFloat64,
     kHalf
-}HmpScalarType;
+} HmpScalarType;
 
 #endif

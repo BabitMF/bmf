@@ -1,5 +1,5 @@
 #import <Foundation/Foundation.h>
 
 @interface BmfTaskTests : NSObject
-- (int) testAll;
+- (int)testAll;
 @end

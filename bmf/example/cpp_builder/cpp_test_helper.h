@@ -11,19 +11,20 @@
 #include "gtest/gtest.h"
 #include "nlohmann/json.hpp"
 
-#define BMF_CPP_FILE_CHECK(output_file, expected_results) \
+#define BMF_CPP_FILE_CHECK(output_file, expected_results)                      \
     EXPECT_EQ(true, MediaInfo(output_file).MediaCompareEquals(expected_results))
 
-#define BMF_CPP_FILE_CHECK_MD5(output_file, md5) \
+#define BMF_CPP_FILE_CHECK_MD5(output_file, md5)                               \
     EXPECT_EQ(true, MediaInfo(output_file).MediaCompareMD5(md5))
 
 class MediaInfo {
-public:
+  public:
     MediaInfo() = delete;
     MediaInfo(std::string filepath);
     bool MediaCompareEquals(std::string expected);
-    bool MediaCompareMD5(const std::string& md5);
-private:
+    bool MediaCompareMD5(const std::string &md5);
+
+  private:
     nlohmann::json mediaJson;
     std::string filePath;
 };
@@ -31,11 +32,11 @@ private:
 inline void deleteMediaFile(std::string filepath) {
     try {
         std::filesystem::remove(filepath);
-    } catch(const std::filesystem::filesystem_error& err) {
+    } catch (const std::filesystem::filesystem_error &err) {
         std::cout << "C++ test file delete error: " << err.what() << std::endl;
     }
 }
 
 #define BMF_CPP_FILE_REMOVE(output_file) deleteMediaFile(output_file)
 
-#endif //CPP_TEST_HELPER_H
+#endif // CPP_TEST_HELPER_H

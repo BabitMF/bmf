@@ -6,15 +6,13 @@
 
 USE_BMF_SDK_NS
 
-class CopyModule : public Module
-{
-public:
-    CopyModule(int node_id,JsonParam option) : Module(node_id,option) { }
+class CopyModule : public Module {
+  public:
+    CopyModule(int node_id, JsonParam option) : Module(node_id, option) {}
 
-    ~CopyModule() { }
+    ~CopyModule() {}
 
     virtual int process(Task &task);
 };
 
 #endif
-

@@ -25,16 +25,17 @@
 #include <bmf/sdk/module.h>
 
 namespace bmf {
-    namespace internal {
-        class ConnectorMapping {
-        public:
-            static InstanceMapping<bmf_engine::Graph> &GraphInstanceMapping();
+namespace internal {
+class ConnectorMapping {
+  public:
+    static InstanceMapping<bmf_engine::Graph> &GraphInstanceMapping();
 
-            static InstanceMapping<bmf_sdk::Module> &ModuleInstanceMapping();
+    static InstanceMapping<bmf_sdk::Module> &ModuleInstanceMapping();
 
-            static InstanceMapping<std::function<bmf_sdk::CBytes(bmf_sdk::CBytes)> > &ModuleCallbackInstanceMapping();
-        };
-    }
+    static InstanceMapping<std::function<bmf_sdk::CBytes(bmf_sdk::CBytes)>> &
+    ModuleCallbackInstanceMapping();
+};
+}
 }
 
-#endif //CONNECTOR_MAPPING_H
+#endif // CONNECTOR_MAPPING_H

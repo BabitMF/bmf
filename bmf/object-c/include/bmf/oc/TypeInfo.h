@@ -2,22 +2,21 @@
 #include <hmp/oc/CV.h>
 #include <hmp/oc/Metal.h>
 
-namespace bmf_sdk{
-namespace metal{
+namespace bmf_sdk {
+namespace metal {
 
 using hmp::metal::Texture;
 using hmp::metal::Device;
 
-} //namespace metal
+} // namespace metal
 
-namespace oc{
+namespace oc {
 
 using hmp::oc::PixelBuffer;
 
-} //namespace oc
+} // namespace oc
 
-} //namespace bmf_sdk
-
+} // namespace bmf_sdk
 
 BMF_DEFINE_TYPE(bmf_sdk::metal::Texture);
 BMF_DEFINE_TYPE(bmf_sdk::metal::Device);

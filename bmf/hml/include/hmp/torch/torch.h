@@ -17,13 +17,10 @@
 #include <hmp/tensor.h>
 #include <torch/torch.h>
 
-
-namespace hmp{
-namespace torch{
-
+namespace hmp {
+namespace torch {
 
 HMP_API at::Tensor tensor(const Tensor &from);
 HMP_API Tensor from_tensor(const at::Tensor &from);
-
-
-}} //namespace hmp::torch
+}
+} // namespace hmp::torch

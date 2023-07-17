@@ -22,9 +22,9 @@
 
 // time measurement
 typedef std::chrono::high_resolution_clock::time_point TimeVar;
-#define DURATION(a) std::chrono::duration_cast<std::chrono::milliseconds>(a).count()
+#define DURATION(a)                                                            \
+    std::chrono::duration_cast<std::chrono::milliseconds>(a).count()
 #define TIMENOW() std::chrono::high_resolution_clock::now()
-
 
 #ifndef BMF_ENABLE_GLOG
 
@@ -37,8 +37,9 @@ typedef std::chrono::high_resolution_clock::time_point TimeVar;
 #define BMF_DISABLE hmp::logging::Level::off
 
 #define BMFLOG_SET_LEVEL(log_level) hmp::logging::set_level(log_level)
-#define BMFLOG(log_level)  HMP_SLOG_IF(true, log_level, "BMF")
-#define BMFLOG_NODE(log_level, node_id)  BMFLOG(log_level)<<"node id:"<<node_id<<" "
+#define BMFLOG(log_level) HMP_SLOG_IF(true, log_level, "BMF")
+#define BMFLOG_NODE(log_level, node_id)                                        \
+    BMFLOG(log_level) << "node id:" << node_id << " "
 
 // Check environment variable to configure logging
 inline void configure_bmf_log_level() {
@@ -58,15 +59,13 @@ inline void configure_bmf_log_level() {
 
         BMFLOG_SET_LEVEL(level);
     }
-} 
+}
 
-
-#else //BMF_ENABLE_GLOG
+#else // BMF_ENABLE_GLOG
 
 #include <glog/logging.h>
 
 #define VLOG_LEVEL_DEBUG 4
-
 
 #define BMF_LOG_BMF_INFO LOG(INFO)
 #define BMF_LOG_BMF_WARNING LOG(WARNING)
@@ -74,14 +73,15 @@ inline void configure_bmf_log_level() {
 #define BMF_LOG_BMF_FATAL LOG(FATAL)
 #define BMF_LOG_BMF_DEBUG VLOG(VLOG_LEVEL_DEBUG)
 
-#define BMFLOG(log_level)  BMF_LOG_##log_level
-#define BMFLOG_NODE(log_level, node_id)  BMF_LOG_##log_level<<"node id:"<<node_id<<" "
+#define BMFLOG(log_level) BMF_LOG_##log_level
+#define BMFLOG_NODE(log_level, node_id)                                        \
+    BMF_LOG_##log_level << "node id:" << node_id << " "
 
-#define BMF_DEBUG   0
-#define BMF_INFO    1
+#define BMF_DEBUG 0
+#define BMF_INFO 1
 #define BMF_WARNING 2
-#define BMF_ERROR   3
-#define BMF_FATAL   4
+#define BMF_ERROR 3
+#define BMF_FATAL 4
 #define BMF_DISABLE 5
 
 #define BMFLOG_SET_LEVEL(log_level) glog_set_log_level(log_level)
@@ -100,13 +100,12 @@ inline void glog_set_log_level(int log_level) {
     } else if (log_level == BMF_DISABLE) {
         FLAGS_minloglevel = google::GLOG_FATAL + 1;
     }
-
 }
 
 // Check environment variable to configure logging
 inline void configure_bmf_log_level() {
     // Set the log level to display, in terms of criticality
-    char* log_env = getenv("BMF_LOG_LEVEL");
+    char *log_env = getenv("BMF_LOG_LEVEL");
     if (log_env) {
         std::string log_level(log_env);
         if (log_level == "INFO") {
@@ -125,11 +124,11 @@ inline void configure_bmf_log_level() {
     }
 }
 
-#endif //BMF_ENABLE_GLOG
+#endif // BMF_ENABLE_GLOG
 
 inline void configure_bmf_log() {
     static std::once_flag log_init_once;
     std::call_once(log_init_once, configure_bmf_log_level);
 }
 
-#endif //BMF_LOG_H
+#endif // BMF_LOG_H

@@ -1,9 +1,9 @@
 #import <Foundation/Foundation.h>
 
-@interface BmfRational: NSObject
+@interface BmfRational : NSObject
 
-- (id)init: (int)num den:(int)den;
-- (int) num;
-- (int) den;
+- (id)init:(int)num den:(int)den;
+- (int)num;
+- (int)den;
 
 @end

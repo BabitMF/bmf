@@ -24,18 +24,10 @@
 #include <bmf/sdk/packet.h>
 #include <bmf/sdk/json_param.h>
 
-enum {
-    PROCESS_OK = 0,
-    PROCESS_STOP,
-    PROCESS_ERROR
-};
+enum { PROCESS_OK = 0, PROCESS_STOP, PROCESS_ERROR };
 
-enum {
-    VIDEO_TYPE = 1,
-    PICTURELIST_TYPE = 2,
-    VIDEOLIST_TYPE = 3
-};
+enum { VIDEO_TYPE = 1, PICTURELIST_TYPE = 2, VIDEOLIST_TYPE = 3 };
 
 USE_BMF_SDK_NS
 
-#endif //BMF_C_MODULE_H
+#endif // BMF_C_MODULE_H

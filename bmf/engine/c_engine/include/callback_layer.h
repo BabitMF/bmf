@@ -27,17 +27,17 @@
 
 USE_BMF_SDK_NS
 BEGIN_BMF_ENGINE_NS
-    class ModuleCallbackLayer {
-    public:
-        ModuleCallbackLayer() {}
+class ModuleCallbackLayer {
+  public:
+    ModuleCallbackLayer() {}
 
-        void add_callback(int64_t key, std::function<CBytes(CBytes)> callback);
+    void add_callback(int64_t key, std::function<CBytes(CBytes)> callback);
 
-        CBytes call(int64_t key, CBytes para);
+    CBytes call(int64_t key, CBytes para);
 
-    private:
-        std::map<int64_t, std::function<CBytes(CBytes)> > callback_binding;
-    };
+  private:
+    std::map<int64_t, std::function<CBytes(CBytes)>> callback_binding;
+};
 END_BMF_ENGINE_NS
 
-#endif //BMF_ENGINE_CALLBACK_LAYER_H
+#endif // BMF_ENGINE_CALLBACK_LAYER_H

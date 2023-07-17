@@ -16,72 +16,61 @@
 #include <pybind11/pybind11.h>
 #include <hmp/tensor.h>
 
+namespace pybind11 {
+namespace detail {
 
-namespace pybind11 { namespace detail {
-
-template<> struct type_caster<hmp::Scalar> {
+template <> struct type_caster<hmp::Scalar> {
     PYBIND11_TYPE_CASTER(hmp::Scalar, _("Scalar"));
 
-    bool load(handle src, bool)
-    {
+    bool load(handle src, bool) {
         auto obj = src.ptr();
-        if(PyFloat_Check(obj)){
+        if (PyFloat_Check(obj)) {
             value = src.cast<double>();
-        }
-        else if(PyLong_Check(obj)){
+        } else if (PyLong_Check(obj)) {
             value = src.cast<int64_t>();
-        }
-        else if(PyBool_Check(obj)){
+        } else if (PyBool_Check(obj)) {
             value = src.cast<bool>();
-        }
-        else{
+        } else {
             throw std::runtime_error("Unsupported scalar type");
         }
 
         return true;
     }
 
-    static handle cast(hmp::Scalar src, return_value_policy, handle){
-        if(src.is_integral(false)){
+    static handle cast(hmp::Scalar src, return_value_policy, handle) {
+        if (src.is_integral(false)) {
             return PyLong_FromLongLong(src.to<int64_t>());
-        }
-        else if(src.is_boolean()){
+        } else if (src.is_boolean()) {
             return PyBool_FromLong(src.to<bool>());
-        }
-        else if(src.is_floating_point()){
+        } else if (src.is_floating_point()) {
             return PyFloat_FromDouble(src.to<double>());
-        }
-        else{
+        } else {
             throw std::runtime_error("unexpected Scalar type");
         }
     }
 };
 
-
-template<typename T> struct type_caster<hmp::optional<T>> {
+template <typename T> struct type_caster<hmp::optional<T>> {
     PYBIND11_TYPE_CASTER(hmp::optional<T>, _("hmp::optional"));
 
-    bool load(handle src, bool b)
-    {
+    bool load(handle src, bool b) {
         if (src.is_none()) {
             value = hmp::nullopt;
-        }
-        else {
+        } else {
             value = pybind11::cast<T>(src);
         }
 
         return true;
     }
 
-    static handle cast(hmp::optional<T> src, return_value_policy policy, handle hnd){
+    static handle cast(hmp::optional<T> src, return_value_policy policy,
+                       handle hnd) {
         if (src.has_value()) {
             return type_caster<T>::cast(*src, policy, hnd);
-        }
-        else {
+        } else {
             return none();
         }
     }
 };
-
-
-}}; //namespace pybind11::detail
+}
+}; // namespace pybind11::detail

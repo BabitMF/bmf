@@ -27,17 +27,16 @@
 #include <bmf/sdk/task.h>
 #include <bmf/sdk/log.h>
 
-
-namespace bmf_sdk{
+namespace bmf_sdk {
 /** @ingroup CppMdSDK
     */
 class BMF_API Module {
-public:
+  public:
     /** @brief
         @param node_id unique id .
         @param json_param json param of module.
         */
-    Module(int32_t node_id = -1, JsonParam json_param = JsonParam()) { 
+    Module(int32_t node_id = -1, JsonParam json_param = JsonParam()) {
         configure_bmf_log();
         node_id_ = node_id;
     };
@@ -124,7 +123,8 @@ public:
     /** @brief set the graph callback of module
      * @param callback_endpoint callback that defined in graph
        */
-    virtual void set_callback(std::function<CBytes(int64_t,CBytes)> callback_endpoint) {};
+    virtual void
+    set_callback(std::function<CBytes(int64_t, CBytes)> callback_endpoint){};
 
     /** @brief check the module is subgraph
      * @return true if the module is subgraph, else is false
@@ -133,24 +133,25 @@ public:
 
     /** @brief if the module is subgraph get the graph config
      * @param json_param return value of config
-     * @return true if the module is subgraph and has the graph config, else is false
+     * @return true if the module is subgraph and has the graph config, else is
+     * false
        */
-    virtual bool get_graph_config(JsonParam &json_param){ return false;}
+    virtual bool get_graph_config(JsonParam &json_param) { return false; }
 
     /**
-     * @brief report module stats  
-     * 
+     * @brief report module stats
+     *
      * @param json_param stats
      * @param hints hints pass to stats caculation
-     * @return int32_t 
+     * @return int32_t
      */
-    virtual int32_t report(JsonParam &json_param, int hints=0) { return 0; };
+    virtual int32_t report(JsonParam &json_param, int hints = 0) { return 0; };
 
-    virtual ~Module() {};
+    virtual ~Module(){};
 
     int32_t node_id_ = -1;
 };
 
-} //namespace bmf_sdk
+} // namespace bmf_sdk
 
-#endif //BMF_MODULE_H
+#endif // BMF_MODULE_H

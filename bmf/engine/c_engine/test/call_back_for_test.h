@@ -22,7 +22,7 @@
 USE_BMF_SDK_NS
 
 class CallBackForTest {
-public:
+  public:
     CallBackForTest();
 
     void add_or_remove_node(int node_id, bool is_add);
@@ -41,8 +41,6 @@ public:
     std::function<bool()> callback_node_to_schedule_node_ = NULL;
     std::function<void(Task &)> callback_scheduler_to_schedule_node_ = NULL;
     std::function<bool()> callback_node_is_closed_cb_ = NULL;
-
 };
 
-
-#endif //BMF_CALL_BACK_FOR_TEST_H
+#endif // BMF_CALL_BACK_FOR_TEST_H

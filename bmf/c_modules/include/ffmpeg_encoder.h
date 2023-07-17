@@ -94,9 +94,9 @@ class CFFEncoder : public Module {
     AVStream *output_stream_[2];
     int num_input_streams_;
     enum AVPixelFormat pix_fmt_;
-    std::vector<std::pair<AVPacket*, int>> cache_;
-    std::vector<std::pair<AVPacket*, int>> stream_copy_cache_;
-    std::vector<std::pair<AVFrame*,int>> frame_cache_;
+    std::vector<std::pair<AVPacket *, int>> cache_;
+    std::vector<std::pair<AVPacket *, int>> stream_copy_cache_;
+    std::vector<std::pair<AVFrame *, int>> frame_cache_;
     bool stream_inited_;
     bool b_stream_eof_[2];
     bool b_flushed_;
@@ -115,13 +115,13 @@ class CFFEncoder : public Module {
     int n_resample_out_;
     int in_swr_sample_rate_;
     int vsync_method_;
-    std::function<CBytes(int64_t,CBytes)> callback_endpoint_;
+    std::function<CBytes(int64_t, CBytes)> callback_endpoint_;
     std::shared_ptr<VideoSync> video_sync_;
     std::shared_ptr<FilterGraph> output_video_filter_graph_;
     std::shared_ptr<FilterGraph> output_audio_filter_graph_;
-    AVRational video_frame_rate_ = {0,0};
-    AVRational input_video_frame_rate_ = {0,0};
-    AVRational input_sample_aspect_ratio_ = {0,0};
+    AVRational video_frame_rate_ = {0, 0};
+    AVRational input_video_frame_rate_ = {0, 0};
+    AVRational input_sample_aspect_ratio_ = {0, 0};
     OutputStream ost_[2];
     int avio_buffer_size_ = 4 * 4096;
     int64_t current_frame_pts_;
@@ -132,12 +132,12 @@ class CFFEncoder : public Module {
     std::list<double> orig_pts_time_list_;
     int64_t current_offset_ = 0;
     int current_whence_ = 0;
-    Task* current_task_ptr_ = nullptr;
+    Task *current_task_ptr_ = nullptr;
     bool first_packet_[2] = {true, true};
     CurrentImage2Buffer current_image_buffer_ = {0};
     bool copy_ts_ = false;
 
-public:
+  public:
     CFFEncoder(int node_id, JsonParam option);
 
     ~CFFEncoder();
@@ -148,9 +148,9 @@ public:
 
     int clean();
 
-    bool check_valid_task(Task& task);
+    bool check_valid_task(Task &task);
 
-    int handle_output(AVPacket* hpkt, int idx);
+    int handle_output(AVPacket *hpkt, int idx);
 
     int encode_and_write(AVFrame *frame, unsigned int idx, int *got_frame);
 
@@ -170,27 +170,28 @@ public:
 
     int process(Task &task) override;
 
-    bool need_hungry_check(int input_stream_id) {return false;};
+    bool need_hungry_check(int input_stream_id) { return false; };
 
-    bool is_hungry(int input_stream_id) {return true;};
+    bool is_hungry(int input_stream_id) { return true; };
 
-    bool is_infinity() {return false;};
+    bool is_infinity() { return false; };
 
-    int handle_frame(AVFrame* frame,int index);
+    int handle_frame(AVFrame *frame, int index);
 
     int handle_audio_frame(AVFrame *frame, bool is_flushing, int index);
 
     int handle_video_frame(AVFrame *frame, bool is_flushing, int index);
 
-    void set_callback(std::function<CBytes(int64_t,CBytes)> callback_endpoint) override;
+    void set_callback(
+        std::function<CBytes(int64_t, CBytes)> callback_endpoint) override;
 
-    int get_filter_frame(AVFrame *frame, FilterGraph *fctx, std::vector<AVFrame *> &frames);
+    int get_filter_frame(AVFrame *frame, FilterGraph *fctx,
+                         std::vector<AVFrame *> &frames);
 
     bool need_output_video_filter_graph(AVFrame *frame);
 
     int streamcopy(AVPacket *ipkt, AVPacket *opkt, int idx);
 };
-
 
 /** @page ModuleEncoder Build-in Encode Module
  * @ingroup EncM
@@ -200,7 +201,8 @@ public:
 /** @addtogroup EncM
  * @{
  * This is a module capability discrption about BMF build-in encoder.
- * The module can be used by BMF API such as bmf.encode() by providing json style "option" to config such as the 3rd parameter below:
+ * The module can be used by BMF API such as bmf.encode() by providing json
+ style "option" to config such as the 3rd parameter below:
  * @code
             bmf.encode(
                 video['video'],

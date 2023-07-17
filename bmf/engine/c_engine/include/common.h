@@ -25,10 +25,10 @@
 #define END_BMF_ENGINE_NS }
 #define USE_BMF_ENGINE_NS using namespace bmf_engine;
 
-#define likely(x)      __builtin_expect(!!(x), 1)
-#define unlikely(x)    __builtin_expect(!!(x), 0)
+#define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
 
 #define BMF_VERSION BMF_BUILD_VERSION
 #define BMF_COMMIT BMF_BUILD_COMMIT
 
-#endif //BMF_ENGINE_COMMON_H
+#endif // BMF_ENGINE_COMMON_H

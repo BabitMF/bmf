@@ -34,35 +34,44 @@
 
 using json = nlohmann::json;
 
-#define Py_ADD_GIL PyGILState_STATE gstate = PyGILState_Ensure();{
-#define Py_RELEASE_GIL }PyGILState_Release(gstate);
+#define Py_ADD_GIL                                                             \
+    PyGILState_STATE gstate = PyGILState_Ensure();                             \
+    {
+#define Py_RELEASE_GIL                                                         \
+    }                                                                          \
+    PyGILState_Release(gstate);
 
 BEGIN_BMF_ENGINE_NS
-    USE_BMF_SDK_NS
+USE_BMF_SDK_NS
 
-    namespace Optimizer {
-        class Neighbour {
-        public:
-            StreamConfig root_stream;
-            NodeConfig node;
-        };
+namespace Optimizer {
+class Neighbour {
+  public:
+    StreamConfig root_stream;
+    NodeConfig node;
+};
 
-        void convert_filter_para(NodeConfig &node);
-        void convert_filter_para_for_graph(std::vector<NodeConfig> &nodes);
-        int find_merged_link(json &links, StreamConfig stream);
-        void replace_stream_name_with_id(NodeConfig &node);
-        void replace_stream_name_for_graph(std::vector<NodeConfig> &nodes);
-        void merge_two_nodes(NodeConfig &n1, NodeConfig &n2);
-        NodeConfig merge_ffmpeg_filter_nodes(std::vector<NodeConfig> &merge_nodes);
-        std::vector<Neighbour> find_all_neighbours(std::vector<NodeConfig> opt_nodes, NodeConfig merged_node);
-        StreamConfig has_circle(std::vector<NodeConfig> opt_nodes, NodeConfig merged_node, std::map<int, bool> &rec_stack);
-        StreamConfig find_first_circle_node(std::vector<NodeConfig> opt_nodes, NodeConfig merged_node);
-        void optimize(std::vector<NodeConfig> &nodes);
-        void merge_subgraph(GraphConfig &main_config, GraphConfig &sub_config, int sub_node_id);
-        void subgraph_preprocess(GraphConfig &main_graph_config, std::map<int, std::shared_ptr<Module> > &premodules);
-        void dump_graph(GraphConfig graph_config, bool merged);
-    }
+void convert_filter_para(NodeConfig &node);
+void convert_filter_para_for_graph(std::vector<NodeConfig> &nodes);
+int find_merged_link(json &links, StreamConfig stream);
+void replace_stream_name_with_id(NodeConfig &node);
+void replace_stream_name_for_graph(std::vector<NodeConfig> &nodes);
+void merge_two_nodes(NodeConfig &n1, NodeConfig &n2);
+NodeConfig merge_ffmpeg_filter_nodes(std::vector<NodeConfig> &merge_nodes);
+std::vector<Neighbour> find_all_neighbours(std::vector<NodeConfig> opt_nodes,
+                                           NodeConfig merged_node);
+StreamConfig has_circle(std::vector<NodeConfig> opt_nodes,
+                        NodeConfig merged_node, std::map<int, bool> &rec_stack);
+StreamConfig find_first_circle_node(std::vector<NodeConfig> opt_nodes,
+                                    NodeConfig merged_node);
+void optimize(std::vector<NodeConfig> &nodes);
+void merge_subgraph(GraphConfig &main_config, GraphConfig &sub_config,
+                    int sub_node_id);
+void subgraph_preprocess(GraphConfig &main_graph_config,
+                         std::map<int, std::shared_ptr<Module>> &premodules);
+void dump_graph(GraphConfig graph_config, bool merged);
+}
 
 END_BMF_ENGINE_NS
 
-#endif //BMF_ENGINE_OPTIMIZER_H
+#endif // BMF_ENGINE_OPTIMIZER_H

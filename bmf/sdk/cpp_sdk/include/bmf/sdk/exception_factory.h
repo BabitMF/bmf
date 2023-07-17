@@ -27,61 +27,66 @@
     @param code one of Error::Code
     @param msg error message
     */
-#define BMF_Error(code, msg) bmf_sdk::error( code, msg, __FUNCTION__, __FILE__, __LINE__ )
+#define BMF_Error(code, msg)                                                   \
+    bmf_sdk::error(code, msg, __FUNCTION__, __FILE__, __LINE__)
 
 /** @ingroup CppMdSDK
     @brief Call the error handler.
     @param code one of Error::Code
     @param msg error message
     */
-#define BMF_Error_(code, args...) bmf_sdk::error( code, bmf_sdk::format(args).c_str(), __FUNCTION__, __FILE__, __LINE__ )
+#define BMF_Error_(code, args...)                                              \
+    bmf_sdk::error(code, bmf_sdk::format(args).c_str(), __FUNCTION__,          \
+                   __FILE__, __LINE__)
 
 BEGIN_BMF_SDK_NS
 
-    BMF_API std::string format(const char *fmt, ...);
+BMF_API std::string format(const char *fmt, ...);
 
-    /** @ingroup CppMdSDK
-        */
-    /*! @brief Class passed to an error.
+/** @ingroup CppMdSDK
+    */
+/*! @brief Class passed to an error.
 
-    This class encapsulates all or almost all necessary
-    information about the error happened in the program. The exception is
-    usually constructed and thrown implicitly via BMF_Error
-    @see error
+This class encapsulates all or almost all necessary
+information about the error happened in the program. The exception is
+usually constructed and thrown implicitly via BMF_Error
+@see error
+ */
+class BMF_API Exception : public std::exception {
+  public:
+    /*!
+     Default constructor
      */
-    class BMF_API Exception : public std::exception {
-    public:
-        /*!
-         Default constructor
-         */
-        Exception();
+    Exception();
 
-        /*!
-         Full constructor. Normally the constructor is not called explicitly.
-         Instead, the macros BMF_Error(), BMF_Error_() are used.
-        */
-        Exception(int _code, const char *_err, const char *_func, const char *_file, int _line);
+    /*!
+     Full constructor. Normally the constructor is not called explicitly.
+     Instead, the macros BMF_Error(), BMF_Error_() are used.
+    */
+    Exception(int _code, const char *_err, const char *_func, const char *_file,
+              int _line);
 
-        virtual ~Exception() throw();
+    virtual ~Exception() throw();
 
-        /*!
-         \return the error description and the context as a text string.
-        */
-        virtual const char *what() const throw();
+    /*!
+     \return the error description and the context as a text string.
+    */
+    virtual const char *what() const throw();
 
-        void formatMessage();
+    void formatMessage();
 
-        std::string msg; ///< the formatted error message
+    std::string msg; ///< the formatted error message
 
-        int code; ///< error code @see BMFStatus
-        std::string err; ///< error description
-        std::string func; ///< function name. Available only when the compiler supports getting it
-        std::string file; ///< source file name where the error has occurred
-        int line; ///< line number in the source file where the error has occurred
-    };
+    int code;         ///< error code @see BMFStatus
+    std::string err;  ///< error description
+    std::string func; ///< function name. Available only when the compiler
+                      ///supports getting it
+    std::string file; ///< source file name where the error has occurred
+    int line; ///< line number in the source file where the error has occurred
+};
 
-    BMF_API void error(int _code, const char *_err, const char *_func, const char *_file, int _line);
+BMF_API void error(int _code, const char *_err, const char *_func,
+                   const char *_file, int _line);
 
 END_BMF_SDK_NS
-#endif //MODULE_SDK_EXCEPTION_H
-
+#endif // MODULE_SDK_EXCEPTION_H

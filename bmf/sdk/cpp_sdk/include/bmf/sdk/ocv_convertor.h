@@ -5,21 +5,16 @@
 
 namespace bmf_sdk {
 
-template<>
-struct OpaqueDataInfo<cv::Mat>
-{
+template <> struct OpaqueDataInfo<cv::Mat> {
     const static int key = OpaqueDataKey::kCVMat;
-    static OpaqueData construct(const cv::Mat *mat)
-    {
+    static OpaqueData construct(const cv::Mat *mat) {
         return std::make_shared<cv::Mat>(*mat);
     }
-
 };
 
-class OCVConvertor : public Convertor
-{
-public:
-    OCVConvertor(){}
+class OCVConvertor : public Convertor {
+  public:
+    OCVConvertor() {}
     int media_cvt(VideoFrame &src, const MediaDesc &dp) override {
         try {
             if (!src.frame().pix_info().is_rgbx()) {
@@ -28,10 +23,10 @@ public:
             }
             auto tensor = src.frame().data()[0];
             cv::Mat mat = hmp::ocv::to_cv_mat(tensor, true);
-            cv::Mat* pmat = new cv::Mat(mat);
+            cv::Mat *pmat = new cv::Mat(mat);
             src.private_attach<cv::Mat>(pmat);
 
-        } catch (std::exception& e) {
+        } catch (std::exception &e) {
             BMFLOG(BMF_ERROR) << "convert to cv::mat err: " << e.what();
             return -1;
         }
@@ -41,14 +36,15 @@ public:
     int media_cvt_to_videoframe(VideoFrame &src, const MediaDesc &dp) override {
         try {
             if (!dp.pixel_format.has_value()) {
-                BMFLOG(BMF_ERROR) << "VideoFrame format represented by the cv::Mat must be specified.";
+                BMFLOG(BMF_ERROR) << "VideoFrame format represented by the "
+                                     "cv::Mat must be specified.";
                 return -1;
             }
 
-
             const cv::Mat *pmat = src.private_get<cv::Mat>();
             if (!pmat) {
-                BMFLOG(BMF_ERROR) << "private data is null, please use private_attach before call this api";
+                BMFLOG(BMF_ERROR) << "private data is null, please use "
+                                     "private_attach before call this api";
                 return -1;
             }
 
@@ -57,16 +53,14 @@ public:
             vf.private_attach<cv::Mat>(pmat);
             src = vf;
 
-        } catch (std::exception& e) {
+        } catch (std::exception &e) {
             BMFLOG(BMF_ERROR) << "convert to cv::mat err: " << e.what();
             return -1;
         }
         return 0;
-
     }
 };
 
 static Convertor *ocv_convert = new OCVConvertor();
 BMF_REGISTER_CONVERTOR(MediaType::kCVMat, ocv_convert);
-
 }

@@ -17,9 +17,9 @@
 
 #include <hmp/core/details/optional.hpp>
 
-namespace hmp{
+namespace hmp {
 
-//NOTE: don't use martinmoene/optional-lite, as it may have issues for nvcc
+// NOTE: don't use martinmoene/optional-lite, as it may have issues for nvcc
 using std::experimental::optional;
 using std::experimental::nullopt;
 

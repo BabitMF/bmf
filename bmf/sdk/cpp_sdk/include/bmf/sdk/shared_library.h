@@ -8,75 +8,59 @@
 #endif
 #include <dlfcn.h>
 
-namespace bmf_sdk{
+namespace bmf_sdk {
 
-class BMF_API SharedLibrary
-{
+class BMF_API SharedLibrary {
     std::shared_ptr<void> handler_;
-public:
-    enum Flags{
-        LAZY = RTLD_LAZY,
-        GLOBAL = RTLD_GLOBAL
-    };
+
+  public:
+    enum Flags { LAZY = RTLD_LAZY, GLOBAL = RTLD_GLOBAL };
 
     SharedLibrary() = default;
 
-    SharedLibrary(const std::string &path, int flags = LAZY)
-    {
+    SharedLibrary(const std::string &path, int flags = LAZY) {
         auto handler = dlopen(path.c_str(), flags);
-        if(!handler){
+        if (!handler) {
             std::string errstr = "Load library " + path + " failed, ";
             errstr += dlerror();
             throw std::runtime_error(errstr);
         }
         handler_ = std::shared_ptr<void>(handler, dlclose);
-    }    
+    }
 
-    template<typename T>
-    T symbol(const std::string &name) const
-    {
+    template <typename T> T symbol(const std::string &name) const {
         auto ptr = reinterpret_cast<T>(raw_symbol(name));
-        if(ptr == nullptr){
+        if (ptr == nullptr) {
             throw std::runtime_error("Find symbol " + name + " failed");
         }
         return ptr;
     }
 
-    bool has(const std::string &name) const
-    {
+    bool has(const std::string &name) const {
         return raw_symbol(name) != nullptr;
     }
 
-    bool is_open() const{
-        return handler_ != nullptr;
-    }
+    bool is_open() const { return handler_ != nullptr; }
 
-    void* raw_symbol(const std::string &name) const    
-    {
+    void *raw_symbol(const std::string &name) const {
         return dlsym(handler_.get(), name.c_str());
     }
 
-
-    static std::string symbol_location(const void* symbol)
-    {
+    static std::string symbol_location(const void *symbol) {
         Dl_info info;
         auto rc = dladdr(symbol, &info);
-        if(rc){
+        if (rc) {
             return info.dli_fname;
-        }
-        else{
+        } else {
             throw std::runtime_error("symbol address not found");
         }
     }
 
-
-    static std::string this_line_location()
-    {
-        return symbol_location((void*)(&this_line_location));
+    static std::string this_line_location() {
+        return symbol_location((void *)(&this_line_location));
     }
 
-    static const char* default_shared_dir()
-    {
+    static const char *default_shared_dir() {
 #ifdef __unix__
         return "lib";
 #elif defined(__APPLE__)
@@ -88,8 +72,7 @@ public:
 #endif
     }
 
-    static const char* default_prefix()
-    {
+    static const char *default_prefix() {
 #ifdef __unix__
         return "lib";
 #elif defined(__APPLE__)
@@ -101,8 +84,7 @@ public:
 #endif
     }
 
-    static const char* default_extension()
-    {
+    static const char *default_extension() {
 #ifdef __unix__
         return ".so";
 #elif defined(__APPLE__)
@@ -111,9 +93,6 @@ public:
 #error "unsupported os"
 #endif
     }
-
-
 };
 
-
-} //namespace bmf_sdk
+} // namespace bmf_sdk

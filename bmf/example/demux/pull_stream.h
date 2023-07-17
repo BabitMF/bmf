@@ -13,12 +13,11 @@
 
 USE_BMF_SDK_NS
 
-class PullStreamModule : public Module
-{
-public:
-    PullStreamModule(int node_id,JsonParam option);
+class PullStreamModule : public Module {
+  public:
+    PullStreamModule(int node_id, JsonParam option);
 
-    ~PullStreamModule() { }
+    ~PullStreamModule() {}
 
     virtual int process(Task &task);
     std::string input_path_;
@@ -28,9 +27,8 @@ public:
     AVFormatContext *input_fmt_ctx_;
     std::string pts_file_path_;
     int stream_index_;
-    int64_t pts_=28774-66;
+    int64_t pts_ = 28774 - 66;
     int timestamp_ = 0;
 };
 
 #endif
-

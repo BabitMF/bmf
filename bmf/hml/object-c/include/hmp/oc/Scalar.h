@@ -19,30 +19,29 @@
 #import <Foundation/Foundation.h>
 #import <hmp/oc/ScalarType.h>
 
-
-@interface HmpScalar: NSObject{
-@protected
+@interface HmpScalar : NSObject {
+  @protected
     void *_impl;
     bool _own;
 }
 
-- (instancetype) init;
-- (instancetype) initFromBool: (bool) v;
-- (instancetype) initFromInt: (int64_t) v;
-- (instancetype) initFromFloat: (double) v;
-- (instancetype) initFromPtr: (void*) ptr : (bool) own;
+- (instancetype)init;
+- (instancetype)initFromBool:(bool)v;
+- (instancetype)initFromInt:(int64_t)v;
+- (instancetype)initFromFloat:(double)v;
+- (instancetype)initFromPtr:(void *)ptr:(bool)own;
 
-- (void*)ptr;
+- (void *)ptr;
 
-- (void) dealloc;
+- (void)dealloc;
 
-- (bool) to_bool;
-- (int64_t) to_int;
-- (double) to_float;
+- (bool)to_bool;
+- (int64_t)to_int;
+- (double)to_float;
 
-- (bool) is_integral: (bool) include_bool;
-- (bool) is_floating_point;
-- (bool) is_boolean;
+- (bool)is_integral:(bool)include_bool;
+- (bool)is_floating_point;
+- (bool)is_boolean;
 
 @end
 

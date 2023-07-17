@@ -20,18 +20,17 @@
 #include <hmp/core/optional.h>
 #include <hmp/core/macros.h>
 
-namespace hmp{
+namespace hmp {
 
-class HMP_API Device
-{
-public:
-    enum class Type : int16_t{
+class HMP_API Device {
+  public:
+    enum class Type : int16_t {
         CPU = 0,
         CUDA = 1,
 
         //
         NumDeviceTypes
-    }; 
+    };
     using Index = int16_t;
 
     Device() : Device(Type::CPU) {}
@@ -40,16 +39,13 @@ public:
 
     //
     bool operator==(const Device &other) const;
-    bool operator!=(const Device &other) const
-    {
-        return !(*this == other);
-    }
+    bool operator!=(const Device &other) const { return !(*this == other); }
 
     //
     Type type() const { return type_; }
     Index index() const { return index_; }
 
-private:
+  private:
     Type type_;
     Index index_;
 };
@@ -60,26 +56,22 @@ constexpr Device::Type kCUDA = Device::Type::CUDA;
 
 HMP_API std::string stringfy(const Device &device);
 
-static inline std::string stringfy(const Device::Type &type)
-{
-    if(type == kCPU){
+static inline std::string stringfy(const Device::Type &type) {
+    if (type == kCPU) {
         return "kCPU";
-    }
-    else if(type == kCUDA){
+    } else if (type == kCUDA) {
         return "kCUDA";
-    }
-    else{
+    } else {
         return "UnknownDeviceType";
     }
 }
 
-
-class HMP_API DeviceGuard
-{
+class HMP_API DeviceGuard {
     optional<Device> origin_;
-public:
+
+  public:
     DeviceGuard() = delete;
-    DeviceGuard(const DeviceGuard&) = delete;
+    DeviceGuard(const DeviceGuard &) = delete;
     DeviceGuard(DeviceGuard &&);
 
     DeviceGuard(const Device &device);
@@ -92,29 +84,26 @@ HMP_API int64_t device_count(DeviceType device_type);
 HMP_API optional<Device> current_device(DeviceType device_type);
 HMP_API void set_current_device(const Device &device);
 
-namespace impl{
+namespace impl {
 
-struct DeviceManager
-{
+struct DeviceManager {
     virtual void setCurrent(const Device &) = 0;
     virtual optional<Device> getCurrent() const = 0;
     virtual int64_t count() const = 0;
 };
 
-
 HMP_API void registerDeviceManager(DeviceType dtype, DeviceManager *dm);
 
-#define HMP_REGISTER_DEVICE_MANAGER(device, dm) \
-    namespace {\
-        static Register<DeviceType, ::hmp::impl::DeviceManager*> \
-            __s##device##Manager(::hmp::impl::registerDeviceManager, device, dm); \
-        HMP_DEFINE_TAG(__s##device##Manager);     \
+#define HMP_REGISTER_DEVICE_MANAGER(device, dm)                                \
+    namespace {                                                                \
+    static Register<DeviceType, ::hmp::impl::DeviceManager *>                  \
+        __s##device##Manager(::hmp::impl::registerDeviceManager, device, dm);  \
+    HMP_DEFINE_TAG(__s##device##Manager);                                      \
     }
 
 #define HMP_DECLARE_DEVICE(device) HMP_DECLARE_TAG(__s##device##Manager)
 #define HMP_IMPORT_DEVICE(device) HMP_IMPORT_TAG(__s##device##Manager)
 
+} // namespace impl
 
-} //namespace impl
-
-} //namespace hmp
+} // namespace hmp

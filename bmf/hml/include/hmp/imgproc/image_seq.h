@@ -19,19 +19,18 @@
 #include <hmp/imgproc/image.h>
 #include <hmp/imgproc/formats.h>
 
-namespace hmp{
+namespace hmp {
 
-class HMP_API FrameSeq
-{
-public:
+class HMP_API FrameSeq {
+  public:
     FrameSeq() = default;
-    FrameSeq(const FrameSeq&) = default;
+    FrameSeq(const FrameSeq &) = default;
     FrameSeq(const TensorList &data, const PixelInfo &pix_info);
 
     operator bool() const;
 
-    const PixelFormatDesc& pix_desc() const { return pix_desc_; }
-    const PixelInfo& pix_info() const { return pix_info_; }
+    const PixelFormatDesc &pix_desc() const { return pix_desc_; }
+    const PixelInfo &pix_info() const { return pix_info_; }
     PixelFormat format() const { return pix_info_.format(); }
     int batch() const { return data_[0].size(0); }
     int width() const { return data_[0].size(2); }
@@ -40,7 +39,7 @@ public:
     Device device() const { return data_[0].device(); }
 
     int64_t nplanes() const { return data_.size(); }
-    const Tensor &plane(int64_t p) const  { return data_[p]; }
+    const Tensor &plane(int64_t p) const { return data_[p]; }
     const TensorList &data() const { return data_; }
 
     FrameSeq to(const Device &device, bool non_blocking = false) const;
@@ -49,23 +48,22 @@ public:
     Frame operator[](int64_t index) const;
     FrameSeq slice(int64_t start, optional<int64_t> end = nullopt) const;
     FrameSeq crop(int left, int top, int width, int height) const;
-    FrameSeq resize(int width, int height, ImageFilterMode mode = ImageFilterMode::Bicubic) const;
+    FrameSeq resize(int width, int height,
+                    ImageFilterMode mode = ImageFilterMode::Bicubic) const;
     FrameSeq rotate(ImageRotationMode mode) const;
     FrameSeq mirror(ImageAxis axis = ImageAxis::Horizontal) const;
 
     FrameSeq reformat(const PixelInfo &pix_info);
 
-private:
+  private:
     PixelFormatDesc pix_desc_;
     PixelInfo pix_info_;
     TensorList data_;
-}; 
-
+};
 
 HMP_API FrameSeq concat(const std::vector<Frame> &frames);
 HMP_API FrameSeq concat(const std::vector<FrameSeq> &frames);
 
 HMP_API std::string stringfy(const FrameSeq &frames);
 
-
-} //namespace hmp
+} // namespace hmp

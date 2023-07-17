@@ -22,98 +22,102 @@
 #import <hmp/oc/Formats.h>
 #import <hmp/oc/Tensor.h>
 
-
-@interface HmpImage: NSObject{
+@interface HmpImage : NSObject {
 }
 
-- (instancetype) init : (HmpTensor*) data : (HmpChannelFormat) format;
+- (instancetype)init:(HmpTensor *)data:(HmpChannelFormat)format;
 
-- (instancetype) init : (int) width : (int) height : (int) nchannels : (HmpChannelFormat) format : (HmpScalarType) dtype;
+- (instancetype)init:(int)
+               width:(int)
+              height:(int)
+           nchannels:(HmpChannelFormat)
+              format:(HmpScalarType)dtype;
 
-- (instancetype) initFromPtr: (void*) ptr : (bool) own;
+- (instancetype)initFromPtr:(void *)ptr:(bool)own;
 
-- (void*)ptr;
+- (void *)ptr;
 
-- (void) dealloc;
+- (void)dealloc;
 
-- (bool) defined;
+- (bool)defined;
 
-- (NSString*) description;
+- (NSString *)description;
 
-- (HmpChannelFormat) format;
+- (HmpChannelFormat)format;
 
-- (void) set_color_model: (HmpColorModel*) cm;
+- (void)set_color_model:(HmpColorModel *)cm;
 
-- (HmpColorModel*) color_model;
+- (HmpColorModel *)color_model;
 
-- (int) wdim;
+- (int)wdim;
 
-- (int) hdim;
+- (int)hdim;
 
-- (int) cdim;
+- (int)cdim;
 
-- (int) width;
+- (int)width;
 
-- (int) height;
+- (int)height;
 
-- (int) nchannels;
+- (int)nchannels;
 
-- (HmpScalarType) dtype;
+- (HmpScalarType)dtype;
 
-- (HmpDevice*) device;
+- (HmpDevice *)device;
 
-- (HmpTensor*) data;
+- (HmpTensor *)data;
 
-- (void*) unsafe_data;
+- (void *)unsafe_data;
 
-- (HmpImage*) copy_: (HmpImage*) from;
+- (HmpImage *)copy_:(HmpImage *)from;
 
-- (HmpImage*) clone;
+- (HmpImage *)clone;
 
-- (HmpImage*) crop : (int)left : (int)top : (int)width : (int) height;
+- (HmpImage *)crop:(int)left:(int)top:(int)width:(int)height;
 
-- (HmpImage*) select : (int) channel; 
+- (HmpImage *)select:(int)channel;
 
+@end // HmpImage
 
-@end //HmpImage
-
-
-@interface HmpFrame: NSObject{
-@protected
+@interface HmpFrame : NSObject {
+  @protected
     void *_impl;
     bool _own;
 }
 
-- (instancetype) init : (int) width : (int) height : (HmpPixelInfo*) pix_info;
-- (instancetype) initFromData: (NSMutableArray*) data : (int) width : (int) height : (HmpPixelInfo*) pix_info;
+- (instancetype)init:(int)width:(int)height:(HmpPixelInfo *)pix_info;
+- (instancetype)initFromData:(NSMutableArray *)
+                        data:(int)
+                       width:(int)
+                      height:(HmpPixelInfo *)pix_info;
 // Frame must locked before use if it is init from pixelbuffer
-- (instancetype) initFromPixelBuffer: (CVPixelBufferRef) pix_buffer;
+- (instancetype)initFromPixelBuffer:(CVPixelBufferRef)pix_buffer;
 
-- (instancetype) initFromPtr: (void*) ptr : (bool) own;
+- (instancetype)initFromPtr:(void *)ptr:(bool)own;
 
-- (void*)ptr;
+- (void *)ptr;
 
-- (void) dealloc;
+- (void)dealloc;
 
-- (bool) defined;
+- (bool)defined;
 
-- (NSString*) description;
+- (NSString *)description;
 
-- (HmpPixelInfo*) pix_info;
-- (HmpPixelFormat) format;
-- (int) width;
-- (int) height;
-- (HmpScalarType) dtype;
-- (HmpDevice*) device;
-- (int64_t) nplanes;
-- (HmpTensor*) plane: (int) p;
-- (void*) plane_data : (int) p;
-- (HmpFrame*) copy_: (HmpFrame*) from;
-- (HmpFrame*) crop : (int)left : (int)top : (int)width : (int) height;
+- (HmpPixelInfo *)pix_info;
+- (HmpPixelFormat)format;
+- (int)width;
+- (int)height;
+- (HmpScalarType)dtype;
+- (HmpDevice *)device;
+- (int64_t)nplanes;
+- (HmpTensor *)plane:(int)p;
+- (void *)plane_data:(int)p;
+- (HmpFrame *)copy_:(HmpFrame *)from;
+- (HmpFrame *)crop:(int)left:(int)top:(int)width:(int)height;
 // only support rgbx format for mobile build(HMP_ENABLE_MOBILE=ON)
-- (HmpImage*) to_image : (HmpChannelFormat) cformat;
-+ (HmpFrame*) from_image : (HmpImage*) image : (HmpPixelInfo*) pix_info;
+- (HmpImage *)to_image:(HmpChannelFormat)cformat;
++ (HmpFrame *)from_image:(HmpImage *)image:(HmpPixelInfo *)pix_info;
 
-@end //HmpFrame
+@end // HmpFrame
 
 #endif

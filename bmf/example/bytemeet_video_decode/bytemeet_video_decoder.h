@@ -14,7 +14,7 @@
 USE_BMF_SDK_NS
 
 class ByteMeetDecode : public Module {
-public:
+  public:
     ByteMeetDecode(int node_id, JsonParam option);
 
     ~ByteMeetDecode() {}
@@ -32,8 +32,6 @@ public:
     AVCodecContext *c = NULL;
     std::string video_time_base_;
     std::string video_codec_name_;
-
 };
 
 #endif
-

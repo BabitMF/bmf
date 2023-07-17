@@ -2,20 +2,20 @@
 #import <bmf/oc/VideoFrame.h>
 #import <bmf/oc/AudioFrame.h>
 
-@interface BmfPacket: NSObject
+@interface BmfPacket : NSObject
 
-- (id)initFromPtr: (void*)pkt own:(bool)own;
-- (id)init: (id)data;
-- (void) dealloc;
+- (id)initFromPtr:(void *)pkt own:(bool)own;
+- (id)init:(id)data;
+- (void)dealloc;
 
-+ (BmfPacket*)generateEosPacket;
-+ (BmfPacket*)generateEofPacket;
++ (BmfPacket *)generateEosPacket;
++ (BmfPacket *)generateEofPacket;
 
-- (void*)ptr;
+- (void *)ptr;
 - (bool)defined;
-- (void)setTimestamp: (long)ts;
+- (void)setTimestamp:(long)ts;
 - (long)timestamp;
-- (bool)is: (Class) class_type;
-- (id)get: (Class) class_type;
+- (bool)is:(Class)class_type;
+- (id)get:(Class)class_type;
 
 @end

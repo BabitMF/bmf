@@ -33,8 +33,9 @@ extern "C" {
 };
 
 class AudioFifo {
-public:
-    AudioFifo(int format, int channels, uint64_t channel_layout, AVRational time_base, int sample_rate);
+  public:
+    AudioFifo(int format, int channels, uint64_t channel_layout,
+              AVRational time_base, int sample_rate);
 
     ~AudioFifo();
 
@@ -42,7 +43,8 @@ public:
 
     int read(int samples, bool partial, bool &got_frame, AVFrame *&frame);
 
-    int read_many(int samples, bool partial, std::vector<AVFrame *> &frame_list);
+    int read_many(int samples, bool partial,
+                  std::vector<AVFrame *> &frame_list);
 
     AVAudioFifo *audio_fifo_ = NULL;
     bool first_frame_ = true;
@@ -57,4 +59,4 @@ public:
     float pts_per_sample_ = 0;
 };
 
-#endif //C_MODULES_AUDIO_FIFO_H
+#endif // C_MODULES_AUDIO_FIFO_H

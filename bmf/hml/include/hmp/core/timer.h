@@ -18,58 +18,57 @@
 #include <hmp/core/device.h>
 #include <hmp/core/ref_ptr.h>
 
-namespace hmp{
+namespace hmp {
 
-
-class HMP_API TimerInterface : public RefObject
-{
-public:
+class HMP_API TimerInterface : public RefObject {
+  public:
     virtual void start() = 0;
     virtual void stop() = 0;
     virtual double elapsed() = 0;
     virtual bool is_stopped() const = 0;
-    virtual const Device& device() const = 0;
+    virtual const Device &device() const = 0;
 };
 
-
-class HMP_API Timer
-{
+class HMP_API Timer {
     RefPtr<TimerInterface> self_;
 
     Timer(RefPtr<TimerInterface> self) : self_(self) {}
 
     friend Timer create_timer(DeviceType device_type);
-public:
-    Timer(const Timer&) = default;
+
+  public:
+    Timer(const Timer &) = default;
     Timer(Timer &&) = default;
 
-    Timer& start() { self_->start(); return *this; }
-    Timer& stop() { self_->stop(); return *this; }
+    Timer &start() {
+        self_->start();
+        return *this;
+    }
+    Timer &stop() {
+        self_->stop();
+        return *this;
+    }
     double elapsed() const { return self_->elapsed(); }
     bool is_stopped() const { return self_->is_stopped(); }
-    const Device& device() const { return self_->device(); }
+    const Device &device() const { return self_->device(); }
 };
 
-
 HMP_API std::string stringfy(const Timer &timer);
-HMP_API Timer create_timer(DeviceType device_type = kCPU); 
+HMP_API Timer create_timer(DeviceType device_type = kCPU);
 
+namespace impl {
 
-namespace impl{
-
-struct HMP_API TimerManager
-{
+struct HMP_API TimerManager {
     virtual RefPtr<TimerInterface> create() = 0;
 };
 
 HMP_API void registerTimerManager(DeviceType dtype, TimerManager *tm);
 
-#define HMP_REGISTER_TIMER_MANAGER(dtype, tm) \
-    namespace {\
-        static Register<DeviceType, ::hmp::impl::TimerManager*> \
-            HMP_UNIQUE_NAME(s##timer##Manager)(::hmp::impl::registerTimerManager, dtype, tm); \
+#define HMP_REGISTER_TIMER_MANAGER(dtype, tm)                                  \
+    namespace {                                                                \
+    static Register<DeviceType, ::hmp::impl::TimerManager *>                   \
+        HMP_UNIQUE_NAME(s##timer##Manager)(::hmp::impl::registerTimerManager,  \
+                                           dtype, tm);                         \
     }
-} //namespace impl
-
-
+} // namespace impl
 };

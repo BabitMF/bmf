@@ -19,8 +19,8 @@
 #include <bmf/sdk/module_registry.h>
 USE_BMF_SDK_NS
 class GoMockDecoder : public Module {
-public:
-    GoMockDecoder(int node_id,JsonParam json_param);
+  public:
+    GoMockDecoder(int node_id, JsonParam json_param);
 
     int reset();
 
@@ -33,4 +33,4 @@ public:
 
 REGISTER_MODULE_CLASS(GoMockDecoder)
 
-#endif //BUILTIN_MODULES_GO_MOCK_DECODER_H
+#endif // BUILTIN_MODULES_GO_MOCK_DECODER_H

@@ -29,158 +29,160 @@
 #include "output_stream_manager.h"
 #include "callback_layer.h"
 
-
-
 BEGIN_BMF_ENGINE_NS
-    USE_BMF_SDK_NS
-    enum class NodeState {
-        NOT_INITED = 1,
-        RUNNING = 2,
-        PENDING = 3,
-        CLOSED = 4,
-        PAUSE_DONE = 5
-    };
+USE_BMF_SDK_NS
+enum class NodeState {
+    NOT_INITED = 1,
+    RUNNING = 2,
+    PENDING = 3,
+    CLOSED = 4,
+    PAUSE_DONE = 5
+};
 
-    class Node;
+class Node;
 
-    class NodeCallBack {
-    public:
-        std::function<void(Task &)> scheduler_cb;
-        std::function<void(int, int)> clear_cb;
-        std::function<void(int, bool)> throttled_cb;
-        std::function<void(int, bool)> sched_required;
-        std::function<int(int, std::shared_ptr<Node> &)> get_node;
-    };
+class NodeCallBack {
+  public:
+    std::function<void(Task &)> scheduler_cb;
+    std::function<void(int, int)> clear_cb;
+    std::function<void(int, bool)> throttled_cb;
+    std::function<void(int, bool)> sched_required;
+    std::function<int(int, std::shared_ptr<Node> &)> get_node;
+};
 
-    class Node {
-    public:
-        Node(int node_id, NodeConfig &node_config, NodeCallBack &callback,
-             std::shared_ptr<Module> pre_allocated_modules, BmfMode mode,
-             std::shared_ptr<ModuleCallbackLayer> callbacks);
+class Node {
+  public:
+    Node(int node_id, NodeConfig &node_config, NodeCallBack &callback,
+         std::shared_ptr<Module> pre_allocated_modules, BmfMode mode,
+         std::shared_ptr<ModuleCallbackLayer> callbacks);
 
-        int process_node(Task &task);
+    int process_node(Task &task);
 
-        bool schedule_node();
+    bool schedule_node();
 
-        void wait_paused();
+    void wait_paused();
 
-        bool is_source();
+    bool is_source();
 
-        void set_source(bool flag);
+    void set_source(bool flag);
 
-        int inc_pending_task();
+    int inc_pending_task();
 
-        int dec_pending_task();
+    int dec_pending_task();
 
-        int close();
+    int close();
 
-        bool is_closed();
+    bool is_closed();
 
-        int reset();
+    int reset();
 
-        void check_node_pending();
+    void check_node_pending();
 
-        int need_force_close();
+    int need_force_close();
 
-        int need_opt_reset(JsonParam reset_opt);
+    int need_opt_reset(JsonParam reset_opt);
 
-        int all_downstream_nodes_closed();
+    int all_downstream_nodes_closed();
 
-        bool too_many_tasks_pending();
+    bool too_many_tasks_pending();
 
-        bool any_of_downstream_full();
+    bool any_of_downstream_full();
 
-        bool is_hungry();
+    bool is_hungry();
 
-        void register_hungry_check_func(int input_idx, std::function<bool()> &func);
+    void register_hungry_check_func(int input_idx, std::function<bool()> &func);
 
-        void get_hungry_check_func(int input_idx, std::vector<std::function<bool()> > &funcs);
+    void get_hungry_check_func(int input_idx,
+                               std::vector<std::function<bool()>> &funcs);
 
-        int get_id();
+    int get_id();
 
-        std::string get_alias();
+    std::string get_alias();
 
-        std::string get_action();
+    std::string get_action();
 
-        int64_t get_source_timestamp();
+    int64_t get_source_timestamp();
 
-        bool any_of_input_queue_full();
+    bool any_of_input_queue_full();
 
-        bool all_input_queue_empty();
+    bool all_input_queue_empty();
 
-        void set_scheduler_queue_id(int scheduler_queue_id);
+    void set_scheduler_queue_id(int scheduler_queue_id);
 
-        int get_scheduler_queue_id();
+    int get_scheduler_queue_id();
 
-        int get_output_streams(std::map<int, std::shared_ptr<OutputStream>> &output_streams);
+    int get_output_streams(
+        std::map<int, std::shared_ptr<OutputStream>> &output_streams);
 
-        int get_input_stream_manager(std::shared_ptr<InputStreamManager> &);
+    int get_input_stream_manager(std::shared_ptr<InputStreamManager> &);
 
-        int get_output_stream_manager(std::shared_ptr<OutputStreamManager> &);
+    int get_output_stream_manager(std::shared_ptr<OutputStreamManager> &);
 
-        int get_input_streams(std::map<int, std::shared_ptr<InputStream> > &input_streams);
+    int get_input_streams(
+        std::map<int, std::shared_ptr<InputStream>> &input_streams);
 
-        std::string get_type();
+    std::string get_type();
 
-        std::string get_status();
+    std::string get_status();
 
-        void set_status(NodeState state);
+    void set_status(NodeState state);
 
-        void set_outputstream_updated(bool update);
+    void set_outputstream_updated(bool update);
 
-        int get_schedule_attempt_cnt();
+    int get_schedule_attempt_cnt();
 
-        int get_schedule_success_cnt();
+    int get_schedule_success_cnt();
 
-        int64_t get_last_timestamp();
+    int64_t get_last_timestamp();
 
-        long long dur;
+    long long dur;
 
-        bool wait_pause_;
+    bool wait_pause_;
 
-        int64_t pre_sched_num_ = 0;
+    int64_t pre_sched_num_ = 0;
 
-        std::mutex sched_mutex_;
+    std::mutex sched_mutex_;
 
-        BmfMode mode_;
-    private:
-        // visible to monitor
-        friend class RunningInfoCollector;
+    BmfMode mode_;
 
-        int id_;
-        std::string node_name_;
-        std::string module_name_;
-        int scheduler_queue_id_;
-        long long task_processed_cnt_;
-        bool is_premodule_;
-        NodeConfig node_config_;
-        std::string type_;
-        bool is_source_;
-        int pending_tasks_ = 0;
-        int max_pending_tasks_ = 5;
-        uint32_t queue_size_limit_ = 5;
-        bool infinity_node_ = false;
-        bool node_output_updated_ = false;
-        ModuleInfo module_info_;
-        std::shared_ptr<Module> module_;
-        std::shared_ptr<ModuleCallbackLayer> module_callbacks_;
-        std::shared_ptr<InputStreamManager> input_stream_manager_;
-        std::shared_ptr<OutputStreamManager> output_stream_manager_;
-        bool force_close_;
-        NodeState state_;
-        JsonParam reset_option_;
-        bool need_opt_reset_;
-        std::mutex opt_reset_mutex_;
-        int schedule_node_cnt_;
-        int schedule_node_success_cnt_;
-        int64_t source_timestamp_;
-        int64_t last_timestamp_;
-        mutable std::recursive_mutex mutex_;
-        mutable std::mutex pause_mutex_;
-        std::condition_variable pause_event_;
-        NodeCallBack callback_;
-        std::map<int, std::vector<std::function<bool()> > > hungry_check_func_;
-    };
+  private:
+    // visible to monitor
+    friend class RunningInfoCollector;
+
+    int id_;
+    std::string node_name_;
+    std::string module_name_;
+    int scheduler_queue_id_;
+    long long task_processed_cnt_;
+    bool is_premodule_;
+    NodeConfig node_config_;
+    std::string type_;
+    bool is_source_;
+    int pending_tasks_ = 0;
+    int max_pending_tasks_ = 5;
+    uint32_t queue_size_limit_ = 5;
+    bool infinity_node_ = false;
+    bool node_output_updated_ = false;
+    ModuleInfo module_info_;
+    std::shared_ptr<Module> module_;
+    std::shared_ptr<ModuleCallbackLayer> module_callbacks_;
+    std::shared_ptr<InputStreamManager> input_stream_manager_;
+    std::shared_ptr<OutputStreamManager> output_stream_manager_;
+    bool force_close_;
+    NodeState state_;
+    JsonParam reset_option_;
+    bool need_opt_reset_;
+    std::mutex opt_reset_mutex_;
+    int schedule_node_cnt_;
+    int schedule_node_success_cnt_;
+    int64_t source_timestamp_;
+    int64_t last_timestamp_;
+    mutable std::recursive_mutex mutex_;
+    mutable std::mutex pause_mutex_;
+    std::condition_variable pause_event_;
+    NodeCallBack callback_;
+    std::map<int, std::vector<std::function<bool()>>> hungry_check_func_;
+};
 END_BMF_ENGINE_NS
 
-#endif //BMF_NODE_H
+#endif // BMF_NODE_H

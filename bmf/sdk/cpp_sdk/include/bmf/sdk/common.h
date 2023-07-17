@@ -29,40 +29,37 @@
 #define END_BMF_ENGINE_NS }
 #define USE_BMF_ENGINE_NS using namespace bmf_engine;
 
-#define likely(x)      __builtin_expect(!!(x), 1)
-#define unlikely(x)    __builtin_expect(!!(x), 0)
+#define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
 
 #define BMF_SDK_VERSION BMF_BUILD_VERSION
 
-//interface export
+// interface export
 #ifdef _WIN32
 #ifdef BMF_BUILD_SHARED
 #define BMF_API __declspec(dllexport)
-#else //BMF_BUILD_SHARED
+#else // BMF_BUILD_SHARED
 #define BMF_API __declspec(dllimport)
 #endif
 #else //_WIN32
 #ifdef BMF_BUILD_SHARED
 #define BMF_API __attribute__((__visibility__("default")))
-#else //BMF_BUILD_SHARED
+#else // BMF_BUILD_SHARED
 #define BMF_API
 #endif //
 #endif //_WIN32
 
 #ifdef __cplusplus
 BEGIN_BMF_SDK_NS
-    enum BmfResult {
-        UNKNOWN_ERROR = -1,
-        SUCCESS = 0
-    };
+enum BmfResult { UNKNOWN_ERROR = -1, SUCCESS = 0 };
 
-    enum class BmfMode {
-        NORMAL_MODE = 0,
-        SERVER_MODE = 1,
-        GENERATOR_MODE = 2,
-        SUBGRAPH_MODE = 3,
-        PUSHDATA_MODE = 4
-    };
+enum class BmfMode {
+    NORMAL_MODE = 0,
+    SERVER_MODE = 1,
+    GENERATOR_MODE = 2,
+    SUBGRAPH_MODE = 3,
+    PUSHDATA_MODE = 4
+};
 END_BMF_SDK_NS
 #endif
-#endif //BMF_COMMON_H
+#endif // BMF_COMMON_H

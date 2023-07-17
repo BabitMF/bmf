@@ -5,15 +5,13 @@
 
 USE_BMF_SDK_NS
 
-class CopyModule : public Module
-{
-public:
-    CopyModule(Option option) : Module(option) { }
+class CopyModule : public Module {
+  public:
+    CopyModule(Option option) : Module(option) {}
 
-    ~CopyModule() { }
+    ~CopyModule() {}
 
     virtual void process(Task &task);
 };
 
 #endif
-

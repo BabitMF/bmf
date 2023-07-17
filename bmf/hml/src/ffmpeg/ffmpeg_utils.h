@@ -15,26 +15,21 @@
  */
 #pragma once
 
-extern "C"{
+extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavutil/timestamp.h>
 #include <libavutil/opt.h>
-
 }
 #include <hmp/ffmpeg/ffmpeg.h>
 
-namespace hmp{
-namespace ffmpeg{
+namespace hmp {
+namespace ffmpeg {
 
-static std::string AVErr2Str(int rc)
-{
-    char av_error[AV_ERROR_MAX_STRING_SIZE] = { 0 };
+static std::string AVErr2Str(int rc) {
+    char av_error[AV_ERROR_MAX_STRING_SIZE] = {0};
     av_make_error_string(av_error, AV_ERROR_MAX_STRING_SIZE, rc);
     return std::string(av_error);
 }
-
-
-
-
-}} //
+}
+} //

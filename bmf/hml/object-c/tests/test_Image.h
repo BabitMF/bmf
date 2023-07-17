@@ -16,5 +16,5 @@
 #import <Foundation/Foundation.h>
 
 @interface BmfImageTests : NSObject
-- (int) testAll;
+- (int)testAll;
 @end

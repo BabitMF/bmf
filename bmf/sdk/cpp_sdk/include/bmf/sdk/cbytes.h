@@ -30,34 +30,30 @@
 
 #ifdef __cplusplus
 BEGIN_BMF_SDK_NS
-    struct BMF_API CBytes {
-        uint8_t const *buffer;
-        size_t size;
+struct BMF_API CBytes {
+    uint8_t const *buffer;
+    size_t size;
 
-        //
-        std::shared_ptr<uint8_t> holder;
+    //
+    std::shared_ptr<uint8_t> holder;
 
-        static CBytes make(size_t size)
-        {
-            CBytes cb;
-            cb.holder = std::shared_ptr<uint8_t>(
-                new uint8_t[size], [](uint8_t *ptr){ delete[] ptr; });
-            cb.buffer = cb.holder.get();
-            cb.size = size;
-            return cb;
-        }
+    static CBytes make(size_t size) {
+        CBytes cb;
+        cb.holder = std::shared_ptr<uint8_t>(
+            new uint8_t[size], [](uint8_t *ptr) { delete[] ptr; });
+        cb.buffer = cb.holder.get();
+        cb.size = size;
+        return cb;
+    }
 
-        static CBytes make(const uint8_t *buffer, size_t size)
-        {
-            CBytes cb;
-            cb.buffer = buffer;
-            cb.size = size;
-            return cb;
-        }
-
-    };
+    static CBytes make(const uint8_t *buffer, size_t size) {
+        CBytes cb;
+        cb.buffer = buffer;
+        cb.size = size;
+        return cb;
+    }
+};
 END_BMF_SDK_NS
 #endif
 
-
-#endif //BMF_SDK_CBYTES_H
+#endif // BMF_SDK_CBYTES_H

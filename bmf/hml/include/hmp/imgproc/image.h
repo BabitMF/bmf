@@ -18,171 +18,172 @@
 #include <hmp/tensor.h>
 #include <hmp/imgproc/formats.h>
 
-namespace hmp{
+namespace hmp {
 
-//class Image;
+// class Image;
 
-class HMP_API Frame
-{
-public:
+class HMP_API Frame {
+  public:
     Frame() = default;
-    Frame(const Frame&) = default;
+    Frame(const Frame &) = default;
 
-    Frame(int width, int height, const PixelInfo &pix_info, const Device &device = kCPU);
+    Frame(int width, int height, const PixelInfo &pix_info,
+          const Device &device = kCPU);
 
-    Frame(const TensorList &data, int width, int height, const PixelInfo &pix_info);
+    Frame(const TensorList &data, int width, int height,
+          const PixelInfo &pix_info);
     Frame(const TensorList &data, const PixelInfo &pix_info);
     Frame(const Tensor &data, const PixelInfo &pix_info);
 
     /**
      * @brief check is this frame is defined
-     * 
-     * @return true 
-     * @return false 
+     *
+     * @return true
+     * @return false
      */
     operator bool() const { return data_.size() > 0; }
 
     /**
      * @brief return PixelFormat description information
-     * 
-     * @return const PixelFormatInfo& 
+     *
+     * @return const PixelFormatInfo&
      */
-    const PixelFormatDesc& pix_desc() const { return pix_desc_; }
+    const PixelFormatDesc &pix_desc() const { return pix_desc_; }
 
-    const PixelInfo& pix_info() const { return pix_info_; }
+    const PixelInfo &pix_info() const { return pix_info_; }
 
     /**
-     * @brief 
-     * 
-     * @return PixelFormat 
+     * @brief
+     *
+     * @return PixelFormat
      */
     PixelFormat format() const { return pix_info_.format(); }
 
     /**
      * @brief width of frist plane
-     * 
-     * @return int 
+     *
+     * @return int
      */
     int width() const { return width_; }
 
     /**
      * @brief height of first plane
-     * 
-     * @return int 
+     *
+     * @return int
      */
     int height() const { return height_; }
 
     /**
      * @brief data type of the internal data
-     * 
-     * @return ScalarType 
+     *
+     * @return ScalarType
      */
     ScalarType dtype() const { return plane(0).dtype(); }
 
     /**
-     * @brief 
-     * 
-     * @return Device 
+     * @brief
+     *
+     * @return Device
      */
     const Device &device() const { return plane(0).device(); }
 
     /**
      * @brief number of planes
-     * 
-     * @return int64_t 
+     *
+     * @return int64_t
      */
     int64_t nplanes() const { return data_.size(); }
 
     /**
-     * @brief 
-     * 
-     * @param p 
-     * @return const Tensor& 
+     * @brief
+     *
+     * @param p
+     * @return const Tensor&
      */
-    const Tensor &plane(int64_t p) const  { return data_[p]; }
+    const Tensor &plane(int64_t p) const { return data_[p]; }
     Tensor &plane(int64_t p) { return data_[p]; }
 
     /**
-     * @brief return raw data pointer 
-     * 
-     * @param p 
-     * @return void* 
+     * @brief return raw data pointer
+     *
+     * @param p
+     * @return void*
      */
     void *plane_data(int64_t p) { return plane(p).unsafe_data(); }
     const void *plane_data(int64_t p) const { return plane(p).unsafe_data(); }
 
     /**
-     * @brief 
-     * 
-     * @return const TensorList& 
+     * @brief
+     *
+     * @return const TensorList&
      */
     const TensorList &data() const { return data_; }
     TensorList &data() { return data_; }
 
     /**
-     * @brief copy data to target device, if the data have already reside in target device,
+     * @brief copy data to target device, if the data have already reside in
+     * target device,
      *  shadow copy will be performed
-     * 
+     *
      * @param device target device
      * @param non_blocking if true, it will try copy data asynchronously
-     *                     otherwise, the lib will ensure the data is ready before return
+     *                     otherwise, the lib will ensure the data is ready
+     * before return
      * @return Frame
-     * 
+     *
      */
     Frame to(const Device &device, bool non_blocking = false) const;
 
     /**
-     * @brief 
-     * 
-     * @param device 
-     * @param non_blocking 
-     * @return Frame 
+     * @brief
+     *
+     * @param device
+     * @param non_blocking
+     * @return Frame
      */
     Frame to(DeviceType device, bool non_blocking = false) const;
 
     /**
      * @brief inplace copy
-     * 
-     * @param from 
-     * @return Frame& 
+     *
+     * @param from
+     * @return Frame&
      */
     Frame &copy_(const Frame &from);
 
     /**
      * @brief clone current frame(deep copy)
-     * 
-     * @return Frame 
+     *
+     * @return Frame
      */
     Frame clone() const;
 
     /**
      * @brief select the region(ROI)
-     * 
-     * @param left 
-     * @param top 
-     * @param width 
-     * @param height 
-     * @return Frame 
+     *
+     * @param left
+     * @param top
+     * @param width
+     * @param height
+     * @return Frame
      */
     Frame crop(int left, int top, int width, int height) const;
 
     /**
      * @brief convert Frame format
-     * 
+     *
      * @param &pix_info
-     * @return Frame 
+     * @return Frame
      */
     Frame reformat(const PixelInfo &pix_info);
 
-private:
+  private:
     int width_, height_;
     PixelFormatDesc pix_desc_;
     PixelInfo pix_info_;
     TensorList data_;
 };
 
-
 HMP_API std::string stringfy(const Frame &frame);
 
-} //namespace hmp
-
+} // namespace hmp

@@ -15,32 +15,28 @@
  */
 #pragma once
 
-//FIXME: do not include this file in header files
+// FIXME: do not include this file in header files
 
 #include <fmt/format.h>
 
-namespace hmp{
+namespace hmp {
 
-template<typename T>
-void stringfy(const T&);
+template <typename T> void stringfy(const T &);
 
-template<typename T>
-struct hasStringfy{
+template <typename T> struct hasStringfy {
     using ret_type = decltype(hmp::stringfy(std::declval<T>()));
     static constexpr bool value = !std::is_same<ret_type, void>::value;
 };
 
-} //namespace hmp
+} // namespace hmp
 
-
-template<typename T, typename Char>
-struct fmt::formatter<T, Char, fmt::enable_if_t<hmp::hasStringfy<T>::value>>  {
-    template<typename ParseContext>
-    constexpr auto parse(ParseContext& ctx){
+template <typename T, typename Char>
+struct fmt::formatter<T, Char, fmt::enable_if_t<hmp::hasStringfy<T>::value>> {
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
         return ctx.begin();
     }
 
-    auto format(const T& c, fmt::format_context& ctx) {
+    auto format(const T &c, fmt::format_context &ctx) {
         return fmt::format_to(ctx.out(), "{}", hmp::stringfy(c));
-  }
+    }
 };

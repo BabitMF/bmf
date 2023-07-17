@@ -5,15 +5,13 @@
 
 USE_BMF_SDK_NS
 
-class NormalImageInfo : public Module
-{
-public:
-    NormalImageInfo(Option option) : Module(option) { }
+class NormalImageInfo : public Module {
+  public:
+    NormalImageInfo(Option option) : Module(option) {}
 
-    ~NormalImageInfo() { }
+    ~NormalImageInfo() {}
 
     virtual void process(Task &task);
 };
 
 #endif
-

@@ -16,20 +16,20 @@
 #include <hmp/cuda/macros.h>
 #include <hmp/core/stream.h>
 
-namespace hmp{
-namespace cuda{
+namespace hmp {
+namespace cuda {
 
-class HMP_API Event
-{
+class HMP_API Event {
     void *event_;
     unsigned flags_;
     bool is_created_;
     int device_index_;
-public:
-    Event(const Event&) = delete;
+
+  public:
+    Event(const Event &) = delete;
     Event();
     Event(Event &&other);
-    Event(bool enable_timing, bool blocking=true, bool interprocess = false);
+    Event(bool enable_timing, bool blocking = true, bool interprocess = false);
     ~Event();
 
     bool is_created() const { return is_created_; }
@@ -41,7 +41,5 @@ public:
 
     float elapsed(const Event &other);
 };
-
-
-
-}}; //namespace hmp::cuda
+}
+}; // namespace hmp::cuda

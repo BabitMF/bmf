@@ -17,14 +17,15 @@
 #include <hmp/tensor.h>
 #include <kernel/dispatch_stub.h>
 
-namespace hmp{
-namespace kernel{
+namespace hmp {
+namespace kernel {
 
-HMP_DECLARE_DISPATCH_STUB(fill_stub, Tensor&(*)(Tensor &, const Scalar&))
-HMP_DECLARE_DISPATCH_STUB(copy_stub, Tensor&(*)(Tensor&, const Tensor&))
-HMP_DECLARE_DISPATCH_STUB(arange_stub, Tensor&(*)(Tensor&, int64_t, int64_t, int64_t))
+HMP_DECLARE_DISPATCH_STUB(fill_stub, Tensor &(*)(Tensor &, const Scalar &))
+HMP_DECLARE_DISPATCH_STUB(copy_stub, Tensor &(*)(Tensor &, const Tensor &))
+HMP_DECLARE_DISPATCH_STUB(arange_stub,
+                          Tensor &(*)(Tensor &, int64_t, int64_t, int64_t))
 
 Tensor empty(const SizeArray &shape, const TensorOptions &options);
-Tensor& copy(Tensor &self, const Tensor &other);
-
-}} //namespace
+Tensor &copy(Tensor &self, const Tensor &other);
+}
+} // namespace

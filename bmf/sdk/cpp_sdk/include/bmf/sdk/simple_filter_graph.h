@@ -17,12 +17,12 @@
 #ifndef SIMPLE_FILTER_GRAPH
 #define SIMPLE_FILTER_GRAPH
 
-#include<string>
-#include<vector>
+#include <string>
+#include <vector>
 #include <bmf/sdk/common.h>
 #include <bmf/sdk/log.h>
 #include <bmf/sdk/filter_graph.h>
-#include<map>
+#include <map>
 #include <memory>
 
 extern "C" {
@@ -49,8 +49,8 @@ BEGIN_BMF_SDK_NS
 class FilterGraph;
 
 class SimpleFilterGraph {
-public:
-    int init(AVFrame *frame,std::string desc) {
+  public:
+    int init(AVFrame *frame, std::string desc) {
         filter_graph_ = std::make_shared<FilterGraph>();
         FilterConfig fg_config;
         std::map<int, FilterConfig> in_cfgs;
@@ -59,23 +59,24 @@ public:
         fg_config.height = frame->height;
         fg_config.format = frame->format;
         fg_config.sample_aspect_ratio = frame->sample_aspect_ratio;
-        //get frame rate
+        // get frame rate
         if (frame->metadata) {
             AVDictionaryEntry *tag = NULL;
-            while ((tag = av_dict_get(frame->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
+            while ((tag = av_dict_get(frame->metadata, "", tag,
+                                      AV_DICT_IGNORE_SUFFIX))) {
                 if (!strcmp(tag->key, "frame_rate")) {
                     std::string svalue = tag->value;
                     int pos = svalue.find(",");
                     if (pos > 0) {
-                    AVRational frame_rate;
-                    frame_rate.num = stoi(svalue.substr(0, pos));
-                    frame_rate.den = stoi(svalue.substr(pos + 1));
-                    fg_config.frame_rate = frame_rate;
+                        AVRational frame_rate;
+                        frame_rate.num = stoi(svalue.substr(0, pos));
+                        frame_rate.den = stoi(svalue.substr(pos + 1));
+                        fg_config.frame_rate = frame_rate;
                     }
                 }
                 if (!strcmp(tag->key, "time_base")) {
                     std::string svalue = tag->value;
-                    int pos = svalue.find(",");//"num,den"
+                    int pos = svalue.find(","); //"num,den"
                     if (pos > 0) {
                         AVRational r;
                         r.num = stoi(svalue.substr(0, pos));
@@ -89,8 +90,8 @@ public:
         filter_graph_->config_graph(desc, in_cfgs, out_cfgs);
         return 0;
     };
-    int get_filter_frame(AVFrame *frame,std::vector<AVFrame*>& frame_list) {
-        AVFrame* av_frame=av_frame_clone(frame);
+    int get_filter_frame(AVFrame *frame, std::vector<AVFrame *> &frame_list) {
+        AVFrame *av_frame = av_frame_clone(frame);
         filter_graph_->get_filter_frame(av_frame, 0, 0, frame_list);
         av_frame_free(&av_frame);
         return 0;
@@ -98,6 +99,5 @@ public:
     std::shared_ptr<FilterGraph> filter_graph_;
 };
 
-
 END_BMF_SDK_NS
-#endif //SIMPLE_FILTER_GRAPH
+#endif // SIMPLE_FILTER_GRAPH

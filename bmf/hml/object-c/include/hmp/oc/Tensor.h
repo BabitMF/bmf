@@ -21,75 +21,87 @@
 #import <hmp/oc/ScalarType.h>
 #import <hmp/oc/Device.h>
 
-@interface HmpTensor: NSObject{
-@protected
+@interface HmpTensor : NSObject {
+  @protected
     void *_impl;
     bool _own;
 }
 
-+ (instancetype) empty: (NSMutableArray*) shape DType:(HmpScalarType) dtype Device:(NSString *)device Pinned: (bool) pinned_memory;
-+ (instancetype) fromfile: (NSString*) fn : (HmpScalarType) dtype : (int64_t) count : (int64_t) offset;
-+ (instancetype) from_buffer: (void*) data : (NSMutableArray*) shape : (HmpScalarType) dtype : (NSString*) device : (NSMutableArray*) strides;
++ (instancetype)empty:(NSMutableArray *)shape
+                DType:(HmpScalarType)dtype
+               Device:(NSString *)device
+               Pinned:(bool)pinned_memory;
++ (instancetype)fromfile:(NSString *)
+                      fn:(HmpScalarType)
+                   dtype:(int64_t)
+                   count:(int64_t)offset;
++ (instancetype)from_buffer:(void *)
+                       data:(NSMutableArray *)
+                      shape:(HmpScalarType)
+                      dtype:(NSString *)
+                     device:(NSMutableArray *)strides;
 
-- (instancetype) initFromPtr: (void*) ptr : (bool) own;
+- (instancetype)initFromPtr:(void *)ptr:(bool)own;
 
-- (void*)ptr;
+- (void *)ptr;
 
-- (void) dealloc;
+- (void)dealloc;
 
-- (NSString*) description;
+- (NSString *)description;
 
-- (HmpTensor*) clone;
+- (HmpTensor *)clone;
 
-- (HmpTensor*) alias;
+- (HmpTensor *)alias;
 
-- (HmpTensor*) view: (NSMutableArray*) shape;
+- (HmpTensor *)view:(NSMutableArray *)shape;
 
-- (HmpTensor*) as_strided: (NSMutableArray*) shape : (NSMutableArray*) strides : (int64_t) offset;
+- (HmpTensor *)as_strided:(NSMutableArray *)
+                    shape:(NSMutableArray *)
+                  strides:(int64_t)offset;
 
-- (HmpTensor*) permute: (NSMutableArray*) dims;
+- (HmpTensor *)permute:(NSMutableArray *)dims;
 
-- (HmpTensor*) slice: (int64_t) dim : (int64_t) start : (int64_t) end : (int64_t) step;
+- (HmpTensor *)slice:(int64_t)dim:(int64_t)start:(int64_t)end:(int64_t)step;
 
-- (HmpTensor*) select: (int64_t) dim : (int64_t) index;
+- (HmpTensor *)select:(int64_t)dim:(int64_t)index;
 
-- (HmpTensor*) reshape : (NSMutableArray*) shape;
+- (HmpTensor *)reshape:(NSMutableArray *)shape;
 
-- (bool) defined;
+- (bool)defined;
 
-- (HmpDeviceType) device_type;
+- (HmpDeviceType)device_type;
 
-- (int64_t) device_index;
+- (int64_t)device_index;
 
-- (HmpScalarType) dtype;
+- (HmpScalarType)dtype;
 
-- (NSMutableArray*) shape;
+- (NSMutableArray *)shape;
 
-- (NSMutableArray*) strides;
+- (NSMutableArray *)strides;
 
-- (int64_t) dim;
+- (int64_t)dim;
 
-- (int64_t) size: (int64_t) dim;
+- (int64_t)size:(int64_t)dim;
 
-- (int64_t) stride: (int64_t) dim;
+- (int64_t)stride:(int64_t)dim;
 
-- (int64_t) nbytes;
+- (int64_t)nbytes;
 
-- (int64_t) itemsize;
+- (int64_t)itemsize;
 
-- (int64_t) nitems;
+- (int64_t)nitems;
 
-- (bool) is_contiguous;
+- (bool)is_contiguous;
 
-- (void*) unsafe_data;
+- (void *)unsafe_data;
 
-- (HmpTensor*) fill_ : (HmpScalar*) value;
+- (HmpTensor *)fill_:(HmpScalar *)value;
 
-- (HmpTensor*) copy_ : (HmpTensor*) src;
+- (HmpTensor *)copy_:(HmpTensor *)src;
 
-- (HmpTensor*) contiguous;
+- (HmpTensor *)contiguous;
 
-- (void) tofile : (NSString*) fn;
+- (void)tofile:(NSString *)fn;
 
 @end
 

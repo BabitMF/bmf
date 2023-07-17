@@ -17,14 +17,12 @@
 
 #include <hmp/cuda/macros.h>
 
-namespace hmp{
-namespace cuda{
+namespace hmp {
+namespace cuda {
 
-class HMP_API DeviceProp
-{
-public:
+class HMP_API DeviceProp {
+  public:
     static int64_t texture_pitch_alignment();
 };
-
-
-}} //namespace hmp::cuda
+}
+} // namespace hmp::cuda

@@ -35,9 +35,8 @@ extern "C" {
 };
 
 #ifdef BMF_USE_MEDIACODEC
-extern "C" 
-{
-    #include "libavcodec/jni.h"
+extern "C" {
+#include "libavcodec/jni.h"
 }
 #include "c_android_vm.h"
 #endif
@@ -121,7 +120,7 @@ class CFFDecoder : public Module {
     int input_type_ = VIDEO_TYPE;
     bool next_file_ = false;
     bool has_input_ = false;
-    bool fg_inited_[2] = {false,false};
+    bool fg_inited_[2] = {false, false};
     std::vector<JsonParam> file_list_;
     bool task_done_ = false;
     std::map<int, FilterConfig> config_;
@@ -132,7 +131,7 @@ class CFFDecoder : public Module {
     AVDictionary *dec_opts_ = NULL;
     bool copy_ts_ = false;
 
-    //use when input is bmf_avpacket
+    // use when input is bmf_avpacket
     bool packets_handle_all_ = false;
     bool valid_packet_flag_ = false;
     std::condition_variable process_var_;
@@ -156,7 +155,7 @@ class CFFDecoder : public Module {
     int64_t cut_off_time_;
     int64_t cut_off_interval_;
     bool stream_copy_av_stream_flag_[2];
-    float max_error_rate_ = 2.0/3;
+    float max_error_rate_ = 2.0 / 3;
     int64_t decode_error_[2] = {0};
     int64_t stream_frame_number_ = 0;
 
@@ -165,7 +164,7 @@ class CFFDecoder : public Module {
     int max_limit_hits_ = -1;
     std::mutex mutex_;
 
-    //for raw stream input
+    // for raw stream input
     int push_raw_stream_;
     int push_audio_channels_;
     int push_audio_sample_rate_;
@@ -177,9 +176,10 @@ class CFFDecoder : public Module {
 
     int process_input_bmf_av_packet(Task &task);
     int mv_task_data(Task &dst_task);
-    int start_decode(std::vector<int> input_index, std::vector<int> output_index);
-    int codec_context(int *stream_idx,
-                      AVCodecContext **dec_ctx, AVFormatContext *fmt_ctx, enum AVMediaType type);
+    int start_decode(std::vector<int> input_index,
+                     std::vector<int> output_index);
+    int codec_context(int *stream_idx, AVCodecContext **dec_ctx,
+                      AVFormatContext *fmt_ctx, enum AVMediaType type);
 
     int init_input(AVDictionary *);
 
@@ -187,19 +187,20 @@ class CFFDecoder : public Module {
 
     bool check_valid_packet(AVPacket *pkt, Task &task);
 
-    int handle_output_data(Task &task, int type, AVPacket *pkt, bool eof, bool repeat, int got_output);
+    int handle_output_data(Task &task, int type, AVPacket *pkt, bool eof,
+                           bool repeat, int got_output);
 
     Packet generate_video_packet(AVFrame *frame);
     Packet generate_audio_packet(AVFrame *frame);
     int process_task_output_packet(int index, Packet &packet);
     int64_t get_start_time();
-    int extract_frames(AVFrame *frame, std::vector<AVFrame*> &output_frames);
+    int extract_frames(AVFrame *frame, std::vector<AVFrame *> &output_frames);
 
 #ifdef BMF_USE_MEDIACODEC
     int init_android_vm();
 #endif
 
-public:
+  public:
     CFFDecoder(int node_id, JsonParam option);
 
     ~CFFDecoder();
@@ -241,7 +242,8 @@ public:
 /** @addtogroup DecM
  * @{
  * This is a module capability discrption about BMF build-in decoder.
- * The module can be used by BMF API such as bmf.decode() by providing json style "option" to config such as the 3rd parameter below:
+ * The module can be used by BMF API such as bmf.decode() by providing json
+ style "option" to config such as the 3rd parameter below:
  * @code
             bmf.decode(
                 {'input_path': input_video_path}
@@ -252,4 +254,4 @@ public:
  * @}
  */
 
-#endif //BMF_FF_DECODER_H
+#endif // BMF_FF_DECODER_H

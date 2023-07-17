@@ -21,17 +21,17 @@
 #include <cstdint>
 
 BEGIN_BMF_SDK_NS
-    struct BMF_API Rational {
-        Rational() {}
+struct BMF_API Rational {
+    Rational() {}
 
-        Rational(int n, int d) {
-            num = n;
-            den = d;
-        }
+    Rational(int n, int d) {
+        num = n;
+        den = d;
+    }
 
-        int num = -1; ///< Numerator
-        int den = -1; ///< Denominator
-    };
+    int num = -1; ///< Numerator
+    int den = -1; ///< Denominator
+};
 END_BMF_SDK_NS
 
-#endif //BMF_RATIONAL_H
+#endif // BMF_RATIONAL_H

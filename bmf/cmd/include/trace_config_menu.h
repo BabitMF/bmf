@@ -4,9 +4,9 @@
 #include "menu.h"
 
 class TraceMenu : public Menu {
-public:
+  public:
     TraceMenu(std::string text) : Menu(text) {}
-    TraceMenu& SetTraceSelection() {
+    TraceMenu &SetTraceSelection() {
         callback = [this]() {
             std::string state;
             for (int i : selected_options) {
@@ -18,7 +18,7 @@ public:
                     state += "export BMF_TRACE=";
                 else
                     state += ",";
-                
+
                 state += this->options[i].title;
             }
             if (state.empty())
@@ -28,19 +28,19 @@ public:
         };
         return *this;
     }
-    TraceMenu& SetPrintDisable() {
+    TraceMenu &SetPrintDisable() {
         callback = [this]() {
             config["trace_print"] = "export BMF_TRACE_PRINTING=DISABLE";
         };
         return *this;
     }
-    TraceMenu& SetTracelogDisable() {
+    TraceMenu &SetTracelogDisable() {
         callback = [this]() {
             config["trace_logging"] = "export BMF_TRACE_LOGGING=DISABLE";
         };
         return *this;
     }
-    TraceMenu& SetTraceConfigSave() {
+    TraceMenu &SetTraceConfigSave() {
         callback = [this]() {
             std::ofstream envfile("env.sh");
             envfile << "#!/bin/sh" << std::endl;
@@ -55,4 +55,4 @@ public:
     }
 };
 
-#endif //BMF_SUITE_TRACE_CONFIG_MENU_H
+#endif // BMF_SUITE_TRACE_CONFIG_MENU_H

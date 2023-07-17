@@ -12,11 +12,7 @@
 #include <algorithm>
 #include <functional>
 
-enum MenuNavMode {
-    NAV_NORMAL,
-    NAV_PEND_TERMINATE,
-    NAV_PEND_CONFIRM
-};
+enum MenuNavMode { NAV_NORMAL, NAV_PEND_TERMINATE, NAV_PEND_CONFIRM };
 
 enum MenuType {
     MENU_SINGLE,
@@ -27,13 +23,10 @@ enum MenuType {
     MENU_QUIT
 };
 
-enum MenuOptionTag {
-    TAG_NORMAL,
-    TAG_SELECT_ALL
-};
+enum MenuOptionTag { TAG_NORMAL, TAG_SELECT_ALL };
 
 class Menu {
-public:
+  public:
     std::string title;
     std::vector<std::string> pretext;
     std::vector<Menu> options;
@@ -42,25 +35,25 @@ public:
     MenuOptionTag option_tag = TAG_NORMAL;
     int cursor = 0;
     std::function<void()> callback = [this]() {};
-    Menu (std::string text) : title(text) {}
+    Menu(std::string text) : title(text) {}
     void clear_screen();
     void update_screen();
     void display();
     void next();
     void prev();
     bool select_option();
-    Menu& Text(std::string text);
-    Menu& SubMenu(Menu submenu);
-    Menu& Option(std::string text, MenuOptionTag tag = TAG_NORMAL);
-    Menu& Back(std::string text = "返回上一页");
+    Menu &Text(std::string text);
+    Menu &SubMenu(Menu submenu);
+    Menu &Option(std::string text, MenuOptionTag tag = TAG_NORMAL);
+    Menu &Back(std::string text = "返回上一页");
     Menu CreateQuitMenu();
-    Menu& Quit();
-    Menu& Confirmation();
-    Menu& get_selected_menu();
-    Menu& Acceptance(std::function<void()> cb);
+    Menu &Quit();
+    Menu &Confirmation();
+    Menu &get_selected_menu();
+    Menu &Acceptance(std::function<void()> cb);
 };
 
 static std::map<std::string, std::string> config;
 static std::set<int> selected_options;
 
-#endif //BMF_SUITE_MENU_H
+#endif // BMF_SUITE_MENU_H

@@ -22,14 +22,13 @@
 #include <omp.h>
 #endif
 
-namespace hmp{
-namespace kernel{
+namespace hmp {
+namespace kernel {
 
-template<typename F>
-inline void parallel_for(int64_t begin, int64_t end, int64_t step, const F &f)
-{
+template <typename F>
+inline void parallel_for(int64_t begin, int64_t end, int64_t step, const F &f) {
     HMP_REQUIRE(step >= 0, "parallel_for: invalid step {}", step);
-    if(begin >= end){
+    if (begin >= end) {
         return;
     }
 
@@ -38,40 +37,34 @@ inline void parallel_for(int64_t begin, int64_t end, int64_t step, const F &f)
     std::exception_ptr eptr;
     //
     int64_t num_threads = omp_in_parallel() ? 1 : omp_get_max_threads();
-    if(step > 0){
+    if (step > 0) {
         num_threads = std::min(num_threads, divup((end - begin), step));
     }
 
-    #pragma omp parallel num_threads(num_threads)
+#pragma omp parallel num_threads(num_threads)
     {
         int64_t num_threads = omp_get_num_threads();
         int64_t tid = omp_get_thread_num();
         int64_t chunk_size = divup((end - begin), num_threads);
         int64_t begin_tid = begin + tid * chunk_size;
-        if(begin_tid < end){
-            try{
+        if (begin_tid < end) {
+            try {
                 f(begin_tid, std::min(end, begin_tid + chunk_size));
-            }
-            catch(...){
-                if(!err_flag.test_and_set()){
+            } catch (...) {
+                if (!err_flag.test_and_set()) {
                     eptr = std::current_exception();
                 }
             }
         }
     }
 
-    if(eptr){
+    if (eptr) {
         std::rethrow_exception(eptr);
     }
 
 #else
     f(begin, end);
 #endif
-
-
-
-
 }
-
-
-}} // hmp::kernel
+}
+} // hmp::kernel

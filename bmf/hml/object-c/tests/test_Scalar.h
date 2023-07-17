@@ -16,5 +16,5 @@
 #import <Foundation/Foundation.h>
 
 @interface BmfScalarTests : NSObject
-- (int) testAll;
+- (int)testAll;
 @end

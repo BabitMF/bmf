@@ -20,25 +20,36 @@
 #include <fmt/format.h>
 #include <hmp/core/macros.h>
 
-namespace hmp{
+namespace hmp {
 
 #define HMP_FMT(...) ::fmt::format(__VA_ARGS__)
-#define HMP_INF(...) ::hmp::logging::_log(::hmp::logging::Level::info, "HMP", HMP_FMT(__VA_ARGS__).c_str())
-#define HMP_WRN(...) ::hmp::logging::_log(::hmp::logging::Level::warn, "HMP", HMP_FMT(__VA_ARGS__).c_str())
-#define HMP_DBG(...) ::hmp::logging::_log(::hmp::logging::Level::debug, "HMP", HMP_FMT(__VA_ARGS__).c_str())
-#define HMP_ERR(...) ::hmp::logging::_log(::hmp::logging::Level::err, "HMP", HMP_FMT(__VA_ARGS__).c_str())
-#define HMP_FTL(...) ::hmp::logging::_log(::hmp::logging::Level::fatal, "HMP", HMP_FMT(__VA_ARGS__).c_str())
+#define HMP_INF(...)                                                           \
+    ::hmp::logging::_log(::hmp::logging::Level::info, "HMP",                   \
+                         HMP_FMT(__VA_ARGS__).c_str())
+#define HMP_WRN(...)                                                           \
+    ::hmp::logging::_log(::hmp::logging::Level::warn, "HMP",                   \
+                         HMP_FMT(__VA_ARGS__).c_str())
+#define HMP_DBG(...)                                                           \
+    ::hmp::logging::_log(::hmp::logging::Level::debug, "HMP",                  \
+                         HMP_FMT(__VA_ARGS__).c_str())
+#define HMP_ERR(...)                                                           \
+    ::hmp::logging::_log(::hmp::logging::Level::err, "HMP",                    \
+                         HMP_FMT(__VA_ARGS__).c_str())
+#define HMP_FTL(...)                                                           \
+    ::hmp::logging::_log(::hmp::logging::Level::fatal, "HMP",                  \
+                         HMP_FMT(__VA_ARGS__).c_str())
 
-#define HMP_REQUIRE(exp, fmt, ...)  \
-    if(!(exp)) {\
-        ::hmp::logging::dump_stack_trace(); \
-        throw std::runtime_error(\
-            HMP_FMT("require " #exp " at {}:{}, " fmt, __FILE__, __LINE__, ##__VA_ARGS__)); \
+#define HMP_REQUIRE(exp, fmt, ...)                                             \
+    if (!(exp)) {                                                              \
+        ::hmp::logging::dump_stack_trace();                                    \
+        throw std::runtime_error(HMP_FMT("require " #exp " at {}:{}, " fmt,    \
+                                         __FILE__, __LINE__, ##__VA_ARGS__));  \
     }
 
-#define HMP_SLOG_IF(condition, level, tag) \
-        !(condition) ? (void) 0 : hmp::logging::LogMessageVoidify() \
-        & hmp::logging::StreamLogger(level, tag).stream()
+#define HMP_SLOG_IF(condition, level, tag)                                     \
+    !(condition) ? (void)0                                                     \
+                 : hmp::logging::LogMessageVoidify() &                         \
+                       hmp::logging::StreamLogger(level, tag).stream()
 
 #define HMP_SLOG_INF(tag) HMP_SLOG_IF(true, ::hmp::logging::Level::info, tag)
 #define HMP_SLOG_WRN(tag) HMP_SLOG_IF(true, ::hmp::logging::Level::warn, tag)
@@ -46,12 +57,11 @@ namespace hmp{
 #define HMP_SLOG_ERR(tag) HMP_SLOG_IF(true, ::hmp::logging::Level::err, tag)
 #define HMP_SLOG_FTL(tag) HMP_SLOG_IF(true, ::hmp::logging::Level::fatal, tag)
 
-
-namespace logging{
+namespace logging {
 
 struct Level {
-    //map from spdlog::level
-    enum{
+    // map from spdlog::level
+    enum {
         trace = 0,
         debug = 1,
         info = 2,
@@ -63,47 +73,38 @@ struct Level {
     };
 };
 
-
-HMP_API void _log(int level, const char* tag, const char *msg);
+HMP_API void _log(int level, const char *tag, const char *msg);
 
 HMP_API void set_level(int level);
 HMP_API void set_format(const std::string &fmt);
 HMP_API void dump_stack_trace(int max = 128);
 
- 
 class HMP_API LogMessageVoidify {
- public:
-  LogMessageVoidify() {
-
-   }
-  // This has to be an operator with a precedence lower than << but
-  // higher than ?:
-  template<typename T>
-  void operator&(T&) {
-
-   }
+  public:
+    LogMessageVoidify() {}
+    // This has to be an operator with a precedence lower than << but
+    // higher than ?:
+    template <typename T> void operator&(T &) {}
 };
 
-
-class HMP_API StreamLogger
-{
-public:
-    struct OStream{
-        virtual OStream& operator<<(const std::string &msg) = 0;
+class HMP_API StreamLogger {
+  public:
+    struct OStream {
+        virtual OStream &operator<<(const std::string &msg) = 0;
         virtual ~OStream() {}
 
         // const char*
-        OStream& operator<<(const char *v)
-        {
+        OStream &operator<<(const char *v) {
             *this << std::string(v);
             return *this;
         }
 
-        //Numbers
-        template<typename T>
-        typename std::enable_if<std::is_integral<T>::value || std::is_floating_point<T>::value, OStream&>::type
-        operator<<(const T &v)
-        {
+        // Numbers
+        template <typename T>
+        typename std::enable_if<std::is_integral<T>::value ||
+                                    std::is_floating_point<T>::value,
+                                OStream &>::type
+        operator<<(const T &v) {
             *this << std::to_string(v);
             return *this;
         }
@@ -116,10 +117,7 @@ public:
         typedef CoutType &(*StandardEndLine)(CoutType &);
 
         // define an operator<< to take in std::endl
-        OStream& operator<<(StandardEndLine manip)
-        {
-            return *this;
-        }
+        OStream &operator<<(StandardEndLine manip) { return *this; }
     };
 
     StreamLogger() = delete;
@@ -128,15 +126,13 @@ public:
 
     ~StreamLogger();
 
-    OStream& stream();
+    OStream &stream();
 
-private:
+  private:
     OStream *os_;
     int level_;
     const char *tag_;
 };
 
-
-} //namespace logging
-} //namespace hmp
-
+} // namespace logging
+} // namespace hmp

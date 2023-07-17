@@ -32,20 +32,21 @@ extern "C" {
 #include <libavutil/audio_fifo.h>
 };
 
-#define VSYNC_AUTO       -1
+#define VSYNC_AUTO -1
 #define VSYNC_PASSTHROUGH 0
-#define VSYNC_CFR         1
-#define VSYNC_VFR         2
-#define VSYNC_VSCFR       0xfe
-#define VSYNC_DROP        0xff
+#define VSYNC_CFR 1
+#define VSYNC_VFR 2
+#define VSYNC_VSCFR 0xfe
+#define VSYNC_DROP 0xff
 
 class VideoSync {
-public:
-    int64_t sync_opts_ = 0;// output frame pts
+  public:
+    int64_t sync_opts_ = 0; // output frame pts
     AVRational input_stream_time_base_;
     AVRational filter_in_frame_rate_;
     AVRational video_frame_rate_;
-    AVRational encode_time_base_;//encode time_base should be the same with frame rate
+    AVRational encode_time_base_; // encode time_base should be the same with
+                                  // frame rate
     int sync_method_;
     AVFrame *last_frame_ = NULL;
     int last_nb0_frames_[3];
@@ -58,10 +59,16 @@ public:
     int nb_frames_drop_ = 0;
     int nb_frames_dup_ = 0;
     unsigned int dup_warning_ = 1000;
-public:
-    VideoSync(AVRational input_stream_time_base, AVRational encode_time_base, AVRational filter_in_frame_rate, AVRational video_frame_rate, int64_t stream_start_time, int64_t stream_first_dts, int sync_method, int64_t max_frames, int64_t min_frames = 0);
+
+  public:
+    VideoSync(AVRational input_stream_time_base, AVRational encode_time_base,
+              AVRational filter_in_frame_rate, AVRational video_frame_rate,
+              int64_t stream_start_time, int64_t stream_first_dts,
+              int sync_method, int64_t max_frames, int64_t min_frames = 0);
     ~VideoSync();
-    int process_video_frame(AVFrame *frame, std::vector<AVFrame *> &output_frame, int64_t &frame_number);
+    int process_video_frame(AVFrame *frame,
+                            std::vector<AVFrame *> &output_frame,
+                            int64_t &frame_number);
 };
 
-#endif //C_MODULES_VIDEO_SYNC_VFR_H
+#endif // C_MODULES_VIDEO_SYNC_VFR_H

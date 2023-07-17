@@ -26,32 +26,33 @@
 
 BEGIN_BMF_SDK_NS
 
-    class BMF_API LogBuffer {
-    public:
-        static void set_av_log_callback();
-        static void register_av_log_set_callback(void *func);
+class BMF_API LogBuffer {
+  public:
+    static void set_av_log_callback();
+    static void register_av_log_set_callback(void *func);
 
-        LogBuffer(std::vector<std::string> &log_buffer);
+    LogBuffer(std::vector<std::string> &log_buffer);
 
-        LogBuffer(std::function<void(std::string const)> log_callback, std::string level);
+    LogBuffer(std::function<void(std::string const)> log_callback,
+              std::string level);
 
-        ~LogBuffer();
+    ~LogBuffer();
 
-        void close();
+    void close();
 
-        static bool avlog_cb_set();
+    static bool avlog_cb_set();
 
-        static int infer_level(const std::string &level_name);
+    static int infer_level(const std::string &level_name);
 
-    private:
-        static int set_cb_hook(std::function<void(std::string const)> cb);
+  private:
+    static int set_cb_hook(std::function<void(std::string const)> cb);
 
-        static void remove_cb_hook(int idx);
+    static void remove_cb_hook(int idx);
 
-        static void lb_callback(void *ptr, int level, char const *fme, va_list vl);
+    static void lb_callback(void *ptr, int level, char const *fme, va_list vl);
 
-        int hook_idx;
-    };
+    int hook_idx;
+};
 
 END_BMF_SDK_NS
-#endif //BMF_LOG_BUFFER_H
+#endif // BMF_LOG_BUFFER_H

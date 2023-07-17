@@ -19,31 +19,29 @@
 #import <Foundation/Foundation.h>
 #import <hmp/oc/Device.h>
 
-
-@interface HmpStream: NSObject{
-@protected
+@interface HmpStream : NSObject {
+  @protected
     void *_impl;
     bool _own;
 }
 
-+ (instancetype) create: (HmpDeviceType) device_type Flags: (uint64_t) flags;
-+ (instancetype) current: (HmpDeviceType) device_type;
-+ (void) set_current: (HmpStream*) stream;
++ (instancetype)create:(HmpDeviceType)device_type Flags:(uint64_t)flags;
++ (instancetype)current:(HmpDeviceType)device_type;
++ (void)set_current:(HmpStream *)stream;
 
-- (instancetype) initFromPtr: (void*) ptr : (bool) own;
+- (instancetype)initFromPtr:(void *)ptr:(bool)own;
 
-- (void*)ptr;
+- (void *)ptr;
 
-- (void) dealloc;
+- (void)dealloc;
 
-- (bool) isEqual: (HmpStream*) stream;
+- (bool)isEqual:(HmpStream *)stream;
 
-- (bool) query;
+- (bool)query;
 
-- (void) synchronize;
+- (void)synchronize;
 
-- (HmpDevice*) device;
-
+- (HmpDevice *)device;
 
 @end
 

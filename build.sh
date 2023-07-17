@@ -54,12 +54,16 @@ fi
 
 mkdir -p output
 
-git submodule update --init --recursive
+git submodule init
+git submodule update
+
 (cd 3rd_party/dlpack && cmake . && make && make install && cd -)
+
 if [ ! -d "3rd_party/breakpad" ]
 then
     cd 3rd_party/
-    tar xvf 3rd_party.tar.gz
+    wget https://github.com/BabitMF/bmf/releases/download/files/breakpad.tar.xz
+    tar xvf breakpad.tar.xz
     cd -
 fi
 

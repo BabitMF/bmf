@@ -545,6 +545,7 @@ static AVFrame* to_video_frame(const Frame &frame,
         (frame.pix_desc().dtype() == frame.dtype()), "to_video_frame: invalid dtype of Frame");
     HMP_REQUIRE(!avf_ref || is_video_frame(avf_ref), "to_video_frame: AVFrame contains no video data");
 
+#ifdef HMP_ENABLE_CUDA
     if (frame.device().type() == kCUDA && (!avf_ref || (avf_ref && !avf_ref->hw_frames_ctx))) {
         HMP_REQUIRE(frame.pix_info().format() == hmp::PF_NV12, "cuda hardware encode need NV12 frame");
         auto nv12 = bmf_sdk::PixelInfo(hmp::PF_NV12, hmp::CS_BT709);
@@ -556,6 +557,7 @@ static AVFrame* to_video_frame(const Frame &frame,
                               frame.width(), frame.width(), frame.height() / 2);
         return hw_frm;
     }
+#endif
 
     if(hw_frames_ctx){
         auto avf_device = av_hw_frames_ctx_to_device(hw_frames_ctx);

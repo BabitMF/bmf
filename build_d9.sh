@@ -29,7 +29,7 @@ BUILD_TYPE="Release"
 COVERAGE_OPTION=0
 
 # Handle options
-if [ $# > 0 ]
+if [ $# -gt 0 ]
 then
     # Clean up
     if [ "$1" = "clean" ]

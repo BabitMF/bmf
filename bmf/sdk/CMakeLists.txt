@@ -13,12 +13,12 @@ if(BMF_ENABLE_MOBILE)
 endif()
 
 if(IOS)
-add_library(bmf_module_sdk 
-    STATIC 
+add_library(bmf_module_sdk
+    STATIC
     ${CPP_SRCS} ${CPP_HDRS}
 )
-else() 
-add_library(bmf_module_sdk 
+else()
+add_library(bmf_module_sdk
     ${CPP_SRCS} ${CPP_HDRS}
 )
 endif()
@@ -36,13 +36,13 @@ target_include_directories(bmf_module_sdk
 
 target_link_libraries(bmf_module_sdk
     PUBLIC
-    ${BMF_STD_DEPS}  
+    ${BMF_STD_DEPS}
      hmp nlohmann
 )
 
 if(NOT APPLE AND NOT ANDROID)
     set_target_properties(bmf_module_sdk PROPERTIES
-        VERSION "${BMF_VERSION_MAJOR}.${BMF_VERSION_MINOR}"
+	VERSION "${BMF_VERSION_MAJOR}.${BMF_VERSION_MINOR}.${BMF_VERSION_PATCH}"
     )
 endif()
 
@@ -64,14 +64,15 @@ endif()
 
 
 # tests
-file(GLOB TEST_SRCS cpp_sdk/test/*.cpp)
-add_executable(test_bmf_module_sdk ${TEST_SRCS})
+if(BMF_ENABLE_TEST)
+    file(GLOB TEST_SRCS cpp_sdk/test/*.cpp)
+    add_executable(test_bmf_module_sdk ${TEST_SRCS})
 
-target_link_libraries(test_bmf_module_sdk 
-    PRIVATE
-        ${BMF_FFMPEG_TARGETS} bmf_module_sdk
-        gtest
-)
+    target_link_libraries(test_bmf_module_sdk
+        PRIVATE
+            ${BMF_FFMPEG_TARGETS} bmf_module_sdk
+            gtest
+    )
 
 if(HMP_ENABLE_OPENCV)
     # need by ffmpeg for hwframe support
@@ -80,39 +81,46 @@ if(HMP_ENABLE_OPENCV)
 endif()
 
 
-if(BMF_ENABLE_CUDA)
-    # need by ffmpeg for hwframe support
-    target_link_libraries(test_bmf_module_sdk
-        PRIVATE cuda::cuda)
-endif()
+    if(BMF_ENABLE_CUDA)
+        # need by ffmpeg for hwframe support
+        target_link_libraries(test_bmf_module_sdk
+            PRIVATE cuda::cuda)
+    endif()
 
 
-target_link_libraries(test_bmf_module_sdk PRIVATE gtest_main)
+    target_link_libraries(test_bmf_module_sdk PRIVATE gtest_main)
 
-if ($ENV{SCRIPT_EXEC_MODE} MATCHES "osx")
-    # Mac platform
-    set_target_properties(test_bmf_module_sdk
-        PROPERTIES
-        INSTALL_RPATH "@loader_path/../lib;@loader_path"
+    if ($ENV{SCRIPT_EXEC_MODE} MATCHES "osx")
+        # Mac platform
+        set_target_properties(test_bmf_module_sdk
+            PROPERTIES
+            INSTALL_RPATH "@loader_path/../lib;@loader_path"
+        )
+
+        # Mac OSX excludes Python lib in linker to prevent embedding Python interpreter
+        target_include_directories(test_bmf_module_sdk PRIVATE ${Python_INCLUDE_DIRS})
+        set_target_properties(test_bmf_module_sdk PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    endif()
+
+    if(APPLE)
+        set_target_properties(test_bmf_module_sdk
+            PROPERTIES
+                MACOSX_BUNDLE_BUNDLE_NAME "com.bytedance.test_bmf_module_sdk"
+                MACOSX_BUNDLE_GUI_IDENTIFIER "com.bytedance.test-bmf-module-sdk"
+                MACOSX_BUNDLE_SHORT_VERSION_STRING ${BMF_BUILD_VERSION}
+                MACOSX_BUNDLE_BUNDLE_VERSION ${BMF_BUILD_VERSION}
+        )
+
+    endif()
+
+    install(TARGETS test_bmf_module_sdk
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
-
-    # Mac OSX excludes Python lib in linker to prevent embedding Python interpreter
-    target_include_directories(test_bmf_module_sdk PRIVATE ${Python_INCLUDE_DIRS})
-    set_target_properties(test_bmf_module_sdk PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 endif()
 
-if(APPLE)
-    set_target_properties(test_bmf_module_sdk
-        PROPERTIES
-            MACOSX_BUNDLE_BUNDLE_NAME "com.bytedance.test_bmf_module_sdk"
-            MACOSX_BUNDLE_GUI_IDENTIFIER "com.bytedance.test-bmf-module-sdk"
-            MACOSX_BUNDLE_SHORT_VERSION_STRING ${BMF_BUILD_VERSION}
-            MACOSX_BUNDLE_BUNDLE_VERSION ${BMF_BUILD_VERSION}
-    )
-
-endif()
-
-install(TARGETS bmf_module_sdk test_bmf_module_sdk
+install(TARGETS bmf_module_sdk
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}

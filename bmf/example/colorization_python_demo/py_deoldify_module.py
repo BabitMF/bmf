@@ -1,4 +1,3 @@
-
 import bmf
 import numpy as np
 from bmf import ProcessResult, Packet, Timestamp, VideoFrame
@@ -13,33 +12,38 @@ import warnings
 
 debug = False
 
+
 class py_deoldify_module(bmf.Module):
+
     def __init__(self, node, option=None):
         print(f'py_deoldify_module init ...')
         self.node_ = node
         self.option_ = option
         print(option)
-        warnings.filterwarnings("ignore", category=UserWarning, message=".*?Your .*? set is empty.*?")
-        
+        warnings.filterwarnings("ignore",
+                                category=UserWarning,
+                                message=".*?Your .*? set is empty.*?")
+
         #NOTE:  This must be the first call in order to work properly!
         #choices:  CPU, GPU0...GPU7
         device.set(device=DeviceId.GPU0)
 
         if not torch.cuda.is_available():
-            print('warning: GPU is not available, the computation is going to be very slow...')
+            print(
+                'warning: GPU is not available, the computation is going to be very slow...'
+            )
 
-        weight_path=Path('./DeOldify')
+        weight_path = Path('./DeOldify')
         if option and 'model_path' in option.keys():
             model_path = option['model_path']
             if not model_path:
                 print(f'model_path={model_path}')
-                weight_path=Path(model_path)
+                weight_path = Path(model_path)
 
         self.colorizer = get_stable_video_colorizer(weight_path)
         self.idx = 0
 
         print(f'py_deoldify_module init successfully...')
-
 
     def process(self, task):
         # iterate through all input queues to the module
@@ -52,14 +56,15 @@ class py_deoldify_module(bmf.Module):
             while not input_queue.empty():
                 # get the earliest packet from queue
                 packet = input_queue.get()
-                
+
                 # handle EOF
                 if packet.timestamp == Timestamp.EOF:
                     output_queue.put(Packet.generate_eof_packet())
                     task.timestamp = Timestamp.DONE
 
                 # process packet if not empty
-                if packet.timestamp != Timestamp.UNSET and packet.is_(VideoFrame):
+                if packet.timestamp != Timestamp.UNSET and packet.is_(
+                        VideoFrame):
 
                     vf = packet.get(VideoFrame)
                     rgb = mp.PixelInfo(mp.kPF_RGB24)
@@ -68,10 +73,13 @@ class py_deoldify_module(bmf.Module):
                     # numpy to PIL
                     image = Image.fromarray(np_vf.astype('uint8'), 'RGB')
 
-                    colored_image = self.colorizer.colorize_single_frame_from_image(image)
+                    colored_image = self.colorizer.colorize_single_frame_from_image(
+                        image)
 
                     if not colored_image:
-                        print(f'Fail to process the input image with idx = {idx}')
+                        print(
+                            f'Fail to process the input image with idx = {idx}'
+                        )
                         continue
 
                     if debug:
@@ -96,6 +104,5 @@ class py_deoldify_module(bmf.Module):
                     pkt.timestamp = out_frame.pts
 
                     output_queue.put(pkt)
-
 
         return ProcessResult.OK

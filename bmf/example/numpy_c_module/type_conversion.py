@@ -12,6 +12,7 @@ from fractions import Fraction
 
 
 class type_conversion(Module):
+
     def __init__(self, node=None, option=None):
         self.node_ = node
         self.option_ = option
@@ -64,8 +65,7 @@ class type_conversion(Module):
         # add eof packet to output
         if self.eof_received_:
             output_queue.put(Packet.generate_eof_packet())
-            Log.log_node(LogLevel.DEBUG, self.node_,
-                         'output stream', 'done')
+            Log.log_node(LogLevel.DEBUG, self.node_, 'output stream', 'done')
             task.set_timestamp(Timestamp.DONE)
 
         return ProcessResult.OK

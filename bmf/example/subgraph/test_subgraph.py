@@ -13,6 +13,7 @@ from base_test.media_info import MediaInfo
 
 
 class TestSubgraph(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_subgraph(self):
         input_video_path = "../files/big_bunny_10s_30fps.mp4"
@@ -31,11 +32,10 @@ class TestSubgraph(BaseTestCase):
         overlay = graph.decode({'input_path': input_over_lay_image})
 
         # call sub graph and encoder
-        (
-            bmf.module([video['video'], overlay['video']], 'subgraph_module')
-                .encode(video['audio'], {"output_path": output_path})
-                .run()
-        )
+        (bmf.module([video['video'], overlay['video']],
+                    'subgraph_module').encode(video['audio'], {
+                        "output_path": output_path
+                    }).run())
         self.check_video_diff(output_path, expect_result)
 
 

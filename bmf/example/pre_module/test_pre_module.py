@@ -11,23 +11,26 @@ from base_test.base_test_case import BaseTestCase
 from base_test.media_info import MediaInfo
 
 
-def create_node_test(module_name, option, input_video_path, output_path, pre_module=None):
-    (
-        bmf.graph({"dump_graph": 1})
-            .decode({'input_path': input_video_path})['video']
-            .scale(320, 240)
-            .module(module_name, option, pre_module=pre_module)
-            .encode(None, {
-            "output_path": output_path,
-            "video_params": {
-                "width": 300,
-                "height": 200,
-            }
-        }).run()
-    )
+def create_node_test(module_name,
+                     option,
+                     input_video_path,
+                     output_path,
+                     pre_module=None):
+    (bmf.graph({
+        "dump_graph": 1
+    }).decode({'input_path': input_video_path})['video'].scale(
+        320, 240).module(module_name, option, pre_module=pre_module).encode(
+            None, {
+                "output_path": output_path,
+                "video_params": {
+                    "width": 300,
+                    "height": 200,
+                }
+            }).run())
 
 
 class TestPreModule(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_pre_module(self):
         input_video_path = "../files/big_bunny_10s_30fps.mp4"
@@ -37,17 +40,18 @@ class TestPreModule(BaseTestCase):
         self.remove_result_data(output_path)
         # pre_allocate a module
         module_name = "analysis"
-        option = {
-            "name": "analysis_SR",
-            "para": "analysis_SR"
-        }
+        option = {"name": "analysis_SR", "para": "analysis_SR"}
         pre_module = bmf.create_module(module_name, option)
 
         # call init if necessary, otherwise we skip this step
         pre_module.init()
 
         for i in range(3):
-            create_node_test(module_name, option, input_video_path, output_path, pre_module=pre_module)
+            create_node_test(module_name,
+                             option,
+                             input_video_path,
+                             output_path,
+                             pre_module=pre_module)
             self.check_video_diff(output_path, expect_result)
             self.remove_result_data(output_path)
 

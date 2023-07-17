@@ -6,7 +6,9 @@ from bmf import *
 import bmf.hml.hmp as hmp
 import cv2, cvcuda
 
+
 class rotate_gpu(Module):
+
     def __get_algo(self, algo_str):
         return {
             'area': cvcuda.Interp.AREA,
@@ -14,7 +16,7 @@ class rotate_gpu(Module):
             'linear': cvcuda.Interp.LINEAR,
             'nearest': cvcuda.Interp.NEAREST
         }.get(algo_str, cvcuda.Interp.LINEAR)
-    
+
     def __get_rotation(self, option):
         self.angle_deg = 0
         # self.shift = None
@@ -39,16 +41,23 @@ class rotate_gpu(Module):
         self.eof_received_ = False
         self.__get_rotation(option)
 
-        self.i420info = hmp.PixelInfo(hmp.PixelFormat.kPF_YUV420P, hmp.ColorSpace.kCS_BT470BG, hmp.ColorRange.kCR_MPEG)
-        self.u420info = hmp.PixelInfo(hmp.PixelFormat.kPF_YUV420P10LE, hmp.ColorSpace.kCS_BT2020_CL, hmp.ColorRange.kCR_MPEG)
+        self.i420info = hmp.PixelInfo(hmp.PixelFormat.kPF_YUV420P,
+                                      hmp.ColorSpace.kCS_BT470BG,
+                                      hmp.ColorRange.kCR_MPEG)
+        self.u420info = hmp.PixelInfo(hmp.PixelFormat.kPF_YUV420P10LE,
+                                      hmp.ColorSpace.kCS_BT2020_CL,
+                                      hmp.ColorRange.kCR_MPEG)
         self.i420_out = None
-        self.pinfo_map = {hmp.PixelFormat.kPF_NV12: self.i420info,
-                          hmp.PixelFormat.kPF_P010LE: self.u420info}
-        anglet = hmp.ones((4,), dtype=hmp.kFloat64, device='cuda') * self.angle_deg
+        self.pinfo_map = {
+            hmp.PixelFormat.kPF_NV12: self.i420info,
+            hmp.PixelFormat.kPF_P010LE: self.u420info
+        }
+        anglet = hmp.ones(
+            (4, ), dtype=hmp.kFloat64, device='cuda') * self.angle_deg
         self.cvangle = cvcuda.as_tensor(anglet)
 
     def process(self, task):
-        
+
         # get input and output packet queue
         input_queue = task.get_inputs()[0]
         output_queue = task.get_outputs()[0]
@@ -67,32 +76,48 @@ class rotate_gpu(Module):
             if (in_frame.frame().device() == hmp.Device('cpu')):
                 in_frame = in_frame.cuda()
             tensor_list = in_frame.frame().data()
-            frame_out = hmp.Frame(in_frame.width, in_frame.height, in_frame.frame().pix_info(), device='cuda')
+            frame_out = hmp.Frame(in_frame.width,
+                                  in_frame.height,
+                                  in_frame.frame().pix_info(),
+                                  device='cuda')
 
             out_list = frame_out.data()
             stream = hmp.current_stream(hmp.kCUDA)
             cvstream = cvcuda.cuda.as_stream(stream.handle())
-            
+
             if (self.center is None):
                 center = (in_frame.width // 2, in_frame.height // 2)
-                center = numpy.ones((4, 2), dtype=int) * numpy.array((in_frame.width // 2, in_frame.height // 2), dtype=int)
+                center = numpy.ones((4, 2), dtype=int) * numpy.array(
+                    (in_frame.width // 2, in_frame.height // 2), dtype=int)
 
             # deal with nv12 special case
             if (in_frame.frame().format() == hmp.PixelFormat.kPF_NV12 or
-                in_frame.frame().format() == hmp.PixelFormat.kPF_P010LE):
+                    in_frame.frame().format() == hmp.PixelFormat.kPF_P010LE):
                 cvimg_batch = cvcuda.ImageBatchVarShape(3)
                 cvimg_batch_out = cvcuda.ImageBatchVarShape(3)
 
                 center[1:3] //= 2
                 xform = numpy.zeros((4, 6), dtype='float32')
-                xform[:] = [cv2.getRotationMatrix2D(c.astype(float), self.angle_deg, self.scale).astype('float32').flatten() for c in center]
+                xform[:] = [
+                    cv2.getRotationMatrix2D(
+                        c.astype(float), self.angle_deg,
+                        self.scale).astype('float32').flatten() for c in center
+                ]
 
                 cvxform = cvcuda.as_tensor(hmp.from_numpy(xform).cuda())
 
                 pinfo = self.pinfo_map[in_frame.frame().format()]
-                in_420 = hmp.Frame(in_frame.width, in_frame.height, pinfo, device='cuda')
-                out_420 = hmp.Frame(in_frame.width, in_frame.height, pinfo, device='cuda')
-                hmp.img.yuv_to_yuv(in_420.data(), in_frame.frame().data(), pinfo, in_frame.frame().pix_info())
+                in_420 = hmp.Frame(in_frame.width,
+                                   in_frame.height,
+                                   pinfo,
+                                   device='cuda')
+                out_420 = hmp.Frame(in_frame.width,
+                                    in_frame.height,
+                                    pinfo,
+                                    device='cuda')
+                hmp.img.yuv_to_yuv(in_420.data(),
+                                   in_frame.frame().data(), pinfo,
+                                   in_frame.frame().pix_info())
 
                 in_list = in_420.data()
                 out_list = out_420.data()
@@ -107,25 +132,37 @@ class rotate_gpu(Module):
                 out_list[1].fill_(int(fill[1]))
                 out_list[2].fill_(int(fill[2]))
                 cvimg_batch.pushback([cvcuda.as_image(x) for x in in_list])
-                cvimg_batch_out.pushback([cvcuda.as_image(x) for x in out_list])
+                cvimg_batch_out.pushback(
+                    [cvcuda.as_image(x) for x in out_list])
 
-                cvcuda.warp_affine_into(cvimg_batch_out, cvimg_batch,
-                                        xform=cvxform, flags=self.algo,
-                                        border_mode=cvcuda.Border.CONSTANT, border_value=fill.astype('float32'),
+                cvcuda.warp_affine_into(cvimg_batch_out,
+                                        cvimg_batch,
+                                        xform=cvxform,
+                                        flags=self.algo,
+                                        border_mode=cvcuda.Border.CONSTANT,
+                                        border_value=fill.astype('float32'),
                                         stream=cvstream)
 
-                hmp.img.yuv_to_yuv(frame_out.data(), out_420.data(), frame_out.pix_info(), out_420.pix_info())
+                hmp.img.yuv_to_yuv(frame_out.data(), out_420.data(),
+                                   frame_out.pix_info(), out_420.pix_info())
 
             # other pixel formats, e.g. yuv420, rgb
             else:
-                cvimg_batch = cvcuda.ImageBatchVarShape(in_frame.frame().nplanes())
-                cvimg_batch_out = cvcuda.ImageBatchVarShape(in_frame.frame().nplanes())
+                cvimg_batch = cvcuda.ImageBatchVarShape(
+                    in_frame.frame().nplanes())
+                cvimg_batch_out = cvcuda.ImageBatchVarShape(
+                    in_frame.frame().nplanes())
                 # t3 = torch.ones((in_frame.frame().nplanes(),), dtype=torch.double, device='cuda') * self.flip_code
-                if (in_frame.frame().format() == hmp.PixelFormat.kPF_YUV420P or
-                    in_frame.frame().format() == hmp.PixelFormat.kPF_YUV420P10):
+                if (in_frame.frame().format() == hmp.PixelFormat.kPF_YUV420P
+                        or in_frame.frame().format()
+                        == hmp.PixelFormat.kPF_YUV420P10):
                     center[1:3] //= 2
                 xform = numpy.zeros((4, 6), dtype='float32')
-                xform[:] = [cv2.getRotationMatrix2D(c.astype(float), self.angle_deg, self.scale).astype('float32').flatten() for c in center]
+                xform[:] = [
+                    cv2.getRotationMatrix2D(
+                        c.astype(float), self.angle_deg,
+                        self.scale).astype('float32').flatten() for c in center
+                ]
 
                 cvxform = cvcuda.as_tensor(hmp.from_numpy(xform).cuda())
 
@@ -139,9 +176,12 @@ class rotate_gpu(Module):
                     cvimg_batch.pushback(cvimg)
                     cvimg_batch_out.pushback(cvimg_out)
 
-                cvcuda.warp_affine_into(cvimg_batch_out, cvimg_batch,
-                                        xform=cvxform, flags=self.algo,
-                                        border_mode=cvcuda.Border.CONSTANT, border_value=fill.astype('float32'),
+                cvcuda.warp_affine_into(cvimg_batch_out,
+                                        cvimg_batch,
+                                        xform=cvxform,
+                                        flags=self.algo,
+                                        border_mode=cvcuda.Border.CONSTANT,
+                                        border_value=fill.astype('float32'),
                                         stream=cvstream)
 
             videoframe_out = VideoFrame(frame_out)
@@ -153,8 +193,7 @@ class rotate_gpu(Module):
 
         if self.eof_received_:
             output_queue.put(Packet.generate_eof_packet())
-            Log.log_node(LogLevel.DEBUG, self.node_,
-                         'output stream', 'done')
+            Log.log_node(LogLevel.DEBUG, self.node_, 'output stream', 'done')
             task.set_timestamp(Timestamp.DONE)
 
         return ProcessResult.OK

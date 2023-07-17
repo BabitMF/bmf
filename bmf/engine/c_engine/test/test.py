@@ -9,7 +9,10 @@ import json
 
 def unicode_convert(input):
     if isinstance(input, dict):
-        return {unicode_convert(key): unicode_convert(value) for key, value in input.items()}
+        return {
+            unicode_convert(key): unicode_convert(value)
+            for key, value in input.items()
+        }
     elif isinstance(input, list):
         return [unicode_convert(element) for element in input]
     elif sys.version_info.major == 2 and isinstance(input, unicode):

@@ -2,7 +2,9 @@ from bmf import Module, Log, LogLevel, InputType, ProcessResult, Packet, Timesta
     BmfCallBackType
 import time
 
+
 class hang_module(Module):
+
     def __init__(self, node, option=None):
         self.node_ = node
 
@@ -10,7 +12,9 @@ class hang_module(Module):
         Log.log_node(LogLevel.DEBUG, self.node_, " is doing reset")
 
     def process(self, task):
-        Log.log_node(LogLevel.DEBUG, self.node_, " process got input stream number: ", len(task.get_inputs().items()))
+        Log.log_node(LogLevel.DEBUG, self.node_,
+                     " process got input stream number: ",
+                     len(task.get_inputs().items()))
         Log.log_node(LogLevel.DEBUG, self.node_, " start to sleep")
         time.sleep(100)
 

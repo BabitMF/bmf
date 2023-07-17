@@ -2,7 +2,6 @@ import pygame
 
 from bmf import Module, Log, LogLevel, InputType, ProcessResult, Packet, Timestamp, scale_av_pts, av_time_base, \
     BmfCallBackType, VideoFrame, AudioFrame
-
 '''
 Option example:
     option = {
@@ -39,6 +38,7 @@ Option example:
 
 
 class text_to_image(Module):
+
     def __init__(self, node, option=None):
         self.node_ = node
 
@@ -56,16 +56,15 @@ class text_to_image(Module):
     def process(self, task):
         # turn text to image
         text = self.option['Text']
-        font = pygame.font.SysFont(self.option['FontType'], self.option['FontSize'])
+        font = pygame.font.SysFont(self.option['FontType'],
+                                   self.option['FontSize'])
         ftext = font.render(text, True, (0, 0, 0), (255, 255, 255))
 
         # save image
         pygame.image.save(ftext, self.local_path_)
 
         # fill input info
-        input_info = {
-            "input_path": self.local_path_
-        }
+        input_info = {"input_path": self.local_path_}
 
         # prepare output data
         input_info_list = []

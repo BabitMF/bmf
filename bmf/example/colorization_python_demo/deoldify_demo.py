@@ -3,6 +3,7 @@ import py_deoldify_module
 
 # Add the DeOldify folder to the python search path
 import sys
+
 sys.path.insert(0, './DeOldify')
 print(sys.path)
 
@@ -14,10 +15,7 @@ graph = bmf.graph()
 
 video = graph.decode({"input_path": input_video_path})
 
-output_video = video['video'].module('py_deoldify_module', option={"model_path": model_weight_path})
+output_video = video['video'].module('py_deoldify_module',
+                                     option={"model_path": model_weight_path})
 
-bmf.encode(
-    output_video[0],
-    None,
-    {"output_path": output_video_path}
-    ).run()
+bmf.encode(output_video[0], None, {"output_path": output_video_path}).run()

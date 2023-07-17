@@ -1,6 +1,5 @@
 import bmf
 from bmf import SubGraph
-
 '''
 Option example:
 option = {
@@ -19,6 +18,7 @@ option = {
 
 
 class audio_preprocess(SubGraph):
+
     def create_graph(self, option=None):
         # create source audio stream for subgraph
         self.inputs.append('source_audio')
@@ -34,10 +34,14 @@ class audio_preprocess(SubGraph):
                 trim = trims[i]
                 start = trim[0]
                 end = trim[1]
-                a_video = source_a_list[i].ff_filter('atrim', start=start, end=end).asetpts('PTS-STARTPTS')
+                a_video = source_a_list[i].ff_filter(
+                    'atrim', start=start, end=end).asetpts('PTS-STARTPTS')
                 trims_audio_list.append(a_video)
             # concat all slice
-            audio_stream = bmf.concat(*trims_audio_list, n=len(trims_audio_list), v=0, a=1)
+            audio_stream = bmf.concat(*trims_audio_list,
+                                      n=len(trims_audio_list),
+                                      v=0,
+                                      a=1)
 
         # audio speed
         speed = option.get('Speed')
@@ -45,8 +49,9 @@ class audio_preprocess(SubGraph):
             audio_stream = audio_stream.ff_filter('atempo', str(speed))
 
         # audio duration according to the record
-        audio_stream = audio_stream.ff_filter('atrim', start=0, end=option['initial_info']['audio_duration']).asetpts(
-            'PTS-STARTPTS')
+        audio_stream = audio_stream.ff_filter(
+            'atrim', start=0, end=option['initial_info']
+            ['audio_duration']).asetpts('PTS-STARTPTS')
 
         # audio volume
         volume = option.get('Volume')

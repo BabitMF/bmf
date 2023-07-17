@@ -52,4 +52,8 @@ After clang-format installed, using command:
     ```bash
     clang-format -sort-includes=false -style="{BasedOnStyle: llvm, IndentWidth: 4}" -i <your file>
     ```
-
+- Python source code, here use:
+    ```bash
+    pip install yapf
+    yapf --in-place --recursive --style="{indent_width: 4}"
+    ```

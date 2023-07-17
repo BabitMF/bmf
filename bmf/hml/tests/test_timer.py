@@ -1,4 +1,3 @@
-
 import pytest
 from hml_fixtures import device_type, has_cuda
 from hml_fixtures import mp
@@ -6,7 +5,7 @@ import time
 
 
 def test_timer(device_type):
-    cpu_tensor = mp.empty((64<<20,), device=mp.kCPU)
+    cpu_tensor = mp.empty((64 << 20, ), device=mp.kCPU)
     dev_tensor = mp.empty_like(cpu_tensor, device=device_type)
 
     stream = mp.create_stream(device_type)
@@ -20,7 +19,7 @@ def test_timer(device_type):
     elapsed = time.time() - stime
 
     diff = abs(elapsed - timer.elapsed())
-    assert(diff < elapsed*0.01) #??
+    assert (diff < elapsed * 0.01)  #??
 
 
 @pytest.mark.skipif(not has_cuda, reason="need cuda device")
@@ -34,7 +33,7 @@ def test_cuda_timer():
     with pytest.raises(RuntimeError):
         timer.elapsed()
 
-    cpu_tensor = mp.empty((128<<20,), device=mp.kCPU, pinned_memory=True)
+    cpu_tensor = mp.empty((128 << 20, ), device=mp.kCPU, pinned_memory=True)
     dev_tensor = mp.empty_like(cpu_tensor, device=mp.kCUDA)
     with stream:
         timer.start()
@@ -45,8 +44,6 @@ def test_cuda_timer():
         #not finished
         with pytest.raises(RuntimeError):
             print(timer.elapsed())
-    
+
     stream.synchronize()
     print(timer.elapsed())
-
-

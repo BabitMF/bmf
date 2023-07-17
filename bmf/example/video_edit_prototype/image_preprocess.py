@@ -1,5 +1,4 @@
 from bmf import SubGraph
-
 '''
 Option example:
     option = {
@@ -36,6 +35,7 @@ Option example:
 
 
 class image_preprocess(SubGraph):
+
     def create_graph(self, option=None):
         # create source stream for subgraph
         self.inputs.append('source_image')
@@ -49,13 +49,16 @@ class image_preprocess(SubGraph):
         # do image crop
         crop = option.get('Crop')
         if crop:
-            stream = stream.ff_filter('crop', crop['Width'], crop['Height'], crop['PosX'], crop['PosY'])
+            stream = stream.ff_filter('crop', crop['Width'], crop['Height'],
+                                      crop['PosX'], crop['PosY'])
 
         # do basic filters
         filters = option.get('Filters')
         if filters:
-            stream = stream.ff_filter('eq', contrast=filters['Contrast'],
-                                      brightness=filters['Brightness'], saturation=filters['Saturate'])
+            stream = stream.ff_filter('eq',
+                                      contrast=filters['Contrast'],
+                                      brightness=filters['Brightness'],
+                                      saturation=filters['Saturate'])
 
         # finish creating graph
         self.output_streams = self.finish_create_graph([stream])

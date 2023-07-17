@@ -2,7 +2,6 @@ import graphviz
 import json
 import sys
 
-
 stream_color = '#99ccff'
 node_color = '#ffcc00'
 
@@ -19,11 +18,13 @@ def parse_stream_name(stream):
     return stream_key, stream_label
 
 
-def find_all_edges_for_output_stream(stream, idx, in_node_config, bmf_graph, view_graph):
+def find_all_edges_for_output_stream(stream, idx, in_node_config, bmf_graph,
+                                     view_graph):
     stream = stream['identifier']
     # check for every node's every output
     for out_node_config in bmf_graph['nodes']:
-        for input_idx, input_stream in enumerate(out_node_config['input_streams']):
+        for input_idx, input_stream in enumerate(
+                out_node_config['input_streams']):
             input_stream = input_stream['identifier']
 
             in_stream_key, in_stream_label = parse_stream_name(stream)
@@ -44,16 +45,20 @@ def find_all_edges_for_output_stream(stream, idx, in_node_config, bmf_graph, vie
                 edge_name = '%s:%s' % (in_stream_name, out_stream_name)
 
                 if in_node_config is None:
-                    view_graph.edge(stream, out_node_config['view_name'], edge_name)
+                    view_graph.edge(stream, out_node_config['view_name'],
+                                    edge_name)
                 else:
-                    view_graph.edge(in_node_config['view_name'], out_node_config['view_name'], edge_name)
+                    view_graph.edge(in_node_config['view_name'],
+                                    out_node_config['view_name'], edge_name)
 
 
-def find_all_edges_for_input_stream(stream, idx, in_node_config, bmf_graph, view_graph):
+def find_all_edges_for_input_stream(stream, idx, in_node_config, bmf_graph,
+                                    view_graph):
     stream = stream['identifier']
     # check for every node's every output
     for out_node_config in bmf_graph['nodes']:
-        for output_idx, output_stream in enumerate(out_node_config['output_streams']):
+        for output_idx, output_stream in enumerate(
+                out_node_config['output_streams']):
             output_stream = output_stream['identifier']
 
             in_stream_key, in_stream_label = parse_stream_name(output_stream)
@@ -74,9 +79,11 @@ def find_all_edges_for_input_stream(stream, idx, in_node_config, bmf_graph, view
                 edge_name = '%s:%s' % (in_stream_name, out_stream_name)
 
                 if in_node_config is None:
-                    view_graph.edge(out_node_config['view_name'], stream, edge_name)
+                    view_graph.edge(out_node_config['view_name'], stream,
+                                    edge_name)
                 else:
-                    view_graph.edge(out_node_config['view_name'], in_node_config['view_name'], edge_name)
+                    view_graph.edge(out_node_config['view_name'],
+                                    in_node_config['view_name'], edge_name)
 
 
 def view(graph_file):
@@ -90,16 +97,20 @@ def view(graph_file):
         # create graph input stream
         for input_stream in bmf_graph['input_streams']:
             input_stream = input_stream['identifier']
-            view_graph.node(
-                input_stream, input_stream, shape='circle', style='filled', fillcolor=stream_color
-            )
+            view_graph.node(input_stream,
+                            input_stream,
+                            shape='circle',
+                            style='filled',
+                            fillcolor=stream_color)
 
         # create graph output stream
         for output_stream in bmf_graph['output_streams']:
             output_stream = output_stream['identifier']
-            view_graph.node(
-                output_stream, output_stream, shape='circle', style='filled', fillcolor=stream_color
-            )
+            view_graph.node(output_stream,
+                            output_stream,
+                            shape='circle',
+                            style='filled',
+                            fillcolor=stream_color)
 
         # create node
         for node_config in bmf_graph['nodes']:
@@ -113,23 +124,30 @@ def view(graph_file):
             # store the view name for edge connection
             node_config['view_name'] = node_name
 
-            view_graph.node(
-                node_name, node_name, shape='box', style='filled', fillcolor=node_color
-            )
+            view_graph.node(node_name,
+                            node_name,
+                            shape='box',
+                            style='filled',
+                            fillcolor=node_color)
 
         # create edge for nodes
         for in_node_config in bmf_graph['nodes']:
             # for every node output stream
-            for output_idx, output_stream in enumerate(in_node_config['output_streams']):
-                find_all_edges_for_output_stream(output_stream, output_idx, in_node_config, bmf_graph, view_graph)
+            for output_idx, output_stream in enumerate(
+                    in_node_config['output_streams']):
+                find_all_edges_for_output_stream(output_stream, output_idx,
+                                                 in_node_config, bmf_graph,
+                                                 view_graph)
 
         # create edge for graph input stream
         for input_stream in bmf_graph['input_streams']:
-            find_all_edges_for_output_stream(input_stream, 0, None, bmf_graph, view_graph)
+            find_all_edges_for_output_stream(input_stream, 0, None, bmf_graph,
+                                             view_graph)
 
         # create edge for graph output stream
         for output_stream in bmf_graph['output_streams']:
-            find_all_edges_for_input_stream(output_stream, 0, None, bmf_graph, view_graph)
+            find_all_edges_for_input_stream(output_stream, 0, None, bmf_graph,
+                                            view_graph)
 
         ff = graph_file.split("/")
         output_file = ff[len(ff) - 1].split(".", 1)[0]

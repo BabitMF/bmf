@@ -7,8 +7,9 @@ from threading import Thread
 sys.path.append("../../")
 sys.path.append("../gpu_video_frame/")
 
+
 def task(proc_idx, input_video_path, frames_dict):
-		# import bmf in each sub-process
+    # import bmf in each sub-process
     import bmf
     graph = bmf.graph()
 
@@ -16,13 +17,15 @@ def task(proc_idx, input_video_path, frames_dict):
         "input_path": input_video_path,
         "video_params": {
             "hwaccel": "cuda",
-        }})["video"].start()
-    
+        }
+    })["video"].start()
+
     num_frames = 0
     for i in frames:
         num_frames += 1
 
     frames_dict[str(proc_idx)] = num_frames
+
 
 def test_gpu_decode_multi_proc_perf():
     input_video_path = "../files/lark_stream0.flv"
@@ -31,8 +34,9 @@ def test_gpu_decode_multi_proc_perf():
     frames_dict = multiprocessing.Manager().dict()
 
     for i in range(num_processes):
-        processes.append(Process(target=task, args=(i, input_video_path, frames_dict)))
-    
+        processes.append(
+            Process(target=task, args=(i, input_video_path, frames_dict)))
+
     start = time.time()
     for i in range(num_processes):
         processes[i].start()
@@ -46,7 +50,10 @@ def test_gpu_decode_multi_proc_perf():
     for i in range(num_processes):
         total_frames += frames_dict[str(i)]
 
-    print("Total Frames Decoded={}, time={} seconds, FPS under multiple processes={}".format(total_frames, duration, total_frames / duration))
-	
+    print(
+        "Total Frames Decoded={}, time={} seconds, FPS under multiple processes={}"
+        .format(total_frames, duration, total_frames / duration))
+
+
 if __name__ == "__main__":
     test_gpu_decode_multi_proc_perf()

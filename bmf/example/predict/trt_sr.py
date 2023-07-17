@@ -14,7 +14,9 @@ if sys.version_info.major == 2:
 else:
     from queue import Queue
 
+
 class trt_sr(Module):
+
     def __init__(self, node=None, option=None):
         self.node_ = node
         self.option_ = option
@@ -34,18 +36,24 @@ class trt_sr(Module):
         logger = trt.Logger(trt.Logger.ERROR)
         with open(self.model_path_, 'rb') as f:
             engine_buffer = f.read()
-        self.engine_ = trt.Runtime(logger).deserialize_cuda_engine(engine_buffer)
-        
+        self.engine_ = trt.Runtime(logger).deserialize_cuda_engine(
+            engine_buffer)
+
         if self.engine_ is None:
             Log.log(LogLevel.ERROR, "Failed building engine!")
             return
         Log.log(LogLevel.INFO, "Succeeded building engine!")
 
         self.num_io_tensors_ = self.engine_.num_io_tensors
-        self.tensor_names_ = [self.engine_.get_tensor_name(i) for i in range(self.num_io_tensors_)]
+        self.tensor_names_ = [
+            self.engine_.get_tensor_name(i)
+            for i in range(self.num_io_tensors_)
+        ]
         self.num_inputs_ = [self.engine_.get_tensor_mode(self.tensor_names_[i]) for i in range(self.num_io_tensors_)] \
                            .count(trt.TensorIOMode.INPUT)
-        assert self.num_inputs_ == len(self.input_shapes_.keys()), "The number of input_shapes doesn't match the number of model's inputs."
+        assert self.num_inputs_ == len(
+            self.input_shapes_.keys()
+        ), "The number of input_shapes doesn't match the number of model's inputs."
         self.num_outputs_ = [self.engine_.get_tensor_mode(self.tensor_names_[i]) for i in range(self.num_io_tensors_)] \
                            .count(trt.TensorIOMode.OUTPUT)
 
@@ -53,14 +61,18 @@ class trt_sr(Module):
         self.stream_ = mp.current_stream(mp.kCUDA)
 
         for i in range(self.num_inputs_):
-            self.context_.set_input_shape(self.tensor_names_[0], self.input_shapes_[self.tensor_names_[0]])
-        
+            self.context_.set_input_shape(
+                self.tensor_names_[0],
+                self.input_shapes_[self.tensor_names_[0]])
+
         self.output_dict_ = dict()
         for i in range(self.num_inputs_, self.num_io_tensors_):
-            self.output_dict_[self.tensor_names_[i]] = mp.empty(self.context_.get_tensor_shape(self.tensor_names_[i]),
-                                                                device=mp.kCUDA,
-                                                                dtype=self.to_scalar_types(self.engine_.get_tensor_dtype(self.tensor_names_[i])))
-        
+            self.output_dict_[self.tensor_names_[i]] = mp.empty(
+                self.context_.get_tensor_shape(self.tensor_names_[i]),
+                device=mp.kCUDA,
+                dtype=self.to_scalar_types(
+                    self.engine_.get_tensor_dtype(self.tensor_names_[i])))
+
         self.frame_cache_ = Queue()
 
         self.in_frame_num_ = 7
@@ -69,7 +81,7 @@ class trt_sr(Module):
         self.eof_received_ = False
 
         Log.log(LogLevel.ERROR, "Load model takes", (time.time() - start_time))
-    
+
     def to_scalar_types(self, trt_dtype):
         dtype_map = {
             trt.float32: mp.kFloat32,
@@ -95,7 +107,7 @@ class trt_sr(Module):
             if (vf.frame().device() == mp.Device('cpu')):
                 vf = vf.cuda()
             input_frames.append(vf)
-            
+
             rgb = mp.PixelInfo(mp.kPF_RGB24)
             torch_vf = torch.from_dlpack(vf.reformat(rgb).frame().plane(0))
             input_torch_array.append(torch_vf)
@@ -105,24 +117,34 @@ class trt_sr(Module):
         input_tensor = torch.concat(input_torch_array, 2)
 
         for i in range(self.num_inputs_):
-            self.context_.set_tensor_address(self.tensor_names_[i], int(input_tensor.data_ptr()))
+            self.context_.set_tensor_address(self.tensor_names_[i],
+                                             int(input_tensor.data_ptr()))
 
         for i in range(self.num_inputs_, self.num_io_tensors_):
-            self.context_.set_tensor_address(self.tensor_names_[i], int(self.output_dict_[self.tensor_names_[i]].data_ptr()))
+            self.context_.set_tensor_address(
+                self.tensor_names_[i],
+                int(self.output_dict_[self.tensor_names_[i]].data_ptr()))
 
         self.context_.execute_async_v3(self.stream_.handle())
 
-        output_tensor = torch.from_dlpack(self.output_dict_[self.tensor_names_[-1]])
+        output_tensor = torch.from_dlpack(
+            self.output_dict_[self.tensor_names_[-1]])
         output_tensor = torch.squeeze(output_tensor)
         output_tensor = torch.split(output_tensor, self.out_frame_num_, dim=2)
 
         out_vframes = []
 
         for i in range(self.out_frame_num_):
-            NV12 = mp.PixelInfo(mp.PixelFormat.kPF_NV12, mp.ColorSpace.kCS_BT470BG, mp.ColorRange.kCR_MPEG)
-            RGB = mp.PixelInfo(mp.PixelFormat.kPF_RGB24, mp.ColorSpace.kCS_BT709, mp.ColorRange.kCR_MPEG)
+            NV12 = mp.PixelInfo(mp.PixelFormat.kPF_NV12,
+                                mp.ColorSpace.kCS_BT470BG,
+                                mp.ColorRange.kCR_MPEG)
+            RGB = mp.PixelInfo(mp.PixelFormat.kPF_RGB24,
+                               mp.ColorSpace.kCS_BT709, mp.ColorRange.kCR_MPEG)
             frame = mp.Frame(mp.from_torch(output_tensor[i].contiguous()), RGB)
-            out_frame = mp.Frame(frame.width(), frame.height(), NV12, device='cuda')
+            out_frame = mp.Frame(frame.width(),
+                                 frame.height(),
+                                 NV12,
+                                 device='cuda')
             mp.img.rgb_to_yuv(out_frame.data(), frame.plane(0), NV12, mp.kNHWC)
 
             if self.frame_cache_.empty():
@@ -149,7 +171,7 @@ class trt_sr(Module):
                 self.eof_received_ = True
             elif pkt.is_(VideoFrame):
                 self.frame_cache_.put(pkt.get(VideoFrame))
-        
+
         while self.frame_cache_.qsize() >= self.in_frame_num_ or \
                 self.eof_received_:
             if self.frame_cache_.qsize() > 0:
@@ -158,14 +180,14 @@ class trt_sr(Module):
                     pkt = Packet(frame)
                     pkt.timestamp = frame.pts
                     output_queue.put(pkt)
-            
+
             if self.frame_cache_.empty():
                 break
-        
+
         # add eof packet to output
         if self.eof_received_:
             output_queue.put(Packet.generate_eof_packet())
             Log.log_node(LogLevel.DEBUG, self.node_, 'output stream', 'done')
             task.timestamp = Timestamp.DONE
-        
+
         return ProcessResult.OK

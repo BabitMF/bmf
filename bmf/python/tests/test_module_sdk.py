@@ -72,8 +72,8 @@ class TestVideoFrame(object):
         assert (data['dict']['a'] == ref['dict']['a'])
         assert (data['dict']['b'] == ref['dict']['b'])
 
-        assert (id(data) != id(ref)
-                )  # as we convert dict to JsonParam in c++ side
+        assert (id(data)
+                != id(ref))  # as we convert dict to JsonParam in c++ side
 
     @pytest.mark.skipif(not has_cuda, reason="CUDA is not enabled")
     def test_cuda_constructors(self):

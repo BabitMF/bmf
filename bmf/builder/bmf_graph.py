@@ -88,13 +88,12 @@ class BmfGraph:
     #  set new graph options before run
     #  @param option: the option patch for the graph
     def set_option(self, option=None):
-    ###@}
+        ###@}
         if option is None:
             return
 
         for key in option:
             self.option_[key] = option[key]
-
 
     ## @ingroup pyAPI
     ## @ingroup grphClass
@@ -106,8 +105,8 @@ class BmfGraph:
     #  @return A list object in python
     #  @note Should be called BEFORE graph run since it will notice the ffmpeg modulethat the log buffer is needed,
     #  the buffer will be clean each time when this function called
-    def get_av_log_buffer(self, level = 'info'):
-    ###@}
+    def get_av_log_buffer(self, level='info'):
+        ###@}
         # ffmpeg log config
         from bmf.lib._bmf.sdk import LogBuffer
         BmfGraph.av_log_list_.clear()
@@ -120,12 +119,13 @@ class BmfGraph:
     #  get sync module by given alias
     #  @param  alias: a node tag given by user while building graph pipeline
     def get_module(self, alias):
-    ###@}
+        ###@}
         select_node = None
 
         # find node by alias
         for node in self.nodes_:
-            if "alias" in node.get_option() and node.get_option()["alias"] == alias:
+            if "alias" in node.get_option() and node.get_option(
+            )["alias"] == alias:
                 select_node = node
                 break
 
@@ -147,7 +147,7 @@ class BmfGraph:
     #  @param  cb_type: a value can be defined by user to distinguish which is the one to call in multiple callbacks
     #  @param  cb: the function for this callback
     def add_user_callback(self, cb_type, cb):
-    ###@}
+        ###@}
         self.cb_lock.acquire()
         cb_list = self.user_callbacks.get(cb_type, [])
         if len(cb_list) == 0:
@@ -163,7 +163,7 @@ class BmfGraph:
     #  @param  cb_type: a value can be defined by user to distinguish which is the one to call in multiple callbacks
     #  @param  cb: the function for this callback
     def remove_user_callback(self, cb_type, cb):
-    ###@}
+        ###@}
         self.cb_lock.acquire()
         cb_list = self.user_callbacks.get(cb_type, [])
         cb_list.remove(cb)
@@ -206,13 +206,28 @@ class BmfGraph:
         if node is not None:
             self.nodes_.append(node)
 
-    def module(self, module_info, option=None, module_path="", entry="", input_manager='immediate', pre_module=None, scheduler=0, stream_alias=None):
+    def module(self,
+               module_info,
+               option=None,
+               module_path="",
+               entry="",
+               input_manager='immediate',
+               pre_module=None,
+               scheduler=0,
+               stream_alias=None):
         if option is None:
             option = {}
         if isinstance(module_info, str):
-            return BmfNode({"name": module_info, "type": "", "path": module_path, "entry": entry}, option, self,
-                           input_manager, pre_module, scheduler).stream(stream_alias=stream_alias)
-        return BmfNode(module_info, option, self, input_manager, pre_module, scheduler).stream(stream_alias=stream_alias)
+            return BmfNode(
+                {
+                    "name": module_info,
+                    "type": "",
+                    "path": module_path,
+                    "entry": entry
+                }, option, self, input_manager, pre_module,
+                scheduler).stream(stream_alias=stream_alias)
+        return BmfNode(module_info, option, self, input_manager, pre_module,
+                       scheduler).stream(stream_alias=stream_alias)
 
     ## @ingroup moduleAPI
     ###@{
@@ -220,36 +235,84 @@ class BmfGraph:
     #  Include av demuxer and decoder
     #  @param decoder_para: the parameters for the decoder
     #  @return A BMF stream(s)
-    def decode(self, decoder_para, type="", path="", entry="", stream_alias=None):
-    ###@}
+    def decode(self,
+               decoder_para,
+               type="",
+               path="",
+               entry="",
+               stream_alias=None):
+        ###@}
         module_info = {
             "name": bmf_modules['ff_decoder'],
             "type": type,
             "path": path,
             "entry": entry
         }
-        return BmfNode(module_info, decoder_para, self, 'immediate').stream(stream_alias=stream_alias)
+        return BmfNode(module_info, decoder_para, self,
+                       'immediate').stream(stream_alias=stream_alias)
 
-    def download(self, download_para, type="", path="", entry="", stream_alias=None):
+    def download(self,
+                 download_para,
+                 type="",
+                 path="",
+                 entry="",
+                 stream_alias=None):
         module_info = {
             "name": 'download',
             "type": type,
             "path": path,
             "entry": entry
         }
-        return BmfNode(module_info, download_para, self, 'immediate').stream(stream_alias=stream_alias)
+        return BmfNode(module_info, download_para, self,
+                       'immediate').stream(stream_alias=stream_alias)
 
-    def py_module(self, name, option=None, module_path="", entry="", input_manager='immediate', pre_module=None, scheduler=0, stream_alias=None):
+    def py_module(self,
+                  name,
+                  option=None,
+                  module_path="",
+                  entry="",
+                  input_manager='immediate',
+                  pre_module=None,
+                  scheduler=0,
+                  stream_alias=None):
         if option is None:
             option = {}
-        return self.module({"name": name, "type": "python", "path": module_path, "entry": entry}, option,
-                           input_manager=input_manager, pre_module=pre_module, scheduler=scheduler, stream_alias=stream_alias)
+        return self.module(
+            {
+                "name": name,
+                "type": "python",
+                "path": module_path,
+                "entry": entry
+            },
+            option,
+            input_manager=input_manager,
+            pre_module=pre_module,
+            scheduler=scheduler,
+            stream_alias=stream_alias)
 
-    def go_module(self, name, option=None, module_path="", entry="", input_manager="immediate", pre_module=None, scheduler=0, stream_alias=None):
+    def go_module(self,
+                  name,
+                  option=None,
+                  module_path="",
+                  entry="",
+                  input_manager="immediate",
+                  pre_module=None,
+                  scheduler=0,
+                  stream_alias=None):
         if option is None:
             option = {}
-        return self.module({"name": name, "type": "go", "path": module_path, "entry": entry}, option,
-                           input_manager=input_manager, pre_module=pre_module, scheduler=scheduler, stream_alias=stream_alias)
+        return self.module(
+            {
+                "name": name,
+                "type": "go",
+                "path": module_path,
+                "entry": entry
+            },
+            option,
+            input_manager=input_manager,
+            pre_module=pre_module,
+            scheduler=scheduler,
+            stream_alias=stream_alias)
 
     ## @ingroup pyAPI
     ## @ingroup grphClass
@@ -262,12 +325,30 @@ class BmfGraph:
     #  @param entry: the call entry of the module
     #  @param input_manager: select the input manager for this module, immediate by default
     #  @return Stream(s) of the module
-    def c_module(self, name, option=None, module_path="", entry="", input_manager="immediate", pre_module=None, scheduler=0, stream_alias=None):
-    ###@}
+    def c_module(self,
+                 name,
+                 option=None,
+                 module_path="",
+                 entry="",
+                 input_manager="immediate",
+                 pre_module=None,
+                 scheduler=0,
+                 stream_alias=None):
+        ###@}
         if option is None:
             option = {}
-        return self.module({"name": name, "type": "c++", "path": module_path, "entry": entry}, option,
-                            input_manager=input_manager, pre_module=pre_module, scheduler=scheduler, stream_alias=stream_alias)
+        return self.module(
+            {
+                "name": name,
+                "type": "c++",
+                "path": module_path,
+                "entry": entry
+            },
+            option,
+            input_manager=input_manager,
+            pre_module=pre_module,
+            scheduler=scheduler,
+            stream_alias=stream_alias)
 
     def anullsrc(self, *args, **kwargs):
         stream_alias = None
@@ -289,10 +370,7 @@ class BmfGraph:
 
         para = get_filter_para(*args, **kwargs)
         if para is not None and len(para) > 0:
-            option = {
-                'name': 'anullsrc',
-                'para': para
-            }
+            option = {'name': 'anullsrc', 'para': para}
         module_info = {
             "name": bmf_modules['ff_filter'],
             "type": type,
@@ -300,7 +378,8 @@ class BmfGraph:
             "entry": entry
         }
         # create node
-        return BmfNode(module_info, option, self, 'immediate').stream(stream_alias=stream_alias)
+        return BmfNode(module_info, option, self,
+                       'immediate').stream(stream_alias=stream_alias)
 
     def input_stream(self, name):
         stream = BmfStream(name, self, name)
@@ -327,7 +406,8 @@ class BmfGraph:
     def get_node_output_stream_map(node):
         stream_map = {}
         for edge in node.get_outgoing_edges():
-            stream_map[edge.get_upstream_stream().get_notify()] = edge.get_upstream_stream()
+            stream_map[edge.get_upstream_stream().get_notify(
+            )] = edge.get_upstream_stream()
         return stream_map
 
     @staticmethod
@@ -376,7 +456,8 @@ class BmfGraph:
                         stream_config.set_alias("")
                     else:
                         stream_config.set_alias(stream_map[index].get_alias())
-                    stream_config.set_identifier(stream_map[index].get_identifier())
+                    stream_config.set_identifier(
+                        stream_map[index].get_identifier())
                     streams.append(stream_config)
                 else:
                     # just generate an unique name and hold the position
@@ -385,7 +466,8 @@ class BmfGraph:
                     streams.append(stream_config)
             return streams
 
-        print('failed to generate node stream config for ', node.get_type(), node.get_id())
+        print('failed to generate node stream config for ', node.get_type(),
+              node.get_id())
         return streams
 
     @staticmethod
@@ -447,13 +529,12 @@ class BmfGraph:
 
         # set module info
         node_config.set_module_info(
-            BmfGraph.generate_module_info_config(node.get_module_info())
-        )
+            BmfGraph.generate_module_info_config(node.get_module_info()))
 
         # set meta info
         node_config.set_meta_info(
-            BmfGraph.generate_meta_info_config(node.get_pre_module(), node.get_user_callback())
-        )
+            BmfGraph.generate_meta_info_config(node.get_pre_module(),
+                                               node.get_user_callback()))
 
         # set alias
         node_config.set_alias(node.get_option().get('alias', ''))
@@ -466,13 +547,11 @@ class BmfGraph:
 
         # set input streams
         node_config.set_input_streams(
-            BmfGraph.generate_node_stream_config(input_stream_map, node)
-        )
+            BmfGraph.generate_node_stream_config(input_stream_map, node))
 
         # set output streams
         node_config.set_output_streams(
-            BmfGraph.generate_node_stream_config(output_stream_map, node)
-        )
+            BmfGraph.generate_node_stream_config(output_stream_map, node))
 
         return node_config
 
@@ -550,7 +629,8 @@ class BmfGraph:
             elif isinstance(streams, list):
                 for stream in streams:
                     if stream is not None:
-                        graph_output_stream = BmfStream(stream.get_name(), None, 0)
+                        graph_output_stream = BmfStream(
+                            stream.get_name(), None, 0)
                         edge = BmfEdge(stream, graph_output_stream)
                         stream.get_node().add_outgoing_edge(edge)
                         self.output_streams_.append(graph_output_stream)
@@ -565,12 +645,14 @@ class BmfGraph:
     #  @param graph_config: the graph config file path
     #  @return The name list of output streams in this graph
     def run_by_config(self, graph_config):
-    ###@}
+        ###@}
         self.dump_graph(graph_config)
 
         graph_config_str = graph_config.dump()
         # print(self.callback_for_engine)
-        self.exec_graph_ = engine.Graph(graph_config_str, False, graph_config.get_option().get('optimize_graph', True))
+        self.exec_graph_ = engine.Graph(
+            graph_config_str, False,
+            graph_config.get_option().get('optimize_graph', True))
         self.exec_graph_.start()
 
         # if graph has no input stream, 'close' will wait all nodes finish
@@ -592,9 +674,13 @@ class BmfGraph:
     #  @param is_sub_graph: bool value to indicate whether it's a sub graph, False by default
     #  @param mode: to set the graph mode, NORMAL by default, other option bmf_graph.GraphMode
     #  @param file_name: output file name with extension
-    def generate_config_file(self, streams=None, is_sub_graph=False, mode=GraphMode.NORMAL,
-        is_blocked=True, file_name="original_graph.json"):
-    ###@}
+    def generate_config_file(self,
+                             streams=None,
+                             is_sub_graph=False,
+                             mode=GraphMode.NORMAL,
+                             is_blocked=True,
+                             file_name="original_graph.json"):
+        ###@}
         self.mode = mode
 
         # in server mode, graph has output_stream
@@ -631,24 +717,27 @@ class BmfGraph:
     #  @param streams: the input stream list of the module
     #  @param is_sub_graph: bool value to indicate whether it's a sub graph, False by default
     #  @param mode: to set the graph mode, NORMAL by default, other option bmf_graph.GraphMode
-    def run(self, streams=None, is_sub_graph=False, mode=GraphMode.NORMAL, is_blocked=True):
+    def run(self,
+            streams=None,
+            is_sub_graph=False,
+            mode=GraphMode.NORMAL,
+            is_blocked=True):
         ###@}
         file_name = ""
         if 'dump_graph' in self.option_ and self.option_['dump_graph'] == 1:
             file_name = "original_graph.json"
 
-        self.generate_config_file(
-            streams=streams,
-            is_sub_graph=is_sub_graph,
-            mode=mode,
-            is_blocked=is_blocked,
-            file_name=file_name
-        )
+        self.generate_config_file(streams=streams,
+                                  is_sub_graph=is_sub_graph,
+                                  mode=mode,
+                                  is_blocked=is_blocked,
+                                  file_name=file_name)
 
         graph_config_str = self.graph_config_.dump()
         print(graph_config_str)
         # call engine
-        self.exec_graph_ = engine.Graph(graph_config_str, False, self.option_.get('optimize_graph', True))
+        self.exec_graph_ = engine.Graph(
+            graph_config_str, False, self.option_.get('optimize_graph', True))
         self.exec_graph_.start()
 
         # if graph has no input stream, 'close' will wait all nodes finish
@@ -671,8 +760,11 @@ class BmfGraph:
     ## @ingroup grphClass
     ###@{
     #  Run the graph without wait to close, user should call close() by themself
-    def run_wo_block(self, streams=None, is_sub_graph=False, mode=GraphMode.NORMAL):
-    ###@}
+    def run_wo_block(self,
+                     streams=None,
+                     is_sub_graph=False,
+                     mode=GraphMode.NORMAL):
+        ###@}
         return self.run(streams, is_sub_graph, mode, False)
 
     def runFFmpegByConfig(self, config_path):
@@ -714,7 +806,8 @@ class BmfGraph:
         self.exec_graph_.start()
 
         while True:
-            pkt = self.exec_graph_.poll_output_stream_packet(stream.get_name(), True)
+            pkt = self.exec_graph_.poll_output_stream_packet(
+                stream.get_name(), True)
             if pkt is not None and pkt.defined():
                 if pkt.timestamp == Timestamp.EOF:
                     break
@@ -729,10 +822,11 @@ class BmfGraph:
     #  @param option: json style of description of which node to be removed
     #                 exp. {'alias': 'decode1'}
     def dynamic_remove(self, option):
-    ###@}
+        ###@}
         alias_name = option.get('alias', '')
         if len(alias_name) == 0:
-            Log.log(LogLevel.ERROR, "the alias name is must needed for removing")
+            Log.log(LogLevel.ERROR,
+                    "the alias name is must needed for removing")
             return False
 
         self.graph_ = BmfGraph(option)
@@ -752,18 +846,22 @@ class BmfGraph:
     #                it means the input of this node will be "layout" alias node and have 1 stream linked
     #  @param outputs: a json style description for the output to be connected with this new node
     def dynamic_add(self, module_stream, inputs=None, outputs=None):
-    ###@}
+        ###@}
         nb_links = 0
         add_id = 0
 
         self.graph_config_, pre_module = self.generate_graph_config()
         if inputs is not None:
             if module_stream.get_node().get_graph().graph_config_ is None:
-                module_stream.get_node().get_graph().graph_config_, tmp = module_stream.get_node().get_graph().generate_graph_config()
-                Log.log(LogLevel.ERROR, "generate graph config for none graph config")
+                module_stream.get_node().get_graph(
+                ).graph_config_, tmp = module_stream.get_node().get_graph(
+                ).generate_graph_config()
+                Log.log(LogLevel.ERROR,
+                        "generate graph config for none graph config")
 
         tail_config = None
-        for node_config in module_stream.get_node().get_graph().graph_config_.nodes:
+        for node_config in module_stream.get_node().get_graph(
+        ).graph_config_.nodes:
             node_config.set_action('add')
             tail_config = node_config
 
@@ -772,12 +870,14 @@ class BmfGraph:
             out_link_module_alias = outputs.get('alias', '')
             nb_links = outputs.get('streams', 0)
             if tail_config is None:
-                Log.log(LogLevel.ERROR, "the output node config can't be found")
+                Log.log(LogLevel.ERROR,
+                        "the output node config can't be found")
                 return False
             add_id = self.generate_add_id()
             for i in range(nb_links):
                 stream_config = StreamConfig()
-                out_link_name = out_link_module_alias + "." + str(add_id) + "_" + str(i)
+                out_link_name = out_link_module_alias + "." + str(
+                    add_id) + "_" + str(i)
                 stream_config.set_identifier(out_link_name)
                 stream_config.set_alias(out_link_name)
                 tail_config.add_output_stream(stream_config)
@@ -786,7 +886,8 @@ class BmfGraph:
             in_link_module_alias = inputs.get('alias', '')
             nb_links = inputs.get('streams', 0)
             ncfg = None
-            for node_config in module_stream.get_node().get_graph().graph_config_.nodes:
+            for node_config in module_stream.get_node().get_graph(
+            ).graph_config_.nodes:
                 if len(node_config.get_input_streams()) == 0:
                     ncfg = node_config
                     break
@@ -796,13 +897,15 @@ class BmfGraph:
             add_id = self.generate_add_id()
             for i in range(nb_links):
                 stream_config = StreamConfig()
-                in_link_name = in_link_module_alias + "." + str(add_id) + "_" + str(i)
+                in_link_name = in_link_module_alias + "." + str(
+                    add_id) + "_" + str(i)
                 stream_config.set_identifier(in_link_name)
                 stream_config.set_alias(in_link_name)
                 ncfg.add_input_stream(stream_config)
 
         graph_config_str = self.graph_config_.dump()
-        self.exec_graph_ = engine.Graph(graph_config_str, False, self.option_.get('optimize_graph', True))
+        self.exec_graph_ = engine.Graph(
+            graph_config_str, False, self.option_.get('optimize_graph', True))
 
     ## @ingroup pyAPI
     ## @ingroup grphClass
@@ -820,7 +923,7 @@ class BmfGraph:
     #                      }
     #                   }
     def dynamic_reset(self, option):
-    ###@}
+        ###@}
         alias_name = option.get('alias', '')
         if len(alias_name) == 0:
             Log.log(LogLevel.ERROR, "the alias name is must needed for reset")
@@ -839,9 +942,10 @@ class BmfGraph:
     #  Final action to do the dynamical add/remove/reset node for current running graph.
     #  @param update_graph: the graph generated by previous dynamic_add(), dynamic_remove() or dynamic_reset()
     def update(self, update_graph):
-    ###@}
+        ###@}
         if update_graph is None or update_graph.graph_config_ is None:
-            Log.log(LogLevel.ERROR, "the graph for update is not created properly")
+            Log.log(LogLevel.ERROR,
+                    "the graph for update is not created properly")
             return False
 
         graph_config_str = update_graph.graph_config_.dump()
@@ -858,7 +962,7 @@ class BmfGraph:
     ###@{
     # To close the graph by block wait until all the tasks are finished.
     def close(self):
-    ###@}
+        ###@}
         if self.exec_graph_ is not None:
             self.exec_graph_.close()
 
@@ -867,7 +971,7 @@ class BmfGraph:
     ###@{
     #  Force close the running graph even if the whole pipeline in the graph is not finished
     def force_close(self):
-    ###@}
+        ###@}
         if self.exec_graph_ is not None:
             self.exec_graph_.force_close()
 

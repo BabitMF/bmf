@@ -6,9 +6,7 @@ setup(
     python_requires='>= 3.6',
     description="Babit Multimedia Framework",
     url="www.bytedance.com",
-    install_requires=[
-        "numpy >= 1.19.5"
-    ],
+    install_requires=["numpy >= 1.19.5"],
     packages=[
         'bmf',
         'bmf.builder',

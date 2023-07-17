@@ -2,7 +2,6 @@ import bmf
 from bmf import Module, Log, LogLevel, InputType, ProcessResult, Packet, Timestamp, scale_av_pts, av_time_base, \
     BmfCallBackType, VideoFrame, AudioFrame
 import os
-
 '''
 Option example:
     option = {
@@ -13,6 +12,7 @@ Option example:
 
 
 class background_audio(Module):
+
     def __init__(self, node, option=None):
         self.node_ = node
 
@@ -26,12 +26,11 @@ class background_audio(Module):
 
     def process(self, task):
         # create local silent audio
-        os.system('ffmpeg -f lavfi -t ' + str(self.duration) + ' -i anullsrc ' + str(self.local_path_) + ' -y')
+        os.system('ffmpeg -f lavfi -t ' + str(self.duration) +
+                  ' -i anullsrc ' + str(self.local_path_) + ' -y')
 
         # fill input info
-        input_info = {
-            "input_path": self.local_path_
-        }
+        input_info = {"input_path": self.local_path_}
 
         # prepare output data
         input_info_list = []

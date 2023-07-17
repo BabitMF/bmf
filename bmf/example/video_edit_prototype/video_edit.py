@@ -26,36 +26,46 @@ def video_edit(segments, global_elements, output, graph):
                 record_element_info(element)
                 update_element_duration(element)
             if not element['Type'] == 'audio':
-                update_element_size(element, float(output['Width']), float(output['Height']))
+                update_element_size(element, float(output['Width']),
+                                    float(output['Height']))
 
         # calculate segment duration
         calculate_segment_duration(segment)
 
         # generate background with particular color
-        background_image = generate_background_image(background_color, output['Width'], output['Height'], graph=graph)
+        background_image = generate_background_image(background_color,
+                                                     output['Width'],
+                                                     output['Height'],
+                                                     graph=graph)
         segment['background_stream'] = background_image
 
         # generate silent-audio for segment
-        background_audio = generate_background_audio(segment['duration'], graph)
+        background_audio = generate_background_audio(segment['duration'],
+                                                     graph)
         segment['background_audio_stream'] = background_audio
 
         # element preprocess
         for j, element in enumerate(segment['Elements']):
             new_element = None
             if element['Type'] == 'text':
-                new_element = preprocess_text_element(text_info=element, graph=graph)
+                new_element = preprocess_text_element(text_info=element,
+                                                      graph=graph)
             elif element['Type'] == 'image':
-                new_element = preprocess_image_element(image_info=element, graph=graph)
+                new_element = preprocess_image_element(image_info=element,
+                                                       graph=graph)
             elif element['Type'] == 'video':
-                new_element = preprocess_video_element(video_info=element, graph=graph)
+                new_element = preprocess_video_element(video_info=element,
+                                                       graph=graph)
             elif element['Type'] == 'audio':
-                new_element = preprocess_audio_element(audio_info=element, graph=graph)
+                new_element = preprocess_audio_element(audio_info=element,
+                                                       graph=graph)
             if new_element:
                 element_list.append(new_element)
 
         # save preprocessed-element-stream
         segment['Elements'] = element_list
-        segment['width'], segment['height'] = float(output['Width']), float(output['Height'])
+        segment['width'], segment['height'] = float(output['Width']), float(
+            output['Height'])
 
         # segment elements do overlay
         overlay_video_stream, overlay_audio_stream = segment_overlay(segment)
@@ -75,7 +85,8 @@ def video_edit(segments, global_elements, output, graph):
             del element['stream']
 
     # concat all segments
-    concat_stream = videos_concat(concat_list=concat_segment_list, output=output)
+    concat_stream = videos_concat(concat_list=concat_segment_list,
+                                  output=output)
 
     # get initial global element information
     # calculate and update duration & size  according to params
@@ -86,20 +97,25 @@ def video_edit(segments, global_elements, output, graph):
             record_element_info(element)
             update_element_duration(element)
         if not element['Type'] == 'audio':
-            update_element_size(element, float(output['Width']), float(output['Height']))
+            update_element_size(element, float(output['Width']),
+                                float(output['Height']))
 
     # global element preprocess
     global_element_list = []
     for j, element in enumerate(global_elements):
         new_element = None
         if element['Type'] == 'text':
-            new_element = preprocess_text_element(text_info=element, graph=graph)
+            new_element = preprocess_text_element(text_info=element,
+                                                  graph=graph)
         elif element['Type'] == 'image':
-            new_element = preprocess_image_element(image_info=element, graph=graph)
+            new_element = preprocess_image_element(image_info=element,
+                                                   graph=graph)
         elif element['Type'] == 'video':
-            new_element = preprocess_video_element(video_info=element, graph=graph)
+            new_element = preprocess_video_element(video_info=element,
+                                                   graph=graph)
         elif element['Type'] == 'audio':
-            new_element = preprocess_audio_element(audio_info=element, graph=graph)
+            new_element = preprocess_audio_element(audio_info=element,
+                                                   graph=graph)
         if new_element:
             global_element_list.append(new_element)
 
@@ -110,9 +126,11 @@ def video_edit(segments, global_elements, output, graph):
 
     # do global overlay
     final_v_stream, final_a_stream = global_overlay(
-        output['Width'], output['Height'], total_duration=total_duration, global_elements=global_element_list,
-        source=concat_stream
-    )
+        output['Width'],
+        output['Height'],
+        total_duration=total_duration,
+        global_elements=global_element_list,
+        source=concat_stream)
 
     # in order to dump_json, remove stream from element option
     for element in global_elements:

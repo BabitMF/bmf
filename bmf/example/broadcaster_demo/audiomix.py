@@ -18,15 +18,16 @@ from bmf.lib._bmf import sdk
 
 import bmf.hml.hmp as mp
 
-
 nb_samples = 1024
 channels = 2
 bytes_per_sample = 4
 sample_rate = 44100
 
+
 # assume every upstream node has two input streams, 0 is video, 1 is audio
 # make timestamp of all streams in same timeline
 class Audiomix(Module):
+
     def __init__(self, node, option=None):
         self.node_ = node
         self.option = option
@@ -62,7 +63,8 @@ class Audiomix(Module):
         )
 
     def get_volume(self, stream_id):
-        if self.option is None or self.option.get(str(stream_id), None) is None:
+        if self.option is None or self.option.get(str(stream_id),
+                                                  None) is None:
             return 1
         return self.option[str(stream_id)]
 
@@ -79,11 +81,9 @@ class Audiomix(Module):
                 continue
 
             frame = pkt.get(AudioFrame)
-            if (
-                frame.sample_rate != sample_rate
-                or frame.nsamples != nb_samples
-                or frame.layout != sdk.kLAYOUT_STEREO
-            ):
+            if (frame.sample_rate != sample_rate
+                    or frame.nsamples != nb_samples
+                    or frame.layout != sdk.kLAYOUT_STEREO):
                 Log.log(
                     LogLevel.DEBUG,
                     "frame property not match!!!",

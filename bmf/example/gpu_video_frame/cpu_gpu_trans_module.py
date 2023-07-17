@@ -1,7 +1,9 @@
 import bmf
 from bmf import *
 
+
 class cpu_gpu_trans_module(Module):
+
     def __init__(self, node, option=None):
         self.node_ = node
         self.option_ = option
@@ -46,7 +48,6 @@ class cpu_gpu_trans_module(Module):
         # add eof packet to output
         if self.eof_received_:
             output_queue.put(Packet.generate_eof_packet())
-            Log.log_node(LogLevel.DEBUG, self.node_,
-                         'output stream', 'done')
+            Log.log_node(LogLevel.DEBUG, self.node_, 'output stream', 'done')
             task.set_timestamp(Timestamp.DONE)
         return ProcessResult.OK

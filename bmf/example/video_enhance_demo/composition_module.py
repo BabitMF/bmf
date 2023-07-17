@@ -10,6 +10,7 @@ import numpy as np
 
 
 class Compositor:
+
     def __init__(self):
         self.slide_step = 5
         self.line_width = 10
@@ -21,7 +22,7 @@ class Compositor:
         img_out[:, x_coord:, :] = img_right[:, x_coord:, :]
 
         # white line
-        img_out[:, x_coord : x_coord + self.line_width, :] = 255
+        img_out[:, x_coord:x_coord + self.line_width, :] = 255
 
         return img_out
 
@@ -40,6 +41,7 @@ class Compositor:
 
 
 class CompositionModule(Module):
+
     def __init__(self, node=None, option=None):
         self._node = node
         self.compositor = Compositor()
@@ -67,9 +69,8 @@ class CompositionModule(Module):
                 num += 1
                 # process EOS
                 if pkt.timestamp == Timestamp.EOF:
-                    Log.log_node(
-                        LogLevel.INFO, task.get_node(), "Receive EOF................."
-                    )
+                    Log.log_node(LogLevel.INFO, task.get_node(),
+                                 "Receive EOF.................")
                     if output_queue is not None:
                         output_queue.put(Packet.generate_eof_packet())
                     task.timestamp = Timestamp.DONE
@@ -83,7 +84,8 @@ class CompositionModule(Module):
                     current_timebase = frame.time_base
                     current_timestamp = pkt.timestamp
 
-                rgb_frame = ffmpeg.reformat(frame, "rgb24").frame().plane(0).numpy()
+                rgb_frame = ffmpeg.reformat(frame,
+                                            "rgb24").frame().plane(0).numpy()
 
                 Log.log_node(
                     LogLevel.DEBUG,
@@ -95,9 +97,8 @@ class CompositionModule(Module):
                 )
                 frame_list.append(rgb_frame)
 
-            Log.log_node(
-                LogLevel.DEBUG, self._node, "index:", index, "get frame num:", num
-            )
+            Log.log_node(LogLevel.DEBUG, self._node, "index:", index,
+                         "get frame num:", num)
 
         if len(frame_list) != 2:
             Log.log_node(

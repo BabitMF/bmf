@@ -17,7 +17,7 @@ from base_test.base_test_case import BaseTestCase
 
 def push_file(file_name, graph, video_stream1, video_stream2, pts):
     f = open(file_name, "rb")
-    while(1):
+    while (1):
         lines = f.read(1000)
         if len(lines) == 0:
             break
@@ -35,24 +35,25 @@ def push_file(file_name, graph, video_stream1, video_stream2, pts):
 
 
 class TestPushData(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_push_pkt_into_decoder(self):
         output_path = "./aac.mp4"
 
         self.remove_result_data(output_path)
-        
+
         graph = bmf.graph({"dump_graph": 1})
 
         video_stream = graph.input_stream("outside_raw_video")
         decode_stream = video_stream.decode()
-        bmf.encode(None,decode_stream["audio"],{"output_path": output_path})
-        
-        graph.run_wo_block(mode = GraphMode.PUSHDATA)
+        bmf.encode(None, decode_stream["audio"], {"output_path": output_path})
+
+        graph.run_wo_block(mode=GraphMode.PUSHDATA)
         pts_ = 0
-        for index in range(100,105):
-            file_name = "../files/aac_slice/"+str(index)+".aac"
+        for index in range(100, 105):
+            file_name = "../files/aac_slice/" + str(index) + ".aac"
             with open(file_name, "rb") as fp:
-                lines = fp.read()    
+                lines = fp.read()
                 buf = BMFAVPacket(len(lines))
                 buf.data.numpy()[:] = np.frombuffer(lines, dtype=np.uint8)
                 buf.pts = pts_
@@ -62,9 +63,10 @@ class TestPushData(BaseTestCase):
                 packet.timestamp = pts_
                 start_time = time.time()
                 graph.fill_packet(video_stream.get_name(), packet, True)
-        graph.fill_packet(video_stream.get_name(),Packet.generate_eof_packet())
+        graph.fill_packet(video_stream.get_name(),
+                          Packet.generate_eof_packet())
         graph.close()
-    
+
     @timeout_decorator.timeout(seconds=120)
     def test_push_video_frame_into_encode(self):
 
@@ -76,9 +78,7 @@ class TestPushData(BaseTestCase):
 
         video_stream = graph.input_stream("outside_raw_video")
         bmf.encode(
-            video_stream,
-            None,
-            {
+            video_stream, None, {
                 "output_path": output_path,
                 "video_params": {
                     "codec": "h264",
@@ -88,9 +88,8 @@ class TestPushData(BaseTestCase):
                     "preset": "veryfast",
                     "vsync": "vfr"
                 }
-            }
-        )
-        graph.run_wo_block(mode = GraphMode.PUSHDATA)
+            })
+        graph.run_wo_block(mode=GraphMode.PUSHDATA)
 
         count = 50
         pts_ = 0
@@ -103,9 +102,9 @@ class TestPushData(BaseTestCase):
             graph.fill_packet(video_stream.get_name(), packet)
             print("push data into inputstream")
 
-        graph.fill_packet(video_stream.get_name(), Packet.generate_eof_packet())
+        graph.fill_packet(video_stream.get_name(),
+                          Packet.generate_eof_packet())
         graph.close()
-
 
     @timeout_decorator.timeout(seconds=120)
     def test_push_raw_stream_into_decoder(self):
@@ -119,18 +118,16 @@ class TestPushData(BaseTestCase):
         graph = bmf.graph({"dump_graph": 1})
 
         video_stream = graph.input_stream("outside_raw_video")
-        
-        decode_stream = video_stream.module(
-            'ffmpeg_decoder', 
-            option={
-                "video_codec": "h264", 'video_time_base': "1,30000",
-                "push_raw_stream": 1
-            }
-        )
+
+        decode_stream = video_stream.module('ffmpeg_decoder',
+                                            option={
+                                                "video_codec": "h264",
+                                                'video_time_base': "1,30000",
+                                                "push_raw_stream": 1
+                                            })
 
         encode_stream = decode_stream['video'].encode(
-            None,
-            {
+            None, {
                 "output_path": output_path,
                 "video_params": {
                     "codec": "h264",
@@ -139,12 +136,11 @@ class TestPushData(BaseTestCase):
                     "crf": "23",
                     "preset": "veryfast"
                 }
-            }
-        )
-        graph.run_wo_block(mode = GraphMode.PUSHDATA)
+            })
+        graph.run_wo_block(mode=GraphMode.PUSHDATA)
 
-        f_cont = open(input_video_content,'rb')
-        f_size = open(input_content_size,'r')
+        f_cont = open(input_video_content, 'rb')
+        f_size = open(input_content_size, 'r')
 
         pts_ = 0
         timestamp = 0
@@ -160,7 +156,8 @@ class TestPushData(BaseTestCase):
             timestamp += 1
             graph.fill_packet(video_stream.get_name(), packet)
 
-        graph.fill_packet(video_stream.get_name(), Packet.generate_eof_packet())
+        graph.fill_packet(video_stream.get_name(),
+                          Packet.generate_eof_packet())
         graph.close()
         f_size.close()
         f_cont.close()
@@ -187,7 +184,10 @@ class TestPushData(BaseTestCase):
         video_stream1 = graph.input_stream("outside_raw_video")
         video_stream2 = graph.input_stream("outside_raw_video2")
         decode_stream = video_stream1.decode()
-        decode_stream2 = video_stream2.decode({'video_codec': "copy", 'audio_codec': "copy"})
+        decode_stream2 = video_stream2.decode({
+            'video_codec': "copy",
+            'audio_codec': "copy"
+        })
         video = decode_stream["video"]
         video_params = {
             "codec": "h264",
@@ -215,24 +215,44 @@ class TestPushData(BaseTestCase):
             "map_metadata": "-1",
             "map_chapters": "-1"
         }
-        video.scale(1920, 1080).encode(decode_stream["audio"], {"output_path": output_path1, "video_params": video_params, "audio_params": audio_params, "mux_params": mux_params})
-        video.scale(1080, 720).encode(decode_stream["audio"], {"output_path": output_path2, "video_params": video_params, "audio_params": audio_params, "mux_params": mux_params})
-        video.scale(540, 360).encode(decode_stream["audio"], {"output_path": output_path3, "video_params": video_params, "audio_params": audio_params, "mux_params": mux_params})
+        video.scale(1920, 1080).encode(
+            decode_stream["audio"], {
+                "output_path": output_path1,
+                "video_params": video_params,
+                "audio_params": audio_params,
+                "mux_params": mux_params
+            })
+        video.scale(1080, 720).encode(
+            decode_stream["audio"], {
+                "output_path": output_path2,
+                "video_params": video_params,
+                "audio_params": audio_params,
+                "mux_params": mux_params
+            })
+        video.scale(540, 360).encode(
+            decode_stream["audio"], {
+                "output_path": output_path3,
+                "video_params": video_params,
+                "audio_params": audio_params,
+                "mux_params": mux_params
+            })
 
-        bmf.encode(decode_stream2["video"], decode_stream2["audio"], {"output_path": output_path})
+        bmf.encode(decode_stream2["video"], decode_stream2["audio"],
+                   {"output_path": output_path})
 
         graph.run_wo_block(mode=GraphMode.PUSHDATA)
         pts = 0
         push_file(input_file1, graph, video_stream1, video_stream2, pts)
         print("send eof")
-        graph.fill_packet(video_stream1.get_name(), Packet.generate_eof_packet(), True)
-        graph.fill_packet(video_stream2.get_name(), Packet.generate_eof_packet(), True)
+        graph.fill_packet(video_stream1.get_name(),
+                          Packet.generate_eof_packet(), True)
+        graph.fill_packet(video_stream2.get_name(),
+                          Packet.generate_eof_packet(), True)
         graph.close()
         self.check_video_diff(output_path, expect_result)
         self.check_video_diff(output_path1, expect_result1)
         self.check_video_diff(output_path2, expect_result2)
         self.check_video_diff(output_path3, expect_result3)
-
 
     @timeout_decorator.timeout(seconds=120)
     def test_cut_off_stream_graph(self):
@@ -246,7 +266,7 @@ class TestPushData(BaseTestCase):
         expect_result2 = 'output2.mp4|720|1080|20.092|MOV,MP4,M4A,3GP,3G2,MJ2|914524|2297742|h264|{"fps": "30.0"}'
         output_path3 = "./output3.mp4"
         expect_result3 = 'output3.mp4|360|540|20.092|MOV,MP4,M4A,3GP,3G2,MJ2|387482|973550|h264|{"fps": "30.0"}'
- 
+
         self.remove_result_data(output_path)
         self.remove_result_data(output_path1)
         self.remove_result_data(output_path2)
@@ -256,7 +276,10 @@ class TestPushData(BaseTestCase):
         video_stream1 = graph.input_stream("outside_raw_video")
         video_stream2 = graph.input_stream("outside_raw_video2")
         decode_stream = video_stream1.decode()
-        decode_stream2 = video_stream2.decode({'video_codec': "copy", 'audio_codec': "copy"})
+        decode_stream2 = video_stream2.decode({
+            'video_codec': "copy",
+            'audio_codec': "copy"
+        })
         video = decode_stream["video"]
         video_params = {
             "codec": "h264",
@@ -284,11 +307,30 @@ class TestPushData(BaseTestCase):
             "map_metadata": "-1",
             "map_chapters": "-1"
         }
-        video.scale(1920, 1080).encode(decode_stream["audio"], {"output_path": output_path1, "video_params": video_params, "audio_params": audio_params, "mux_params": mux_params})
-        video.scale(1080, 720).encode(decode_stream["audio"], {"output_path": output_path2, "video_params": video_params, "audio_params": audio_params, "mux_params": mux_params})
-        video.scale(540, 360).encode(decode_stream["audio"], {"output_path": output_path3, "video_params": video_params, "audio_params": audio_params, "mux_params": mux_params})
+        video.scale(1920, 1080).encode(
+            decode_stream["audio"], {
+                "output_path": output_path1,
+                "video_params": video_params,
+                "audio_params": audio_params,
+                "mux_params": mux_params
+            })
+        video.scale(1080, 720).encode(
+            decode_stream["audio"], {
+                "output_path": output_path2,
+                "video_params": video_params,
+                "audio_params": audio_params,
+                "mux_params": mux_params
+            })
+        video.scale(540, 360).encode(
+            decode_stream["audio"], {
+                "output_path": output_path3,
+                "video_params": video_params,
+                "audio_params": audio_params,
+                "mux_params": mux_params
+            })
 
-        bmf.encode(decode_stream2["video"], decode_stream2["audio"], {"output_path": output_path})
+        bmf.encode(decode_stream2["video"], decode_stream2["audio"],
+                   {"output_path": output_path})
         graph.run_wo_block(mode=GraphMode.PUSHDATA)
         pts = 0
         pts = push_file(input_file1, graph, video_stream1, video_stream2, pts)
@@ -297,15 +339,17 @@ class TestPushData(BaseTestCase):
         pkt = BMFAVPacket()
         pts += 1
         pkt.pts = pts
-        assert(pkt.nbytes == 0)
+        assert (pkt.nbytes == 0)
         packet = Packet(pkt)
         packet.timestamp = pts
         graph.fill_packet(video_stream1.get_name(), packet)
         graph.fill_packet(video_stream2.get_name(), packet)
         print("push another file")
         push_file(input_file2, graph, video_stream1, video_stream2, pts)
-        graph.fill_packet(video_stream1.get_name(), Packet.generate_eof_packet(), True)
-        graph.fill_packet(video_stream2.get_name(), Packet.generate_eof_packet(), True)
+        graph.fill_packet(video_stream1.get_name(),
+                          Packet.generate_eof_packet(), True)
+        graph.fill_packet(video_stream2.get_name(),
+                          Packet.generate_eof_packet(), True)
         graph.close()
         self.check_video_diff(output_path, expect_result)
         self.check_video_diff(output_path1, expect_result1)
@@ -323,47 +367,43 @@ class TestPushData(BaseTestCase):
         graph = bmf.graph({"dump_graph": 1})
 
         audio_stream = graph.input_stream("outside_raw_audio")
-        
-        decode_stream = audio_stream.module(
-            'ffmpeg_decoder', 
-            option={
-                "audio_codec": "aac",
-                "channels": 2,
-                "sample_rate": 44100,
-                "push_raw_stream": 1
-            }
-        )
 
-        encode_stream = bmf.encode(
-            None,
-            decode_stream['audio'],
-            {
-                "output_path": output_path
-            }
-        )
-        graph.run_wo_block(mode = GraphMode.PUSHDATA)
+        decode_stream = audio_stream.module('ffmpeg_decoder',
+                                            option={
+                                                "audio_codec": "aac",
+                                                "channels": 2,
+                                                "sample_rate": 44100,
+                                                "push_raw_stream": 1
+                                            })
 
-        f_cont = open(input_audio_content,'rb')
-        f_size = open(input_content_size,'r')
+        encode_stream = bmf.encode(None, decode_stream['audio'],
+                                   {"output_path": output_path})
+        graph.run_wo_block(mode=GraphMode.PUSHDATA)
+
+        f_cont = open(input_audio_content, 'rb')
+        f_size = open(input_content_size, 'r')
 
         pts_ = 0
         lines = f_size.readlines()
         for size in lines:
             pkt = BMFAVPacket(int(size))
             memview = pkt.data.numpy()
-            memview[:] = np.frombuffer(f_cont.read(int(size)), dtype=memview.dtype)
+            memview[:] = np.frombuffer(f_cont.read(int(size)),
+                                       dtype=memview.dtype)
             pkt.pts = pts_
             packet = Packet(pkt)
             packet.timestamp = pts_
             pts_ += 20
             graph.fill_packet(audio_stream.get_name(), packet)
 
-        graph.fill_packet(audio_stream.get_name(), Packet.generate_eof_packet())
+        graph.fill_packet(audio_stream.get_name(),
+                          Packet.generate_eof_packet())
         graph.close()
         f_size.close()
         f_cont.close()
 
         self.check_video_diff(output_path, expect_result)
+
 
 if __name__ == '__main__':
     unittest.main()

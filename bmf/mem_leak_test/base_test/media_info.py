@@ -12,6 +12,7 @@ else:
 
 
 class MediaInfo(object):
+
     def __init__(self, video_path):
         self.video_path_ = video_path
         ffmpeg_path = os.getenv('FFMPEG_BIN_PATH')
@@ -20,10 +21,12 @@ class MediaInfo(object):
         else:
             FFPROBE = ffmpeg_path + "/ffprobe"
         show_options = " -show_format -show_streams "
-        ff_cmd = "%s -hide_banner -loglevel quiet -print_format json %s %s" % (FFPROBE, show_options, video_path)
+        ff_cmd = "%s -hide_banner -loglevel quiet -print_format json %s %s" % (
+            FFPROBE, show_options, video_path)
         (status, raw_output) = getstatusoutput(ff_cmd)
         if status:
-            raise Exception('may be problem video, status_code %s != 0' % (status))
+            raise Exception('may be problem video, status_code %s != 0' %
+                            (status))
         dict_info = json.loads(raw_output)
         if 'format' not in dict_info:
             raise Exception('no format in output')
@@ -31,33 +34,41 @@ class MediaInfo(object):
             raise Exception('ffprobe no streams')
         self.av_out_info = dict_info
         for stream in dict_info['streams']:
-            if stream.get('codec_type') == 'video' and 'v_stream' not in self.av_out_info:
+            if stream.get('codec_type'
+                          ) == 'video' and 'v_stream' not in self.av_out_info:
                 self.av_out_info['v_stream'] = stream
-            elif stream.get('codec_type') == 'audio' and 'a_stream' not in self.av_out_info:
+            elif stream.get(
+                    'codec_type'
+            ) == 'audio' and 'a_stream' not in self.av_out_info:
                 self.av_out_info['a_stream'] = stream
 
     def get_width(self, default_value=0):
         if 'v_stream' in self.av_out_info:
-            return int(self.av_out_info['v_stream'].get("width", default_value))
+            return int(self.av_out_info['v_stream'].get(
+                "width", default_value))
         else:
             return default_value
 
     def get_height(self, default_value=0):
         if 'v_stream' in self.av_out_info:
-            return int(self.av_out_info['v_stream'].get("height", default_value))
+            return int(self.av_out_info['v_stream'].get(
+                "height", default_value))
         else:
             return default_value
 
     def get_duration(self, default_value=0):
-        duration = float(self.av_out_info["format"].get('duration', default_value))
+        duration = float(self.av_out_info["format"].get(
+            'duration', default_value))
         return duration
 
     def get_format(self, default_value=""):
-        format_name = (self.av_out_info["format"].get('format_name', default_value)).upper()
+        format_name = (self.av_out_info["format"].get('format_name',
+                                                      default_value)).upper()
         return format_name
 
     def get_bitrate(self, default_value=0):
-        bit_rate = int(self.av_out_info["format"].get('bit_rate', default_value))
+        bit_rate = int(self.av_out_info["format"].get('bit_rate',
+                                                      default_value))
         return bit_rate
 
     def get_size(self, default_value=0):
@@ -66,7 +77,8 @@ class MediaInfo(object):
 
     def get_encode_type(self, default_value=""):
         if 'v_stream' in self.av_out_info:
-            return self.av_out_info['v_stream'].get("codec_name", default_value)
+            return self.av_out_info['v_stream'].get("codec_name",
+                                                    default_value)
         else:
             return default_value
 
@@ -85,7 +97,8 @@ class MediaInfo(object):
             default_value = {}
         result = dict()
         if 'v_stream' in self.av_out_info:
-            fps_str = self.av_out_info.get('v_stream').get('avg_frame_rate', '-1/1')
+            fps_str = self.av_out_info.get('v_stream').get(
+                'avg_frame_rate', '-1/1')
             fps = self.parse_fraction(fps_str)
             result = {'fps': str(fps)}
             return result
@@ -101,9 +114,10 @@ class MediaInfo(object):
         encoded_size = int(self.get_size())
         encoded_encoded_type = str(self.get_encode_type())
         encoded_extra = self.get_extra_info()
-        result = "%s|%d|%d|%f|%s|%d|%d|%s|%s" % (self.video_path_, encoded_height, encoded_width, encoded_duration,
-                                                 encoded_format, encoded_bitrate, encoded_size, encoded_encoded_type,
-                                                 str(encoded_extra))
+        result = "%s|%d|%d|%f|%s|%d|%d|%s|%s" % (
+            self.video_path_, encoded_height, encoded_width, encoded_duration,
+            encoded_format, encoded_bitrate, encoded_size,
+            encoded_encoded_type, str(encoded_extra))
         return result
 
 

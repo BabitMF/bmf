@@ -18,13 +18,13 @@ def process_thread(server_gateway, packet):
 
 
 class TestServer(BaseTestCase):
+
     def test_single_video(self):
         input_video_path_1 = "../files/img.mp4"
         graph = bmf.graph({"dump_graph": 0})
         video_stream = graph.module('ffmpeg_decoder')
         video_stream['video'].pass_through().encode(
-            video_stream['audio'],
-            {
+            video_stream['audio'], {
                 "output_prefix": "./output_video_dir",
                 "video_params": {
                     "codec": "h264",
@@ -33,8 +33,7 @@ class TestServer(BaseTestCase):
                     "crf": "23",
                     "preset": "veryfast"
                 }
-            }
-        ).output_stream()
+            }).output_stream()
 
         server_gateway = ServerGateway(graph)
         server_gateway.init()
@@ -45,7 +44,8 @@ class TestServer(BaseTestCase):
         data = {'type': InputType.VIDEO, 'input_path': video_info_list1}
         packet1 = Packet(data)
         packet1.timestamp = 1
-        thread_ = threading.Thread(target=process_thread, args=(server_gateway, packet1))
+        thread_ = threading.Thread(target=process_thread,
+                                   args=(server_gateway, packet1))
         thread_.start()
 
         # create a packet and send it to the graph
@@ -55,7 +55,8 @@ class TestServer(BaseTestCase):
         data = {'type': InputType.VIDEO, 'input_path': video_info_list2}
         packet2 = Packet(data)
         packet2.timestamp = 2
-        thread_ = threading.Thread(target=process_thread, args=(server_gateway, packet2))
+        thread_ = threading.Thread(target=process_thread,
+                                   args=(server_gateway, packet2))
         thread_.start()
 
         # finish the process
@@ -67,18 +68,17 @@ class TestServer(BaseTestCase):
 
         graph = bmf.graph({"dump_graph": 1})
 
-        video_stream = graph.input_stream('graph_input_name').module('ffmpeg_decoder')
+        video_stream = graph.input_stream('graph_input_name').module(
+            'ffmpeg_decoder')
         video_stream['video'].pass_through().encode(
-            None,
-            {
+            None, {
                 "output_prefix": "./output_multi_pic_dir",
                 "video_params": {
                     "codec": "jpg",
                     "width": 320,
                     "height": 240
                 }
-            }
-        ).output_stream()
+            }).output_stream()
 
         server_gateway = ServerGateway(graph)
         server_gateway.init()
@@ -94,7 +94,8 @@ class TestServer(BaseTestCase):
         data = {'type': InputType.PICTURELIST, 'input_path': pic_info_list}
         packet1 = Packet(data)
         packet1.timestamp = 1
-        thread_ = threading.Thread(target=process_thread, args=(server_gateway, packet1))
+        thread_ = threading.Thread(target=process_thread,
+                                   args=(server_gateway, packet1))
         thread_.start()
 
         pic_info_list2 = []
@@ -107,7 +108,8 @@ class TestServer(BaseTestCase):
         data = {'type': InputType.PICTURELIST, 'input_path': pic_info_list2}
         packet2 = Packet(data)
         packet2.timestamp = 2
-        thread_ = threading.Thread(target=process_thread, args=(server_gateway, packet2))
+        thread_ = threading.Thread(target=process_thread,
+                                   args=(server_gateway, packet2))
         thread_.start()
 
         # finish the process
@@ -119,8 +121,7 @@ class TestServer(BaseTestCase):
         graph = bmf.graph({"dump_graph": 0})
         video_stream = graph.module('ffmpeg_decoder')
         video_stream['video'].vflip().pass_through().scale(100, 200).encode(
-            video_stream['audio'],
-            {
+            video_stream['audio'], {
                 "output_prefix": "./output_filter_condition_dir",
                 "video_params": {
                     "codec": "h264",
@@ -129,8 +130,7 @@ class TestServer(BaseTestCase):
                     "crf": "23",
                     "preset": "veryfast"
                 }
-            }
-        ).output_stream()
+            }).output_stream()
 
         server_gateway = ServerGateway(graph)
         server_gateway.init()
@@ -140,7 +140,8 @@ class TestServer(BaseTestCase):
         data = {'type': InputType.VIDEOLIST, 'input_path': video_info_list}
         packet1 = Packet(data)
         packet1.timestamp = 1
-        thread_ = threading.Thread(target=process_thread, args=(server_gateway, packet1))
+        thread_ = threading.Thread(target=process_thread,
+                                   args=(server_gateway, packet1))
         thread_.start()
 
         video_info_list2 = []
@@ -148,7 +149,8 @@ class TestServer(BaseTestCase):
         data2 = {'type': InputType.VIDEOLIST, 'input_path': video_info_list2}
         packet2 = Packet(data2)
         packet2.timestamp = 1
-        thread_ = threading.Thread(target=process_thread, args=(server_gateway, packet2))
+        thread_ = threading.Thread(target=process_thread,
+                                   args=(server_gateway, packet2))
         thread_.start()
 
         # finish the process
@@ -165,20 +167,30 @@ class TestServer(BaseTestCase):
             None,
             {
                 "format": "mjpeg",
-                "video_params": {"codec": "jpg"},
-                "output_prefix": "./first_module_is_not_decoder"  # ,"video_params": {"codec": "png"}
+                "video_params": {
+                    "codec": "jpg"
+                },
+                "output_prefix":
+                "./first_module_is_not_decoder"  # ,"video_params": {"codec": "png"}
             }).output_stream()
         server_gateway = ServerGateway(graph)
         server_gateway.init()
-        data = {"video_data": {'type': InputType.VIDEO, 'input_path': [{'input_path': input_file}]},
-                "extra_data": "hello_world"}
+        data = {
+            "video_data": {
+                'type': InputType.VIDEO,
+                'input_path': [{
+                    'input_path': input_file
+                }]
+            },
+            "extra_data": "hello_world"
+        }
         packet = Packet(data)
         packet.timestamp = 1
-        thread_ = threading.Thread(target=process_thread, args=(server_gateway, packet))
+        thread_ = threading.Thread(target=process_thread,
+                                   args=(server_gateway, packet))
         thread_.start()
 
         server_gateway.close()
-
 
     def test_all_results_at_one_time(self):
         input_video_path = "../files/img.mp4"
@@ -187,8 +199,7 @@ class TestServer(BaseTestCase):
 
         video_stream = graph.module('ffmpeg_decoder')
         server_gateway = video_stream['video'].pass_through().vflip().encode(
-            None,
-            {
+            None, {
                 "output_prefix": "./all_results_at_one_time",
                 "video_params": {
                     "codec": "h264",
@@ -197,8 +208,7 @@ class TestServer(BaseTestCase):
                     "crf": "23",
                     "preset": "veryfast"
                 }
-            }
-        ).server(mode=1)
+            }).server(mode=1)
 
         for i in range(2):
             video_info_list1 = []
@@ -229,8 +239,7 @@ class TestServer(BaseTestCase):
         graph = bmf.graph({"dump_graph": 1})
         video_stream = graph.module('ffmpeg_decoder')
         server_gateway = video_stream['video'].pass_through().vflip().encode(
-            None,
-            {
+            None, {
                 "output_prefix": "./specified_job_result_unblock",
                 "video_params": {
                     "codec": "h264",
@@ -239,8 +248,7 @@ class TestServer(BaseTestCase):
                     "crf": "23",
                     "preset": "veryfast"
                 }
-            }
-        ).server(mode=1)
+            }).server(mode=1)
 
         video_info_list1 = []
         video_info_list1.append({'input_path': input_video_path})
@@ -273,8 +281,7 @@ class TestServer(BaseTestCase):
         graph = bmf.graph({"dump_graph": 1})
         video_stream = graph.module('ffmpeg_decoder')
         server_gateway = video_stream['video'].pass_through().vflip().encode(
-            None,
-            {
+            None, {
                 "output_prefix": "./specified_job_result_block",
                 "video_params": {
                     "codec": "h264",
@@ -283,8 +290,7 @@ class TestServer(BaseTestCase):
                     "crf": "23",
                     "preset": "veryfast"
                 }
-            }
-        ).server(mode=1)
+            }).server(mode=1)
 
         video_info_list1 = []
         video_info_list1.append({'input_path': input_video_path})
@@ -317,8 +323,7 @@ class TestServer(BaseTestCase):
         graph = bmf.graph({"dump_graph": 1})
         video_stream = graph.module('ffmpeg_decoder')
         server_gateway = video_stream['video'].pass_through().vflip().encode(
-            None,
-            {
+            None, {
                 "output_prefix": "./pop_from_result_queue",
                 "video_params": {
                     "codec": "h264",
@@ -327,8 +332,7 @@ class TestServer(BaseTestCase):
                     "crf": "23",
                     "preset": "veryfast"
                 }
-            }
-        ).server(mode=1)
+            }).server(mode=1)
 
         video_info_list1 = []
         video_info_list1.append({'input_path': input_video_path})
@@ -350,8 +354,9 @@ class TestServer(BaseTestCase):
             res_list.append(res)
         server_gateway.close()
 
-        assert str(res_list[0])=="{'res_1': './pop_from_result_queue/1'}"
-        assert str(res_list[1]) == "{'high_priority_job': './pop_from_result_queue/2'}"
+        assert str(res_list[0]) == "{'res_1': './pop_from_result_queue/1'}"
+        assert str(res_list[1]
+                   ) == "{'high_priority_job': './pop_from_result_queue/2'}"
 
 
 if __name__ == '__main__':

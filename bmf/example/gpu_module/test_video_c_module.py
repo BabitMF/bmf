@@ -10,9 +10,12 @@ import timeout_decorator
 sys.path.append("../")
 from base_test.base_test_case import BaseTestCase
 from base_test.media_info import MediaInfo
+
 sys.path.append("./c_module")
 
+
 class TestVideoCModule(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_video(self):
         input_video_path = "../files/img.mp4"
@@ -23,12 +26,15 @@ class TestVideoCModule(BaseTestCase):
         c_module_path = './libcvtcolor.so'
         c_module_entry = 'cvtcolor:TestCvtColorModule'
         # decode
-        video = bmf.graph().decode({'input_path': input_video_path, 'video_params': {'pix_fmt': 'nv12'}})
+        video = bmf.graph().decode({
+            'input_path': input_video_path,
+            'video_params': {
+                'pix_fmt': 'nv12'
+            }
+        })
         # c module processing
-        video_2 = (
-            video['video'].ff_filter('format', 'yuv420p')
-                          .c_module('cvtcolor', c_module_path, c_module_entry)
-        )
+        video_2 = (video['video'].ff_filter('format', 'yuv420p').c_module(
+            'cvtcolor', c_module_path, c_module_entry))
         # ffmpeg filter
         # video_3 = (
         #     video_2['video'].ff_filter('format', 'nv12')
@@ -45,22 +51,22 @@ class TestVideoCModule(BaseTestCase):
         #       "audio_params": {"codec": "aac"}
         #     }
         # )
-        (
-            bmf.encode(
-                video_2,  # video stream, set to None
-                video['audio'],
-                {"output_path": output_path,
-                 "video_params": {
-                     "codec": "hevc_nvenc",
-                     "width": 1920,
-                     "height": 1080,
+        (bmf.encode(
+            video_2,  # video stream, set to None
+            video['audio'],
+            {
+                "output_path": output_path,
+                "video_params": {
+                    "codec": "hevc_nvenc",
+                    "width": 1920,
+                    "height": 1080,
                     #  "vsync": "vfr",
                     #  "max_fr": 60
-                 },
-                 "audio_params": {"codec": "aac"}
-                 }
-            ).run()
-        )
+                },
+                "audio_params": {
+                    "codec": "aac"
+                }
+            }).run())
         # self.check_video_diff(output_path, expect_result)
 
     # @timeout_decorator.timeout(seconds=120)
@@ -87,7 +93,8 @@ class TestVideoCModule(BaseTestCase):
 
     #         }).run()
     #     )
-        # self.check_video_diff(output_path, expect_result)
+    # self.check_video_diff(output_path, expect_result)
+
 
 if __name__ == '__main__':
     unittest.main()

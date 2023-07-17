@@ -10,10 +10,12 @@ import timeout_decorator
 sys.path.append("../")
 from base_test.base_test_case import BaseTestCase
 from base_test.media_info import MediaInfo
+
 sys.path.append("./c_module")
 
 
 class TestVideoCModule(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_video(self):
         input_video_path = "../files/big_bunny_10s_30fps.mp4"
@@ -26,24 +28,23 @@ class TestVideoCModule(BaseTestCase):
         # decode
         video = bmf.graph().decode({'input_path': input_video_path})
         # c module processing
-        video_2 = (
-            video['video'].c_module("copy_module", c_module_path, c_module_entry)
-        )
+        video_2 = (video['video'].c_module("copy_module", c_module_path,
+                                           c_module_entry))
 
         # encode
-        (
-            bmf.encode(
-                video_2,  # video stream, set to None
-                video['audio'],
-                {"output_path": output_path,
-                 "video_params": {
-                     "vsync": "vfr",
-                     "max_fr": 60
-                 },
-                 "audio_params": {"codec": "aac"}
-                 }
-            ).run()
-        )
+        (bmf.encode(
+            video_2,  # video stream, set to None
+            video['audio'],
+            {
+                "output_path": output_path,
+                "video_params": {
+                    "vsync": "vfr",
+                    "max_fr": 60
+                },
+                "audio_params": {
+                    "codec": "aac"
+                }
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -54,23 +55,20 @@ class TestVideoCModule(BaseTestCase):
         self.remove_result_data(output_path)
         c_module_path = './libcopy_module.so'
         c_module_entry = 'copy_module:CopyModule'
-        (
-            bmf.graph()
-                .decode({'input_path': input_video_path})['video']
-                .scale(320, 240)
-                .c_module("copy_module", c_module_path, c_module_entry)
-                .encode(None, {
-                "output_path": output_path,
-                "format": "mjpeg",
-                "video_params": {
-                        "codec": "jpg",
-                        "width": 320,
-                        "height": 240
-                }
-
-            }).run()
-        )
+        (bmf.graph().decode({'input_path': input_video_path})['video'].scale(
+            320, 240).c_module("copy_module", c_module_path,
+                               c_module_entry).encode(
+                                   None, {
+                                       "output_path": output_path,
+                                       "format": "mjpeg",
+                                       "video_params": {
+                                           "codec": "jpg",
+                                           "width": 320,
+                                           "height": 240
+                                       }
+                                   }).run())
         self.check_video_diff(output_path, expect_result)
+
 
 if __name__ == '__main__':
     unittest.main()

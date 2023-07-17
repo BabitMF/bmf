@@ -39,6 +39,7 @@ from bmf.lib._bmf.sdk import ffmpeg
 
 
 class video_layout(Module):
+
     def __init__(self, node=None, option=None):
         self._node = node
         self.option = option if option else dict()
@@ -101,18 +102,22 @@ class video_layout(Module):
             if index == -1:
                 continue
 
-            Log.log_node(LogLevel.DEBUG, self._node, "video frame to knhwc.......")
+            Log.log_node(LogLevel.DEBUG, self._node,
+                         "video frame to knhwc.......")
             video_frame = pkt.get(VideoFrame)
             #frame = video_frame.to_image(mp.kNHWC).image().numpy()
 
             #use ffmpeg
-            frame = ffmpeg.reformat(video_frame, "rgb24").frame().plane(0).numpy()
+            frame = ffmpeg.reformat(video_frame,
+                                    "rgb24").frame().plane(0).numpy()
 
-            Log.log_node(LogLevel.DEBUG, self._node, "video frame to rgb24 done")
+            Log.log_node(LogLevel.DEBUG, self._node,
+                         "video frame to rgb24 done")
             # frame = video_frame.to_ndarray(format="rgb24")
             overlay_list.append(frame)
 
-        raw_frame = bg_overlay_frames(overlay_list, self.option, self.g_monitor_change)
+        raw_frame = bg_overlay_frames(overlay_list, self.option,
+                                      self.g_monitor_change)
         return raw_frame
 
     def process(self, task):
@@ -135,9 +140,11 @@ class video_layout(Module):
                 if frame_list:
                     timestamp = frame_list[0][1]
 
-                Log.log_node(LogLevel.DEBUG, self._node, "do video overlay.......")
+                Log.log_node(LogLevel.DEBUG, self._node,
+                             "do video overlay.......")
                 raw_frame = self.do_overlay(frame_list)
-                Log.log_node(LogLevel.DEBUG, self._node, "do video overlay done")
+                Log.log_node(LogLevel.DEBUG, self._node,
+                             "do video overlay done")
 
                 rgbformat = mp.PixelInfo(mp.kPF_RGB24)
                 image = mp.Frame(mp.from_numpy(raw_frame), rgbformat)
@@ -148,11 +155,11 @@ class video_layout(Module):
 
                 #video_frame = ffmpeg.reformat(vf, "yuv420p")
                 video_frame = VideoFrame(image)
-                Log.log_node(LogLevel.DEBUG, self._node, "do video format change done")
+                Log.log_node(LogLevel.DEBUG, self._node,
+                             "do video format change done")
                 # video_frame = VideoFrame.from_ndarray(
                 #    raw_frame, format="rgb24"
                 # ).reformat(format="yuv420p")
-
 
                 video_frame.pts = timestamp
                 video_frame.time_base = Rational(1, 1000000)

@@ -3,13 +3,19 @@ add_subdirectory(sdk)
 #add_subdirectory(go_module_sdk) #FIXME: compile failed
 add_subdirectory(engine)
 add_subdirectory(c_modules)
-add_subdirectory(example/c_module)
-add_subdirectory(example/gpu_module)
+if(BMF_ENABLE_TEST)
+    add_subdirectory(example/c_module)
+    add_subdirectory(example/gpu_module)
+    if(NOT APPLE OR "${DEPLOYMENT_TARGET}" VERSION_GREATER_EQUAL "13.0" AND NOT ANDROID)
+        add_subdirectory(example/cpp_builder)
+        add_subdirectory(example/module_functor) # need filesystem support
+    endif()
 
-if(NOT APPLE OR "${DEPLOYMENT_TARGET}" VERSION_GREATER_EQUAL "13.0" AND NOT ANDROID)
-    add_subdirectory(example/cpp_builder)
-    add_subdirectory(example/module_functor) # need filesystem support
-endif()
+    if(IOS)
+        add_subdirectory(example/static_module)
+    endif()
+endif(BMF_ENABLE_TEST)
+
 add_subdirectory(cmd)
 if(HMP_ENABLE_JNI)
     add_subdirectory(java)
@@ -23,10 +29,17 @@ if(IOS)
 endif()
 
 ## Assemble BMF runtime(put all libs, incs and other resources under ${BMF_ASSEMBE_ROOT})
-add_custom_target(bmf_assem ALL
-    DEPENDS engine copy_module cvtcolor
-    ${CMAKE_CURRENT_BINARY_DIR}/__always_update
-)
+if(BMF_ENABLE_TEST)
+    add_custom_target(bmf_assem ALL
+        DEPENDS engine copy_module cvtcolor
+        ${CMAKE_CURRENT_BINARY_DIR}/__always_update
+    )
+else()
+    add_custom_target(bmf_assem ALL
+        DEPENDS engine
+        ${CMAKE_CURRENT_BINARY_DIR}/__always_update
+    )
+endif()
 
 add_custom_command(
     OUTPUT
@@ -52,12 +65,16 @@ endfunction()
 if(NOT IOS)
     copy_dir_to_bmf_module(builder)
     copy_dir_to_bmf_module(ffmpeg_engine)
+    copy_dir_to_bmf_module(hml/hmp)
+    copy_dir_to_bmf_module(modules)
     copy_dir_to_bmf_module(python_sdk)
     copy_dir_to_bmf_module(server)
-    copy_dir_to_bmf_module(engine/c_engine/files files)
-    copy_dir_to_bmf_module(example ../example)
     copy_dir_to_bmf_module(sdk/cpp_sdk/include include)
     copy_dir_to_bmf_module(engine/connector/include include)
+    if(BMF_ENABLE_TEST)
+        copy_dir_to_bmf_module(example ../example)
+        copy_dir_to_bmf_module(engine/c_engine/files files)
+    endif()
 else()
     copy_dir_to_bmf_module(sdk/cpp_sdk/include include)
 endif()
@@ -96,13 +113,14 @@ add_custom_command(TARGET bmf_assem
                     ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
                     ${BMF_ASSEMBLE_ROOT}/bmf/)
 
-add_custom_command(TARGET bmf_assem
-    POST_BUILD
+if(BMF_ENABLE_TEST)
+    add_custom_command(TARGET bmf_assem
+        POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:copy_module> ${BMF_ASSEMBLE_ROOT}/example/c_module)
-
-add_custom_command(TARGET bmf_assem
-    POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cvtcolor> ${BMF_ASSEMBLE_ROOT}/example/gpu_module)
+    add_custom_command(TARGET bmf_assem
+        POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cvtcolor> ${BMF_ASSEMBLE_ROOT}/example/gpu_module)
+endif()
 
 # json
 add_custom_command(TARGET bmf_assem
@@ -213,8 +231,4 @@ if(IOS)
 
         WORKING_DIRECTORY ${IOS_ASSEMBLE_ROOT} 
     )
-endif()
-
-if(IOS)
-    add_subdirectory(example/static_module)
 endif()

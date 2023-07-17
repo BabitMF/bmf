@@ -22,14 +22,14 @@ if(BMF_ENABLE_CUDA)
 endif()
 
 target_link_libraries(builtin_modules
-    PRIVATE 
+    PRIVATE
         ${BMF_FFMPEG_TARGETS}
         bmf_module_sdk
 )
 
 if(NOT APPLE AND NOT ANDROID)
     set_target_properties(builtin_modules PROPERTIES
-        VERSION "${BMF_VERSION_MAJOR}.${BMF_VERSION_MINOR}"
+	    VERSION "${BMF_VERSION_MAJOR}.${BMF_VERSION_MINOR}.${BMF_VERSION_PATCH}"
     )
 endif()
 
@@ -45,32 +45,35 @@ if ($ENV{SCRIPT_EXEC_MODE} MATCHES "osx")
     set_target_properties(builtin_modules PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 endif()
 
+
 # tests
-file(GLOB TEST_SRCS test/*.cpp)
+if(BMF_ENABLE_TEST)
+    file(GLOB TEST_SRCS test/*.cpp)
 
-# compile errors
-list(FILTER TEST_SRCS EXCLUDE REGEX test_python_module.cpp)
+    # compile errors
+    list(FILTER TEST_SRCS EXCLUDE REGEX test_python_module.cpp)
 
-add_executable(test_builtin_modules ${TEST_SRCS})
+    add_executable(test_builtin_modules ${TEST_SRCS})
 
-target_link_libraries(test_builtin_modules 
-    PRIVATE
-        builtin_modules engine bmf_module_sdk
-        gtest ${BMF_FFMPEG_TARGETS}
-)
-
-target_link_libraries(test_builtin_modules PRIVATE gtest_main)
-
-if ($ENV{SCRIPT_EXEC_MODE} MATCHES "osx")
-    # Mac platform
-    set_target_properties(test_builtin_modules
-        PROPERTIES
-        INSTALL_RPATH "@loader_path/../lib;@loader_path"
+    target_link_libraries(test_builtin_modules
+        PRIVATE
+            builtin_modules engine bmf_module_sdk
+            gtest ${BMF_FFMPEG_TARGETS}
     )
 
-    # Mac OSX excludes Python lib in linker to prevent embedding Python interpreter
-    target_include_directories(test_builtin_modules PRIVATE ${Python_INCLUDE_DIRS})
-    set_target_properties(test_builtin_modules PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    target_link_libraries(test_builtin_modules PRIVATE gtest_main)
+
+    if ($ENV{SCRIPT_EXEC_MODE} MATCHES "osx")
+        # Mac platform
+        set_target_properties(test_builtin_modules
+            PROPERTIES
+            INSTALL_RPATH "@loader_path/../lib;@loader_path"
+        )
+
+        # Mac OSX excludes Python lib in linker to prevent embedding Python interpreter
+        target_include_directories(test_builtin_modules PRIVATE ${Python_INCLUDE_DIRS})
+        set_target_properties(test_builtin_modules PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    endif()
 endif()
 
 install(TARGETS builtin_modules

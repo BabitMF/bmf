@@ -201,7 +201,13 @@ int main(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
 
-  putenv("BMF_LOG_LEVEL=WARNING");
+  if (char *log_level = getenv("BMF_LOG_LEVEL"); log_level) {
+      char buf[256];
+      sprintf(buf, "BMF_LOG_LEVEL=%s", log_level);
+      putenv(buf);
+  } else {
+      putenv("BMF_LOG_LEVEL=WARNING");
+  }
   configure_bmf_log();
 
   const std::string operation = argv[1];

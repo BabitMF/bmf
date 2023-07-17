@@ -11,9 +11,9 @@
 namespace bmf_sdk{
 
 #ifdef _WIN32
-const fs::path BMF_API s_bmf_repo_root = "C:\\Users\\Public\\bmf_mods";
+const fs::path s_bmf_repo_root = "C:\\Users\\Public\\bmf_mods";
 #else
-const fs::path BMF_API s_bmf_repo_root = "/usr/local/share/bmf_mods/";
+const fs::path s_bmf_repo_root = "/usr/local/share/bmf_mods/";
 #endif
 
 static void string_split(std::vector<std::string> &tokens,
@@ -114,7 +114,9 @@ ModuleManager::ModuleManager()
 bool ModuleManager::set_repo_root(const std::string &path)
 {
     std::lock_guard<std::mutex> guard(m_mutex);
-    self->repo_roots.push_back(path);
+    if (fs::exists(path)) {
+        self->repo_roots.push_back(path);
+    }
     return true;
 }
 
@@ -345,7 +347,7 @@ bool ModuleManager::resolve_from_meta(const std::string &module_name, ModuleInfo
         meta.load(meta_path);
 
         std::string module_type = meta.get<std::string>("type");
-        if (module_type == "PYTHON" || module_type == "python3"){
+        if (module_type == "PYTHON" || module_type == "python3" || module_type == "python") {
             info.module_type = "python";
         }
         if (module_type == "binary" || module_type == "c++"){
@@ -532,6 +534,5 @@ ModuleManager &ModuleManager::instance()
     static ModuleManager m;
     return m; 
 }
-
 
 } //namespace bmf_sdk

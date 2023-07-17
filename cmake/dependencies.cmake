@@ -6,8 +6,17 @@ if(BMF_ENABLE_PYTHON)
     if(CMAKE_SYSTEM_NAME STREQUAL "Android")
         find_package(Python ${BMF_PYENV} EXACT REQUIRED COMPONENTS Development) # python dist
     else()
-        find_package(Python ${BMF_PYENV} COMPONENTS Interpreter Development) # python dist
+        if(BMF_PYENV)
+            find_package(Python ${BMF_PYENV} COMPONENTS Interpreter Development REQUIRED EXACT)
+        else()
+            find_package(Python ${BMF_PYENV} COMPONENTS Interpreter Development REQUIRED) # python dist
+        endif()
     endif()
+endif()
+
+# breakpad
+if(BMF_ENABLE_BREAKPAD)
+    include(cmake/breakpad.cmake)
 endif()
 
 ### json
@@ -42,7 +51,14 @@ if(BMF_ENABLE_CUDA)
     set(CUDA_LINK_LIBRARIES_KEYWORD PRIVATE)
     find_package(CUDA QUIET)
     if(NOT CUDA_FOUND)
-        set(BMF_ENABLE_CUDA OFF)
+        if (DEFINED $ENV{DEVICE})
+            if ($ENV{DEVICE} STREQUAL "gpu")
+                message(FATAL_ERROR "cuda not found for gpu generation.")
+            endif()
+        else()
+            message(WARNING "cuda not found, disable it.")
+            set(BMF_ENABLE_CUDA OFF)
+        endif()
     endif()
 endif()
 

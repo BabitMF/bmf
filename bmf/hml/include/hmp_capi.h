@@ -166,7 +166,7 @@ HMP_API hmp_Frame hmp_frame_to_device(const hmp_Frame frame, const char *device,
 HMP_API void hmp_frame_copy_from(hmp_Frame self, const hmp_Frame from);
 HMP_API hmp_Frame hmp_frame_clone(const hmp_Frame frame);
 HMP_API hmp_Frame hmp_frame_crop(const hmp_Frame frame, int left, int top, int width, int height);
-hmp_Frame hmp_frame_reformat(const hmp_Frame frame, const hmp_PixelInfo pix_info);
+HMP_API hmp_Frame hmp_frame_reformat(const hmp_Frame frame, const hmp_PixelInfo pix_info);
 HMP_API const char* hmp_frame_stringfy(const hmp_Frame frame, int *size);
 
 #ifdef __cplusplus

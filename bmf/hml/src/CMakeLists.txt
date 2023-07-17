@@ -110,7 +110,7 @@ if(BUILD_SHARED_LIBS)
 endif()
 
 
-if(NOT "${CMAKE_SYSTEM_NAME}" MATCHES "Android|iOS")
+if(NOT "${CMAKE_SYSTEM_NAME}" MATCHES "Android|iOS|Darwin")
     set_target_properties(hmp PROPERTIES
         VERSION "${HMP_VERSION_MAJOR}.${HMP_VERSION_MINOR}"
     )

@@ -17,33 +17,25 @@ def test_simple():
     graph = bmf.graph()
 
     # decode
-    video = graph.decode({
-        "input_path": input_video_path
-    })
+    video = graph.decode({"input_path": input_video_path})
 
-    (
-        bmf.encode(
-            video['video'],
-            video['audio'],
-            {
-                "output_path": output_path,
-                "video_params": {
-                    "codec": "h264",
-                    "width": 320,
-                    "height": 240,
-                    "crf": 23,
-                    "preset": "veryfast"
-                },
-                "audio_params": {
-                    "codec": "aac",
-                    "bit_rate": 128000,
-                    "sample_rate": 44100,
-                    "channels": 2
-                }
+    (bmf.encode(
+        video['video'], video['audio'], {
+            "output_path": output_path,
+            "video_params": {
+                "codec": "h264",
+                "width": 320,
+                "height": 240,
+                "crf": 23,
+                "preset": "veryfast"
+            },
+            "audio_params": {
+                "codec": "aac",
+                "bit_rate": 128000,
+                "sample_rate": 44100,
+                "channels": 2
             }
-        )
-            .run()
-    )
+        }).run())
 
 
 def test_audio():
@@ -54,26 +46,18 @@ def test_audio():
     graph = bmf.graph()
 
     # decode
-    video = graph.decode({
-        "input_path": input_video_path
-    })
+    video = graph.decode({"input_path": input_video_path})
 
-    (
-        bmf.encode(
-            None,
-            video['audio'],
-            {
-                "output_path": output_path,
-                "audio_params": {
-                    "codec": "aac",
-                    "bit_rate": 128000,
-                    "sample_rate": 44100,
-                    "channels": 2
-                }
+    (bmf.encode(
+        None, video['audio'], {
+            "output_path": output_path,
+            "audio_params": {
+                "codec": "aac",
+                "bit_rate": 128000,
+                "sample_rate": 44100,
+                "channels": 2
             }
-        )
-            .run()
-    )
+        }).run())
 
 
 def test_video():
@@ -104,70 +88,63 @@ def test_video():
     video = my_graph.decode({'input_path': input_video_path_3})
 
     # logo video
-    logo_1 = (
-        my_graph.decode({'input_path': logo_video_path_1})['video']
-            .scale(logo_width, logo_height)
-    )
-    logo_2 = (
-        my_graph.decode({'input_path': logo_video_path_2})['video']
-            .scale(logo_width, logo_height)
-            .ff_filter('loop', loop=-1, size=991)
-            .ff_filter('setpts', 'PTS+3.900/TB')
-    )
+    logo_1 = (my_graph.decode({'input_path': logo_video_path_1
+                               })['video'].scale(logo_width, logo_height))
+    logo_2 = (my_graph.decode({'input_path':
+                               logo_video_path_2})['video'].scale(
+                                   logo_width,
+                                   logo_height).ff_filter('loop',
+                                                          loop=-1,
+                                                          size=991).ff_filter(
+                                                              'setpts',
+                                                              'PTS+3.900/TB'))
 
     # main video processing
-    main_video = (
-        video['video'].scale(output_width, output_height)
-            .overlay(logo_1, repeatlast=0)
-            .overlay(logo_2,
-                     x='if(gte(t,3.900),960,NAN)',
-                     y=0,
-                     shortest=1)
-    )
+    main_video = (video['video'].scale(output_width, output_height).overlay(
+        logo_1, repeatlast=0).overlay(logo_2,
+                                      x='if(gte(t,3.900),960,NAN)',
+                                      y=0,
+                                      shortest=1))
 
     # concat video
-    concat_video = (
-        bmf.concat(header['video'].scale(output_width, output_height),
-                   main_video,
-                   tail['video'].scale(output_width, output_height),
-                   n=3)
-    )
+    concat_video = (bmf.concat(header['video'].scale(output_width,
+                                                     output_height),
+                               main_video,
+                               tail['video'].scale(output_width,
+                                                   output_height),
+                               n=3))
 
     # concat audio
-    concat_audio = (
-        bmf.concat(header['audio'],
-                   video['audio'],
-                   tail['audio'],
-                   n=3, v=0, a=1)
-    )
+    concat_audio = (bmf.concat(header['audio'],
+                               video['audio'],
+                               tail['audio'],
+                               n=3,
+                               v=0,
+                               a=1))
 
-    (
-        bmf.encode(concat_video,
-                   concat_audio,
-                   {
-                       "output_path": output_path,
-                       "video_params": {
-                           "codec": "h264",
-                           "width": 1280,
-                           "height": 720,
-                           "preset": "veryfast",
-                           "crf": "23",
-                           "x264-params": "ssim=1:psnr=1"
-                       },
-                       "audio_params": {
-                           "codec": "aac",
-                           "bit_rate": 128000,
-                           "sample_rate": 48000,
-                           "channels": 2
-                       },
-                       "mux_params": {
-                           "fflags": "+igndts",
-                           "movflags": "+faststart+use_metadata_tags",
-                           "max_interleave_delta": "0"
-                       }
-                   })
-            .run()
-    )
+    (bmf.encode(
+        concat_video, concat_audio, {
+            "output_path": output_path,
+            "video_params": {
+                "codec": "h264",
+                "width": 1280,
+                "height": 720,
+                "preset": "veryfast",
+                "crf": "23",
+                "x264-params": "ssim=1:psnr=1"
+            },
+            "audio_params": {
+                "codec": "aac",
+                "bit_rate": 128000,
+                "sample_rate": 48000,
+                "channels": 2
+            },
+            "mux_params": {
+                "fflags": "+igndts",
+                "movflags": "+faststart+use_metadata_tags",
+                "max_interleave_delta": "0"
+            }
+        }).run())
 
 
 def test_cb():
@@ -184,27 +161,19 @@ def test_cb():
     graph.add_user_callback(bmf.BmfCallBackType.LATEST_TIMESTAMP, cb)
 
     # decode
-    video = graph.decode({
-        "input_path": input_video_path
-    })
+    video = graph.decode({"input_path": input_video_path})
 
-    (
-        bmf.encode(
-            video['video'],
-            video['audio'],
-            {
-                "output_path": output_path,
-                "video_params": {
-                    "codec": "h264",
-                    "width": 320,
-                    "height": 240,
-                    "crf": "23",
-                    "preset": "veryfast"
-                }
+    (bmf.encode(
+        video['video'], video['audio'], {
+            "output_path": output_path,
+            "video_params": {
+                "codec": "h264",
+                "width": 320,
+                "height": 240,
+                "crf": "23",
+                "preset": "veryfast"
             }
-        )
-            .run()
-    )
+        }).run())
 
 
 def compareProfile(graph_file):
@@ -240,33 +209,25 @@ def compare():
     graph = bmf.graph()
 
     # decode
-    video = graph.decode({
-        "input_path": input_video_path
-    })
+    video = graph.decode({"input_path": input_video_path})
     graph_file = "graph.json"
-    (
-        bmf.encode(
-            video['video'],
-            video['audio'],
-            {
-                "output_path": output_path,
-                "video_params": {
-                    "codec": "h264",
-                    "width": 320,
-                    "height": 240,
-                    "crf": 23,
-                    "preset": "veryfast"
-                },
-                "audio_params": {
-                    "codec": "aac",
-                    "bit_rate": 128000,
-                    "sample_rate": 44100,
-                    "channels": 2
-                }
+    (bmf.encode(
+        video['video'], video['audio'], {
+            "output_path": output_path,
+            "video_params": {
+                "codec": "h264",
+                "width": 320,
+                "height": 240,
+                "crf": 23,
+                "preset": "veryfast"
+            },
+            "audio_params": {
+                "codec": "aac",
+                "bit_rate": 128000,
+                "sample_rate": 44100,
+                "channels": 2
             }
-        )
-            .generateConfig(graph_file)
-    )
+        }).generateConfig(graph_file))
     compareProfile(graph_file)
 
 

@@ -23,19 +23,16 @@
 #include <memory>
 #include <hmp/imgproc/formats.h>
 
-namespace hmp{
-namespace metal{
+namespace hmp {
+namespace metal {
 
 // MTLTexture
-class Texture
-{
+class Texture {
     struct Private;
     std::shared_ptr<Private> self;
-public:
-    enum Usage{
-        kWrite = 0x1,
-        kRead = 0x2
-    };
+
+  public:
+    enum Usage { kWrite = 0x1, kRead = 0x2 };
 
     Texture() = default;
 
@@ -46,19 +43,18 @@ public:
 #endif
     Texture(void *texture);
 
-    //creae texture 2d
+    // creae texture 2d
     Texture(int width, int height, PixelFormat format,
             unsigned usage = kRead | kWrite, bool mipmapped = false);
 
-
-    const void* handle() const;
+    const void *handle() const;
 
     int width() const;
     int height() const;
     int depth() const;
     PixelFormat format() const;
-    int texture_type() const; //MTLTextureType
-    int pixel_format() const; //MTLPixelFormat
+    int texture_type() const; // MTLTextureType
+    int pixel_format() const; // MTLPixelFormat
     int sample_count() const; //
     bool read(void *data, int bytesPerRow);
     bool write(const void *data, int bytesPerRow);
@@ -68,16 +64,15 @@ public:
     static int max_height();
 };
 
-
 unsigned toMTLPixelFormat(PixelFormat format);
 PixelFormat fromMTLPixelFormat(unsigned mtlFormat);
 
-class Device
-{
-private:
+class Device {
+  private:
     struct Private;
     std::shared_ptr<Private> self;
-public:
+
+  public:
     Device() = default;
 
 #ifdef __OBJC__
@@ -87,14 +82,12 @@ public:
 #endif
     Device(void *device);
 
-    const void* handle() const;
+    const void *handle() const;
 
-    static Device& current();
+    static Device &current();
     static void set_current(const Device &dev);
 };
-
-
-
-}} // namespace
+}
+} // namespace
 
 #endif

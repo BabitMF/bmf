@@ -25,26 +25,30 @@
 #include <unordered_set>
 
 BEGIN_BMF_ENGINE_NS
-    USE_BMF_SDK_NS
+USE_BMF_SDK_NS
 
-    class ModuleFactory {
-    public:
-        static ModuleInfo create_module(std::string module_name, int node_id, JsonParam &option,
-                                        std::string module_type, std::string module_path, std::string module_entry,
-                                        std::shared_ptr<Module> &module);
+class ModuleFactory {
+  public:
+    static ModuleInfo create_module(std::string module_name, int node_id,
+                                    JsonParam &option, std::string module_type,
+                                    std::string module_path,
+                                    std::string module_entry,
+                                    std::shared_ptr<Module> &module);
 
-        static JsonParam
-        get_subgraph_config(std::shared_ptr<Module> module_instance);
+    static JsonParam
+    get_subgraph_config(std::shared_ptr<Module> module_instance);
 
-        static JsonParam
-        create_and_get_subgraph_config(std::string module_info, int node_id, std::string option);
+    static JsonParam create_and_get_subgraph_config(std::string module_info,
+                                                    int node_id,
+                                                    std::string option);
 
-        static std::pair<bool, std::shared_ptr<Module> >
-        create_and_test_subgraph(std::string module_info, int node_id, std::string option);
+    static std::pair<bool, std::shared_ptr<Module>>
+    create_and_test_subgraph(std::string module_info, int node_id,
+                             std::string option);
 
-        static bool test_subgraph(std::shared_ptr<Module> module_instance);
-    };
+    static bool test_subgraph(std::shared_ptr<Module> module_instance);
+};
 
 END_BMF_ENGINE_NS
 
-#endif //BMF_MODULE_FACTORY_H
+#endif // BMF_MODULE_FACTORY_H

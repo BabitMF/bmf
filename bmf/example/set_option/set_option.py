@@ -13,6 +13,7 @@ from base_test.media_info import MediaInfo
 
 
 class TestTranscode(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_set_option(self):
         input_video_path = "../files/big_bunny_10s_30fps.mp4"
@@ -26,19 +27,13 @@ class TestTranscode(BaseTestCase):
         graph = bmf.graph({'dump_graph': 1})
 
         # decode
-        video = graph.decode({
-            "input_path": input_video_path
-        })['video']
-        video2 = graph.decode({
-            "input_path": input_video_path2
-        })['video']
+        video = graph.decode({"input_path": input_video_path})['video']
+        video2 = graph.decode({"input_path": input_video_path2})['video']
 
         vout = video.concat(video2)
 
         bmf.encode(
-            vout,
-            None,
-            {
+            vout, None, {
                 "output_path": output_path,
                 "video_params": {
                     "codec": "h264",
@@ -47,8 +42,7 @@ class TestTranscode(BaseTestCase):
                     "crf": 23,
                     "preset": "veryfast"
                 }
-            }
-        )
+            })
 
         graph_name = 'customed_name'
         graph.set_option({'graph_name': graph_name})
@@ -58,6 +52,7 @@ class TestTranscode(BaseTestCase):
 
         if not os.path.exists('original_' + graph_name + '.json'):
             raise Exception("customed graph file not exist")
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -13,30 +13,27 @@
 
 USE_BMF_SDK_NS
 
-
-struct DataSource{
+struct DataSource {
     std::string data_path;
     std::string size_path;
     std::ifstream f_data;
     std::ifstream f_size;
 };
 
-class PullAudioStreamModule : public Module
-{
-public:
-    PullAudioStreamModule(int node_id,JsonParam option);
+class PullAudioStreamModule : public Module {
+  public:
+    PullAudioStreamModule(int node_id, JsonParam option);
 
-    ~PullAudioStreamModule() { }
+    ~PullAudioStreamModule() {}
 
     virtual int process(Task &task);
     std::string input_path_;
-    std::vector<DataSource*> source_list;
+    std::vector<DataSource *> source_list;
     AVFormatContext *input_fmt_ctx_;
     std::string pts_file_path_;
     int stream_index_;
-    int64_t pts_=28774-66;
+    int64_t pts_ = 28774 - 66;
     int timestamp_ = 0;
 };
 
 #endif
-

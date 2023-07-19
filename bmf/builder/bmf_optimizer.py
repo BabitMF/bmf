@@ -5,6 +5,7 @@ from .bmf_stream import BmfStream
 
 
 class BmfOptimizer:
+
     def __init__(self):
         pass
 
@@ -45,14 +46,16 @@ class BmfOptimizer:
 
                 for i, f in enumerate(n1.get_option()['filters']):
                     if 'inputs' in f:
-                        r, out_pin = BmfOptimizer.find_merged_link(f['inputs'], stream)
+                        r, out_pin = BmfOptimizer.find_merged_link(
+                            f['inputs'], stream)
                         if r:
                             filter_id = i
                             break
 
                 for i, f in enumerate(n1.get_option()['filters']):
                     if 'outputs' in f:
-                        r, in_pin = BmfOptimizer.find_merged_link(f['outputs'], stream)
+                        r, in_pin = BmfOptimizer.find_merged_link(
+                            f['outputs'], stream)
                         if r:
                             link = dict()
                             link['input_pin'] = in_pin
@@ -112,14 +115,21 @@ class BmfOptimizer:
                 for f in node_config.get_option()['filters']:
                     if 'inputs' in f:
                         for input_pin in f['inputs']:
-                            if not isinstance(input_pin['stream'], int) and input_pin['stream'].get_identifier() == input_stream.get_identifier():
+                            if not isinstance(
+                                    input_pin['stream'], int
+                            ) and input_pin['stream'].get_identifier(
+                            ) == input_stream.get_identifier():
                                 input_pin['stream'] = i
                                 break
-            for i, output_stream in enumerate(node_config.get_output_streams()):
+            for i, output_stream in enumerate(
+                    node_config.get_output_streams()):
                 for f in node_config.get_option()['filters']:
                     if 'outputs' in f:
                         for output_pin in f['outputs']:
-                            if not isinstance(output_pin['stream'], int) and output_pin['stream'].get_identifier() == output_stream.get_identifier():
+                            if not isinstance(
+                                    output_pin['stream'], int
+                            ) and output_pin['stream'].get_identifier(
+                            ) == output_stream.get_identifier():
                                 output_pin['stream'] = i
                                 break
 
@@ -147,6 +157,7 @@ class BmfOptimizer:
         return merged_node
 
     class Neighbour:
+
         def __init__(self):
             self.root_stream = None
             self.node = None
@@ -167,10 +178,12 @@ class BmfOptimizer:
     def has_circle(opt_nodes, merged_node, rec_stack, root_stream):
         rec_stack[merged_node.get_id()] = True
 
-        neighbours = BmfOptimizer.find_all_neighbours(opt_nodes, merged_node, root_stream)
+        neighbours = BmfOptimizer.find_all_neighbours(opt_nodes, merged_node,
+                                                      root_stream)
         for nb in neighbours:
             if not rec_stack.get(nb.node.get_id(), False):
-                ret, circle_stream = BmfOptimizer.has_circle(opt_nodes, nb.node, rec_stack, root_stream)
+                ret, circle_stream = BmfOptimizer.has_circle(
+                    opt_nodes, nb.node, rec_stack, root_stream)
                 if ret:
                     return True, circle_stream
             else:
@@ -183,7 +196,8 @@ class BmfOptimizer:
     def find_first_circle_node(opt_nodes, merged_node):
         rec_stack = dict()
 
-        ret, stream = BmfOptimizer.has_circle(opt_nodes, merged_node, rec_stack, None)
+        ret, stream = BmfOptimizer.has_circle(opt_nodes, merged_node,
+                                              rec_stack, None)
         if ret:
             # print('has circle, stream:%s' % stream)
             return stream
@@ -203,7 +217,8 @@ class BmfOptimizer:
                 nodes_to_merge = []
                 # put all ffmpeg_filter nodes into nodes_to_merge and try to combine it to one node
                 for node in nodes:
-                    if node.get_module_info().get_name() == 'c_ffmpeg_filter' and node not in nodes_done:
+                    if node.get_module_info().get_name(
+                    ) == 'c_ffmpeg_filter' and node not in nodes_done:
                         nodes_to_merge.append(node)
                 for node in nodes_to_merge:
                     nodes.remove(node)
@@ -214,12 +229,14 @@ class BmfOptimizer:
 
                 while True:
                     # do node merge
-                    merged_node = BmfOptimizer.merge_ffmpeg_filter_nodes(nodes_to_merge)
+                    merged_node = BmfOptimizer.merge_ffmpeg_filter_nodes(
+                        nodes_to_merge)
                     if merged_node is not None:
                         nodes.append(merged_node)
 
                     # check if has a circle
-                    circle_stream = BmfOptimizer.find_first_circle_node(nodes, merged_node)
+                    circle_stream = BmfOptimizer.find_first_circle_node(
+                        nodes, merged_node)
                     if circle_stream is not None:
                         # find circle-end node according to stream
                         for node in nodes_to_merge:

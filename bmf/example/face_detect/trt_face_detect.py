@@ -18,8 +18,10 @@ sys.path.append("../../")
 from bmf import *
 import bmf.hml.hmp as mp
 
+
 class DetectResult(object):
-    def __init__(self,x1,y1,x2,y2,label,score,pts=0):
+
+    def __init__(self, x1, y1, x2, y2, label, score, pts=0):
         self.x1_ = x1
         self.y1_ = y1
         self.x2_ = x2
@@ -28,15 +30,18 @@ class DetectResult(object):
         self.score_ = score
 
     def __str__(self):
-        msg="x1:{},y1:{},x2:{},y2:{},label:{},score:{}".format(self.x1_,self.y1_,self.x2_,self.y2_,self.label_,self.score_)
+        msg = "x1:{},y1:{},x2:{},y2:{},label:{},score:{}".format(
+            self.x1_, self.y1_, self.x2_, self.y2_, self.label_, self.score_)
         return msg
 
     def __repr__(self):
-        msg = "x1:{},y1:{},x2:{},y2:{},label:{},score:{}".format(self.x1_, self.y1_, self.x2_, self.y2_, self.label_,
-                                                                 self.score_)
+        msg = "x1:{},y1:{},x2:{},y2:{},label:{},score:{}".format(
+            self.x1_, self.y1_, self.x2_, self.y2_, self.label_, self.score_)
         return msg
 
+
 class trt_face_detect(Module):
+
     def __init__(self, node=None, option=None):
         self.node_ = node
         self.option_ = option
@@ -59,18 +64,24 @@ class trt_face_detect(Module):
         logger = trt.Logger(trt.Logger.ERROR)
         with open(self.model_path_, 'rb') as f:
             engine_buffer = f.read()
-        self.engine_ = trt.Runtime(logger).deserialize_cuda_engine(engine_buffer)
-        
+        self.engine_ = trt.Runtime(logger).deserialize_cuda_engine(
+            engine_buffer)
+
         if self.engine_ is None:
             Log.log(LogLevel.ERROR, "Failed building engine!")
             return
         Log.log(LogLevel.INFO, "Succeeded building engine!")
 
         self.num_io_tensors_ = self.engine_.num_io_tensors
-        self.tensor_names_ = [self.engine_.get_tensor_name(i) for i in range(self.num_io_tensors_)]
+        self.tensor_names_ = [
+            self.engine_.get_tensor_name(i)
+            for i in range(self.num_io_tensors_)
+        ]
         self.num_inputs_ = [self.engine_.get_tensor_mode(self.tensor_names_[i]) for i in range(self.num_io_tensors_)] \
                            .count(trt.TensorIOMode.INPUT)
-        assert self.num_inputs_ == len(self.input_shapes_.keys()), "The number of input_shapes doesn't match the number of model's inputs."
+        assert self.num_inputs_ == len(
+            self.input_shapes_.keys()
+        ), "The number of input_shapes doesn't match the number of model's inputs."
         self.num_outputs_ = [self.engine_.get_tensor_mode(self.tensor_names_[i]) for i in range(self.num_io_tensors_)] \
                            .count(trt.TensorIOMode.OUTPUT)
 
@@ -78,14 +89,18 @@ class trt_face_detect(Module):
         self.stream_ = mp.current_stream(mp.kCUDA)
 
         for i in range(self.num_inputs_):
-            self.context_.set_input_shape(self.tensor_names_[0], self.input_shapes_[self.tensor_names_[0]])
-        
+            self.context_.set_input_shape(
+                self.tensor_names_[0],
+                self.input_shapes_[self.tensor_names_[0]])
+
         self.output_dict_ = dict()
         for i in range(self.num_inputs_, self.num_io_tensors_):
-            self.output_dict_[self.tensor_names_[i]] = mp.empty(self.context_.get_tensor_shape(self.tensor_names_[i]),
-                                                                device=mp.kCUDA,
-                                                                dtype=self.to_scalar_types(self.engine_.get_tensor_dtype(self.tensor_names_[i])))
-        
+            self.output_dict_[self.tensor_names_[i]] = mp.empty(
+                self.context_.get_tensor_shape(self.tensor_names_[i]),
+                device=mp.kCUDA,
+                dtype=self.to_scalar_types(
+                    self.engine_.get_tensor_dtype(self.tensor_names_[i])))
+
         self.frame_cache_ = Queue()
         self.in_frame_num_ = 1
         self.out_frame_num_ = 1
@@ -119,7 +134,9 @@ class trt_face_detect(Module):
 
         input_tensor = torch.stack(torch_image_array).float()
         input_tensor = torch.permute(input_tensor, [0, 3, 1, 2])
-        input_tensor = F.interpolate(input_tensor, size=(height, width), mode='bilinear')
+        input_tensor = F.interpolate(input_tensor,
+                                     size=(height, width),
+                                     mode='bilinear')
 
         torch_mean = torch.empty((1, 3, 1, 1), device="cuda").fill_(0.5)
         torch_std = torch.empty((1, 3, 1, 1), device="cuda").fill_(0.5)
@@ -141,7 +158,8 @@ class trt_face_detect(Module):
                     y1 = int(box[1] * image.size[1])
                     x2 = int(box[2] * image.size[0])
                     y2 = int(box[3] * image.size[1])
-                    detect_result = DetectResult(x1, y1, x2, y2, 1, scores[image_id, index, 1])
+                    detect_result = DetectResult(x1, y1, x2, y2, 1,
+                                                 scores[image_id, index, 1])
                     box_data.append(detect_result)
             output_list.append(box_data)
         return output_list
@@ -154,13 +172,17 @@ class trt_face_detect(Module):
             draw = ImageDraw.Draw(image)
             for index_box in range(len(detect_result_list[index_frame])):
                 detect_result = detect_result_list[index_frame][index_box]
-                draw.rectangle([detect_result.x1_, detect_result.y1_, detect_result.x2_, detect_result.y2_])
+                draw.rectangle([
+                    detect_result.x1_, detect_result.y1_, detect_result.x2_,
+                    detect_result.y2_
+                ])
             del draw
             numpy_image = np.asarray(image)
             H420 = mp.PixelInfo(mp.kPF_YUV420P)
             rgb = mp.PixelInfo(mp.kPF_RGB24)
 
-            frame = mp.Frame(mp.from_numpy(np.ascontiguousarray(numpy_image)), rgb) 
+            frame = mp.Frame(mp.from_numpy(np.ascontiguousarray(numpy_image)),
+                             rgb)
             out_frame = VideoFrame(frame).reformat(H420)
 
             out_frame.pts = input_frames[index_frame].pts
@@ -171,7 +193,7 @@ class trt_face_detect(Module):
     def inference(self):
         frame_num = min(self.frame_cache_.qsize(), self.in_frame_num_)
         input_frames = []
-        
+
         if frame_num == 0:
             return [], []
         torch_image_array = []
@@ -191,10 +213,14 @@ class trt_face_detect(Module):
         input_tensor = self.pre_process(torch_image_array)
 
         for i in range(self.num_inputs_):
-            self.context_.set_tensor_address(self.tensor_names_[i], int(input_tensor.contiguous().data_ptr()))
+            self.context_.set_tensor_address(
+                self.tensor_names_[i],
+                int(input_tensor.contiguous().data_ptr()))
 
         for i in range(self.num_inputs_, self.num_io_tensors_):
-            self.context_.set_tensor_address(self.tensor_names_[i], int(self.output_dict_[self.tensor_names_[i]].data_ptr()))
+            self.context_.set_tensor_address(
+                self.tensor_names_[i],
+                int(self.output_dict_[self.tensor_names_[i]].data_ptr()))
 
         self.context_.execute_async_v3(self.stream_.handle())
 
@@ -203,11 +229,12 @@ class trt_face_detect(Module):
 
         detect_result_list = self.post_process(pil_image_array, boxes, scores)
         if self.label_frame_flag_ == 1:
-            result_frames = self.label_frame(input_frames, pil_image_array, detect_result_list)
+            result_frames = self.label_frame(input_frames, pil_image_array,
+                                             detect_result_list)
             return result_frames, detect_result_list
 
         return input_frames, detect_result_list
-    
+
     def process(self, task):
         input_queue = task.get_inputs()[0]
         output_queue_0 = task.get_outputs()[0]
@@ -222,7 +249,8 @@ class trt_face_detect(Module):
             if pkt.is_(VideoFrame):
                 self.frame_cache_.put(pkt.get(VideoFrame))
 
-        while self.frame_cache_.qsize() >= self.in_frame_num_ or self.eof_received_:
+        while self.frame_cache_.qsize(
+        ) >= self.in_frame_num_ or self.eof_received_:
             out_frames, detect_result_list = self.inference()
             for idx, frame in enumerate(out_frames):
                 pkt = Packet(frame)
@@ -240,7 +268,8 @@ class trt_face_detect(Module):
         if self.eof_received_:
             for key in task.get_outputs():
                 task.get_outputs()[key].put(Packet.generate_eof_packet())
-                Log.log_node(LogLevel.DEBUG, self.node_, "output stream", "done")
+                Log.log_node(LogLevel.DEBUG, self.node_, "output stream",
+                             "done")
             task.timestamp = Timestamp.DONE
 
         return ProcessResult.OK

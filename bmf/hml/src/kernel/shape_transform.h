@@ -16,20 +16,19 @@
 #include <hmp/tensor.h>
 #include <kernel/dispatch_stub.h>
 
-namespace hmp{
-namespace kernel{
+namespace hmp {
+namespace kernel {
 
-
-Tensor& concat(Tensor &out, const TensorList &tensors, int64_t axis = 0);
+Tensor &concat(Tensor &out, const TensorList &tensors, int64_t axis = 0);
 Tensor concat(const TensorList &tensors, int64_t axis = 0);
 
-Tensor& stack(Tensor &out, const TensorList &tensors, int64_t axis = 0);
+Tensor &stack(Tensor &out, const TensorList &tensors, int64_t axis = 0);
 Tensor stack(const TensorList &tensors, int64_t axis = 0);
 
-Tensor& vstack(Tensor &out, const TensorList &tensors);
+Tensor &vstack(Tensor &out, const TensorList &tensors);
 Tensor vstack(const TensorList &tensors);
 
-Tensor& hstack(Tensor &out, const TensorList &tensors);
+Tensor &hstack(Tensor &out, const TensorList &tensors);
 Tensor hstack(const TensorList &tensors);
-
-}} //namespace
+}
+} // namespace

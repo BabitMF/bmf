@@ -9,6 +9,7 @@ from pts_generator import PtsGenerator
 
 
 class WallClock(Module):
+
     def __init__(self, node, option=None):
         option = option if option else dict()
         self.video_step = Fraction(option.get("video_step", 1))

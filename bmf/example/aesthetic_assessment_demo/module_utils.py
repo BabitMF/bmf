@@ -22,7 +22,12 @@ def generate_out_packets(packet, np_arr, out_fmt):
 
 
 class SyncModule(bmf.Module):
-    def __init__(self, node=None, nb_in=1, in_fmt="yuv420p", out_fmt="yuv420p"):
+
+    def __init__(self,
+                 node=None,
+                 nb_in=1,
+                 in_fmt="yuv420p",
+                 out_fmt="yuv420p"):
         """
         nb_in: the number of frames for core_process function
         in_fmt: the pixel format of frames for core_process function
@@ -67,11 +72,8 @@ class SyncModule(bmf.Module):
                 # self._frames.append(pkt.get(VideoFrame).to_ndarray(format=self._in_fmt))
 
                 self._frames.append(
-                    ffmpeg.reformat(pkt.get(VideoFrame), self._in_fmt)
-                    .frame()
-                    .plane(0)
-                    .numpy()
-                )
+                    ffmpeg.reformat(pkt.get(VideoFrame),
+                                    self._in_fmt).frame().plane(0).numpy())
 
             # padding first frame.
             if len(self._in_packets) == 1:
@@ -85,10 +87,10 @@ class SyncModule(bmf.Module):
 
     def _consume(self, output_queue=None):
         while len(self._in_packets) >= self._in_frame_num:
-            out_frame = self.core_process(self._frames[: self._in_frame_num])
+            out_frame = self.core_process(self._frames[:self._in_frame_num])
             out_packet = generate_out_packets(
-                self._in_packets[self._out_frame_index], out_frame, self._out_fmt
-            )
+                self._in_packets[self._out_frame_index], out_frame,
+                self._out_fmt)
             # output_queue.put(out_packet)
             self._in_packets.pop(0)
             self._frames.pop(0)

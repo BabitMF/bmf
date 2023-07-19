@@ -30,11 +30,11 @@ extern "C" {
 };
 
 class AudioResampler {
-public:
-
-    AudioResampler(int input_format, int output_format, int input_channel_layout, int output_channel_layout,
-                   int input_sample_rate, int output_sample_rate, AVRational input_time_base,
-                   AVRational output_time_base);
+  public:
+    AudioResampler(int input_format, int output_format,
+                   int input_channel_layout, int output_channel_layout,
+                   int input_sample_rate, int output_sample_rate,
+                   AVRational input_time_base, AVRational output_time_base);
 
     ~AudioResampler();
 
@@ -52,4 +52,4 @@ public:
     double ratio_ = 0;
 };
 
-#endif //C_MODULES_AUDIO_RESAMPLER_H
+#endif // C_MODULES_AUDIO_RESAMPLER_H

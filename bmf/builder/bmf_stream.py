@@ -9,6 +9,7 @@ from bmf import Log, LogLevel
 
 
 class BmfStream:
+
     def __init__(self, stream_name, parent, notify, stream_alias=''):
         from .bmf_node import BmfNode
         from .bmf_graph import BmfGraph
@@ -69,14 +70,15 @@ class BmfStream:
     ###@{
     #  Using the stream of the module to call the routine of graph generate_config
     def generate_config_file(self, file_name="original_graph.json"):
-    ###@}
-        return self.node_.get_graph().generate_config_file(self, file_name=file_name)
+        ###@}
+        return self.node_.get_graph().generate_config_file(self,
+                                                           file_name=file_name)
 
     ## @ingroup pyAPI
     ###@{
     #  Using the stream of the module to call the routine of graph run
     def run(self):
-    ###@}
+        ###@}
         return self.node_.get_graph().run(self)
 
     ## @ingroup pyAPI
@@ -85,6 +87,7 @@ class BmfStream:
     #  Using the stream object to call graph run without block
     def run_wo_block(self):
         return self.node_.get_graph().run_wo_block(self)
+
     ###@}
 
     def generateConfig(self, file_name):
@@ -98,10 +101,10 @@ class BmfStream:
 
     def server(self, mode=0):
         self.get_graph().node_streams_.append(self)
-        if mode==0:
+        if mode == 0:
             from bmf import ServerGateway
             server_gateway = ServerGateway(self.get_graph())
-        elif mode==1:
+        elif mode == 1:
             from bmf import ServerGatewayNew
             server_gateway = ServerGatewayNew(self.get_graph())
         else:
@@ -112,6 +115,7 @@ class BmfStream:
 
 
 def stream_operator(name=None):
+
     def decorator(func):
         func_name = name or func.__name__
         setattr(BmfStream, func_name, func)

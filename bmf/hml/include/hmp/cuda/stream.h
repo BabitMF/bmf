@@ -16,9 +16,9 @@
 #include <hmp/cuda/macros.h>
 #include <hmp/core/stream.h>
 
-namespace hmp{
-namespace cuda{
+namespace hmp {
+namespace cuda {
 
 HMP_API Stream wrap_stream(StreamHandle stream, bool own);
-
-}}; //namespace hmp::cuda
+}
+}; // namespace hmp::cuda

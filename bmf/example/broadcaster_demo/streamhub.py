@@ -28,11 +28,8 @@ def output_stream_type(stream_id):
 
 def input_stream_type(stream_id, option):
     stream_id = str(stream_id)
-    if (
-        option is None
-        or option.get("pad_infos", None) is None
-        or option["pad_infos"].get(stream_id, None) is None
-    ):
+    if (option is None or option.get("pad_infos", None) is None
+            or option["pad_infos"].get(stream_id, None) is None):
         return ""
     return option["pad_infos"][stream_id]["type"]
 
@@ -41,6 +38,7 @@ def input_stream_type(stream_id, option):
 # make timestamp of all streams in same timeline
 # streamhub has two outputstream, 0 is video packet list stream, 1 is audio packet list stream
 class Streamhub(Module):
+
     def __init__(self, node, option=None):
         self.node_ = node
         self.option = option
@@ -87,21 +85,16 @@ class Streamhub(Module):
 
     def get_relevant_stream_id(self, stream_id):
         stream_id = str(stream_id)
-        if (
-            self.option is None
-            or self.option.get("pad_infos", None) is None
-            or self.option["pad_infos"].get(stream_id, None) is None
-        ):
+        if (self.option is None or self.option.get("pad_infos", None) is None
+                or self.option["pad_infos"].get(stream_id, None) is None):
             return list()
 
         source_index = self.option["pad_infos"][stream_id]["source_index"]
 
         relevant_list = []
         for (relevant_stream_id, pad_info) in self.option["pad_infos"].items():
-            if (
-                relevant_stream_id != stream_id
-                and pad_info["source_index"] == source_index
-            ):
+            if (relevant_stream_id != stream_id
+                    and pad_info["source_index"] == source_index):
                 relevant_list.append(int(relevant_stream_id))
         return relevant_list
 
@@ -154,9 +147,8 @@ class Streamhub(Module):
 
                 ist = input_stream_type(input_id, self.option)
 
-                if input_id not in self.buffer_dict and (
-                    ist == "video" or ist == "audio"
-                ):
+                if input_id not in self.buffer_dict and (ist == "video"
+                                                         or ist == "audio"):
                     Log.log_node(
                         LogLevel.INFO,
                         self.node_,
@@ -186,7 +178,8 @@ class Streamhub(Module):
                     Log.log_node(LogLevel.INFO, task.get_node(), "Receive EOF")
                     buffer.set_eof_get()
                 elif pkt.timestamp == Timestamp.DYN_EOS:
-                    Log.log_node(LogLevel.INFO, task.get_node(), "Receive DYN_EOS")
+                    Log.log_node(LogLevel.INFO, task.get_node(),
+                                 "Receive DYN_EOS")
                     buffer.set_eof_get()
                 elif pkt.timestamp == Timestamp.EOS:
                     Log.log_node(LogLevel.INFO, task.get_node(), "Receive EOS")
@@ -229,11 +222,11 @@ class Streamhub(Module):
                 pts = pts_pkt.timestamp
                 out_pkts = []
                 out_pkts.append((-1, pts))
-                Log.log(LogLevel.DEBUG, "hub output index: ", index, "pts: ", pts)
+                Log.log(LogLevel.DEBUG, "hub output index: ", index, "pts: ",
+                        pts)
                 for (stream_id, buffer) in self.buffer_dict.items():
                     if output_stream_type(index) != input_stream_type(
-                        stream_id, self.option
-                    ):
+                            stream_id, self.option):
                         continue
                     pkt = buffer.get_packet(pts)
                     if pkt is not None:
@@ -265,10 +258,8 @@ class Streamhub(Module):
             self.buffer_dict.pop(stream_id)
 
             # delete eos pad info
-            if (
-                self.option is not None
-                and self.option.get("pad_infos", None) is not None
-            ):
+            if (self.option is not None
+                    and self.option.get("pad_infos", None) is not None):
                 self.option["pad_infos"].pop(str(stream_id))
 
         return ProcessResult.OK

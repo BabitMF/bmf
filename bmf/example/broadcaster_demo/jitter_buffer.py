@@ -4,6 +4,7 @@ import bisect
 
 
 class KeyWrapper:
+
     def __init__(self, iterable, key):
         self.it = iterable
         self.key = key
@@ -21,6 +22,7 @@ class BufferStates(Enum):
 
 
 class JitterBuffer:
+
     def __init__(self, jid, is_audio, rebind_callback):
         self.last_target_timestamp = None
         self.last_get_pkt_timestamp = None
@@ -69,7 +71,8 @@ class JitterBuffer:
                 self.cache_time(),
             )
 
-            if self.cache_time() > self.balanced_water_level or self.is_get_eof_pkt():
+            if self.cache_time(
+            ) > self.balanced_water_level or self.is_get_eof_pkt():
                 # change state and rebind timestamp
                 self.buffer_state = BufferStates.STREAMING
                 self.rebind_timestamp(target_timestamp)
@@ -127,7 +130,8 @@ class JitterBuffer:
             self.last_pkt = target_pkt
             self.last_get_pkt_timestamp = self.last_pkt.timestamp
             self.last_target_timestamp = target_timestamp
-            if self.cache_time() < self.low_water_level and not self.is_get_eof_pkt():
+            if self.cache_time(
+            ) < self.low_water_level and not self.is_get_eof_pkt():
                 self.buffer_state = BufferStates.BUFFERING
             return target_pkt
 
@@ -175,7 +179,8 @@ class JitterBuffer:
         if self.offset is None:
             self.offset = target_timestamp - self.pkt_list[0].timestamp
         else:
-            self.offset = target_timestamp - self.pkt_list[0].timestamp + self.offset
+            self.offset = target_timestamp - self.pkt_list[
+                0].timestamp + self.offset
 
         offset = target_timestamp - self.pkt_list[0].timestamp
         self.add_timestamp_offset(offset)

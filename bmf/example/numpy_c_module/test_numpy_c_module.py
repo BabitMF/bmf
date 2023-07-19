@@ -13,6 +13,7 @@ from base_test.media_info import MediaInfo
 
 
 class TestNumpyCModule(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_video(self):
         input_video_path = "../files/img.mp4"
@@ -26,21 +27,21 @@ class TestNumpyCModule(BaseTestCase):
         video = bmf.graph().decode({'input_path': input_video_path})
 
         # c module processing
-        video_2 = (
-            video['video'].module("type_conversion", {"to_numpy": 1}).c_module(c_module_path, c_module_name).module(
-                "type_conversion", {"to_numpy": 0})
-        )
+        video_2 = (video['video'].module("type_conversion", {
+            "to_numpy": 1
+        }).c_module(c_module_path,
+                    c_module_name).module("type_conversion", {"to_numpy": 0}))
 
         # encode
-        (
-            bmf.encode(
-                video_2,  # video stream, set to None
-                None,
-                {"output_path": output_path,
-                 "audio_params": {"codec": "aac"}
-                 }
-            ).run()
-        )
+        (bmf.encode(
+            video_2,  # video stream, set to None
+            None,
+            {
+                "output_path": output_path,
+                "audio_params": {
+                    "codec": "aac"
+                }
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
 

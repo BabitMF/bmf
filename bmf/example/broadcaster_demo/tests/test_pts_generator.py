@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 import unittest
 from fractions import Fraction
 
@@ -13,6 +12,7 @@ from pts_generator import PtsGenerator
 
 
 class PtsGeneratorTest(unittest.TestCase):
+
     def test_generate(self):
         gen = PtsGenerator(1.1, Fraction(1, 25))
         plist = gen.generate(2.09)

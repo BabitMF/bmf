@@ -10,6 +10,7 @@ import bmf.lib._bmf
 # BMF Version
 ###@}
 
+
 class LogLevel:
     VERBOSE = logging.DEBUG - 1
     DEBUG = logging.DEBUG
@@ -18,6 +19,7 @@ class LogLevel:
     ERROR = logging.ERROR
     FATAL = logging.CRITICAL
     DISABLE = logging.CRITICAL + 1
+
 
 def get_log_level():
     if 'BMF_LOG_LEVEL' in os.environ:
@@ -33,6 +35,7 @@ def get_log_level():
             return LogLevel.FATAL
         elif os.environ['BMF_LOG_LEVEL'] == 'DISABLE':
             return LogLevel.DISABLE
+
 
 class Log:
     log_level = get_log_level()
@@ -72,7 +75,8 @@ class Log:
             str_a = []
             for item in a:
                 str_a.append(str(item))
-            message = '%f -- (%d) -- %s' % (Log.get_curr_time(), node_id, ' '.join(str_a))
+            message = '%f -- (%d) -- %s' % (Log.get_curr_time(), node_id,
+                                            ' '.join(str_a))
             Log.logger.log(ll, message)
 
 
@@ -84,25 +88,28 @@ def scale_av_pts(pts, time_base_1, time_base_2):
         return round(float(pts * time_base_1 / time_base_2))
     return None
 
+
 ## @ingroup pyAPIVer
 ###@{
-    #  @brief get bmf version
-    #  @return version string
+#  @brief get bmf version
+#  @return version string
 def get_version():
-###@}
+    ###@}
     return _bmf.get_version()
 
-## @ingroup pyAPIVer
-###@{
-    #  @brief get commit id
-    #  @return commit (short) string
-def get_commit():
-###@}
-    return _bmf.get_commit()
 
 ## @ingroup pyAPIVer
 ###@{
-    #  @brief change dmp file output path
+#  @brief get commit id
+#  @return commit (short) string
+def get_commit():
+    ###@}
+    return _bmf.get_commit()
+
+
+## @ingroup pyAPIVer
+###@{
+#  @brief change dmp file output path
 def change_dmp_path(path):
-###@}
+    ###@}
     return engine.change_dmp_path(path)

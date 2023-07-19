@@ -17,37 +17,40 @@
 #ifndef BMF_OUTPUT_STREAM_H
 #define BMF_OUTPUT_STREAM_H
 
-#include"input_stream_manager.h"
-#include<queue>
+#include "input_stream_manager.h"
+#include <queue>
 
 BEGIN_BMF_ENGINE_NS
-    USE_BMF_SDK_NS
+USE_BMF_SDK_NS
 
-    class MirrorStream {
-    public:
-        MirrorStream(std::shared_ptr<InputStreamManager> input_stream_manager, int stream_id);
+class MirrorStream {
+  public:
+    MirrorStream(std::shared_ptr<InputStreamManager> input_stream_manager,
+                 int stream_id);
 
-        std::shared_ptr<InputStreamManager> input_stream_manager_;
-        int stream_id_;
-    };
+    std::shared_ptr<InputStreamManager> input_stream_manager_;
+    int stream_id_;
+};
 
-    class OutputStream {
-    public:
-        OutputStream(int stream_id, std::string const &identifier, std::string const &alias = "",
-                     std::string const &notify = "");
+class OutputStream {
+  public:
+    OutputStream(int stream_id, std::string const &identifier,
+                 std::string const &alias = "", std::string const &notify = "");
 
-        int add_mirror_stream(std::shared_ptr<InputStreamManager> input_stream_manager, int stream_id);
+    int
+    add_mirror_stream(std::shared_ptr<InputStreamManager> input_stream_manager,
+                      int stream_id);
 
-        int propagate_packets(std::shared_ptr<SafeQueue<Packet>> packets);
+    int propagate_packets(std::shared_ptr<SafeQueue<Packet>> packets);
 
-        int add_upstream_nodes(int node_id);
+    int add_upstream_nodes(int node_id);
 
-        int stream_id_;
-        std::string identifier_;
-        std::string notify_;
-        std::string alias_;
-        std::vector<MirrorStream> mirror_streams_;
-    };
+    int stream_id_;
+    std::string identifier_;
+    std::string notify_;
+    std::string alias_;
+    std::vector<MirrorStream> mirror_streams_;
+};
 END_BMF_ENGINE_NS
 
-#endif //BMF_OUTPUT_STREAM_H
+#endif // BMF_OUTPUT_STREAM_H

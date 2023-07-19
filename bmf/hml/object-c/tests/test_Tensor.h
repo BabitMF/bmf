@@ -17,5 +17,5 @@
 #import <Foundation/Foundation.h>
 
 @interface BmfTensorTests : NSObject
-- (int) testAll;
+- (int)testAll;
 @end

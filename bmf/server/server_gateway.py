@@ -6,6 +6,7 @@ from ..python_sdk import Timestamp
 
 
 class ServerGateway:
+
     def __init__(self, server_graph):
         self.graph = server_graph
         self.ready_close = False

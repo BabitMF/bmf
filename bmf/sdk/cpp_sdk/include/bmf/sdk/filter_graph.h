@@ -18,9 +18,9 @@
 #define C_MODULES_FILTER_GRAPH_H
 
 #include <bmf/sdk/log.h>
-#include<string>
-#include<vector>
-#include<map>
+#include <string>
+#include <vector>
+#include <map>
 
 extern "C" {
 #include <libavutil/imgutils.h>
@@ -42,7 +42,7 @@ extern "C" {
 BEGIN_BMF_SDK_NS
 
 class FilterConfig {
-public:
+  public:
     int format;
     int width, height;
     AVRational sample_aspect_ratio;
@@ -50,7 +50,7 @@ public:
     int channels;
     uint64_t channel_layout;
     AVRational tb = AVRational{1, 25};
-    AVRational frame_rate = AVRational{0,1};
+    AVRational frame_rate = AVRational{0, 1};
     unsigned frame_size = 0;
 };
 
@@ -61,19 +61,16 @@ class FilterGraph {
     std::map<int, FilterConfig> in_configs_;
     std::map<int, FilterConfig> out_configs_;
     bool b_init_;
-public:
+
+  public:
     AVFilterGraph *filter_graph_;
-    std::map<int, AVBufferRef*> hw_frames_ctx_map_;
-    std::map<int, AVFilterContext*> buffer_src_ctx_;
-    std::map<int, AVFilterContext*> buffer_sink_ctx_;
+    std::map<int, AVBufferRef *> hw_frames_ctx_map_;
+    std::map<int, AVFilterContext *> buffer_src_ctx_;
+    std::map<int, AVFilterContext *> buffer_sink_ctx_;
 
-    FilterGraph() {
-        init();
-    };
+    FilterGraph() { init(); };
 
-    ~FilterGraph() {
-        clean();
-    };
+    ~FilterGraph() { clean(); };
 
     int init() {
         outputs_ = NULL;
@@ -88,9 +85,10 @@ public:
 
         /** @addtogroup FiltM
         * @{
-        * @env BMF_FILTERGRAPH_THREADS: set nb_threads of ffmpeg filter_graph, for example, BMF_FILTERGRAPH_THREADS=1
+        * @env BMF_FILTERGRAPH_THREADS: set nb_threads of ffmpeg filter_graph,
+        * for example, BMF_FILTERGRAPH_THREADS=1
         * @} */
-        char* threads_env= getenv("BMF_FILTERGRAPH_THREADS");
+        char *threads_env = getenv("BMF_FILTERGRAPH_THREADS");
         if (threads_env) {
             std::string threads_str = threads_env;
             BMFLOG(BMF_DEBUG) << "env BMF_FILTERGRAPH_THREADS: " << threads_str;
@@ -106,8 +104,8 @@ public:
             avfilter_inout_free(&inputs_);
         if (outputs_)
             avfilter_inout_free(&outputs_);
-        for(auto it : hw_frames_ctx_map_) {
-            if(it.second) {
+        for (auto it : hw_frames_ctx_map_) {
+            if (it.second) {
                 av_buffer_unref(&it.second);
             }
         }
@@ -124,14 +122,15 @@ public:
 
         auto it = hw_frames_ctx_map_.begin();
 
-        auto base_frames_ctx = (AVHWFramesContext*)it->second->data;
+        auto base_frames_ctx = (AVHWFramesContext *)it->second->data;
         auto base_device_ctx = base_frames_ctx->device_ctx;
 
         ++it;
 
-        for (;it != hw_frames_ctx_map_.end(); ++it) {
-            if(it->second) {
-                AVHWFramesContext *frame_ctx = (AVHWFramesContext*)it->second->data;
+        for (; it != hw_frames_ctx_map_.end(); ++it) {
+            if (it->second) {
+                AVHWFramesContext *frame_ctx =
+                    (AVHWFramesContext *)it->second->data;
                 AVHWDeviceContext *device_ctx = frame_ctx->device_ctx;
                 if (device_ctx != base_device_ctx) {
                     return false;
@@ -142,13 +141,17 @@ public:
         return true;
     }
 
-    int config_graph(std::string &graph_desc, std::map<int, FilterConfig> &config,
+    int config_graph(std::string &graph_desc,
+                     std::map<int, FilterConfig> &config,
                      std::map<int, FilterConfig> &out_config) {
 
-        // prepend sws_flags if required, apply global sws flag only for scale or format filters
+        // prepend sws_flags if required, apply global sws flag only for scale
+        // or format filters
         std::string flag_prefix = "sws_flags=";
-        if (getenv("BMF_SWS_FLAGS") && graph_desc.substr(0, flag_prefix.size()) != flag_prefix) {
-            bool use_global_flag = graph_desc.find("scale=") != std::string::npos;
+        if (getenv("BMF_SWS_FLAGS") &&
+            graph_desc.substr(0, flag_prefix.size()) != flag_prefix) {
+            bool use_global_flag =
+                graph_desc.find("scale=") != std::string::npos;
             if (!use_global_flag) {
                 size_t format_pos = graph_desc.find("format=", 0);
                 while (format_pos != std::string::npos && !use_global_flag) {
@@ -158,7 +161,8 @@ public:
                 }
             }
             if (use_global_flag)
-                graph_desc = flag_prefix + getenv("BMF_SWS_FLAGS") + ";" + graph_desc;
+                graph_desc =
+                    flag_prefix + getenv("BMF_SWS_FLAGS") + ";" + graph_desc;
         }
 
         graph_desc_ = graph_desc;
@@ -179,21 +183,21 @@ public:
         }
         BMFLOG(BMF_DEBUG) << "graph desc: " << graph_desc;
         if ((ret = avfilter_graph_parse2(filter_graph_, graph_desc.c_str(),
-                                        &inputs_, &outputs_)) < 0) {
+                                         &inputs_, &outputs_)) < 0) {
             BMFLOG(BMF_ERROR) << "Graph parse2 error: " << graph_desc;
             goto end;
         }
 
-        //set hw device context of AVFilterContext 
+        // set hw device context of AVFilterContext
         if (check_hw_device_ctx_uniformity()) {
             auto it = hw_frames_ctx_map_.begin();
-            auto base_frames_ctx = (AVHWFramesContext*)it->second->data;
+            auto base_frames_ctx = (AVHWFramesContext *)it->second->data;
             AVBufferRef *base_device_ctx_buf = base_frames_ctx->device_ref;
-            for(int i = 0; i < filter_graph_->nb_filters; i++) {
-                filter_graph_->filters[i]->hw_device_ctx = av_buffer_ref(base_device_ctx_buf);
+            for (int i = 0; i < filter_graph_->nb_filters; i++) {
+                filter_graph_->filters[i]->hw_device_ctx =
+                    av_buffer_ref(base_device_ctx_buf);
             }
         }
-
 
         curr = inputs_;
         while (curr) {
@@ -204,13 +208,18 @@ public:
             int end_pos = stream_str.find("_");
             int st = std::stoi(stream_str.substr(start_pos + 1, end_pos));
             if (st < 0 || st >= config.size())
-                BMFLOG(BMF_WARNING) << "Graph config missed for filter index " << st;
+                BMFLOG(BMF_WARNING) << "Graph config missed for filter index "
+                                    << st;
 
-            enum AVMediaType type = avfilter_pad_get_type(curr->filter_ctx->input_pads, curr->pad_idx);
+            enum AVMediaType type = avfilter_pad_get_type(
+                curr->filter_ctx->input_pads, curr->pad_idx);
 
             FilterConfig input_config = {0};
             if (config.find(st) == config.end()) {
-                BMFLOG(BMF_WARNING) << "Graph input filter config not set by stream, might be a empty stream, will try to set by default" << st;
+                BMFLOG(BMF_WARNING)
+                    << "Graph input filter config not set by stream, might be "
+                       "a empty stream, will try to set by default"
+                    << st;
                 if (type == AVMEDIA_TYPE_VIDEO) {
                     input_config.width = 1280;
                     input_config.height = 720;
@@ -228,21 +237,28 @@ public:
             } else
                 input_config = config[st];
 
-            //time_base = type == AVMEDIA_TYPE_VIDEO ? (AVRational){1, 25} : (AVRational){1, input_cache->sample_rate};
+            // time_base = type == AVMEDIA_TYPE_VIDEO ? (AVRational){1, 25} :
+            // (AVRational){1, input_cache->sample_rate};
             av_bprint_init(&args, 0, AV_BPRINT_SIZE_AUTOMATIC);
             if (type == AVMEDIA_TYPE_VIDEO) {
                 buffersrc = avfilter_get_by_name("buffer");
                 // fifo = avfilter_get_by_name("fifo");
 
                 av_bprintf(&args, "video_size=%dx%d:pix_fmt=%d",
-                        input_config.width, input_config.height, input_config.format);
+                           input_config.width, input_config.height,
+                           input_config.format);
                 if (input_config.tb.num != 0 && input_config.tb.den != 0)
-                    av_bprintf(&args, ":time_base=%d/%d", input_config.tb.num, input_config.tb.den);
-                if (input_config.sample_aspect_ratio.num != 0 && input_config.sample_aspect_ratio.den != 0)
-                    av_bprintf(&args, ":pixel_aspect=%d/%d", input_config.sample_aspect_ratio.num,
-                            input_config.sample_aspect_ratio.den);
+                    av_bprintf(&args, ":time_base=%d/%d", input_config.tb.num,
+                               input_config.tb.den);
+                if (input_config.sample_aspect_ratio.num != 0 &&
+                    input_config.sample_aspect_ratio.den != 0)
+                    av_bprintf(&args, ":pixel_aspect=%d/%d",
+                               input_config.sample_aspect_ratio.num,
+                               input_config.sample_aspect_ratio.den);
                 if (input_config.frame_rate.num != 0)
-                    av_bprintf(&args, ":frame_rate=%d/%d", input_config.frame_rate.num, input_config.frame_rate.den);
+                    av_bprintf(&args, ":frame_rate=%d/%d",
+                               input_config.frame_rate.num,
+                               input_config.frame_rate.den);
 
                 BMFLOG(BMF_DEBUG) << "ffmpeg_filter video args: " << args.str;
             } else {
@@ -250,25 +266,32 @@ public:
 
                 if (input_config.channel_layout == 0) {
                     if (input_config.channels)
-                        input_config.channel_layout = av_get_default_channel_layout(input_config.channels);
+                        input_config.channel_layout =
+                            av_get_default_channel_layout(
+                                input_config.channels);
                 }
 
-                av_bprintf(&args,
-                        "time_base=%d/%d:sample_rate=%d:sample_fmt=%s:channel_layout=0x%" PRIx64,
-                        input_config.tb.num, input_config.tb.den, input_config.sample_rate,
-                        av_get_sample_fmt_name((enum AVSampleFormat) input_config.format),
-                        input_config.channel_layout);
+                av_bprintf(&args, "time_base=%d/"
+                                  "%d:sample_rate=%d:sample_fmt=%s:channel_"
+                                  "layout=0x%" PRIx64,
+                           input_config.tb.num, input_config.tb.den,
+                           input_config.sample_rate,
+                           av_get_sample_fmt_name(
+                               (enum AVSampleFormat)input_config.format),
+                           input_config.channel_layout);
                 BMFLOG(BMF_DEBUG) << "ffmpeg_filter audio args: " << args.str;
             }
 
             AVFilterContext *buffersrc_ctx;
             std::string fname = "src_" + std::to_string(st);
-            ret = avfilter_graph_create_filter(&buffersrc_ctx, buffersrc, fname.c_str(),
-                                            args.str, NULL, filter_graph_);
+            ret = avfilter_graph_create_filter(&buffersrc_ctx, buffersrc,
+                                               fname.c_str(), args.str, NULL,
+                                               filter_graph_);
             av_bprint_finalize(&args, NULL);
             if (type == AVMEDIA_TYPE_VIDEO) {
                 if (hw_frames_ctx_map_.find(st) != hw_frames_ctx_map_.end()) {
-                    AVBufferSrcParameters *par = av_buffersrc_parameters_alloc();
+                    AVBufferSrcParameters *par =
+                        av_buffersrc_parameters_alloc();
                     memset(par, 0, sizeof(*par));
                     par->format = AV_PIX_FMT_NONE;
                     par->hw_frames_ctx = hw_frames_ctx_map_[st];
@@ -281,7 +304,8 @@ public:
                 goto end;
             }
 
-            ret = avfilter_link(buffersrc_ctx, 0, curr->filter_ctx, curr->pad_idx);
+            ret = avfilter_link(buffersrc_ctx, 0, curr->filter_ctx,
+                                curr->pad_idx);
             if (ret < 0) {
                 BMFLOG(BMF_ERROR) << "Link error";
                 goto end;
@@ -301,34 +325,42 @@ public:
             int end_pos = stream_str.find("_");
             int st = std::stoi(stream_str.substr(start_pos + 1, end_pos));
 
-            enum AVMediaType type = avfilter_pad_get_type(curr->filter_ctx->output_pads, curr->pad_idx);
+            enum AVMediaType type = avfilter_pad_get_type(
+                curr->filter_ctx->output_pads, curr->pad_idx);
 
             char *out_arg_str = NULL;
             if (type == AVMEDIA_TYPE_AUDIO) {
                 FilterConfig output_config;
                 if (out_config.find(st) != out_config.end()) {
                     output_config = out_config[st];
-                    if (output_config.sample_rate != 0 && output_config.channel_layout != 0) {
+                    if (output_config.sample_rate != 0 &&
+                        output_config.channel_layout != 0) {
                         av_bprint_init(&out_args, 0, AV_BPRINT_SIZE_AUTOMATIC);
                         format = avfilter_get_by_name("aformat");
-                        av_bprintf(&out_args,
-                                "sample_rates=%d:sample_fmts=%s:channel_layouts=0x%" PRIx64,
-                                output_config.sample_rate,
-                                av_get_sample_fmt_name((enum AVSampleFormat) output_config.format),
-                                output_config.channel_layout);
+                        av_bprintf(
+                            &out_args, "sample_rates=%d:sample_fmts=%s:channel_"
+                                       "layouts=0x%" PRIx64,
+                            output_config.sample_rate,
+                            av_get_sample_fmt_name(
+                                (enum AVSampleFormat)output_config.format),
+                            output_config.channel_layout);
                         out_arg_str = out_args.str;
-                        BMFLOG(BMF_DEBUG) << "ffmpeg_filter buffer sink for audio args: " << out_arg_str;
+                        BMFLOG(BMF_DEBUG)
+                            << "ffmpeg_filter buffer sink for audio args: "
+                            << out_arg_str;
 
                         std::string fname = "format_" + std::to_string(st);
-                        ret = avfilter_graph_create_filter(&format_ctx, format, fname.c_str(),
-                                                        out_arg_str, NULL, filter_graph_);
+                        ret = avfilter_graph_create_filter(
+                            &format_ctx, format, fname.c_str(), out_arg_str,
+                            NULL, filter_graph_);
                         av_bprint_finalize(&out_args, NULL);
                         if (ret < 0) {
                             BMFLOG(BMF_ERROR) << "Cannot create format filter";
                             goto end;
                         }
 
-                        ret = avfilter_link(curr->filter_ctx, curr->pad_idx, format_ctx, 0);
+                        ret = avfilter_link(curr->filter_ctx, curr->pad_idx,
+                                            format_ctx, 0);
                         if (ret < 0) {
                             BMFLOG(BMF_ERROR) << "Link error";
                             goto end;
@@ -345,14 +377,16 @@ public:
 
             AVFilterContext *buffersink_ctx;
             std::string fname = "sink_" + std::to_string(st);
-            ret = avfilter_graph_create_filter(&buffersink_ctx, buffersink, fname.c_str(),
-                                            NULL, NULL, filter_graph_);
+            ret = avfilter_graph_create_filter(&buffersink_ctx, buffersink,
+                                               fname.c_str(), NULL, NULL,
+                                               filter_graph_);
             if (ret < 0) {
                 BMFLOG(BMF_ERROR) << "Cannot create buffer sink";
                 goto end;
             }
 
-            AVFilterContext *link_ctx = format_ctx ? format_ctx : curr->filter_ctx;
+            AVFilterContext *link_ctx =
+                format_ctx ? format_ctx : curr->filter_ctx;
             ret = avfilter_link(link_ctx, curr->pad_idx, buffersink_ctx, 0);
             if (ret < 0) {
                 BMFLOG(BMF_ERROR) << "Link error";
@@ -368,9 +402,10 @@ public:
             goto end;
         }
 
-        for (auto &out_config:out_configs_) {
+        for (auto &out_config : out_configs_) {
             if (out_config.second.frame_size != 0) {
-                av_buffersink_set_frame_size(buffer_sink_ctx_[out_config.first], out_config.second.frame_size);
+                av_buffersink_set_frame_size(buffer_sink_ctx_[out_config.first],
+                                             out_config.second.frame_size);
             }
         }
 
@@ -381,7 +416,8 @@ public:
         return ret;
     };
 
-    int get_filter_frame(AVFrame *frame, int in_idx, int out_idx, std::vector<AVFrame *> &frames) {
+    int get_filter_frame(AVFrame *frame, int in_idx, int out_idx,
+                         std::vector<AVFrame *> &frames) {
         int ret;
         AVFrame *filt_frame;
 
@@ -395,11 +431,13 @@ public:
             return -1;
         }
         if (buffer_sink_ctx_.find(out_idx) == buffer_sink_ctx_.end()) {
-            BMFLOG(BMF_ERROR) << "Buffer out" << out_idx << " cann not be found";
+            BMFLOG(BMF_ERROR) << "Buffer out" << out_idx
+                              << " cann not be found";
             return -1;
         }
 
-        ret = av_buffersrc_add_frame_flags(buffer_src_ctx_[in_idx], frame, AV_BUFFERSRC_FLAG_PUSH);
+        ret = av_buffersrc_add_frame_flags(buffer_src_ctx_[in_idx], frame,
+                                           AV_BUFFERSRC_FLAG_PUSH);
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Error while feeding the filtergraph\n");
             return ret;
@@ -416,7 +454,9 @@ public:
                 ret = AVERROR(ENOMEM);
                 break;
             }
-            ret = av_buffersink_get_frame_flags(buffer_sink_ctx_[out_idx], filt_frame, AV_BUFFERSINK_FLAG_NO_REQUEST);
+            ret = av_buffersink_get_frame_flags(buffer_sink_ctx_[out_idx],
+                                                filt_frame,
+                                                AV_BUFFERSINK_FLAG_NO_REQUEST);
             if (ret < 0) {
                 /* if no more frames for output - returns AVERROR(EAGAIN)
                 * if flushed and no more frames for output - returns AVERROR_EOF
@@ -435,18 +475,21 @@ public:
 
     int check_input_property(AVFrame *frame, int in_idx) {
         bool need_reset = false;
-        FilterConfig *config = in_configs_.count(in_idx) > 0 ? &in_configs_[in_idx] : NULL;
+        FilterConfig *config =
+            in_configs_.count(in_idx) > 0 ? &in_configs_[in_idx] : NULL;
 
         if (!config || !frame)
             return 0;
         if (frame->width && frame->height) {
-            if (frame->width != config->width || frame->height != config->height) {
+            if (frame->width != config->width ||
+                frame->height != config->height) {
                 config->width = frame->width;
                 config->height = frame->height;
                 need_reset = true;
             }
         } else {
-            if (frame->sample_rate != config->sample_rate || frame->channels != config->channels ||
+            if (frame->sample_rate != config->sample_rate ||
+                frame->channels != config->channels ||
                 frame->channel_layout != config->channel_layout) {
                 config->sample_rate = frame->sample_rate;
                 config->channels = frame->channels;
@@ -454,7 +497,8 @@ public:
                 config->tb = (AVRational){1, config->sample_rate};
                 if (frame->metadata) {
                     AVDictionaryEntry *tag = NULL;
-                    while ((tag = av_dict_get(frame->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
+                    while ((tag = av_dict_get(frame->metadata, "", tag,
+                                              AV_DICT_IGNORE_SUFFIX))) {
                         if (!strcmp(tag->key, "time_base")) {
                             std::string svalue = tag->value;
                             int pos = svalue.find(",");
@@ -486,7 +530,8 @@ public:
         int index = -1;
         int most_failed_request = 0;
         for (int i = 0; i < buffer_src_ctx_.size(); i++) {
-            int failed_request = av_buffersrc_get_nb_failed_requests(buffer_src_ctx_[i]);
+            int failed_request =
+                av_buffersrc_get_nb_failed_requests(buffer_src_ctx_[i]);
             if (failed_request > most_failed_request) {
                 most_failed_request = failed_request;
                 index = i;
@@ -495,7 +540,8 @@ public:
         return index;
     };
 
-    int reap_filters(std::map<int,std::vector<AVFrame*> > &output_frames,int mode) {
+    int reap_filters(std::map<int, std::vector<AVFrame *>> &output_frames,
+                     int mode) {
         int ret = 0;
         if (mode == 0) {
             int ret = avfilter_graph_request_oldest(filter_graph_);
@@ -507,7 +553,8 @@ public:
             while (1) {
                 AVFrame *frame = av_frame_alloc();
                 int index = i;
-                int ret = av_buffersink_get_frame_flags(buffer_sink_ctx_[i], frame, AV_BUFFERSINK_FLAG_NO_REQUEST);
+                int ret = av_buffersink_get_frame_flags(
+                    buffer_sink_ctx_[i], frame, AV_BUFFERSINK_FLAG_NO_REQUEST);
                 if (ret < 0) {
                     av_frame_free(&frame);
                     if (ret == AVERROR_EOF) {
@@ -539,7 +586,9 @@ public:
     int push_frame(AVFrame *frame, int index) {
         int ret = 0;
         if (ret = check_input_property(frame, index) >= 0) {
-            ret = av_buffersrc_add_frame_flags(buffer_src_ctx_[index], frame, AV_BUFFERSRC_FLAG_PUSH | AV_BUFFERSRC_FLAG_KEEP_REF);
+            ret = av_buffersrc_add_frame_flags(buffer_src_ctx_[index], frame,
+                                               AV_BUFFERSRC_FLAG_PUSH |
+                                                   AV_BUFFERSRC_FLAG_KEEP_REF);
             if (ret < 0) {
                 if (ret != AVERROR_EOF) {
                     return ret;
@@ -550,10 +599,8 @@ public:
         }
         return 0;
     };
-
 };
 
 END_BMF_SDK_NS
 
-
-#endif //C_MODULES_FILTER_GRAPH_H
+#endif // C_MODULES_FILTER_GRAPH_H

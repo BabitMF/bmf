@@ -19,8 +19,8 @@
 #include <bmf/sdk/module_registry.h>
 USE_BMF_SDK_NS
 class MockDecoder : public Module {
-public:
-    MockDecoder(int node_id,JsonParam json_param);
+  public:
+    MockDecoder(int node_id, JsonParam json_param);
 
     int reset();
 
@@ -33,4 +33,4 @@ public:
 
 REGISTER_MODULE_CLASS(MockDecoder)
 
-#endif //BMF_MOCK_DECODER_H
+#endif // BMF_MOCK_DECODER_H

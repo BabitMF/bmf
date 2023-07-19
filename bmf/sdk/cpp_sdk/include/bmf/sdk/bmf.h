@@ -21,5 +21,4 @@
 #include <bmf/sdk/timestamp.h>
 #include <bmf/sdk/trace.h>
 
-#endif //BMF_H
-
+#endif // BMF_H

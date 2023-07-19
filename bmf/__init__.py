@@ -1,6 +1,7 @@
 import sys
 import ctypes
 from bmf.python_sdk.module_functor import make_sync_func
+
 flags = sys.getdlopenflags()
 sys.setdlopenflags(flags | ctypes.RTLD_GLOBAL)
 
@@ -12,7 +13,6 @@ from bmf.lib._bmf.sdk import Task, ModuleTag, ModuleInfo
 
 from bmf.lib._bmf import sdk
 
-
 #
 from .ffmpeg_engine import FFmpegEngine
 from .python_sdk import Module, LogLevel, Log, InputType, ProcessResult,  Timestamp, scale_av_pts, av_time_base, \
@@ -22,6 +22,5 @@ from .builder import BmfGraph, graph, BmfCallBackType, module, py_module, c_modu
     adelay, atrim, amix, afade, asetpts, overlay, concat, fps, encode, decode, create_module, GraphMode, bmf_sync, \
     GraphConfig, get_module_file_dependencies, ff_filter
 from .server import ServerGateway, ServerGatewayNew
-
 
 sys.setdlopenflags(flags)

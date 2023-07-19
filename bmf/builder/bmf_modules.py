@@ -7,7 +7,6 @@ from .bmf_node import BmfNode
 # BMF module related functions
 ###@}
 
-
 bmf_modules = {
     'ff_decoder': 'c_ffmpeg_decoder',
     'ff_filter': 'c_ffmpeg_filter',
@@ -32,14 +31,29 @@ bmf_modules = {
 #  @param scheduler: 0 by default. It's a dedicate thread to schedule this module
 #  @return The stream object of the module
 @stream_operator()
-def module(streams, module_info, option=None, module_path="", entry="", input_manager='immediate', pre_module=None, scheduler=0, stream_alias=None):
-###@}
+def module(streams,
+           module_info,
+           option=None,
+           module_path="",
+           entry="",
+           input_manager='immediate',
+           pre_module=None,
+           scheduler=0,
+           stream_alias=None):
+    ###@}
     if option is None:
         option = {}
     if isinstance(module_info, str):
-        return BmfNode({"name": module_info, "type": "", "path": module_path, "entry": entry}, option, streams,
-                       input_manager, pre_module, scheduler).stream(stream_alias=stream_alias)
-    return BmfNode(module_info, option, streams, input_manager, pre_module, scheduler).stream(stream_alias=stream_alias)
+        return BmfNode(
+            {
+                "name": module_info,
+                "type": "",
+                "path": module_path,
+                "entry": entry
+            }, option, streams, input_manager, pre_module,
+            scheduler).stream(stream_alias=stream_alias)
+    return BmfNode(module_info, option, streams, input_manager, pre_module,
+                   scheduler).stream(stream_alias=stream_alias)
 
 
 ## @ingroup pyAPI
@@ -50,14 +64,15 @@ def module(streams, module_info, option=None, module_path="", entry="", input_ma
 #  @return Stream(s) of the module
 @stream_operator()
 def pass_through(stream, type="", path="", entry="", stream_alias=None):
-###@}
+    ###@}
     module_info = {
         "name": bmf_modules['pass_through'],
         "type": type,
         "path": path,
         "entry": entry
     }
-    return BmfNode(module_info, {}, stream, 'immediate').stream(stream_alias=stream_alias)
+    return BmfNode(module_info, {}, stream,
+                   'immediate').stream(stream_alias=stream_alias)
 
 
 ## @ingroup pyAPI
@@ -68,7 +83,7 @@ def pass_through(stream, type="", path="", entry="", stream_alias=None):
 #  @return Stream(s) of the module
 @stream_operator()
 def null_sink(stream, type="", path="", entry=""):
-###@}
+    ###@}
     module_info = {
         "name": 'null_sink',
         "type": type,
@@ -102,12 +117,30 @@ def upload(stream, type="", path="", entry=""):
 #  @param pre_module: the previous created module object of this module
 #  @return Stream(s) of the module
 @stream_operator()
-def py_module(streams, name, option=None, module_path="", entry="", input_manager='immediate', pre_module=None, scheduler=0, stream_alias=None):
-###@}
+def py_module(streams,
+              name,
+              option=None,
+              module_path="",
+              entry="",
+              input_manager='immediate',
+              pre_module=None,
+              scheduler=0,
+              stream_alias=None):
+    ###@}
     if option is None:
         option = {}
-    return module(streams, {"name": name, "type": "python", "path": module_path, "entry": entry}, option,
-                  input_manager=input_manager, pre_module=pre_module, scheduler=scheduler, stream_alias=stream_alias)
+    return module(streams, {
+        "name": name,
+        "type": "python",
+        "path": module_path,
+        "entry": entry
+    },
+                  option,
+                  input_manager=input_manager,
+                  pre_module=pre_module,
+                  scheduler=scheduler,
+                  stream_alias=stream_alias)
+
 
 ## @ingroup pyAPI
 ## @ingroup mdFunc
@@ -122,17 +155,51 @@ def py_module(streams, name, option=None, module_path="", entry="", input_manage
 #  @param pre_module: the previous created module object of this module
 #  @return Stream(s) of the module
 @stream_operator()
-def c_module(streams, name, module_path="", entry="", option=None, input_manager='immediate', pre_module=None, scheduler=0, stream_alias=None):
-###@}
+def c_module(streams,
+             name,
+             module_path="",
+             entry="",
+             option=None,
+             input_manager='immediate',
+             pre_module=None,
+             scheduler=0,
+             stream_alias=None):
+    ###@}
     if option is None:
         option = {}
-    return module(streams, {"name": name, "type": "c++", "path": module_path, "entry": entry}, option,
-                  input_manager=input_manager, pre_module=pre_module, scheduler=scheduler, stream_alias=stream_alias)
+    return module(streams, {
+        "name": name,
+        "type": "c++",
+        "path": module_path,
+        "entry": entry
+    },
+                  option,
+                  input_manager=input_manager,
+                  pre_module=pre_module,
+                  scheduler=scheduler,
+                  stream_alias=stream_alias)
 
 
 @stream_operator()
-def go_module(streams, name, module_path=None, entry=None, option=None, input_manager='immediate', pre_module=None, scheduler=0, stream_alias=None):
+def go_module(streams,
+              name,
+              module_path=None,
+              entry=None,
+              option=None,
+              input_manager='immediate',
+              pre_module=None,
+              scheduler=0,
+              stream_alias=None):
     if option is None:
         option = {}
-    return module(streams, {"name": name, "type": "go", "path": module_path, "entry": entry}, option,
-                  input_manager=input_manager, pre_module=pre_module, scheduler=scheduler, stream_alias=stream_alias)
+    return module(streams, {
+        "name": name,
+        "type": "go",
+        "path": module_path,
+        "entry": entry
+    },
+                  option,
+                  input_manager=input_manager,
+                  pre_module=pre_module,
+                  scheduler=scheduler,
+                  stream_alias=stream_alias)

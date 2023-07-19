@@ -12,6 +12,7 @@ from base_test.base_test_case import BaseTestCase
 
 
 class TestClockSyncModule(BaseTestCase):
+
     def test_video(self):
         input_video_path = "../files/img_s.mp4"
         output_path = "./output.mp4"
@@ -24,22 +25,24 @@ class TestClockSyncModule(BaseTestCase):
 
         graph = bmf.graph()
 
-        video = graph.decode({
-            "input_path": input_video_path
-        })
+        video = graph.decode({"input_path": input_video_path})
         video["audio"].upload()
         clock = graph.c_module("Clock", option={"fps": 60})
-        v = bmf.module([clock, video["video"]], "video_layout",option={
-            "alias": "layout",
-            "layout_mode": "gallery",
-            "crop_mode": "",
-            "layout_location": "",
-            "interspace": 0,
-            "main_stream_idx": 0,
-            "width": 1920,
-            "height": 1080,
-            "background_color": "#123456"
-        }, input_manager="clocksync")
+        v = bmf.module(
+            [clock, video["video"]],
+            "video_layout",
+            option={
+                "alias": "layout",
+                "layout_mode": "gallery",
+                "crop_mode": "",
+                "layout_location": "",
+                "interspace": 0,
+                "main_stream_idx": 0,
+                "width": 1920,
+                "height": 1080,
+                "background_color": "#123456"
+            },
+            input_manager="clocksync")
 
         (
             # video.run()
@@ -50,9 +53,9 @@ class TestClockSyncModule(BaseTestCase):
                 # audio1,
                 None,
                 # {"output_path": output_path,"audio_params":{"sample_rate":44100,"codec": "aac"}}
-                {"output_path": output_path}
-            ).run()
-        )
+                {
+                    "output_path": output_path
+                }).run())
 
         # (
         #     bmf.encode(

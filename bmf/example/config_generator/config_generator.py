@@ -26,46 +26,36 @@ header = graph.decode({'input_path': input_video_path_2})
 video = graph.decode({'input_path': input_video_path_3})
 
 # logo video
-logo_1 = (
-    graph.decode({'input_path': logo_video_path_1})['video']
-        .scale(logo_width, logo_height)
-)
-logo_2 = (
-    graph.decode({'input_path': logo_video_path_2})['video']
-        .scale(logo_width, logo_height)
-        .ff_filter('loop', loop=-1, size=991)
-        .ff_filter('setpts', 'PTS+3.900/TB')
-)
+logo_1 = (graph.decode({'input_path': logo_video_path_1
+                        })['video'].scale(logo_width, logo_height))
+logo_2 = (graph.decode({'input_path': logo_video_path_2})['video'].scale(
+    logo_width,
+    logo_height).ff_filter('loop', loop=-1,
+                           size=991).ff_filter('setpts', 'PTS+3.900/TB'))
 
 # main video processing
-main_video = (
-    video['video'].scale(output_width, output_height)
-        .overlay(logo_1, repeatlast=0)
-        .overlay(logo_2,
-                    x='if(gte(t,3.900),960,NAN)',
-                    y=0,
-                    shortest=1)
-)
+main_video = (video['video'].scale(output_width, output_height).overlay(
+    logo_1, repeatlast=0).overlay(logo_2,
+                                  x='if(gte(t,3.900),960,NAN)',
+                                  y=0,
+                                  shortest=1))
 
 # concat video
-concat_video = (
-    bmf.concat(header['video'].scale(output_width, output_height),
-                main_video,
-                tail['video'].scale(output_width, output_height),
-                n=3)
-)
+concat_video = (bmf.concat(header['video'].scale(output_width, output_height),
+                           main_video,
+                           tail['video'].scale(output_width, output_height),
+                           n=3))
 
 # concat audio
-concat_audio = (
-    bmf.concat(header['audio'],
-                video['audio'],
-                tail['audio'],
-                n=3, v=0, a=1)
-)
+concat_audio = (bmf.concat(header['audio'],
+                           video['audio'],
+                           tail['audio'],
+                           n=3,
+                           v=0,
+                           a=1))
 
-bmf.encode(concat_video,
-    concat_audio,
-    {
+bmf.encode(
+    concat_video, concat_audio, {
         "output_path": output_path,
         "video_params": {
             "codec": "h264",
@@ -87,5 +77,5 @@ bmf.encode(concat_video,
             "max_interleave_delta": "0"
         }
     })
-    
+
 graph.generate_config_file(file_name='generated_graph.json')

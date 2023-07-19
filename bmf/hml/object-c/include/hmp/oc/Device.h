@@ -18,34 +18,30 @@
 
 #import <Foundation/Foundation.h>
 
-typedef enum _HmpDeviceType{
-    kCPU = 0,
-    kCUDA = 1
-}HmpDeviceType;
+typedef enum _HmpDeviceType { kCPU = 0, kCUDA = 1 } HmpDeviceType;
 
-@interface HmpDevice: NSObject{
-@protected
+@interface HmpDevice : NSObject {
+  @protected
     void *_impl;
     bool _own;
 }
 
++ (int64_t)count:(HmpDeviceType)type;
++ (int)current:(HmpDeviceType)type;
++ (void)set_current:(HmpDevice *)device;
 
-+ (int64_t) count: (HmpDeviceType) type;
-+ (int) current: (HmpDeviceType) type;
-+ (void) set_current: (HmpDevice*) device;
+- (instancetype)init;
+- (instancetype)initFromString:(NSString *)device;
+- (instancetype)initFromPtr:(void *)ptr:(bool)own;
 
-- (instancetype) init;
-- (instancetype) initFromString: (NSString*) device;
-- (instancetype) initFromPtr: (void*) ptr : (bool) own;
+- (void *)ptr;
 
-- (void*)ptr;
-
-- (void) dealloc;
+- (void)dealloc;
 
 - (NSString *)description;
 
-- (HmpDeviceType) type;
-- (int) index;
+- (HmpDeviceType)type;
+- (int)index;
 
 @end
 

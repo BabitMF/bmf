@@ -41,11 +41,13 @@ def flex_resize_aesv2(img, desired_size=[448, 672], pad_color=[0, 0, 0]):
     h, w, _ = img.shape
     h_crop = (h - desired_size[0]) // 2
     w_crop = (w - desired_size[1]) // 2
-    img = img[h_crop : h_crop + desired_size[0], w_crop : w_crop + desired_size[1], :]
+    img = img[h_crop:h_crop + desired_size[0],
+              w_crop:w_crop + desired_size[1], :]
     return img
 
 
 class Aesmod:
+
     def __init__(self, model_path, model_version, output_path):
         self._frm_idx = 0
         self._frm_scores = []
@@ -67,10 +69,9 @@ class Aesmod:
     def preprocess(self, frame):
         frame = flex_resize_aesv2(frame)
         # print('using flex_resize_aesv2', frame.shape)
-        frame = (
-            frame.astype(np.float32) / 255.0
-            - np.array([0.485, 0.456, 0.406], dtype="float32")
-        ) / (np.array([0.229, 0.224, 0.225], dtype="float32"))
+        frame = (frame.astype(np.float32) / 255.0 -
+                 np.array([0.485, 0.456, 0.406], dtype="float32")) / (np.array(
+                     [0.229, 0.224, 0.225], dtype="float32"))
         frame = np.transpose(frame, (2, 0, 1))
         frame = np.expand_dims(frame, 0)
         return frame
@@ -85,15 +86,16 @@ class Aesmod:
     @staticmethod
     def score_pred_mapping(raw_scores, raw_min=2.60, raw_max=7.42):
         pred_score = np.clip(
-            np.sum([x * (i + 1) for i, x in enumerate(raw_scores)]), raw_min, raw_max
-        )
+            np.sum([x * (i + 1) for i, x in enumerate(raw_scores)]), raw_min,
+            raw_max)
         # pred_score = np.sqrt((pred_score - raw_min) / (raw_max - raw_min)) * 90 + 10
         # return float(np.clip(pred_score, 0, 100.0))
         return pred_score
 
     def process(self, frames):
         frames = [
-            frame if frame.flags["C_CONTIGUOUS"] else np.ascontiguousarray(frame)
+            frame
+            if frame.flags["C_CONTIGUOUS"] else np.ascontiguousarray(frame)
             for frame in frames
         ]
         frame = self.preprocess(frames[0])
@@ -120,19 +122,28 @@ class Aesmod:
 
     def clean(self):
         nr_score = round(np.mean(self._frm_scores), 2)
-        results = {"aesthetic": nr_score, "aesthetic_version": self._model_version}
+        results = {
+            "aesthetic": nr_score,
+            "aesthetic_version": self._model_version
+        }
         LOGGER.info(f"overall prediction {json.dumps(results)}")
         with open(self._output_path, "w") as outfile:
             json.dump(results, outfile, indent=4, ensure_ascii=False)
 
 
 class BMFAesmod(SyncModule):
+
     def __init__(self, node=None, option=None):
         output_path = option.get("output_path", 0)
         model_version = option.get("model_version", "v1.0")
-        model_path = option.get("model_path", "models/aes_transonnx_update3.onnx")
+        model_path = option.get("model_path",
+                                "models/aes_transonnx_update3.onnx")
         self._nrp = Aesmod(model_path, model_version, output_path)
-        SyncModule.__init__(self, node, nb_in=1, in_fmt="rgb24", out_fmt="rgb24")
+        SyncModule.__init__(self,
+                            node,
+                            nb_in=1,
+                            in_fmt="rgb24",
+                            out_fmt="rgb24")
 
     def core_process(self, frames):
         return self._nrp.process(frames)

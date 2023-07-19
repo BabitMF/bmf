@@ -14,40 +14,35 @@ using MediaType = OpaqueDataKey::Key;
 
 class MediaDesc {
 
-//MediaParam
-template <typename T>
-class MediaParam : public std::optional<T> {
-public:
-    MediaParam(MediaDesc* m = nullptr) : media(m) {}
+    // MediaParam
+    template <typename T> class MediaParam : public std::optional<T> {
+      public:
+        MediaParam(MediaDesc *m = nullptr) : media(m) {}
 
-    MediaParam(const MediaParam& mp) : std::optional<T>(mp) {}
+        MediaParam(const MediaParam &mp) : std::optional<T>(mp) {}
 
-    MediaParam(MediaParam&& mp) : std::optional<T>(mp) {}
+        MediaParam(MediaParam &&mp) : std::optional<T>(mp) {}
 
-    MediaParam& operator=(const MediaParam& mp) {
-        std::optional<T>::operator=(mp);
-        return *this;
-    }
+        MediaParam &operator=(const MediaParam &mp) {
+            std::optional<T>::operator=(mp);
+            return *this;
+        }
 
-    MediaParam& operator=(T val) {
-        std::optional<T>::emplace(val);
-    }
+        MediaParam &operator=(T val) { std::optional<T>::emplace(val); }
 
-    MediaDesc& operator()(T val) {
-        std::optional<T>::emplace(val);
-        return *media;
-    }
+        MediaDesc &operator()(T val) {
+            std::optional<T>::emplace(val);
+            return *media;
+        }
 
-    const T &operator()() const {
-        return std::optional<T>::value();
-    }
+        const T &operator()() const { return std::optional<T>::value(); }
 
-private:
-    //pinned after initialized
-    MediaDesc* const media;
-};
+      private:
+        // pinned after initialized
+        MediaDesc *const media;
+    };
 
-public:
+  public:
     MediaParam<int> width{this};
     MediaParam<int> height{this};
     MediaParam<hmp::PixelFormat> pixel_format{this};
@@ -57,4 +52,3 @@ public:
 };
 
 END_BMF_SDK_NS
-

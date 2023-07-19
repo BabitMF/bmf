@@ -23,38 +23,40 @@
 #include <string>
 
 BEGIN_BMF_ENGINE_NS
-    USE_BMF_SDK_NS
+USE_BMF_SDK_NS
 
-    class OutputStreamManager {
-    public:
-        OutputStreamManager(std::vector<StreamConfig> output_streams);
+class OutputStreamManager {
+  public:
+    OutputStreamManager(std::vector<StreamConfig> output_streams);
 
-        bool get_stream(int stream_id, std::shared_ptr<OutputStream> &output_stream);
+    bool get_stream(int stream_id,
+                    std::shared_ptr<OutputStream> &output_stream);
 
-        int add_stream(std::string name);
+    int add_stream(std::string name);
 
-        std::vector<int> get_stream_id_list();
+    std::vector<int> get_stream_id_list();
 
-        int post_process(Task &task);
+    int post_process(Task &task);
 
-        int propagate_packets(int stream_id, std::shared_ptr<SafeQueue<Packet> > packets);
+    int propagate_packets(int stream_id,
+                          std::shared_ptr<SafeQueue<Packet>> packets);
 
-        bool any_of_downstream_full();
+    bool any_of_downstream_full();
 
-        void probe_eof();
+    void probe_eof();
 
-        void remove_stream(int stream_id, int mirror_id);
+    void remove_stream(int stream_id, int mirror_id);
 
-        void wait_on_stream_empty(int stream_id);
+    void wait_on_stream_empty(int stream_id);
 
-        int get_outlink_nodes_id(std::vector<int> &nodes_id);
+    int get_outlink_nodes_id(std::vector<int> &nodes_id);
 
-        std::map<int, std::shared_ptr<OutputStream>> output_streams_;
-        std::vector<int> stream_id_list_;
+    std::map<int, std::shared_ptr<OutputStream>> output_streams_;
+    std::vector<int> stream_id_list_;
 
-    private:
-        int max_id_;
-    };
+  private:
+    int max_id_;
+};
 
 END_BMF_ENGINE_NS
-#endif //BMF_OUTPUT_STREAM_MANAGER_H
+#endif // BMF_OUTPUT_STREAM_MANAGER_H

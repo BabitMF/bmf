@@ -17,33 +17,31 @@
 
 #include <hmp/core/macros.h>
 
-namespace hmp{
-namespace cuda{
+namespace hmp {
+namespace cuda {
 
-
-struct MemoryStat{
+struct MemoryStat {
     int64_t current = 0;
     int64_t peak = 0;
     int64_t allocated = 0;
     int64_t freed = 0;
 };
 
-
-struct DeviceMemoryStats{
+struct DeviceMemoryStats {
     //
     MemoryStat active;
 
-    //unallocated but can't released via cudaFree
-    MemoryStat inactive; 
+    // unallocated but can't released via cudaFree
+    MemoryStat inactive;
 
-    //count blocks allocated by cudaMalloc or cudaMallocHost
+    // count blocks allocated by cudaMalloc or cudaMallocHost
     MemoryStat segment;
-
 };
 
 HMP_API DeviceMemoryStats device_memory_stats(int device);
 HMP_API DeviceMemoryStats host_memory_stats();
 
-HMP_API int d2d_memcpy(void* dst, size_t dpitch, const void* src, size_t spitch, size_t width, size_t height);
-
-}} //
+HMP_API int d2d_memcpy(void *dst, size_t dpitch, const void *src, size_t spitch,
+                       size_t width, size_t height);
+}
+} //

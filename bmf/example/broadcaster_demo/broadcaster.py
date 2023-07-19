@@ -16,18 +16,20 @@ import argparse
 
 default_output = "rtmp://localhost/live/output"
 
-
 MaxInputSources = 10
 
 EosCallbackKey = 0
 
+
 def get_source_alias(index):
     return "input_" + str(index)
+
 
 #def process_eos_stream(param):
 #    #p = json.loads(param.decode("utf-8"))
 #    p = 1
 #    Log.log(LogLevel.INFO, "param: ", param, " p: ", p)
+
 
 # b.start()
 # b.add_source(index, source_url)
@@ -35,7 +37,8 @@ def get_source_alias(index):
 # b.set_volume(index, volume)
 # b.set_layout(mode)
 class Broadcaster:
-    def __init__(self, rtmp_output = ''):
+
+    def __init__(self, rtmp_output=''):
         self.rtmp_output = rtmp_output
         self.source_dict = dict()
         self.layout_alias = "layout"
@@ -57,7 +60,7 @@ class Broadcaster:
 
         # TODO: delete pad info thread safe
 
-        return bytes("OK","utf-8")
+        return bytes("OK", "utf-8")
 
     def start(self):
         schedule_cnt = 1
@@ -71,7 +74,10 @@ class Broadcaster:
 
         wallclock = self.graph.module(
             "WallClock",
-            option={"video_step": "1/25", "audio_step": "1024/44100"},
+            option={
+                "video_step": "1/25",
+                "audio_step": "1024/44100"
+            },
             module_path="",
             entry="wall_clock.WallClock",
             input_manager="immediate",
@@ -131,7 +137,12 @@ class Broadcaster:
             output_video_stream,
             output_audio_stream,
             {
-                "video_params": {"g": "50", "preset": "veryfast", "g": 50, "bf": 0},
+                "video_params": {
+                    "g": "50",
+                    "preset": "veryfast",
+                    "g": 50,
+                    "bf": 0
+                },
                 # "audio_params": {"sample_rate": 44100, "codec": "aac"},
                 "loglevel": "info",
                 "output_path": self.rtmp_output,
@@ -158,7 +169,8 @@ class Broadcaster:
             )
             return
         if index in self.source_dict:
-            Log.log(LogLevel.WARNING, "index: ", index, " was exist, use another index")
+            Log.log(LogLevel.WARNING, "index: ", index,
+                    " was exist, use another index")
             return
 
         if source_url.index("rtmp") != 0:
@@ -174,14 +186,12 @@ class Broadcaster:
         # add rtmp source
         update_source_graph = bmf.graph()
         input_alias = get_source_alias(index)
-        video2 = update_source_graph.decode(
-            {
-                "input_path": source_url,
-                "delay_init_input": 1,
-                "alias": input_alias,
-                # "video_params": {"extract_frames": {"fps": 25}},
-            }
-        )
+        video2 = update_source_graph.decode({
+            "input_path": source_url,
+            "delay_init_input": 1,
+            "alias": input_alias,
+            # "video_params": {"extract_frames": {"fps": 25}},
+        })
         video2.node_.scheduler_ = self.current_max_schedule_id + index % MaxInputSources
         #ov = video2["video"].pass_through()
         #ov = video2["video"].scale(640,320)
@@ -216,19 +226,22 @@ class Broadcaster:
         self.streamhub_stream_id += 2
 
         update_source_graph1 = bmf.graph()
-        update_source_graph1.dynamic_reset(
-            option={"alias": self.streamhub_alias, "pad_infos": self.streamhub_pads}
-        )
+        update_source_graph1.dynamic_reset(option={
+            "alias": self.streamhub_alias,
+            "pad_infos": self.streamhub_pads
+        })
         self.graph.update(update_source_graph1)
 
         graph_config_str = update_source_graph.graph_config_.dump()
-        Log.log(LogLevel.INFO, "....update graph config str: ", graph_config_str)
+        Log.log(LogLevel.INFO, "....update graph config str: ",
+                graph_config_str)
 
         self.graph.update(update_source_graph)
 
     def get_all_stream_id(self, index):
         stream_id_list = []
-        Log.log(LogLevel.INFO, "get all stream id, pad info: ", self.streamhub_pads)
+        Log.log(LogLevel.INFO, "get all stream id, pad info: ",
+                self.streamhub_pads)
         for (pad_stream_id, pad_info) in self.streamhub_pads.items():
             if pad_info["source_index"] == index:
                 stream_id_list.append(pad_stream_id)
@@ -245,9 +258,8 @@ class Broadcaster:
             )
             return
         if index not in self.source_dict:
-            Log.log(
-                LogLevel.WARNING, "index: ", index, " was not exist, no need remove"
-            )
+            Log.log(LogLevel.WARNING, "index: ", index,
+                    " was not exist, no need remove")
             return
 
         # remove input source node and passthrough
@@ -264,9 +276,11 @@ class Broadcaster:
     def get_stream_id(self, index, stream_type):
         # get stream_id
         stream_id = -1
-        Log.log(LogLevel.INFO, "get stream id, pad info: ", self.streamhub_pads)
+        Log.log(LogLevel.INFO, "get stream id, pad info: ",
+                self.streamhub_pads)
         for (pad_stream_id, pad_info) in self.streamhub_pads.items():
-            if pad_info["source_index"] == index and pad_info["type"] == stream_type:
+            if pad_info["source_index"] == index and pad_info[
+                    "type"] == stream_type:
                 stream_id = pad_stream_id
                 break
         return stream_id
@@ -289,7 +303,8 @@ class Broadcaster:
             return
 
         if volume < 0 or volume > 10.0:
-            Log.log(LogLevel.ERROR, "volume: ", volume, " out of range, use value in 0-10.0")
+            Log.log(LogLevel.ERROR, "volume: ", volume,
+                    " out of range, use value in 0-10.0")
             return
 
         config = dict()
@@ -352,15 +367,20 @@ def process_rpc_request(broadcaster, rpc_queue, send_queue):
                 data = broadcaster.do_inspect(rpc["path"])
                 send_queue.put(data)
             else:
-                Log.log(LogLevel.WARNING, "invalid rpc method: ", rpc["method"])
+                Log.log(LogLevel.WARNING, "invalid rpc method: ",
+                        rpc["method"])
 
         except Exception as e:
             print("type error: " + str(e))
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='use an rtmp addr as broadcaster output')
-    parser.add_argument('--output', type=str, help='rtmp output addr', default=default_output)
+    parser = argparse.ArgumentParser(
+        description='use an rtmp addr as broadcaster output')
+    parser.add_argument('--output',
+                        type=str,
+                        help='rtmp output addr',
+                        default=default_output)
     args = parser.parse_args()
 
     print("rtmp output addr: ", args.output)
@@ -370,7 +390,10 @@ if __name__ == "__main__":
 
     rpc_queue = Queue(1)
     send_queue = Queue(1)
-    t = threading.Thread(target=http_server.run, args=(rpc_queue,send_queue,))
+    t = threading.Thread(target=http_server.run,
+                         args=(
+                             rpc_queue,
+                             send_queue,
+                         ))
     t.start()
     process_rpc_request(broadcaster, rpc_queue, send_queue)
-

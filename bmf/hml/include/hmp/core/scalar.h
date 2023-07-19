@@ -18,79 +18,56 @@
 #include <hmp/core/macros.h>
 #include <hmp/core/scalar_type.h>
 
+namespace hmp {
 
-namespace hmp{
-
-
-class HMP_API Scalar
-{
-public:
+class HMP_API Scalar {
+  public:
     Scalar() : Scalar(int64_t(0)) {}
-    
 
-#define DEFINE_INTEGRAL_CTOR(T, _) \
-    Scalar(T v) {\
-        type_ = T_Int; \
-        data_.i = v; \
+#define DEFINE_INTEGRAL_CTOR(T, _)                                             \
+    Scalar(T v) {                                                              \
+        type_ = T_Int;                                                         \
+        data_.i = v;                                                           \
     }
-HMP_FORALL_INTEGRAL_TYPES(DEFINE_INTEGRAL_CTOR)
+    HMP_FORALL_INTEGRAL_TYPES(DEFINE_INTEGRAL_CTOR)
 #undef DEFINE_INTEGRAL_CTRO
 
-
-#define DEFINE_FLOATING_CTOR(T, _) \
-    Scalar(T v) {\
-        type_ = T_Float; \
-        data_.d = v; \
+#define DEFINE_FLOATING_CTOR(T, _)                                             \
+    Scalar(T v) {                                                              \
+        type_ = T_Float;                                                       \
+        data_.d = v;                                                           \
     }
-HMP_FORALL_FLOATING_TYPES(DEFINE_FLOATING_CTOR)
+    HMP_FORALL_FLOATING_TYPES(DEFINE_FLOATING_CTOR)
 #undef DEFINE_FLOATING_CTRO
 
-    Scalar(bool v)
-    {
+    Scalar(bool v) {
         type_ = T_Bool;
         data_.i = v;
     }
 
-    template<typename T>
-    T to() const
-    {
-        if(type_ == T_Float){
+    template <typename T> T to() const {
+        if (type_ == T_Float) {
             return static_cast<T>(data_.d);
-        }
-        else{
+        } else {
             return static_cast<T>(data_.i);
         }
     }
 
-    bool is_integral(bool include_bool)
-    {
+    bool is_integral(bool include_bool) {
         return type_ == T_Bool || type_ == T_Int;
     }
 
-    bool is_floating_point()
-    {
-        return type_ == T_Float;
-    }
+    bool is_floating_point() { return type_ == T_Float; }
 
-    bool is_boolean()
-    {
-        return type_ == T_Bool;
-    }
+    bool is_boolean() { return type_ == T_Bool; }
 
+  private:
+    enum Type { T_Bool, T_Int, T_Float } type_;
 
-private:
-    enum Type{
-        T_Bool,
-        T_Int,
-        T_Float
-    } type_;
-
-    union{
+    union {
         int64_t i;
         double d;
     } data_;
 };
 
-
-
-} //namespace
+} // namespace

@@ -17,33 +17,31 @@
 
 #include <hmp/core/logging.h>
 
-namespace hmp{
+namespace hmp {
 
+#define HMP_CUDA_CHECK(exp)                                                    \
+    do {                                                                       \
+        auto __err = (exp);                                                    \
+        if (__err != cudaSuccess) {                                            \
+            cudaGetLastError();                                                \
+            HMP_REQUIRE(__err == cudaSuccess, "CUDA error: {}",                \
+                        cudaGetErrorString(__err));                            \
+        }                                                                      \
+    } while (0)
 
-#define HMP_CUDA_CHECK(exp) \
-    do{ \
-        auto __err = (exp); \
-        if(__err != cudaSuccess){\
-            cudaGetLastError(); \
-            HMP_REQUIRE(__err == cudaSuccess, "CUDA error: {}", cudaGetErrorString(__err)); \
-        } \
-    }while(0)
+#define HMP_CUDA_CHECK_WRN(exp)                                                \
+    do {                                                                       \
+        auto __err = (exp);                                                    \
+        if (__err != cudaSuccess) {                                            \
+            cudaGetLastError();                                                \
+            HMP_WRN("CUDA error: {}", cudaGetErrorString(__err));              \
+        }                                                                      \
+    } while (0)
 
-
-#define HMP_CUDA_CHECK_WRN(exp) \
-    do{ \
-        auto __err = (exp); \
-        if(__err != cudaSuccess){\
-            cudaGetLastError(); \
-            HMP_WRN("CUDA error: {}", cudaGetErrorString(__err)); \
-        } \
-    }while(0)
-
-
-namespace cuda{
+namespace cuda {
 
 const static int MaxDevices = 8;
 
-} //namespace cuda
+} // namespace cuda
 
-} //namespace hmp
+} // namespace hmp

@@ -11,12 +11,15 @@ from base_test.base_test_case import BaseTestCase
 
 
 class TestSyncMode(BaseTestCase):
+
     def test_videoframe(self):
         input_video_path = "../files/overlay.png"
         output_path = "./videoframe.jpg"
 
         # create decoder
-        decoder = bmf_sync.sync_module("c_ffmpeg_decoder", {"input_path": input_video_path}, [], [0])
+        decoder = bmf_sync.sync_module("c_ffmpeg_decoder",
+                                       {"input_path": input_video_path}, [],
+                                       [0])
 
         # create scale
         scale = bmf_sync.sync_module("c_ffmpeg_filter", {
@@ -25,22 +28,23 @@ class TestSyncMode(BaseTestCase):
         }, [0], [0])
 
         # create encoder
-        encoder = bmf_sync.sync_module("c_ffmpeg_encoder", {
-            "output_path": output_path,
-            "format": "mjpeg",
-            "video_params": {
-                "codec": "jpg"
-            }
-        }, [0], [])
+        encoder = bmf_sync.sync_module(
+            "c_ffmpeg_encoder", {
+                "output_path": output_path,
+                "format": "mjpeg",
+                "video_params": {
+                    "codec": "jpg"
+                }
+            }, [0], [])
 
         # decode
         frames, _ = bmf_sync.process(decoder, None)
 
         # scale
-        frames, _ = bmf_sync.process(scale, {0:frames[0]})
+        frames, _ = bmf_sync.process(scale, {0: frames[0]})
 
         # encode
-        bmf_sync.process(encoder, {0:frames[0]})
+        bmf_sync.process(encoder, {0: frames[0]})
 
         # send eof to encoder
         bmf_sync.send_eof(encoder)
@@ -57,14 +61,15 @@ class TestSyncMode(BaseTestCase):
 
         video = video.scale(320, 240, alias="scale")
 
-        bmf.encode(video, None, {
-            "alias": "encoder",
-            "output_path": output_path,
-            "format": "mjpeg",
-            "video_params": {
-                "codec": "jpg"
-            }
-        })
+        bmf.encode(
+            video, None, {
+                "alias": "encoder",
+                "output_path": output_path,
+                "format": "mjpeg",
+                "video_params": {
+                    "codec": "jpg"
+                }
+            })
 
         # create sync modules
         decoder = graph.get_module("decoder")
@@ -88,7 +93,9 @@ class TestSyncMode(BaseTestCase):
         output_path = "./audioframe.mp4"
 
         # create decoder
-        decoder = bmf_sync.sync_module("c_ffmpeg_decoder", {"input_path": input_video_path}, [], [1])
+        decoder = bmf_sync.sync_module("c_ffmpeg_decoder",
+                                       {"input_path": input_video_path}, [],
+                                       [1])
 
         # create volume
         volume = bmf_sync.sync_module("c_ffmpeg_filter", {
@@ -97,18 +104,18 @@ class TestSyncMode(BaseTestCase):
         }, [0], [0])
 
         # create encoder
-        encoder = bmf_sync.sync_module("c_ffmpeg_encoder", {
-            "output_path": output_path
-        }, [0, 1], [])
+        encoder = bmf_sync.sync_module("c_ffmpeg_encoder",
+                                       {"output_path": output_path}, [0, 1],
+                                       [])
 
         # ecode and get audio frame
         frames, _ = bmf_sync.process(decoder, None)
 
         # volume filter
-        frames, _ = bmf_sync.process(volume, {0:frames[1]})
+        frames, _ = bmf_sync.process(volume, {0: frames[1]})
 
         # encode
-        bmf_sync.process(encoder, {1:frames[0]})
+        bmf_sync.process(encoder, {1: frames[0]})
 
         # send eof to encoder
         bmf_sync.send_eof(encoder)
@@ -152,7 +159,9 @@ class TestSyncMode(BaseTestCase):
         output_path = "./video.mp4"
 
         # create sync modules
-        decoder = bmf_sync.sync_module("c_ffmpeg_decoder", {"input_path": input_video_path}, [], [0, 1])
+        decoder = bmf_sync.sync_module("c_ffmpeg_decoder",
+                                       {"input_path": input_video_path}, [],
+                                       [0, 1])
         scale = bmf_sync.sync_module("c_ffmpeg_filter", {
             "name": "scale",
             "para": "320, 250"
@@ -161,9 +170,9 @@ class TestSyncMode(BaseTestCase):
             "name": "volume",
             "para": "volume=3"
         }, [0], [0])
-        encoder = bmf_sync.sync_module("c_ffmpeg_encoder", {
-            "output_path": output_path
-        }, [0, 1], [])
+        encoder = bmf_sync.sync_module("c_ffmpeg_encoder",
+                                       {"output_path": output_path}, [0, 1],
+                                       [])
 
         # process video/audio by sync mode
         while True:
@@ -197,10 +206,7 @@ class TestSyncMode(BaseTestCase):
         v = video['video'].scale(320, 250, alias="scale")
         a = video['audio'].ff_filter('volume', volume=3, alias="volume")
 
-        bmf.encode(v, a, {
-            "alias": "encoder",
-            "output_path": output_path
-        })
+        bmf.encode(v, a, {"alias": "encoder", "output_path": output_path})
 
         # create sync modules
         decoder = graph.get_module("decoder")
@@ -239,10 +245,7 @@ class TestSyncMode(BaseTestCase):
 
         v = video['video'].scale(320, 250, alias="scale")
 
-        bmf.encode(v, None, {
-            "alias": "encoder",
-            "output_path": output_path
-        })
+        bmf.encode(v, None, {"alias": "encoder", "output_path": output_path})
 
         # create sync modules
         decoder = graph.get_module("decoder")
@@ -269,14 +272,16 @@ class TestSyncMode(BaseTestCase):
         output_path = "./audio.mp4"
 
         # create sync modules
-        decoder = bmf_sync.sync_module("c_ffmpeg_decoder", {"input_path": input_video_path}, [], [1])
+        decoder = bmf_sync.sync_module("c_ffmpeg_decoder",
+                                       {"input_path": input_video_path}, [],
+                                       [1])
         volume = bmf_sync.sync_module("c_ffmpeg_filter", {
             "name": "volume",
             "para": "volume=3"
         }, [0], [0])
-        encoder = bmf_sync.sync_module("c_ffmpeg_encoder", {
-            "output_path": output_path
-        }, [0, 1], [])
+        encoder = bmf_sync.sync_module("c_ffmpeg_encoder",
+                                       {"output_path": output_path}, [0, 1],
+                                       [])
 
         # process audio by sync mode
         while True:

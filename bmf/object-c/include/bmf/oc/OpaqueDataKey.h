@@ -1,3 +1,1 @@
-typedef enum _BmfOpaqueDataKey{
-	kJsonParam
-}BmfOpaqueDataKey;
+typedef enum _BmfOpaqueDataKey { kJsonParam } BmfOpaqueDataKey;

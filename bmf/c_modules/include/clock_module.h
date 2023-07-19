@@ -14,7 +14,7 @@
 USE_BMF_SDK_NS
 
 class ClockModule : public Module {
-public:
+  public:
     ClockModule(int node_id, JsonParam option);
 
     ~ClockModule() {}
@@ -25,7 +25,7 @@ public:
 
     bool is_hungry(int input_stream_id);
 
-private:
+  private:
     Fraction::Fraction fps_tick_, time_base_;
     uint64_t frm_cnt_;
 
@@ -34,4 +34,3 @@ private:
 };
 
 #endif
-

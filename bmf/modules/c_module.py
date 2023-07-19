@@ -12,6 +12,7 @@ else:
 
 
 class c_module(Module):
+
     def __init__(self, node, option=None):
         self.node_ = node
 
@@ -34,8 +35,9 @@ class c_module(Module):
         self.module_name_ = ss[0]
         self.class_name = ss[1]
 
-        Log.log_node(LogLevel.ERROR, self.node_, "c module path:", self.module_path_,
-                     ", module:", self.module_name_, ", class:", self.class_name)
+        Log.log_node(LogLevel.ERROR, self.node_, "c module path:",
+                     self.module_path_, ", module:", self.module_name_,
+                     ", class:", self.class_name)
 
         # import module
         sys.path.append(self.module_path_)
@@ -61,21 +63,22 @@ class c_module(Module):
         prev_plane_size = 0
         for i, py_plane in enumerate(py_frame.planes):
             # copy video plane data from av frame to bmf frame
-            planes.append(csdk.VideoPlane(py_plane.line_size,
-                                          py_plane.width,
-                                          py_plane.height,
-                                          py_plane.buffer_size,
-                                          py_plane.buffer_ptr))
+            planes.append(
+                csdk.VideoPlane(py_plane.line_size, py_plane.width,
+                                py_plane.height, py_plane.buffer_size,
+                                py_plane.buffer_ptr))
 
         # create bmf frame
-        c_frame = csdk.VideoFrame(py_frame.width, py_frame.height, py_frame.format.name,
-                                  0, buffer_pointer, planes)
+        c_frame = csdk.VideoFrame(py_frame.width, py_frame.height,
+                                  py_frame.format.name, 0, buffer_pointer,
+                                  planes)
 
         # set pts
         c_frame.set_pts(py_frame.pts)
 
         # set time base
-        c_time_base = csdk.Rational(py_frame.time_base.numerator, py_frame.time_base.denominator)
+        c_time_base = csdk.Rational(py_frame.time_base.numerator,
+                                    py_frame.time_base.denominator)
         c_frame.set_time_base(c_time_base)
 
         return c_frame
@@ -90,18 +93,19 @@ class c_module(Module):
         prev_plane_size = 0
         for i, py_plane in enumerate(py_frame.planes):
             # copy video plane data from av frame to bmf frame
-            planes.append(csdk.AudioPlane(py_plane.buffer_size,
-                                          py_plane.buffer_ptr))
+            planes.append(
+                csdk.AudioPlane(py_plane.buffer_size, py_plane.buffer_ptr))
 
         # create bmf frame
-        c_frame = csdk.AudioFrame(py_frame.format.name, py_frame.layout.name, py_frame.samples,
-                                  0, buffer_pointer, planes)
+        c_frame = csdk.AudioFrame(py_frame.format.name, py_frame.layout.name,
+                                  py_frame.samples, 0, buffer_pointer, planes)
 
         # set pts
         c_frame.set_pts(py_frame.pts)
 
         # set time base
-        c_time_base = csdk.Rational(py_frame.time_base.numerator, py_frame.time_base.denominator)
+        c_time_base = csdk.Rational(py_frame.time_base.numerator,
+                                    py_frame.time_base.denominator)
         c_frame.set_time_base(c_time_base)
         c_frame.set_sample_rate(py_frame.sample_rate)
         return c_frame
@@ -172,7 +176,8 @@ class c_module(Module):
         py_frame.pts = c_frame.get_pts()
 
         # set time base
-        py_frame.time_base = Fraction(c_frame.get_time_base().num, c_frame.get_time_base().den)
+        py_frame.time_base = Fraction(c_frame.get_time_base().num,
+                                      c_frame.get_time_base().den)
 
         # transfer the buffer owner to av.frame
         c_frame.release()
@@ -190,8 +195,9 @@ class c_module(Module):
             line_size.append(c_plane.get_size())
 
         # create av frame with external buffer
-        py_frame = AudioFrame(c_frame.get_format(), c_frame.get_layout_name(), c_frame.get_samples(), 1,
-                              buf_pointers, line_size)
+        py_frame = AudioFrame(c_frame.get_format(), c_frame.get_layout_name(),
+                              c_frame.get_samples(), 1, buf_pointers,
+                              line_size)
         # py_frame = AudioFrame(c_frame.get_width(), c_frame.get_height(),
         #                       c_frame.get_format(), buf_pointers, line_size)
 
@@ -199,7 +205,8 @@ class c_module(Module):
         py_frame.pts = c_frame.get_pts()
 
         # set time base
-        py_frame.time_base = Fraction(c_frame.get_time_base().num, c_frame.get_time_base().den)
+        py_frame.time_base = Fraction(c_frame.get_time_base().num,
+                                      c_frame.get_time_base().den)
         py_frame.sample_rate = c_frame.get_sample_rate()
         # py_frame.sample_rate =44100
         # transfer the buffer owner to av.frame
@@ -233,7 +240,8 @@ class c_module(Module):
             py_pkt.set_data(c_data)
             return py_pkt
         else:
-            Log.log_node(LogLevel.ERROR, self.node_, "Unsupported data type:", type(c_data))
+            Log.log_node(LogLevel.ERROR, self.node_, "Unsupported data type:",
+                         type(c_data))
             return None
 
     @staticmethod
@@ -257,7 +265,8 @@ class c_module(Module):
                 c_pkt = self.python_packet_to_c_packet(py_pkt)
                 if c_pkt is not None and c_pkt.defined():
                     c_task.add_packet_to_in_queue(str(label), c_pkt)
-                    Log.log_node(LogLevel.ERROR, task.node_, "push frame", c_pkt.py_get_data())
+                    Log.log_node(LogLevel.ERROR, task.node_, "push frame",
+                                 c_pkt.py_get_data())
 
         # call process of c module
         self.c_mod_.process(c_task)
@@ -272,6 +281,7 @@ class c_module(Module):
                 py_pkt = self.c_packet_to_python_packet(c_pkt)
                 if py_pkt is not None and py_pkt.defined():
                     queue.put(py_pkt)
-                    Log.log_node(LogLevel.ERROR, task.node_, "pull frame", py_pkt.get_data())
+                    Log.log_node(LogLevel.ERROR, task.node_, "pull frame",
+                                 py_pkt.get_data())
 
         return ProcessResult.OK

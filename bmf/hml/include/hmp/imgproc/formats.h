@@ -18,180 +18,174 @@
 #include <stdint.h>
 #include <hmp/core/scalar_type.h>
 
-namespace hmp{
+namespace hmp {
 
-enum ColorPrimaries{
-    CP_RESERVED0   = 0,
-    CP_BT709       = 1, 
+enum ColorPrimaries {
+    CP_RESERVED0 = 0,
+    CP_BT709 = 1,
     CP_UNSPECIFIED = 2,
-    CP_RESERVED    = 3,
-    CP_BT470M      = 4, 
+    CP_RESERVED = 3,
+    CP_BT470M = 4,
 
-    CP_BT470BG     = 5, 
-    CP_SMPTE170M   = 6, 
-    CP_SMPTE240M   = 7, 
-    CP_FILM        = 8, 
-    CP_BT2020      = 9, 
-    CP_SMPTE428    = 10,
+    CP_BT470BG = 5,
+    CP_SMPTE170M = 6,
+    CP_SMPTE240M = 7,
+    CP_FILM = 8,
+    CP_BT2020 = 9,
+    CP_SMPTE428 = 10,
     CP_SMPTEST428_1 = CP_SMPTE428,
-    CP_SMPTE431    = 11, 
-    CP_SMPTE432    = 12, 
-    CP_EBU3213     = 22, 
-    CP_JEDEC_P22   = CP_EBU3213,
-    CP_NB                
+    CP_SMPTE431 = 11,
+    CP_SMPTE432 = 12,
+    CP_EBU3213 = 22,
+    CP_JEDEC_P22 = CP_EBU3213,
+    CP_NB
 };
 
-enum ColorTransferCharacteristic{
-    CTC_RESERVED0    = 0,
-    CTC_BT709        = 1,  
-    CTC_UNSPECIFIED  = 2,
-    CTC_RESERVED     = 3,
-    CTC_GAMMA22      = 4,  
-    CTC_GAMMA28      = 5,  
-    CTC_SMPTE170M    = 6,  
-    CTC_SMPTE240M    = 7,
-    CTC_LINEAR       = 8,  
-    CTC_LOG          = 9,  
-    CTC_LOG_SQRT     = 10, 
-    CTC_IEC61966_2_4 = 11, 
-    CTC_BT1361_ECG   = 12, 
-    CTC_IEC61966_2_1 = 13, 
-    CTC_BT2020_10    = 14, 
-    CTC_BT2020_12    = 15, 
-    CTC_SMPTE2084    = 16, 
-    CTC_SMPTEST2084  = CTC_SMPTE2084,
-    CTC_SMPTE428     = 17, 
+enum ColorTransferCharacteristic {
+    CTC_RESERVED0 = 0,
+    CTC_BT709 = 1,
+    CTC_UNSPECIFIED = 2,
+    CTC_RESERVED = 3,
+    CTC_GAMMA22 = 4,
+    CTC_GAMMA28 = 5,
+    CTC_SMPTE170M = 6,
+    CTC_SMPTE240M = 7,
+    CTC_LINEAR = 8,
+    CTC_LOG = 9,
+    CTC_LOG_SQRT = 10,
+    CTC_IEC61966_2_4 = 11,
+    CTC_BT1361_ECG = 12,
+    CTC_IEC61966_2_1 = 13,
+    CTC_BT2020_10 = 14,
+    CTC_BT2020_12 = 15,
+    CTC_SMPTE2084 = 16,
+    CTC_SMPTEST2084 = CTC_SMPTE2084,
+    CTC_SMPTE428 = 17,
     CTC_SMPTEST428_1 = CTC_SMPTE428,
-    CTC_ARIB_STD_B67 = 18, 
-    CTC_NB                 
+    CTC_ARIB_STD_B67 = 18,
+    CTC_NB
 };
 
-enum ColorSpace{
-    CS_RGB         = 0,  
-    CS_BT709       = 1,  
+enum ColorSpace {
+    CS_RGB = 0,
+    CS_BT709 = 1,
     CS_UNSPECIFIED = 2,
-    CS_RESERVED    = 3,
-    CS_FCC         = 4,  
-    CS_BT470BG     = 5,  
-    CS_SMPTE170M   = 6,  
-    CS_SMPTE240M   = 7,  
-    CS_YCGCO       = 8,  
-    CS_YCOCG       = CS_YCGCO,
-    CS_BT2020_NCL  = 9,  
-    CS_BT2020_CL   = 10, 
-    CS_SMPTE2085   = 11, 
-    CS_CHROMA_DERIVED_NCL = 12, 
-    CS_CHROMA_DERIVED_CL = 13, 
-    CS_ICTCP       = 14, 
+    CS_RESERVED = 3,
+    CS_FCC = 4,
+    CS_BT470BG = 5,
+    CS_SMPTE170M = 6,
+    CS_SMPTE240M = 7,
+    CS_YCGCO = 8,
+    CS_YCOCG = CS_YCGCO,
+    CS_BT2020_NCL = 9,
+    CS_BT2020_CL = 10,
+    CS_SMPTE2085 = 11,
+    CS_CHROMA_DERIVED_NCL = 12,
+    CS_CHROMA_DERIVED_CL = 13,
+    CS_ICTCP = 14,
     CS_NB
 };
 
-enum ColorRange{
-    CR_UNSPECIFIED = 0,
-    CR_MPEG        = 1, 
-    CR_JPEG        = 2, 
-    CR_NB               
+enum ColorRange { CR_UNSPECIFIED = 0, CR_MPEG = 1, CR_JPEG = 2, CR_NB };
+
+enum PixelFormat {
+    PF_NONE = -1,
+    PF_YUV420P = 0,
+    PF_YUV422P = 4,
+    PF_YUV444P = 5,
+    PF_NV12 = 23,
+    PF_NV21 = 24,
+
+    PF_GRAY8 = 8,
+    PF_RGB24 = 2,
+    PF_BGR24 = 3,
+
+    PF_YUVJ420P = 12,
+
+    PF_ARGB32 = 25,
+    PF_RGBA32 = 26,
+    PF_ABGR32 = 27,
+    PF_BGRA32 = 28,
+
+    PF_GRAY16 = 30,
+    PF_YUVA420P = 33,
+    PF_RGB48 = 35,
+    PF_YA8 = 58,
+    PF_RGBA64 = 107,
+
+    PF_P010LE = 161,
+    PF_P016LE = 172,
+    PF_YUV422P10LE = 66,
+    PF_YUV420P10LE = 64,
+    PF_YUV444P10LE = 68,
 };
 
-enum PixelFormat{
-    PF_NONE         = -1,
-    PF_YUV420P      = 0,
-    PF_YUV422P      = 4,
-    PF_YUV444P      = 5,
-    PF_NV12         = 23,
-    PF_NV21         = 24,
-
-    PF_GRAY8        = 8,
-    PF_RGB24        = 2,
-    PF_BGR24        = 3,
-
-    PF_YUVJ420P     = 12,
-
-    PF_ARGB32       = 25,
-    PF_RGBA32       = 26,
-    PF_ABGR32       = 27,
-    PF_BGRA32       = 28,
-
-    PF_GRAY16       = 30,
-    PF_YUVA420P     = 33,
-    PF_RGB48        = 35,
-    PF_YA8          = 58,
-    PF_RGBA64       = 107,
-
-    PF_P010LE       = 161,
-    PF_P016LE       = 172,
-    PF_YUV422P10LE  = 66,
-    PF_YUV420P10LE  = 64,
-    PF_YUV444P10LE  = 68,
-};
-
-#define HMP_FORALL_PIXEL_FORMATS(_)  \
-    _(PF_YUV420P)                     \
-    _(PF_YUV422P)                     \
-    _(PF_YUV444P)                     \
-    _(PF_NV12)                        \
-    _(PF_NV21)                        \
-    _(PF_GRAY8)                       \
-    _(PF_RGB24)                       \
-    _(PF_BGR24)                       \
-    _(PF_RGBA32)                      \
-    _(PF_BGRA32)                      \
-    _(PF_GRAY16)                      \
-    _(PF_YUVA420P)                    \
-    _(PF_RGB48)                       \
-    _(PF_YA8)                         \
-    _(PF_RGBA64)                      \
-    _(PF_P010LE)                      \
-    _(PF_P016LE)                      \
-    _(PF_YUV422P10LE)                 \
-    _(PF_YUV420P10LE)                 \
-
+#define HMP_FORALL_PIXEL_FORMATS(_)                                            \
+    _(PF_YUV420P)                                                              \
+    _(PF_YUV422P)                                                              \
+    _(PF_YUV444P)                                                              \
+    _(PF_NV12)                                                                 \
+    _(PF_NV21)                                                                 \
+    _(PF_GRAY8)                                                                \
+    _(PF_RGB24)                                                                \
+    _(PF_BGR24)                                                                \
+    _(PF_RGBA32)                                                               \
+    _(PF_BGRA32)                                                               \
+    _(PF_GRAY16)                                                               \
+    _(PF_YUVA420P)                                                             \
+    _(PF_RGB48)                                                                \
+    _(PF_YA8)                                                                  \
+    _(PF_RGBA64)                                                               \
+    _(PF_P010LE)                                                               \
+    _(PF_P016LE)                                                               \
+    _(PF_YUV422P10LE)                                                          \
+    _(PF_YUV420P10LE)
 
 HMP_API std::string stringfy(const PixelFormat &format);
 PixelFormat HMP_API get_pixel_format(std::string pixfmt);
 
-
-class HMP_API ColorModel
-{
-public:
+class HMP_API ColorModel {
+  public:
     ColorModel();
-    ColorModel(ColorSpace cs, ColorRange cr, ColorPrimaries cp, ColorTransferCharacteristic ctc);
+    ColorModel(ColorSpace cs, ColorRange cr, ColorPrimaries cp,
+               ColorTransferCharacteristic ctc);
     ColorModel(ColorSpace cs, ColorRange cr = CR_UNSPECIFIED);
-    ColorModel(ColorPrimaries cp, ColorTransferCharacteristic ctc = CTC_UNSPECIFIED);
+    ColorModel(ColorPrimaries cp,
+               ColorTransferCharacteristic ctc = CTC_UNSPECIFIED);
 
     ColorSpace space() const;
     ColorRange range() const;
     ColorPrimaries primaries() const;
     ColorTransferCharacteristic transfer_characteristic() const;
 
-private:
+  private:
     uint32_t cm_;
 };
 
-
-class HMP_API PixelInfo
-{
-public:
+class HMP_API PixelInfo {
+  public:
     PixelInfo();
     PixelInfo(PixelFormat format, ColorModel color_model = {}, int align = 16);
-    PixelInfo(PixelFormat format, ColorSpace cs, ColorRange cr = CR_UNSPECIFIED, int align = 16);
-    PixelInfo(PixelFormat format, ColorPrimaries cp, ColorTransferCharacteristic ctc = CTC_UNSPECIFIED, int align = 16);
+    PixelInfo(PixelFormat format, ColorSpace cs, ColorRange cr = CR_UNSPECIFIED,
+              int align = 16);
+    PixelInfo(PixelFormat format, ColorPrimaries cp,
+              ColorTransferCharacteristic ctc = CTC_UNSPECIFIED,
+              int align = 16);
 
     PixelFormat format() const { return format_; }
     ColorSpace space() const { return color_model_.space(); }
     ColorRange range() const { return color_model_.range(); }
     ColorPrimaries primaries() const { return color_model_.primaries(); }
-    ColorTransferCharacteristic transfer_characteristic() const
-    {
+    ColorTransferCharacteristic transfer_characteristic() const {
         return color_model_.transfer_characteristic();
     }
 
     /**
-     * @brief in case not specified 
-     * 
-     * @return ColorSpace 
+     * @brief in case not specified
+     *
+     * @return ColorSpace
      */
-    ColorSpace infer_space() const; 
+    ColorSpace infer_space() const;
 
     const ColorModel &color_model() const { return color_model_; }
 
@@ -199,7 +193,7 @@ public:
 
     const int &alignment() const { return align_; }
 
-private:
+  private:
     PixelFormat format_;
     ColorModel color_model_;
     int align_ = 16;
@@ -207,10 +201,7 @@ private:
 
 HMP_API std::string stringfy(const PixelInfo &pix_info);
 
-enum class ChannelFormat : uint8_t {
-    NCHW,
-    NHWC
-};
+enum class ChannelFormat : uint8_t { NCHW, NHWC };
 
 enum CHW {
     CHW_C = 0,
@@ -256,19 +247,14 @@ const static ImageRotationMode kRotate270 = ImageRotationMode::Rotate270;
 
 HMP_API std::string stringfy(const ImageRotationMode &mode);
 
-enum class ImageFilterMode : uint8_t{
-    Nearest,
-    Bilinear,
-    Bicubic
-};
+enum class ImageFilterMode : uint8_t { Nearest, Bilinear, Bicubic };
 const static ImageFilterMode kNearest = ImageFilterMode::Nearest;
 const static ImageFilterMode kBilinear = ImageFilterMode::Bilinear;
 const static ImageFilterMode kBicubic = ImageFilterMode::Bicubic;
 
-
 HMP_API std::string stringfy(const ImageFilterMode &mode);
 
-enum class ImageAxis : uint8_t{
+enum class ImageAxis : uint8_t {
     Horizontal = 0x1,
     Vertical = 0x2,
 
@@ -276,21 +262,19 @@ enum class ImageAxis : uint8_t{
 };
 const static ImageAxis kHorizontal = ImageAxis::Horizontal;
 const static ImageAxis kVertical = ImageAxis::Vertical;
-const static ImageAxis kHorizontalAndVertical = ImageAxis::HorizontalAndVertical;
-
+const static ImageAxis kHorizontalAndVertical =
+    ImageAxis::HorizontalAndVertical;
 
 HMP_API std::string stringfy(const ImageAxis &axis);
 
-
-class HMP_API PixelFormatDesc
-{
-public:
+class HMP_API PixelFormatDesc {
+  public:
     struct Private;
 
     PixelFormatDesc() {}
     PixelFormatDesc(int format);
 
-    // 
+    //
     bool defined() const { return meta_ != nullptr; }
 
     int nplanes() const;
@@ -303,10 +287,9 @@ public:
     int infer_nitems(int width, int height) const;
     int infer_nitems(int width, int height, int plane) const;
 
-private:
+  private:
     int pix_format_ = PF_NONE;
     const Private *meta_ = nullptr;
 };
 
-} //namespace hmp
-
+} // namespace hmp

@@ -13,6 +13,7 @@ from base_test.media_info import MediaInfo
 
 
 class TestVideoCModule(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_video(self):
         input_video_path = "../files/img_s.mp4"
@@ -28,10 +29,15 @@ class TestVideoCModule(BaseTestCase):
         audio_data_path = "/workspace/company/python2/bmf_c_engine_pure_test/bmf/audio_content.txt"
         audio_size_path = "/workspace/company/python2/bmf_c_engine_pure_test/bmf/audio_length.txt"
         my_graph = bmf.graph()
-        video = my_graph.module("pull_stream",
-                                     {'input_path': input_video_path, 'entry': c_module_entry, 'data_path': video_data_path,
-                                      "size_path": video_size_path,
-                                      'module_path': c_module_path, 'module_type': "c++"}).decode()
+        video = my_graph.module(
+            "pull_stream", {
+                'input_path': input_video_path,
+                'entry': c_module_entry,
+                'data_path': video_data_path,
+                "size_path": video_size_path,
+                'module_path': c_module_path,
+                'module_type': "c++"
+            }).decode()
         # audio = my_graph.module("pull_stream",
         #                            {'input_path': input_video_path, 'entry': c_module_entry, 'data_path': audio_data_path,
         #                             "size_path": audio_size_path,
@@ -41,13 +47,12 @@ class TestVideoCModule(BaseTestCase):
         #     video['video'].c_module("copy_module", c_module_path, c_module_entry)
         # )
 
-        (
-            bmf.encode(
-                video["video"],  # video stream, set to None
-                None,
-                {"output_path": output_path}
-            ).run()
-        )
+        (bmf.encode(
+            video["video"],  # video stream, set to None
+            None,
+            {
+                "output_path": output_path
+            }).run())
 
         # (
         #     bmf.encode(

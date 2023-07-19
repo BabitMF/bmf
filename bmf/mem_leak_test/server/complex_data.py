@@ -12,6 +12,7 @@ else:
 
 
 class complex_data(Module):
+
     def process(self, task):
         for (input_id, input_queue) in task.get_inputs().items():
             while not input_queue.empty():
@@ -19,7 +20,8 @@ class complex_data(Module):
 
                 if pkt.get_timestamp() == Timestamp.EOF:
                     for key in task.get_outputs():
-                        task.get_outputs()[key].put(Packet.generate_eof_packet())
+                        task.get_outputs()[key].put(
+                            Packet.generate_eof_packet())
                     task.set_timestamp(Timestamp.DONE)
                     return
 

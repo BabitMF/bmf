@@ -47,4 +47,13 @@ Before you submit your Pull Request (PR) consider the following guidelines:
 
 ## Code Style Guides
 
-See [C++ Code clang-format](https://marketplace.visualstudio.com/items?itemName=xaver.clang-format).
+- See [C++ Code clang-format](https://marketplace.visualstudio.com/items?itemName=xaver.clang-format).
+After clang-format installed, using command:
+    ```bash
+    clang-format -sort-includes=false -style="{BasedOnStyle: llvm, IndentWidth: 4}" -i <your file>
+    ```
+- Python source code, here use:
+    ```bash
+    pip install yapf
+    yapf --in-place --recursive --style="{indent_width: 4}"
+    ```

@@ -1,4 +1,4 @@
-from .ff_probe import ff_probe,get_video_duration,get_audio_duration,get_filetype,get_video_size
+from .ff_probe import ff_probe, get_video_duration, get_audio_duration, get_filetype, get_video_size
 
 background_image_count = 0
 background_audio_count = 0
@@ -7,7 +7,8 @@ background_audio_count = 0
 def generate_background_image(background_color, width, height, graph):
     # TODO: directory is for test, use tempfile tool to save image in real situation
     global background_image_count
-    background_image_file = '../files/background_' + str(background_image_count) + '.png'
+    background_image_file = '../files/background_' + str(
+        background_image_count) + '.png'
     background_image_count += 1
 
     # construct background_image option
@@ -19,14 +20,16 @@ def generate_background_image(background_color, width, height, graph):
     }
 
     # call 'background_image' to create background image
-    background_image = graph.module('background_image', background_image_option).decode()['video']
+    background_image = graph.module('background_image',
+                                    background_image_option).decode()['video']
     return background_image
 
 
 def generate_background_audio(segment_duration, graph):
     # TODO: directory is for test, use tempfile tool to save audio in real situation
     global background_audio_count
-    background_audio_file = '../files/background_audio_' + str(background_audio_count) + '.aac'
+    background_audio_file = '../files/background_audio_' + str(
+        background_audio_count) + '.aac'
     background_audio_count += 1
 
     # construct background_audio option
@@ -36,7 +39,8 @@ def generate_background_audio(segment_duration, graph):
     }
 
     # call 'background_audio' to create background image
-    background_audio = graph.module('background_audio', background_audio_option).decode()['audio']
+    background_audio = graph.module('background_audio',
+                                    background_audio_option).decode()['audio']
     return background_audio
 
 
@@ -142,8 +146,10 @@ def update_element_duration(element):
         trims = element.get('Trims')
         if trims and len(trims) > 0:
             # if multi-cut interval invalid
-            if float(trims[len(trims) - 1][1]) > element['initial_info']['video_duration']:
-                raise Exception('multi-cut interval longer than initial video length')
+            if float(trims[len(trims) -
+                           1][1]) > element['initial_info']['video_duration']:
+                raise Exception(
+                    'multi-cut interval longer than initial video length')
             # record sum of trims interval
             trims_duration = 0
             for i in range(len(trims)):
@@ -159,7 +165,9 @@ def update_element_duration(element):
         if speed:
             # currently, supported speed interval is 0.5~2.0
             if float(speed) < 0.5 or float(speed) > 2.0:
-                raise Exception('invalid speed, speed interval should range from 0.5 to 2.0')
+                raise Exception(
+                    'invalid speed, speed interval should range from 0.5 to 2.0'
+                )
             # update video_duration
             element['initial_info']['video_duration'] /= float(speed)
 
@@ -175,15 +183,18 @@ def update_element_duration(element):
 
         # if exists audio, audio duration must be as same as video
         if 'audio_duration' in element['initial_info']:
-            element['initial_info']['audio_duration'] = element['initial_info']['video_duration']
+            element['initial_info']['audio_duration'] = element[
+                'initial_info']['video_duration']
 
     elif element['Type'] == 'audio':
         # update according to trims
         trims = element.get('Trims')
         if trims and len(trims) > 0:
             # if multi-cut interval invalid
-            if float(trims[len(trims) - 1][1]) > element['initial_info']['audio_duration']:
-                raise Exception('multi-cut interval longer than initial video length')
+            if float(trims[len(trims) -
+                           1][1]) > element['initial_info']['audio_duration']:
+                raise Exception(
+                    'multi-cut interval longer than initial video length')
             # record sum of trims interval
             trims_duration = 0
             for i in range(len(trims)):
@@ -199,7 +210,9 @@ def update_element_duration(element):
         if speed:
             # currently, supported speed interval is 0.5~2.0
             if float(speed) < 0.5 or float(speed) > 2.0:
-                raise Exception('invalid speed, speed interval should range from 0.5 to 2.0')
+                raise Exception(
+                    'invalid speed, speed interval should range from 0.5 to 2.0'
+                )
             # update audio_duration
             element['initial_info']['audio_duration'] /= float(speed)
 
@@ -228,16 +241,23 @@ def update_element_size(element, out_width, out_height):
         position = element['Position']
         # turn percent-value to float-value
         if '%' in position['PosX']:
-            position['PosX'] = float(position['PosX'][:-1])*out_width/float(100)
+            position['PosX'] = float(
+                position['PosX'][:-1]) * out_width / float(100)
         if '%' in position['PosY']:
-            position['PosY'] = float(position['PosY'][:-1])*out_height/float(100)
+            position['PosY'] = float(
+                position['PosY'][:-1]) * out_height / float(100)
         if '%' in position['Width']:
-            position['Width'] = float(position['Width'][:-1])*out_width/float(100)
+            position['Width'] = float(
+                position['Width'][:-1]) * out_width / float(100)
         if '%' in position['Height']:
-            position['Height'] = float(position['Height'][:-1])*out_height/float(100)
+            position['Height'] = float(
+                position['Height'][:-1]) * out_height / float(100)
         # given size too large
-        if float(position['PosX']) + float(position['Width']) > out_width or float(position['PosY']) + float(position['Height']) > out_height:
-            raise Exception("invalid element position, input width or height too large")
+        if float(position['PosX']) + float(
+                position['Width']) > out_width or float(
+                    position['PosY']) + float(position['Height']) > out_height:
+            raise Exception(
+                "invalid element position, input width or height too large")
 
     # text element has no crop param
     if element['Type'] == 'text':
@@ -247,13 +267,17 @@ def update_element_size(element, out_width, out_height):
         crop = element['Crop']
         # turn percent-value to float-value
         if '%' in crop['PosX']:
-            crop['PosX'] = float(crop['PosX'][:-1])*float(element['Position']['Width'])/float(100)
+            crop['PosX'] = float(crop['PosX'][:-1]) * float(
+                element['Position']['Width']) / float(100)
         if '%' in crop['PosY']:
-            crop['PosY'] = float(crop['PosY'][:-1])*float(element['Position']['Height'])/float(100)
+            crop['PosY'] = float(crop['PosY'][:-1]) * float(
+                element['Position']['Height']) / float(100)
         if '%' in crop['Width']:
-            crop['Width'] = float(crop['Width'][:-1])*float(element['Position']['Width'])/float(100)
+            crop['Width'] = float(crop['Width'][:-1]) * float(
+                element['Position']['Width']) / float(100)
         if '%' in crop['Height']:
-            crop['Height'] = float(crop['Height'][:-1])*float(element['Position']['Height'])/float(100)
+            crop['Height'] = float(crop['Height'][:-1]) * float(
+                element['Position']['Height']) / float(100)
         # given size too large
         if float(crop['PosX'] + crop['Width']) > element['Position']['Width'] or \
                 float(crop['PosY'] + crop['Height']) > element['Position']['Height']:
@@ -267,13 +291,15 @@ def calculate_segment_duration(segment):
         # for video
         if element['Type'] == 'video':
             # ending moment = start time + element duration
-            duration = element['StartTime'] + element['initial_info']['video_duration']
+            duration = element['StartTime'] + element['initial_info'][
+                'video_duration']
             if duration > segment_duration:
                 segment_duration = duration
         # for audio
         elif element['Type'] == 'audio':
             # ending moment = start time + element duration
-            duration = element['StartTime'] + element['initial_info']['audio_duration']
+            duration = element['StartTime'] + element['initial_info'][
+                'audio_duration']
             if duration > segment_duration:
                 segment_duration = duration
         # for image
@@ -301,14 +327,12 @@ def generate_audio_mix_option(element_list, total_duration=0, source=None):
     # for source audio in global-amix
     if source is not None:
         audio_stream_list.append(source)
-        audios.append({
-            "start": 0,
-            "duration": total_duration
-        })
+        audios.append({"start": 0, "duration": total_duration})
 
     # for elements
     for element in element_list:
-        if element['Type'] == 'video' and 'audio_duration' in element['initial_info']:
+        if element['Type'] == 'video' and 'audio_duration' in element[
+                'initial_info']:
             audio_stream_list.append(element['stream']['a'])
             audios.append({
                 "start": element['StartTime'],
@@ -325,7 +349,8 @@ def generate_audio_mix_option(element_list, total_duration=0, source=None):
     return audio_stream_list, audio_option
 
 
-def generate_video_overlay_option(out_width, out_height, out_duration, background, element_list):
+def generate_video_overlay_option(out_width, out_height, out_duration,
+                                  background, element_list):
     """
     Option example:
         option = {
@@ -456,14 +481,12 @@ def generate_concat_option(concat_list, output):
         duration = segment['duration']
         transition_time = segment.get('TransitionTime', 0)
         transition_mode = segment.get('Transition', 1)
-        option_list.append(
-            {
-                "start": start,
-                "duration": duration,
-                "transition_time": transition_time,
-                "transition_mode": transition_mode
-            }
-        )
+        option_list.append({
+            "start": start,
+            "duration": duration,
+            "transition_time": transition_time,
+            "transition_mode": transition_mode
+        })
 
     concat_option["video_list"] = option_list
 

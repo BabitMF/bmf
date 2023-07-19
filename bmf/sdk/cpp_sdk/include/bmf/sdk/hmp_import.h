@@ -8,12 +8,11 @@
 #endif
 #include <bmf/sdk/bmf_type_info.h>
 
-namespace bmf_sdk{
+namespace bmf_sdk {
 
 using hmp::ScalarType;
-//helper enums types
-#define DEFINE_KSCALAR(_, S) \
-    using hmp::k##S;
+// helper enums types
+#define DEFINE_KSCALAR(_, S) using hmp::k##S;
 HMP_FORALL_SCALAR_TYPES(DEFINE_KSCALAR)
 #undef DEFINE_KSCALAR
 
@@ -50,7 +49,6 @@ using hmp::kNHWC;
 using namespace hmp::cuda;
 #endif
 
-} //namespace bmf_sdk
-
+} // namespace bmf_sdk
 
 BMF_DEFINE_TYPE(hmp::Tensor)

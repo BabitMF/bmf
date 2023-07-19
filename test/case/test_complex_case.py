@@ -13,6 +13,7 @@ from base_test.media_info import MediaInfo
 
 
 class TestComplexCase(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_concat_n_videos(self):
 
@@ -41,19 +42,24 @@ class TestComplexCase(BaseTestCase):
             # concat audio
             concat_audio_streams.append(video_list[i]['audio'])
 
-        concat_video_stream = bmf.concat(*concat_video_streams, n=times, v=1, a=0)
-        concat_audio_stream = bmf.concat(*concat_audio_streams, n=times, v=0, a=1)
+        concat_video_stream = bmf.concat(*concat_video_streams,
+                                         n=times,
+                                         v=1,
+                                         a=0)
+        concat_audio_stream = bmf.concat(*concat_audio_streams,
+                                         n=times,
+                                         v=0,
+                                         a=1)
 
         # encode
-        bmf.encode(concat_video_stream,
-                   concat_audio_stream,
-                   {
-                       "output_path": output_path,
-                       "video_params": {
-                           "width": 1280,
-                           "height": 720
-                       }
-                   }).run()
+        bmf.encode(
+            concat_video_stream, concat_audio_stream, {
+                "output_path": output_path,
+                "video_params": {
+                    "width": 1280,
+                    "height": 720
+                }
+            }).run()
 
         self.check_video_diff(output_path, expect_result)
 
@@ -179,22 +185,17 @@ class TestComplexCase(BaseTestCase):
             stream.append(video_list[i]['audio'])
 
         # concat video and audio streams with 'video_concat' module
-        concat_streams = (
-            bmf.module(stream, 'video_concat', option)
-        )
+        concat_streams = (bmf.module(stream, 'video_concat', option))
 
         # encode
-        (
-            bmf.encode(concat_streams[0], concat_streams[1],
-                       {
-                           "output_path": output_path,
-                           "video_params": {
-                               "width": 1280,
-                               "height": 720
-                           }
-                       })
-                .run()
-        )
+        (bmf.encode(
+            concat_streams[0], concat_streams[1], {
+                "output_path": output_path,
+                "video_params": {
+                    "width": 1280,
+                    "height": 720
+                }
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -211,59 +212,56 @@ class TestComplexCase(BaseTestCase):
         dump_graph = 0
 
         overlay_option = {
-            "dump_graph": dump_graph,
+            "dump_graph":
+            dump_graph,
             "source": {
                 "start": 0,
                 "duration": 7,
                 "width": 1280,
                 "height": 720
             },
-            "overlays": [
-                {
-                    "start": 0,
-                    "duration": 7,
-                    "width": 300,
-                    "height": 200,
-                    "pox_x": 0,
-                    "pox_y": 0,
-                    "loop": 0,
-                    "repeat_last": 1
-                }
-            ]
+            "overlays": [{
+                "start": 0,
+                "duration": 7,
+                "width": 300,
+                "height": 200,
+                "pox_x": 0,
+                "pox_y": 0,
+                "loop": 0,
+                "repeat_last": 1
+            }]
         }
 
         concat_option = {
-            "dump_graph": dump_graph,
-            "width": 1280,
-            "height": 720,
+            "dump_graph":
+            dump_graph,
+            "width":
+            1280,
+            "height":
+            720,
             # if have audio input
-            "has_audio": 1,
-            "video_list": [
-                {
-                    "start": 0,
-                    "duration": 3,
-                    "transition_time": 1,
-                    "transition_mode": 1
-                },
-                {
-                    "start": 0,
-                    "duration": 3,
-                    "transition_time": 1,
-                    "transition_mode": 1
-                },
-                {
-                    "start": 0,
-                    "duration": 3,
-                    "transition_time": 1,
-                    "transition_mode": 1
-                }
-            ]
+            "has_audio":
+            1,
+            "video_list": [{
+                "start": 0,
+                "duration": 3,
+                "transition_time": 1,
+                "transition_mode": 1
+            }, {
+                "start": 0,
+                "duration": 3,
+                "transition_time": 1,
+                "transition_mode": 1
+            }, {
+                "start": 0,
+                "duration": 3,
+                "transition_time": 1,
+                "transition_mode": 1
+            }]
         }
 
         # create graph
-        my_graph = bmf.graph({
-            "dump_graph": dump_graph
-        })
+        my_graph = bmf.graph({"dump_graph": dump_graph})
 
         # three videos
         video1 = my_graph.decode({'input_path': input_video_path})
@@ -280,34 +278,31 @@ class TestComplexCase(BaseTestCase):
 
         # do overlay
         overlay_streams = list()
-        overlay_streams.append(bmf.module([video1['video'], logo_1], 'video_overlay', overlay_option)[0])
-        overlay_streams.append(bmf.module([video2['video'], logo_2], 'video_overlay', overlay_option)[0])
-        overlay_streams.append(bmf.module([video3['video'], logo_3], 'video_overlay', overlay_option)[0])
+        overlay_streams.append(
+            bmf.module([video1['video'], logo_1], 'video_overlay',
+                       overlay_option)[0])
+        overlay_streams.append(
+            bmf.module([video2['video'], logo_2], 'video_overlay',
+                       overlay_option)[0])
+        overlay_streams.append(
+            bmf.module([video3['video'], logo_3], 'video_overlay',
+                       overlay_option)[0])
 
         # do concat
-        concat_streams = (
-            bmf.module([
-                overlay_streams[0],
-                overlay_streams[1],
-                overlay_streams[2],
-                video1['audio'],
-                video2['audio'],
-                video3['audio']
-            ], 'video_concat', concat_option)
-        )
+        concat_streams = (bmf.module([
+            overlay_streams[0], overlay_streams[1], overlay_streams[2],
+            video1['audio'], video2['audio'], video3['audio']
+        ], 'video_concat', concat_option))
 
         # encode
-        (
-            bmf.encode(concat_streams[0], concat_streams[1],
-                       {
-                           "output_path": output_path,
-                           "video_params": {
-                               "width": 1280,
-                               "height": 720
-                           }
-                       })
-                .run()
-        )
+        (bmf.encode(
+            concat_streams[0], concat_streams[1], {
+                "output_path": output_path,
+                "video_params": {
+                    "width": 1280,
+                    "height": 720
+                }
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -323,20 +318,17 @@ class TestComplexCase(BaseTestCase):
         video1 = my_graph.decode({'input_path': input_video_path})
         v1 = video1['video']
         a1 = video1['audio']
-        concat_streams = (
-            bmf.module([v1, a1], 'flip_and_scale', {"dump_graph": 1})
-        )
+        concat_streams = (bmf.module([v1, a1], 'flip_and_scale',
+                                     {"dump_graph": 1}))
         # encode
-        (
-            bmf.encode(concat_streams[0], concat_streams[1],
-                       {
-                           "output_path": output_path,
-                           "video_params": {
-                               "width": 1280,
-                               "height": 720
-                           }
-                       }).run()
-        )
+        (bmf.encode(
+            concat_streams[0], concat_streams[1], {
+                "output_path": output_path,
+                "video_params": {
+                    "width": 1280,
+                    "height": 720
+                }
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
     # @timeout_decorator.timeout(seconds=120)

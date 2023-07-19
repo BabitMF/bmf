@@ -19,8 +19,8 @@
 #include <bmf/sdk/module_registry.h>
 USE_BMF_SDK_NS
 class PassThroughModule : public Module {
-public:
-    PassThroughModule(int node_id,JsonParam json_param);
+  public:
+    PassThroughModule(int node_id, JsonParam json_param);
 
     int reset();
 
@@ -37,4 +37,4 @@ public:
 
 REGISTER_MODULE_CLASS(PassThroughModule)
 
-#endif //BMF_PASS_THROUGH_MODULE_H
+#endif // BMF_PASS_THROUGH_MODULE_H

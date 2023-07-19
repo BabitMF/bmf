@@ -8,6 +8,7 @@ Created on 2020-11-4
 import os
 import copy
 import json
+
 MIN_WH = 8
 """
 
@@ -58,7 +59,12 @@ layout_extra = {
 """
 
 
-def create_layout_extra_gallery(frame_num, width, height, color='#000000', resolution_fill='pad', layout_location=''):
+def create_layout_extra_gallery(frame_num,
+                                width,
+                                height,
+                                color='#000000',
+                                resolution_fill='pad',
+                                layout_location=''):
     """
     frame_info_list = [{'width', 'height', 'frame'}]
     """
@@ -68,20 +74,30 @@ def create_layout_extra_gallery(frame_num, width, height, color='#000000', resol
     layout_extra = {
         'layout_mode': 'gallery',  # 画廊 九宫格
         'resolution_fill': resolution_fill,
-        'canvas': {'width': width, 'height': height, 'color': color}
+        'canvas': {
+            'width': width,
+            'height': height,
+            'color': color
+        }
     }
 
     layout_param_list = []
-    layout_param_default = {'location': 'top_left', 'ref_width': width, 'ref_height': height, 'resolution_fill': resolution_fill, 'color': color}
+    layout_param_default = {
+        'location': 'top_left',
+        'ref_width': width,
+        'ref_height': height,
+        'resolution_fill': resolution_fill,
+        'color': color
+    }
 
-    hw = int(width/2)  # half width
-    hh = int(height/2)  # half height
+    hw = int(width / 2)  # half width
+    hh = int(height / 2)  # half height
 
-    tw = int(width/3)  # one third of width
-    th = int(height/3)
+    tw = int(width / 3)  # one third of width
+    th = int(height / 3)
 
-    qw = int(width/4)  # quarter
-    qh = int(height/4)
+    qw = int(width / 4)  # quarter
+    qh = int(height / 4)
 
     if frame_num == 1:
         layout_param = copy.deepcopy(layout_param_default)
@@ -102,33 +118,38 @@ def create_layout_extra_gallery(frame_num, width, height, color='#000000', resol
 
     elif 3 <= frame_num <= 4:
         for idx in range(0, frame_num):
-            j = int(idx/2)
+            j = int(idx / 2)
             i = (idx % 2)
             layout_param = copy.deepcopy(layout_param_default)
-            layout_param['pos'] = [i*hw, j*hh, hw, hh]
+            layout_param['pos'] = [i * hw, j * hh, hw, hh]
             layout_param_list.append(layout_param)
 
     elif 5 <= frame_num <= 9:
         for idx in range(0, frame_num):
-            j = int(idx/3)
+            j = int(idx / 3)
             i = (idx % 3)
             layout_param = copy.deepcopy(layout_param_default)
-            layout_param['pos'] = [i*tw, j*th, tw, th]
+            layout_param['pos'] = [i * tw, j * th, tw, th]
             layout_param_list.append(layout_param)
 
     elif frame_num >= 10:
         for idx in range(0, min(frame_num, 16)):
-            j = int(idx/4)
+            j = int(idx / 4)
             i = (idx % 4)
             layout_param = copy.deepcopy(layout_param_default)
-            layout_param['pos'] = [i*qw, j*qh, qw, qh]
+            layout_param['pos'] = [i * qw, j * qh, qw, qh]
             layout_param_list.append(layout_param)
 
     layout_extra['layout_param_list'] = layout_param_list
     return layout_extra
 
 
-def _create_layout_extra_speaker_hor(frame_num, width, height, color='#000000', resolution_fill='pad', layout_location='right'):
+def _create_layout_extra_speaker_hor(frame_num,
+                                     width,
+                                     height,
+                                     color='#000000',
+                                     resolution_fill='pad',
+                                     layout_location='right'):
     """
     主讲模式 只针对横屏
     """
@@ -138,11 +159,21 @@ def _create_layout_extra_speaker_hor(frame_num, width, height, color='#000000', 
     layout_extra = {
         'layout_mode': 'speaker',  # 画廊 九宫格
         'resolution_fill': resolution_fill,
-        'canvas': {'width': width, 'height': height, 'color': color}
+        'canvas': {
+            'width': width,
+            'height': height,
+            'color': color
+        }
     }
 
     layout_param_list = []
-    layout_param_default = {'location': 'top_left', 'ref_width': width, 'ref_height': height, 'resolution_fill': resolution_fill, 'color': color}
+    layout_param_default = {
+        'location': 'top_left',
+        'ref_width': width,
+        'ref_height': height,
+        'resolution_fill': resolution_fill,
+        'color': color
+    }
 
     frame_num = min(frame_num, 13)
 
@@ -166,16 +197,18 @@ def _create_layout_extra_speaker_hor(frame_num, width, height, color='#000000', 
 
             main_width = width - cell_num_per_row * cell_width
             if layout_location in ['left']:
-                layout_param_0['pos'] = [cell_num_per_row*cell_width, 0, main_width, height]
+                layout_param_0['pos'] = [
+                    cell_num_per_row * cell_width, 0, main_width, height
+                ]
             else:
                 layout_param_0['pos'] = [0, 0, main_width, height]
 
-            for idx in range(0, frame_num-1):
+            for idx in range(0, frame_num - 1):
                 if layout_location in ['left']:
                     x = 0
                 else:
-                    x = width-cell_width
-                y = idx*cell_height
+                    x = width - cell_width
+                y = idx * cell_height
                 layout_param = copy.deepcopy(layout_param_default)
                 layout_param['pos'] = [x, y, cell_width, cell_height]
                 layout_param_list.append(layout_param)
@@ -191,19 +224,21 @@ def _create_layout_extra_speaker_hor(frame_num, width, height, color='#000000', 
             cell_width = int(width / (cell_num_per_col + cell_num_per_row))
             cell_height = int(height / (cell_num_per_col))
 
-            main_width = width-cell_num_per_row*cell_width
+            main_width = width - cell_num_per_row * cell_width
             if layout_location in ['left']:
-                layout_param_0['pos'] = [cell_num_per_row*cell_width, 0, main_width, height]
+                layout_param_0['pos'] = [
+                    cell_num_per_row * cell_width, 0, main_width, height
+                ]
             else:
                 layout_param_0['pos'] = [0, 0, main_width, height]
 
             for idx in range(0, frame_num - 1):
-                j = int(idx/cell_num_per_row)
+                j = int(idx / cell_num_per_row)
                 i = (idx % cell_num_per_row)
                 if layout_location in ['left']:
-                    x = i*cell_width
+                    x = i * cell_width
                 else:
-                    x = width - (cell_num_per_row-i)*cell_width
+                    x = width - (cell_num_per_row - i) * cell_width
                 y = j * cell_height
                 layout_param = copy.deepcopy(layout_param_default)
                 layout_param['pos'] = [x, y, cell_width, cell_height]
@@ -213,7 +248,12 @@ def _create_layout_extra_speaker_hor(frame_num, width, height, color='#000000', 
     return layout_extra
 
 
-def _create_layout_extra_speaker_ver(frame_num, width, height, color='#000000', resolution_fill='pad', layout_location='top'):
+def _create_layout_extra_speaker_ver(frame_num,
+                                     width,
+                                     height,
+                                     color='#000000',
+                                     resolution_fill='pad',
+                                     layout_location='top'):
     """
     主讲模式 只针对横屏
     """
@@ -222,11 +262,21 @@ def _create_layout_extra_speaker_ver(frame_num, width, height, color='#000000', 
     layout_extra = {
         'layout_mode': 'speaker',  # 画廊 九宫格
         'resolution_fill': resolution_fill,
-        'canvas': {'width': width, 'height': height, 'color': color}
+        'canvas': {
+            'width': width,
+            'height': height,
+            'color': color
+        }
     }
 
     layout_param_list = []
-    layout_param_default = {'location': 'top_left', 'ref_width': width, 'ref_height': height, 'resolution_fill': resolution_fill, 'color': color}
+    layout_param_default = {
+        'location': 'top_left',
+        'ref_width': width,
+        'ref_height': height,
+        'resolution_fill': resolution_fill,
+        'color': color
+    }
 
     frame_num = min(frame_num, 13)
 
@@ -251,14 +301,16 @@ def _create_layout_extra_speaker_ver(frame_num, width, height, color='#000000', 
         if layout_location in ['bottom']:
             layout_param_0['pos'] = [0, 0, width, main_height]
         else:
-            layout_param_0['pos'] = [0, cell_num_per_col * cell_height, width, main_height]
+            layout_param_0['pos'] = [
+                0, cell_num_per_col * cell_height, width, main_height
+            ]
 
-        for idx in range(0, frame_num-1):
+        for idx in range(0, frame_num - 1):
             if layout_location in ['bottom']:
                 y = height - cell_height
             else:
                 y = 0
-            x = idx*cell_width
+            x = idx * cell_width
             layout_param = copy.deepcopy(layout_param_default)
             layout_param['pos'] = [x, y, cell_width, cell_height]
             layout_param_list.append(layout_param)
@@ -278,15 +330,17 @@ def _create_layout_extra_speaker_ver(frame_num, width, height, color='#000000', 
         if layout_location in ['bottom']:
             layout_param_0['pos'] = [0, 0, width, main_height]
         else:
-            layout_param_0['pos'] = [0, cell_num_per_col * cell_height, width, main_height]
+            layout_param_0['pos'] = [
+                0, cell_num_per_col * cell_height, width, main_height
+            ]
 
         for idx in range(0, frame_num - 1):
-            j = int(idx/cell_num_per_row)
+            j = int(idx / cell_num_per_row)
             i = (idx % cell_num_per_row)
             if layout_location in ['bottom']:
-                y = height - (cell_num_per_col-j)*cell_height
+                y = height - (cell_num_per_col - j) * cell_height
             else:
-                y = j*cell_height
+                y = j * cell_height
             x = idx * cell_width
             layout_param = copy.deepcopy(layout_param_default)
             layout_param['pos'] = [x, y, cell_width, cell_height]
@@ -296,22 +350,52 @@ def _create_layout_extra_speaker_ver(frame_num, width, height, color='#000000', 
     return layout_extra
 
 
-def create_layout_extra_speaker(frame_num, width, height, color='#000000', resolution_fill='pad', layout_location='right'):
+def create_layout_extra_speaker(frame_num,
+                                width,
+                                height,
+                                color='#000000',
+                                resolution_fill='pad',
+                                layout_location='right'):
     if layout_location in ['top', 'bottom']:
-        layout_extra = _create_layout_extra_speaker_ver(frame_num=frame_num, width=width, height=height, color=color,
-                                                        resolution_fill=resolution_fill, layout_location=layout_location)
+        layout_extra = _create_layout_extra_speaker_ver(
+            frame_num=frame_num,
+            width=width,
+            height=height,
+            color=color,
+            resolution_fill=resolution_fill,
+            layout_location=layout_location)
     else:
-        layout_extra = _create_layout_extra_speaker_hor(frame_num=frame_num, width=width, height=height, color=color,
-                                                        resolution_fill=resolution_fill, layout_location=layout_location)
+        layout_extra = _create_layout_extra_speaker_hor(
+            frame_num=frame_num,
+            width=width,
+            height=height,
+            color=color,
+            resolution_fill=resolution_fill,
+            layout_location=layout_location)
     return layout_extra
 
 
-def create_layout_extra(frame_num, width, height, color='#000000', resolution_fill='pad', layout_location='right', layout_mode='speaker'):
+def create_layout_extra(frame_num,
+                        width,
+                        height,
+                        color='#000000',
+                        resolution_fill='pad',
+                        layout_location='right',
+                        layout_mode='speaker'):
     if layout_mode in ['speaker']:
-        layout_extra = create_layout_extra_speaker(frame_num=frame_num, width=width, height=height, color=color,
-                                                   resolution_fill=resolution_fill, layout_location=layout_location)
+        layout_extra = create_layout_extra_speaker(
+            frame_num=frame_num,
+            width=width,
+            height=height,
+            color=color,
+            resolution_fill=resolution_fill,
+            layout_location=layout_location)
     else:
-        layout_extra = create_layout_extra_gallery(frame_num=frame_num, width=width, height=height, color=color,
-                                                   resolution_fill=resolution_fill, layout_location=layout_location)
+        layout_extra = create_layout_extra_gallery(
+            frame_num=frame_num,
+            width=width,
+            height=height,
+            color=color,
+            resolution_fill=resolution_fill,
+            layout_location=layout_location)
     return layout_extra
-

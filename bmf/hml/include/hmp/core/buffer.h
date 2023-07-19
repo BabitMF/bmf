@@ -19,26 +19,27 @@
 #include <hmp/core/allocator.h>
 #include <hmp/core/scalar_type.h>
 
-namespace hmp{
+namespace hmp {
 
-class HMP_API BufferImpl final: public RefObject
-{
-public:
+class HMP_API BufferImpl final : public RefObject {
+  public:
     BufferImpl() = delete;
     BufferImpl(BufferImpl &&) = default;
-    BufferImpl(const BufferImpl&) = delete;
+    BufferImpl(const BufferImpl &) = delete;
 
-    BufferImpl(DataPtr &&ptr, ScalarType scalar_type, int64_t nitems, Allocator *allocator, bool pinned_memory=false)
+    BufferImpl(DataPtr &&ptr, ScalarType scalar_type, int64_t nitems,
+               Allocator *allocator, bool pinned_memory = false)
         : pinned_memory_(pinned_memory), data_(std::move(ptr)),
-          allocator_(allocator), numel_(nitems),  scalarType_(scalar_type)
-    {
+          allocator_(allocator), numel_(nitems), scalarType_(scalar_type) {
         HMP_REQUIRE(data_, "Empty data is not supported");
     }
 
-    BufferImpl(ScalarType scalar_type, int64_t nitems, Allocator *allocator, bool pinned_memory=false)
-        : pinned_memory_(pinned_memory), allocator_(allocator), numel_(nitems), scalarType_(scalar_type)
-    {
-        HMP_REQUIRE(allocator != nullptr, "Buffer can not be initialize without allocator and data");
+    BufferImpl(ScalarType scalar_type, int64_t nitems, Allocator *allocator,
+               bool pinned_memory = false)
+        : pinned_memory_(pinned_memory), allocator_(allocator), numel_(nitems),
+          scalarType_(scalar_type) {
+        HMP_REQUIRE(allocator != nullptr,
+                    "Buffer can not be initialize without allocator and data");
         data_ = allocator->alloc(nitems * sizeof_scalar_type(scalar_type));
     }
 
@@ -52,25 +53,22 @@ public:
 
     inline int64_t nbytes() const { return nitems() * itemsize(); }
 
-    inline const Device& device() const { return data_.device(); }
+    inline const Device &device() const { return data_.device(); }
 
     inline Allocator *allocator() const { return allocator_; }
 
-    template<typename T>
-    T *data() const
-    {
+    template <typename T> T *data() const {
         auto scalar_type = getScalarType<T>();
-        HMP_REQUIRE(scalar_type == scalarType_, 
-            "Try to access buffer with data type {}, but it have data type {}", scalar_type, scalarType_);
-        return static_cast<T*>(data_.get());
+        HMP_REQUIRE(
+            scalar_type == scalarType_,
+            "Try to access buffer with data type {}, but it have data type {}",
+            scalar_type, scalarType_);
+        return static_cast<T *>(data_.get());
     }
 
-    void *unsafe_data() const 
-    {
-        return data_.get();
-    }
+    void *unsafe_data() const { return data_.get(); }
 
-private:
+  private:
     bool pinned_memory_;
     DataPtr data_;
     Allocator *allocator_;
@@ -78,34 +76,32 @@ private:
     ScalarType scalarType_;
 };
 
-class HMP_API Buffer 
-{
+class HMP_API Buffer {
     RefPtr<BufferImpl> self_;
-public:
+
+  public:
     Buffer() = default;
     Buffer(const Buffer &) = default;
     Buffer(Buffer &&) = default;
-    Buffer& operator=(const Buffer& other)
-    {
+    Buffer &operator=(const Buffer &other) {
         self_ = other.self_;
         return *this;
     }
 
-    Buffer& operator=(Buffer&& other)
-    {
+    Buffer &operator=(Buffer &&other) {
         self_ = std::move(other.self_);
         return *this;
     }
 
-    Buffer(DataPtr &&ptr, ScalarType scalar_type, int64_t nitems, Allocator *allocator, bool pinned_memory=false)
-        : self_(makeRefPtr<BufferImpl>(std::move(ptr), scalar_type, nitems, allocator, pinned_memory))
-    {
-    }
+    Buffer(DataPtr &&ptr, ScalarType scalar_type, int64_t nitems,
+           Allocator *allocator, bool pinned_memory = false)
+        : self_(makeRefPtr<BufferImpl>(std::move(ptr), scalar_type, nitems,
+                                       allocator, pinned_memory)) {}
 
-    Buffer(ScalarType scalar_type, int64_t nitems, Allocator *allocator, bool pinned_memory=false)
-        : self_(makeRefPtr<BufferImpl>(scalar_type, nitems, allocator, pinned_memory))
-    {
-    }
+    Buffer(ScalarType scalar_type, int64_t nitems, Allocator *allocator,
+           bool pinned_memory = false)
+        : self_(makeRefPtr<BufferImpl>(scalar_type, nitems, allocator,
+                                       pinned_memory)) {}
 
     bool defined() const { return self_; }
 
@@ -121,17 +117,13 @@ public:
 
     inline Allocator *allocator() const { return self_->allocator(); }
 
-    inline const Device& device() const { return self_->device(); }
+    inline const Device &device() const { return self_->device(); }
 
     inline int refcount() const { return self_.refcount(); }
 
-    template<typename T>
-    inline T *data() const  { return self_->data<T>(); }
+    template <typename T> inline T *data() const { return self_->data<T>(); }
 
     inline void *unsafe_data() const { return self_->unsafe_data(); }
 };
-
-
-
 
 } //

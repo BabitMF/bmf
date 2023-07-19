@@ -24,15 +24,14 @@
 #include <hmp/imgproc/formats.h>
 #include <hmp/oc/Metal.h>
 
+namespace hmp {
+namespace oc {
 
-namespace hmp{
-namespace oc{
-
-class PixelBuffer
-{
+class PixelBuffer {
     struct Private;
     std::shared_ptr<Private> self;
-public:
+
+  public:
     PixelBuffer() = default;
 #ifdef __OBJC__
     PixelBuffer(CVPixelBufferRef pixel_buffer);
@@ -41,9 +40,8 @@ public:
 #endif
     PixelBuffer(void *pixel_buffer);
 
-    PixelBuffer(int width, int height, 
-                PixelFormat format, ColorRange range,
-                bool gl=false, bool metal=true);
+    PixelBuffer(int width, int height, PixelFormat format, ColorRange range,
+                bool gl = false, bool metal = true);
 
     unsigned createGlTexture(int plane, void *context) const;
 #ifdef __OBJC__
@@ -55,14 +53,12 @@ public:
     int format() const;
     ColorRange range() const;
 
-    const void* handle() const;
+    const void *handle() const;
 }; //
-
 
 int toCVPixelFormat(PixelFormat format, ColorRange range);
 PixelFormat fromCVPixelFormat(int cvFormat);
-
-
-}} //namespace
+}
+} // namespace
 
 #endif

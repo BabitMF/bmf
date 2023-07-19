@@ -32,6 +32,7 @@ def longvideo_jobv(index):
 
 
 class TestCompareWithEdit(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_edit_concat(self):
 
@@ -44,52 +45,52 @@ class TestCompareWithEdit(BaseTestCase):
         self.remove_result_data(output_path)
 
         concat_option = {
-            "dump_graph": 0,
-            "width": 1280,
-            "height": 720,
+            "dump_graph":
+            0,
+            "width":
+            1280,
+            "height":
+            720,
             # if have audio input
-            "has_audio": 0,
-            "video_list": [
-                {
-                    "start": 0,
-                    "duration": 10,
-                    "transition_time": 1,
-                    "transition_mode": 1
-                },
-                {
-                    "start": 0,
-                    "duration": 10,
-                    "transition_time": 1,
-                    "transition_mode": 1
-                }
-            ]
+            "has_audio":
+            0,
+            "video_list": [{
+                "start": 0,
+                "duration": 10,
+                "transition_time": 1,
+                "transition_mode": 1
+            }, {
+                "start": 0,
+                "duration": 10,
+                "transition_time": 1,
+                "transition_mode": 1
+            }]
         }
         concat_option2 = {
-            "dump_graph": 0,
-            "width": 1280,
-            "height": 720,
+            "dump_graph":
+            0,
+            "width":
+            1280,
+            "height":
+            720,
             # if have audio input
-            "has_audio": 0,
-            "video_list": [
-                {
-                    "start": 0,
-                    "duration": 20,
-                    "transition_time": 1,
-                    "transition_mode": 1
-                },
-                {
-                    "start": 0,
-                    "duration": 10,
-                    "transition_time": 1,
-                    "transition_mode": 1
-                }
-            ]
+            "has_audio":
+            0,
+            "video_list": [{
+                "start": 0,
+                "duration": 20,
+                "transition_time": 1,
+                "transition_mode": 1
+            }, {
+                "start": 0,
+                "duration": 10,
+                "transition_time": 1,
+                "transition_mode": 1
+            }]
         }
 
         # create graph
-        my_graph = bmf.graph({
-            "dump_graph": 0
-        })
+        my_graph = bmf.graph({"dump_graph": 0})
 
         # three videos
         video1 = my_graph.decode({'input_path': input_video_path_1})
@@ -106,33 +107,21 @@ class TestCompareWithEdit(BaseTestCase):
         v3 = bmf.module([v3], 'video_norm')
 
         # do concat1
-        concat_streams = (
-            bmf.module([
-                v1,
-                v2
-            ], 'video_concat2', concat_option)
-        )
+        concat_streams = (bmf.module([v1, v2], 'video_concat2', concat_option))
 
         # do concat2
-        concat_streams = (
-            bmf.module([
-                concat_streams[0],
-                v3
-            ], 'video_concat2', concat_option2)
-        )
+        concat_streams = (bmf.module([concat_streams[0], v3], 'video_concat2',
+                                     concat_option2))
 
         # encode
-        (
-            bmf.encode(concat_streams[0], None,
-                       {
-                           "output_path": output_path,
-                           "video_params": {
-                               "width": 1280,
-                               "height": 720
-                           }
-                       })
-                .run()
-        )
+        (bmf.encode(
+            concat_streams[0], None, {
+                "output_path": output_path,
+                "video_params": {
+                    "width": 1280,
+                    "height": 720
+                }
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -149,7 +138,7 @@ class TestCompareWithEdit(BaseTestCase):
 
         ts = []
         for i in range(1, 4):
-            t = threading.Thread(target=jobv, args=(i,))
+            t = threading.Thread(target=jobv, args=(i, ))
             ts.append(t)
 
         for i in ts:
@@ -181,52 +170,52 @@ class TestCompareWithEdit(BaseTestCase):
         self.remove_result_data(output_path)
 
         concat_option = {
-            "dump_graph": 0,
-            "width": 1280,
-            "height": 720,
+            "dump_graph":
+            0,
+            "width":
+            1280,
+            "height":
+            720,
             # if have audio input
-            "has_audio": 0,
-            "video_list": [
-                {
-                    "start": 0,
-                    "duration": 60,
-                    "transition_time": 5,
-                    "transition_mode": 1
-                },
-                {
-                    "start": 0,
-                    "duration": 60,
-                    "transition_time": 5,
-                    "transition_mode": 1
-                }
-            ]
+            "has_audio":
+            0,
+            "video_list": [{
+                "start": 0,
+                "duration": 60,
+                "transition_time": 5,
+                "transition_mode": 1
+            }, {
+                "start": 0,
+                "duration": 60,
+                "transition_time": 5,
+                "transition_mode": 1
+            }]
         }
         concat_option2 = {
-            "dump_graph": 0,
-            "width": 1280,
-            "height": 720,
+            "dump_graph":
+            0,
+            "width":
+            1280,
+            "height":
+            720,
             # if have audio input
-            "has_audio": 0,
-            "video_list": [
-                {
-                    "start": 0,
-                    "duration": 120,
-                    "transition_time": 5,
-                    "transition_mode": 1
-                },
-                {
-                    "start": 0,
-                    "duration": 60,
-                    "transition_time": 5,
-                    "transition_mode": 1
-                }
-            ]
+            "has_audio":
+            0,
+            "video_list": [{
+                "start": 0,
+                "duration": 120,
+                "transition_time": 5,
+                "transition_mode": 1
+            }, {
+                "start": 0,
+                "duration": 60,
+                "transition_time": 5,
+                "transition_mode": 1
+            }]
         }
 
         # create graph
-        my_graph = bmf.graph({
-            "dump_graph": 0
-        })
+        my_graph = bmf.graph({"dump_graph": 0})
 
         # three videos
         video1 = my_graph.decode({'input_path': input_video_path_1})
@@ -243,33 +232,21 @@ class TestCompareWithEdit(BaseTestCase):
         v3 = bmf.module([v3], 'video_norm')
 
         # do concat1
-        concat_streams = (
-            bmf.module([
-                v1,
-                v2
-            ], 'video_concat2', concat_option)
-        )
+        concat_streams = (bmf.module([v1, v2], 'video_concat2', concat_option))
 
         # do concat2
-        concat_streams = (
-            bmf.module([
-                concat_streams[0],
-                v3
-            ], 'video_concat2', concat_option2)
-        )
+        concat_streams = (bmf.module([concat_streams[0], v3], 'video_concat2',
+                                     concat_option2))
 
         # encode
-        (
-            bmf.encode(concat_streams[0], None,
-                       {
-                           "output_path": output_path,
-                           "video_params": {
-                               "width": 1280,
-                               "height": 720
-                           }
-                       })
-                .run()
-        )
+        (bmf.encode(
+            concat_streams[0], None, {
+                "output_path": output_path,
+                "video_params": {
+                    "width": 1280,
+                    "height": 720
+                }
+            }).run())
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -286,7 +263,7 @@ class TestCompareWithEdit(BaseTestCase):
 
         ts = []
         for i in range(1, 4):
-            t = threading.Thread(target=longvideo_jobv, args=(i,))
+            t = threading.Thread(target=longvideo_jobv, args=(i, ))
             ts.append(t)
 
         for i in ts:

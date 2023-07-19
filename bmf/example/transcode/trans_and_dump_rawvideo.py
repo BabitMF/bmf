@@ -5,6 +5,7 @@ import unittest
 sys.path.append("../../../")
 import bmf
 
+
 def test_encode_and_raw_data():
     input_video_path = '../files/img.mp4'
     raw_output_path = "./out.yuv"
@@ -23,19 +24,16 @@ def test_encode_and_raw_data():
             None,
             {
                 "video_params": {
-                    "codec": "rawvideo" # using this parameter to get raw yuv data
+                    "codec":
+                    "rawvideo"  # using this parameter to get raw yuv data
                 },
                 "format": "rawvideo",
                 "output_path": raw_output_path
-            }
-        )
-    )
+            }))
 
     # encode
     bmf.encode(
-        video1['video'],
-        video1['audio'],
-        {
+        video1['video'], video1['audio'], {
             "video_params": {
                 "codec": "h264",
                 "width": 320,
@@ -44,8 +42,8 @@ def test_encode_and_raw_data():
                 "preset": "veryfast"
             },
             "output_path": output_path
-        }
-    ).run()
+        }).run()
+
 
 if __name__ == '__main__':
     test_encode_and_raw_data()

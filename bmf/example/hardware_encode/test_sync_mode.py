@@ -11,6 +11,7 @@ from base_test.base_test_case import BaseTestCase
 
 
 class TestSyncMode(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_hw_encode(self):
         '''
@@ -33,7 +34,9 @@ class TestSyncMode(BaseTestCase):
             "path": c_module_path,
             "entry": c_module_entry
         }
-        hw_frame_gen = bmf_sync.sync_module(module_info, {"input_path": input_video_path}, [], [0])
+        hw_frame_gen = bmf_sync.sync_module(module_info,
+                                            {"input_path": input_video_path},
+                                            [], [0])
         encoder = bmf_sync.sync_module("c_ffmpeg_encoder", {
             "output_path": output_path,
             "video_params": {
@@ -46,7 +49,7 @@ class TestSyncMode(BaseTestCase):
         frames, _ = bmf_sync.process(hw_frame_gen, None)
 
         # encode
-        bmf_sync.process(encoder, {0:frames[0]})
+        bmf_sync.process(encoder, {0: frames[0]})
 
         bmf_sync.send_eof(encoder)
 

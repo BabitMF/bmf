@@ -2,10 +2,7 @@
 
 ***BMF(Babit Multimedia Framework, BabitMF)** is a universal multimedia processing framework launched by [**ByteDance**](https://www.bytedance.com/en) that provides a concise and easy-to-use cross-language interface, flexible scheduling and scalability. It dynamically expands, manages and reuses the atomic capabilities of video processing in a modular way, and builds high-performance multimedia processing links in a graph/pipeline manner or implements engineering integration by directly invoking individual processing capabilities*
 
-*We have our own official website, welcome to browse and put forward your valuable opinions: https://babitmf.github.io/*
-
-*BMF is contributed jointly by [**ByteDance**](https://www.bytedance.com/en) and [**NVIDIA**](https://www.bytedance.com/en)*
-
+*BMF is contributed jointly by [**ByteDance**](https://www.bytedance.com/en) and [**NVIDIA**](https://www.bytedance.com/en), we have our own official website, welcome to browse and put forward your valuable opinions: https://babitmf.github.io/*
 
 ## About BMF
 BMF helps multimedia users easily and efficiently implement projects in production environments. the cases used BMF cover video transcoding, video frame extraction, video enhancement, video analysis, video interpolation, video editing, video conferencing, VR, and etc. Currently, hundreds of millions of videos are processed using BMF daily. During the implementation of these business scenarios, BMF's functional diversity, ease of use, compatibility, stability and performance have been fully polished.
@@ -28,7 +25,7 @@ This demo uses BMF framework to construct a simple broadcast service. The servic
 
 operation broadcaster:
 
-![](bmf/example/broadcaster_demo/broadcaster.gif)
+![](bmf/demo/broadcaster/broadcaster.gif)
 
 
 ### CPU+GPU acceleration
@@ -58,7 +55,7 @@ The demo builds a transcoding pipeline which fully runs on GPU:
 
 decode->scale->flip->rotate->crop->blur->encode
 
-If you want to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/eefengwei/colab_tutorials/blob/main/colab_tutorial_cd.ipynb)
+If you want to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/gpu_module/gpu_module_demo_colab.ipynb)
 
 
 ### AI
@@ -67,21 +64,21 @@ If you want to have a quick experiment, you can try it on [![Open In Colab](http
 
 This demo shows the how to integrate the state of art AI algorithms into the BMF video processing pipeline. The famous open source colorization algorithm [DeOldify](https://github.com/jantic/DeOldify) is wrapped as an BMF pyhton module in less than 100 lines of codes. The final effect is illustrated below, with the original video on the left side and the colored video on the right. 
 
-If you wan't to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/example/colorization_python_demo/deoldify_demo_colab.ipynb)
+If you wan't to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/colorization_python/deoldify_demo_colab.ipynb)
 
-[](bmf/example/colorization_python_demo/deoldify.gif)
+![](bmf/demo/colorization_python/deoldify.gif)
  
 #### Supper Resolution
 This demo implements the super-resolution inference process of [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN) as a BMF module, showcasing a BMF pipeline that combines decoding, super-resolution inference and encoding.
 
-If you wan't to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/example/video_enhance_demo/bmf-enhance-demo.ipynb)
+If you wan't to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/video_enhance/bmf-enhance-demo.ipynb)
 
 
 #### Video Quality Score
 
 This demo shows how to invoke our aesthetic assessment model using bmf. Our deep learning model Aesmode has achieved a binary classification accuracy of 83.8% on AVA dataset, reaching the level of academic SOTA, and can be directly used to evaluate the aesthetic degree of videos by means of frame extraction processing. 
 
-If you wan't to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/example/aesthetic_assessment_demo/aesmod_bmfv3_fin.ipynb)
+If you wan't to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/aesthetic_assessment/aesmod_bmfv3_fin.ipynb)
 
 
 
@@ -93,8 +90,8 @@ If you wan't to have a quick experiment, you can try it on [![Open In Colab](htt
 - [Fast Experience](#fast-experience)
   - [Transcode](#transcode)
   - [Edit](#edit)
-  - [Meeting/Broadcaster](#meeting-broadcaster)
-  - [CPU+GPU acceleration](#cpu+gpu-acceleration)
+  - [Meeting/Broadcaster](#meetingbroadcaster)
+  - [CPU+GPU acceleration](#cpugpu-acceleration)
     - [Video Frame Extraction](#video-frame-extraction)
     - [GPU Video Processing](#gpu-video-processing)
   - [AI](#ai)
@@ -109,11 +106,11 @@ If you wan't to have a quick experiment, you can try it on [![Open In Colab](htt
   - [Use Module Directly](https://babitmf.github.io/docs/bmf/getting_started_yourself/use_module_directly/)
     - sync mode with 3 languages. You can try it on:
 
-      Python:[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/example/sync_mode/bmf_syncmode_python.ipynb)
-      C++:[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/example/sync_mode/bmf_syncmode_cpp.ipynb)
-      Go:[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/example/sync_mode/bmf_syncmode_go.ipynb)
+      Python:[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/test/sync_mode/bmf_syncmode_python.ipynb)
+      C++:[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/test/sync_mode/bmf_syncmode_cpp.ipynb)
+      Go:[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/test/sync_mode/bmf_syncmode_go.ipynb)
   - [Create a Module](https://babitmf.github.io/docs/bmf/getting_started_yourself/create_a_module/)
-    - customize module with python, C++ and Go. You can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/example/customize_module/bmf_customize_demo_latest.ipynb)
+    - customize module with python, C++ and Go. You can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/test/customize_module/bmf_customize_demo_latest.ipynb)
 
 - [Multiple Features (with examples)](https://babitmf.github.io/docs/bmf/multiple_features/)
   - [Graph Mode](https://babitmf.github.io/docs/bmf/multiple_features/graph_mode/)
@@ -127,17 +124,12 @@ If you wan't to have a quick experiment, you can try it on [![Open In Colab](htt
   - [Data Backend for Multiple Framework (ffmpeg, opencv, pytorch)](https://babitmf.github.io/docs/bmf/multiple_features/data_backend/)
   - [Dynamic Graph](https://babitmf.github.io/docs/bmf/multiple_features/dynamic_graph/)
   - [GPU Hardware Acceleration](https://babitmf.github.io/docs/bmf/multiple_features/gpu_hardware_acc/)
-  - [Trace and Debug](https://babitmf.github.io/docs/bmf/multiple_features/trace_and_debug/)
+  - [BMF Tools](https://babitmf.github.io/docs/bmf/multiple_features/tools/)
 
 - [API in Python](https://babitmf.github.io/docs/bmf/api/api_in_python/)
 - [API in Cpp](https://babitmf.github.io/docs/bmf/api/api_in_cpp/)
 - [License](#license)
 - [Contributing](#contributing)
-
-### Tools
-
-run_bmf_graph / 模块管理 相关工具使用说明
-
 
 ## License
 This project is licensed under the Apache License 2.0 - see the [LICENSE](https://github.com/BabitMF/bmf/blob/master/LICENSE) file for details.

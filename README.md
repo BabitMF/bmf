@@ -2,7 +2,7 @@
 
 ***BMF(Babit Multimedia Framework, BabitMF)** is a universal multimedia processing framework launched by [**ByteDance**](https://www.bytedance.com/en) that provides a concise and easy-to-use cross-language interface, flexible scheduling and scalability. It dynamically expands, manages and reuses the atomic capabilities of video processing in a modular way, and builds high-performance multimedia processing links in a graph/pipeline manner or implements engineering integration by directly invoking individual processing capabilities*
 
-*BMF is contributed jointly by [**ByteDance**](https://www.bytedance.com/en) and [**NVIDIA**](https://www.bytedance.com/en), we have our own official website, welcome to browse and put forward your valuable opinions: https://babitmf.github.io/*
+*Our collaborative contributor includes [**NVIDIA**](https://www.nvidia.com/), and we have our own official website, welcome to browse and put forward your valuable opinions: https://babitmf.github.io/*
 
 ## About BMF
 BMF helps multimedia users easily and efficiently implement projects in production environments. the cases used BMF cover video transcoding, video frame extraction, video enhancement, video analysis, video interpolation, video editing, video conferencing, VR, and etc. Currently, hundreds of millions of videos are processed using BMF daily. During the implementation of these business scenarios, BMF's functional diversity, ease of use, compatibility, stability and performance have been fully polished.
@@ -87,7 +87,7 @@ If you wan't to have a quick experiment, you can try it on [![Open In Colab](htt
 
 - [About BMF](https://babitmf.github.io/about/)
 
-- [Fast Experience](#fast-experience)
+- [Quick Experience](#quick-experience)
   - [Transcode](#transcode)
   - [Edit](#edit)
   - [Meeting/Broadcaster](#meetingbroadcaster)
@@ -121,13 +121,14 @@ If you wan't to have a quick experiment, you can try it on [![Open In Colab](htt
     - [Subgraph](https://babitmf.github.io/docs/bmf/multiple_features/graph_mode/subgraphmode/)
     - [PushData Mode](https://babitmf.github.io/docs/bmf/multiple_features/graph_mode/pushdatamode/)
   - [FFmpeg Fully Compatible](https://babitmf.github.io/docs/bmf/multiple_features/ffmpeg_fully_compatible/)
-  - [Data Backend for Multiple Framework (ffmpeg, opencv, pytorch)](https://babitmf.github.io/docs/bmf/multiple_features/data_backend/)
+  - [Data Convert Backend](https://babitmf.github.io/docs/bmf/multiple_features/data_backend/)
   - [Dynamic Graph](https://babitmf.github.io/docs/bmf/multiple_features/dynamic_graph/)
   - [GPU Hardware Acceleration](https://babitmf.github.io/docs/bmf/multiple_features/gpu_hardware_acc/)
   - [BMF Tools](https://babitmf.github.io/docs/bmf/multiple_features/tools/)
 
 - [API in Python](https://babitmf.github.io/docs/bmf/api/api_in_python/)
 - [API in Cpp](https://babitmf.github.io/docs/bmf/api/api_in_cpp/)
+- [API in Go](https://babitmf.github.io/docs/bmf/api/api_in_go/)
 - [License](#license)
 - [Contributing](#contributing)
 

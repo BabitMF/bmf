@@ -1,5 +1,6 @@
 recursive-include bmf *
-prune bmf/example*
+prune bmf/test*
+prune bmf/demo*
 prune bmf/cmd*
 prune bmf/docs*
 prune bmf/sdk*

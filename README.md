@@ -23,7 +23,7 @@ If you want to have a quick experiment, you can try it on [![Open In Colab](http
 ### Meeting/Broadcaster
 This demo uses BMF framework to construct a simple broadcast service. The service provides an API that enables dynamic video source pulling, video layout control, audio mixing, and ultimately streaming the output to an RTMP server. This demo showcases the modularity of BMF, multi-language development, and the ability of dynamically adjusting the pipeline.
 
-operation broadcaster:
+Below is a screen recording demonstrating the operation of broadcaster:
 
 ![](bmf/demo/broadcaster/broadcaster.gif)
 

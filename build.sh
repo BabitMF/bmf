@@ -29,7 +29,7 @@ BUILD_TYPE="Release"
 COVERAGE_OPTION=0
 
 # Handle options
-if [ $# > 0 ]
+if [ $# -gt 0 ]
 then
     # Clean up
     if [ "$1" = "clean" ]
@@ -54,24 +54,23 @@ fi
 
 mkdir -p output
 
-git submodule init
-git submodule update
+git submodule update --init --recursive
 
-(cd 3rd_party/dlpack && cmake . && make && make install && cd -)
+(cd 3rd_party/dlpack && cmake . && make && make install)
 
 if [ ! -d "3rd_party/breakpad" ]
 then
-    cd 3rd_party/
-    wget https://github.com/BabitMF/bmf/releases/download/files/breakpad.tar.xz
-    tar xvf breakpad.tar.xz
-    cd -
+    (cd 3rd_party/ && wget https://github.com/BabitMF/bmf/releases/download/files/breakpad.tar.xz && tar xvf breakpad.tar.xz)
 fi
-
-# cp -a $PWD/3rd_party/ffmpeg_bin/linux/build/lib/. /usr/local/lib/
-# cp -a $PWD/3rd_party/ffmpeg_bin/linux/build/include/. /usr/local/include/
 
 # Generate BMF version
 source ./version.sh
+
+cmake_args=""
+if [[ ! -z "${CMAKE_ARGS}" ]]
+then
+    cmake_args="${cmake_args} ${CMAKE_ARGS}"
+fi
 
 # Handle SCM compilation for x86 multiple Python versions
 if [ "$SCRIPT_EXEC_MODE" == "x86" ]
@@ -92,19 +91,14 @@ then
         cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
             -DBMF_PYENV="${python_versions[$i]}" \
             -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
-	    -DBMF_ENABLE_BREAKPAD=ON \
-            -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ..
-        make -j8
+            -DBMF_ENABLE_TEST=OFF \
+            -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ${cmake_args} ..
+        make -j$(nproc)
 
         # Transfer to output directory to package
         mkdir output/bmf/3rd_party
 
         # Store the pre-compiled dependencies
-        cp -r ../3rd_party/ffmpeg_bin/linux/build/lib/. output/bmf/3rd_party
-        cp /usr/local/boost_1_68_0/stage/lib/libboost_python"${python_names[$i]}".so.1.68.0 output/bmf/3rd_party
-        cp /usr/local/boost_1_68_0/stage/lib/libboost_numpy"${python_names[$i]}".so.1.68.0 output/bmf/3rd_party
-        cp /usr/local/boost_1_68_0/stage/lib/libboost_system.so.1.68.0 output/bmf/3rd_party
-        cp /usr/local/boost_1_68_0/stage/lib/libboost_filesystem.so.1.68.0 output/bmf/3rd_party
         cp /usr/lib/x86_64-linux-gnu/libgflags.so.2.2 output/bmf/3rd_party
         cp /usr/lib/x86_64-linux-gnu/libglog.so.0 output/bmf/3rd_party
         cp /usr/lib/x86_64-linux-gnu/libunwind.so.8 output/bmf/3rd_party
@@ -123,7 +117,6 @@ then
         cp -r output/bmf/lib/. output/bmf/3rd_party
         cp /usr/local/lib/libpython"${python_versions[$i]}"* output/bmf/3rd_party
         mv output/bmf/3rd_party ../bmf/lib
-        cp -r ../3rd_party/ffmpeg_bin/linux/build/bin/. output/bmf/bin/
         cp -r output/bmf/bin ../bmf/bin
         cp -r /usr/local/boost_1_68_0/boost output/bmf/include/
         cp -r /usr/include/glog output/bmf/include/
@@ -174,12 +167,11 @@ then
 else
     mkdir -p build && cd build
     cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-        -DBMF_PYENV=3.7 \
+        -DBMF_PYENV=$(python3 -c "import sys; print('{}.{}'.format(sys.version_info.major, sys.version_info.minor))") \
         -DCOVERAGE=${COVERAGE_OPTION} \
         -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
-        -DBMF_ENABLE_BREAKPAD=ON \
-        -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ..
-    make -j8
+        -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ${cmake_args} ..
+    make -j$(nproc)
 
     # Transfer to output directory
     cd ..
@@ -189,10 +181,12 @@ else
     rm -rf output/example/files
 
     # Breakpad
-    python3 create_symbols.py -b 3rd_party/breakpad/bin -s output/bmf/lib -d ./symbols
-    if [ -d "symbols" ]
+    if [[ "${cmake_args}" =~ "-DBMF_ENABLE_BREAKPAD=ON" ]]
     then
-        cp -r symbols output/
+        python3 create_symbols.py -b 3rd_party/breakpad/bin -s output/bmf/lib -d ./symbols
+        if [ -d "symbols" ]
+        then
+            cp -r symbols output/
+        fi
     fi
 fi
-

@@ -1,0 +1,133 @@
+name: Release binaries to github packages
+
+on:
+  workflow_dispatch:
+  release:
+    types:
+      - created
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build_and_release:
+    name: build binaries with ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.py_ver_prefix}}-${{ matrix.device }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-20.04
+            arch: x86_64
+            py_ver_prefix: cp39
+            device: cpu
+          - os: ubuntu-20.04
+            arch: x86_64
+            py_ver_prefix: cp39
+            device: gpu
+          - os: ubuntu-20.04
+            arch: i686
+            py_ver_prefix: cp39
+            device: cpu
+          - os: ubuntu-20.04
+            arch: aarch64
+            py_ver_prefix: cp39
+            device: cpu
+          - os: ubuntu-20.04
+            arch: s390x
+            py_ver_prefix: cp39
+            device: cpu
+          - os: ubuntu-20.04
+            arch: ppc64le
+            py_ver_prefix: cp39
+            device: cpu
+          - os: macos-12
+            arch: x86_64
+            py_ver_prefix: cp39
+            device: cpu
+          - os: macos-12
+            arch: arm64
+            py_ver_prefix: cp39
+            device: cpu
+            #- os: windows-2019
+            #  arch: AMD64
+            #  py_ver_prefix: cp39
+            #  device: cpu
+            #- os: windows-2019
+            #  arch: x86
+            #  py_ver_prefix: cp39
+            #  device: cpu
+            #- os: windows-2019
+            #  arch: ARM64
+            #  py_ver_prefix: cp39
+            #  device: cpu
+    steps:
+    - name: Check out source code
+      uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+
+    - name: Set up QEMU
+      if: runner.os == 'Linux'
+      uses: docker/setup-qemu-action@v2
+
+    - name: Set binary name for linux
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt update
+        sudo apt install -y jq
+        echo BINARY_NAME=bmf-bin-$(echo "${{ runner.os }}" | tr 'A-Z' 'a-z')-${{ matrix.arch }}$(echo '{"gpu": "-gpu", "cpu": ""}' | jq .${{ matrix.device }} | sed 's/"//g')-${{ matrix.py_ver_prefix }} >> $GITHUB_ENV
+
+    - name: Set binary name for macos/windows
+      if: runner.os != 'Linux'
+      run: |
+        echo BINARY_NAME=bmf-bin-${{ runner.os }}-${{ matrix.arch }}-${{ matrix.py_ver_prefix }} >> $GITHUB_ENV
+        echo BMF_PYTHON_VERSION=$(echo ${{ matrix.py_ver_prefix }} | cut -c 3).$(echo ${{ matrix.py_ver_prefix }} | cut -c 4-) >> $GITHUB_ENV
+
+    - name: Build linux release package in Docker
+      if: runner.os == 'Linux'
+      run: |
+        tmp_file=$(mktemp -p .)
+        echo "FROM smartbrave/manylinux2014_${{ matrix.arch }}_shared_python" >>${tmp_file}
+        echo "RUN yum -y install binutils-devel openssl-devel" >>${tmp_file}
+        echo "WORKDIR /root" >>${tmp_file}
+        echo "ENV PATH=\${PATH}:/opt/python/cp39-cp39/bin" >>${tmp_file}
+        echo "ENV LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/opt/python/cp39-cp39/lib" >>${tmp_file}
+        echo "ENV GITHUB_ACTIONS=${GITHUB_ACTIONS}" >>${tmp_file}
+        docker build -t bmf_build:tmp -f ${tmp_file} .
+        rm -rf ${tmp_file}
+        docker run --rm -v $(pwd):/root/bmf -w /root/bmf bmf_build:tmp bash -c "./scripts/build_ffmpeg.sh --device=${{ matrix.device }} && git config --global --add safe.directory /root/bmf && ./build.sh"
+        docker rmi bmf_build:tmp
+        tar czf ${{ env.BINARY_NAME }}.tar.gz --directory=. output
+
+    - name: Build macos release package
+      if: runner.os == 'macOS'
+      env:
+        PKG_CONFIG_PATH: "$(pwd)/ffmpeg_${{ matrix.arch }}/lib/pkgconfig"
+        CMAKE_ARGS: "-DHAVE_STD_REGEX=ON -DRUN_HAVE_STD_REGEX=1"
+        BMF_PYTHON_VERSION: ${{ env.BMF_PYTHON_VERSION }}
+        BMF_ARCHITECTURES: ${{ matrix.arch }}
+      run: |
+        sed -i '' '/sigma_gn /s/^/\/\//g' bmf/hml/third_party/benchmark/src/complexity.cc
+        wget https://www.python.org/ftp/python/3.9.13/python-3.9.13-macos11.pkg
+        sudo installer -pkg python-3.9.13-macos11.pkg -target /
+        ./scripts/build_ffmpeg.sh --arch=${{ matrix.arch }}
+        ./build_osx.sh
+        tar czf ${{ env.BINARY_NAME }}.tar.gz --directory=. output
+
+    - uses: actions/upload-artifact@v3
+      with:
+        path: ${{ env.BINARY_NAME }}.tar.gz
+
+    - name: Setup tmate session
+      if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3
+
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: ${{ env.BINARY_NAME }}.tar.gz

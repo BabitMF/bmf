@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BMF_BUILD_VERSION=$(python setup.py --version)
+BMF_BUILD_VERSION=$(python3 setup.py --version)
 
 if echo "Using git: " && git --version
 then

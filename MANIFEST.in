@@ -1,7 +1,0 @@
-recursive-include bmf *
-prune bmf/test*
-prune bmf/demo*
-prune bmf/cmd*
-prune bmf/docs*
-prune bmf/sdk*
-global-exclude *.a

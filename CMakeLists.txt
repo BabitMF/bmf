@@ -17,15 +17,14 @@ set(BMF_BUILD_VERSION "" CACHE STRING "BMF version")
 set(BMF_BUILD_COMMIT "" CACHE STRING "BMF commit")
 
 option(BMF_ENABLE_BREAKPAD "Enable build with breakpad support" OFF)
-
-
 option(BMF_ENABLE_CUDA "Enable CUDA support" ON)
 option(BMF_ENABLE_TORCH "Enable CUDA support" OFF)
 option(BMF_ENABLE_PYTHON "Enable build with python support" ON)
 option(BMF_ENABLE_GLOG "Enable build with glog support" OFF)
-option(BMF_ENABLE_JNI "Enable build with JNI support" ON)
+option(BMF_ENABLE_JNI "Enable build with JNI support" OFF)
 option(BMF_ENABLE_FFMPEG "Enable build with ffmpeg support" ON)
 option(BMF_ENABLE_MOBILE "Enable build for mobile platform" OFF)
+option(BMF_ENABLE_TEST "compile examples and tests" ON)
 
 if(ENABLE_BITCODE)
     set(CMAKE_XCODE_ATTRIBUTE_BITCODE_GENERATION_MODE "bitcode")

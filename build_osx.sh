@@ -1,14 +1,17 @@
 #!/bin/bash
 
+set -x
+
 # This script is for Mac OSX cross-compilation on Linux as well as local compilation on Mac
 # For cross-compilation, precompiled tools, libraries and paths are required from https://
 # For local compilation on Mac, refer to https://
 
 # Default build type - Release
 BUILD_TYPE="Release"
+COVERAGE_OPTION=0
 
 # Handle options
-if [ $# > 0 ]
+if [ $# -gt 0 ]
 then
     # Clean up
     if [ "$1" = "clean" ]
@@ -21,14 +24,22 @@ then
     if [ "$1" = "debug" ]
     then
         BUILD_TYPE="Debug"
+        COVERAGE_OPTION=1
     fi
 fi
 
 # Generate BMF version
 source ./version.sh
 
+cmake_args=""
+if [[ ! -z "${CMAKE_ARGS}" ]]
+then
+    cmake_args="${cmake_args} ${CMAKE_ARGS}"
+fi
+
 if [[ "$OSTYPE" == "darwin"* ]]
 then
+
     BMF_PYVER="3.7"
     if [[ -z "${BMF_PYTHON_VERSION}" ]]
     then
@@ -38,13 +49,23 @@ then
         BMF_PYVER="${BMF_PYTHON_VERSION}"
     fi
 
+    BMF_OSX_ARCHITECTURES=$(uname -m)
+    if [[ -z "${BMF_ARCHITECTURES}" ]]
+    then
+        echo "BMF_ARCHITECTURES is not set, using default ${BMF_OSX_ARCHITECTURES}"
+    else
+        echo "Compiling for arch ${BMF_ARCHITECTURES}"
+        BMF_OSX_ARCHITECTURES="${BMF_ARCHITECTURES}"
+    fi
+
     mkdir -p build_osx
     cd build_osx
     cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
         -DBMF_PYENV=${BMF_PYVER} \
         -DCOVERAGE=${COVERAGE_OPTION} \
         -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
-        -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ..
+        -DCMAKE_OSX_ARCHITECTURES=${BMF_OSX_ARCHITECTURES} \
+        -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ${cmake_args} ..
     make -j8
 
     cd output/bmf/lib
@@ -93,7 +114,7 @@ else
             -DBMF_PYENV="${python_versions[$i]}" \
             -mmacos-version-min=10.15 \
             -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
-            -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ..
+            -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ${cmake_args} ..
         make -j8
 
         export RLINK_TYPE=@rpath

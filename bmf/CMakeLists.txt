@@ -4,16 +4,12 @@ add_subdirectory(sdk)
 add_subdirectory(engine)
 add_subdirectory(c_modules)
 if(BMF_ENABLE_TEST)
-    add_subdirectory(example/c_module)
-    add_subdirectory(example/gpu_module)
+    add_subdirectory(test/c_module)
+    add_subdirectory(demo/gpu_module)
     if(NOT APPLE OR "${DEPLOYMENT_TARGET}" VERSION_GREATER_EQUAL "13.0" AND NOT ANDROID)
-        add_subdirectory(example/cpp_builder)
-        add_subdirectory(example/module_functor) # need filesystem support
+        add_subdirectory(test/cpp_builder)
     endif()
 
-    if(IOS)
-        add_subdirectory(example/static_module)
-    endif()
 endif(BMF_ENABLE_TEST)
 
 add_subdirectory(cmd)
@@ -72,7 +68,7 @@ if(NOT IOS)
     copy_dir_to_bmf_module(sdk/cpp_sdk/include include)
     copy_dir_to_bmf_module(engine/connector/include include)
     if(BMF_ENABLE_TEST)
-        copy_dir_to_bmf_module(example ../example)
+        copy_dir_to_bmf_module(test ../test)
         copy_dir_to_bmf_module(engine/c_engine/files files)
     endif()
 else()
@@ -116,10 +112,10 @@ add_custom_command(TARGET bmf_assem
 if(BMF_ENABLE_TEST)
     add_custom_command(TARGET bmf_assem
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:copy_module> ${BMF_ASSEMBLE_ROOT}/example/c_module)
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:copy_module> ${BMF_ASSEMBLE_ROOT}/test/c_module)
     add_custom_command(TARGET bmf_assem
         POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cvtcolor> ${BMF_ASSEMBLE_ROOT}/example/gpu_module)
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cvtcolor> ${BMF_ASSEMBLE_ROOT}/demo/gpu_module)
 endif()
 
 # json

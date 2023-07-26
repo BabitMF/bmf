@@ -1,3 +1,4 @@
+#include <bmf/sdk/config.h>
 #ifdef BMF_ENABLE_TORCH
 #include <bmf/sdk/torch_convertor.h>
 #endif
@@ -160,7 +161,7 @@ TEST(convert_backend, convert_torch_cuda) {
     dp.width(1920)
         .height(1080)
         .pixel_format(hmp::PF_RGB24)
-        .device("cuda")
+        .device(hmp::Device("cuda"))
         .media_type(MediaType::kATTensor);
     auto yuvformat = hmp::PixelInfo(hmp::PF_YUV420P);
     auto src_vf = VideoFrame::make(640, 320, yuvformat);

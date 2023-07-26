@@ -1,8 +1,8 @@
 import pytest
 import bmf.hml.hmp as mp
 import numpy as np
-from bmf_fixtures import has_cuda
-from bmf.lib._bmf.sdk import VideoFrame, AudioFrame, BMFAVPacket
+from bmf_fixtures import has_cuda, has_torch
+from bmf.lib._bmf.sdk import VideoFrame, AudioFrame, BMFAVPacket, MediaDesc, OpaqueDataKey, MediaType, bmf_convert
 from bmf.lib._bmf.sdk import Packet
 from bmf.lib._bmf import sdk
 
@@ -192,6 +192,114 @@ class TestPacket(object):
         assert (np.allclose(arr, v))
 
         # TODO: multi-thread test
+
+
+class TestMediaDesc(object):
+
+    def test_mediadesc(self):
+        md = MediaDesc()
+        md.width(1080).height(720).media_type(MediaType.kCVMat)
+        md.pixel_format(mp.kPF_YUV420P).color_space(mp.kCS_BT709).device(
+            mp.Device(mp.kCPU))
+        assert (md.width() == 1080)
+        assert (md.height() == 720)
+        assert (md.media_type() == MediaType.kCVMat)
+        assert (md.pixel_format() == mp.kPF_YUV420P)
+        assert (md.color_space() == mp.kCS_BT709)
+        assert (md.device().type() == mp.kCPU)
+
+    def test_backend_convert(self):
+        md = MediaDesc()
+        md.width(1920).height(1080).pixel_format(mp.kPF_RGB24)
+
+        H420 = mp.PixelInfo(mp.kPF_YUV420P, mp.kCS_BT709)
+        vf = VideoFrame(640, 360, pix_info=H420)
+
+        dst_vf = bmf_convert(vf, MediaDesc(), md)
+        assert (dst_vf.width == 1920)
+        assert (dst_vf.height == 1080)
+        assert (dst_vf.frame().format() == mp.kPF_RGB24)
+
+    @pytest.mark.skipif(not has_cuda, reason="CUDA is not enabled")
+    def test_backend_convert_cuda(self):
+        H420 = mp.PixelInfo(mp.kPF_YUV420P, mp.kCS_BT709)
+        vf = VideoFrame(640, 360, pix_info=H420)
+
+        md = MediaDesc()
+        md.width(1920).height(1080).pixel_format(mp.kPF_RGB24).device(
+            mp.Device("cuda:0"))
+
+        dst_vf = bmf_convert(vf, MediaDesc(), md)
+        assert (dst_vf.width == 1920)
+        assert (dst_vf.height == 1080)
+        assert (dst_vf.frame().format() == mp.kPF_RGB24)
+        assert (dst_vf.frame().device().type() == mp.kCUDA)
+        assert (dst_vf.frame().device().index() == 0)
+
+    def test_backend_convert_numpy(self):
+        H420 = mp.PixelInfo(mp.kPF_YUV420P, mp.kCS_BT709)
+        vf = VideoFrame(640, 360, pix_info=H420)
+
+        md = MediaDesc()
+        md.width(1920).height(1080).pixel_format(mp.kPF_RGB24).media_type(
+            MediaType.kTensor)
+
+        dst_vf = bmf_convert(vf, MediaDesc(), md)
+        assert (dst_vf.width == 1920)
+        assert (dst_vf.height == 1080)
+        assert (dst_vf.frame().format() == mp.kPF_RGB24)
+        assert (bool(dst_vf) == True)
+
+        np_array = dst_vf.private_get(np.ndarray)
+        print(np_array.shape)
+        assert (np_array.shape[0] == 1080)
+        assert (np_array.shape[1] == 1920)
+        assert (np_array.shape[2] == 3)
+
+        src_vf = VideoFrame()
+        src_vf.private_attach(np_array)
+
+        src_md = MediaDesc()
+        src_md.pixel_format(mp.kPF_RGB24).media_type(MediaType.kTensor)
+
+        dst_md = MediaDesc()
+        dst_md.pixel_format(mp.kPF_YUV420P).color_space(
+            mp.kCS_BT709).width(320).height(180)
+
+        new_vf = bmf_convert(src_vf, src_md, dst_md)
+
+        assert new_vf.width == 320
+        assert new_vf.height == 180
+        assert new_vf.frame().format() == mp.kPF_YUV420P
+
+    @pytest.mark.skipif(has_torch == 0, reason="torch is not enabled")
+    def test_backend_convert_torch(self):
+        H420 = mp.PixelInfo(mp.kPF_YUV420P, mp.kCS_BT709)
+        vf = VideoFrame(640, 360, pix_info=H420)
+        md = MediaDesc()
+        md.width(1920).height(1080).pixel_format(mp.kPF_RGB24).media_type(
+            MediaType.kATTensor)
+        print("has_torch", has_torch)
+        dst_vf = bmf_convert(vf, MediaDesc(), md)
+        torch_tensor = dst_vf.private_get(torch.Tensor)
+        assert (torch_tensor.shape[0] == 1080)
+        assert (torch_tensor.shape[1] == 1920)
+        assert (torch_tensor.shape[2] == 3)
+        src_vf = VideoFrame()
+        src_vf.private_attach(torch_tensor)
+
+        src_md = MediaDesc()
+        src_md.pixel_format(mp.kPF_RGB24).media_type(MediaType.kATTensor)
+
+        dst_md = MediaDesc()
+        dst_md.pixel_format(mp.kPF_YUV420P).color_space(
+            mp.kCS_BT709).width(1280).height(720)
+
+        new_vf = bmf_convert(src_vf, src_md, dst_md)
+
+        assert (new_vf.width == 1280)
+        assert (new_vf.height == 720)
+        assert (new_vf.frame().format() == mp.kPF_YUV420P)
 
 
 if __name__ == '__main__':

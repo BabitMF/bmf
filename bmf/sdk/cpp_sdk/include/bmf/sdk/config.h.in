@@ -5,6 +5,7 @@
 #cmakedefine BMF_ENABLE_GLOG
 #cmakedefine BMF_ENABLE_FFMPEG
 #cmakedefine BMF_ENABLE_MOBILE
+#cmakedefine BMF_ENABLE_TORCH
 
 #define MAKE_STR(x) _MAKE_STR(x)
 #define _MAKE_STR(x) #x

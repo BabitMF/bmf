@@ -14,6 +14,13 @@ if(HMP_ENABLE_CUDA) # need by ffmpeg.h
     target_include_directories(_hmp PRIVATE ${CUDA_INCLUDE_DIRS})
 endif()
 
+if(BUILD_SHARED_LIBS)
+    target_compile_options(_hmp
+        PRIVATE
+            -DHMP_BUILD_SHARED
+        )
+endif()
+
 
 target_include_directories(_hmp PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}

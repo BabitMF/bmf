@@ -34,6 +34,7 @@ if(HMP_ENABLE_TORCH)
         OUTPUT_VARIABLE SITE_ROOT
         OUTPUT_STRIP_TRAILING_WHITESPACE)
     set(CUDA_LINK_LIBRARIES_KEYWORD PRIVATE)
+    set(CUDNN_LIBRARY_PATH /usr/local/cuda/targets/x86_64-linux/lib/libcudnn.so.8)
     find_package(Torch HINTS ${SITE_ROOT})
     find_library(TORCH_PYTHON_LIB torch_python HINTS ${SITE_ROOT}/*/lib)
     if(Torch_FOUND AND TORCH_PYTHON_LIB)

@@ -36,8 +36,9 @@ template <> struct npy_format_descriptor<hmp::Half> {
     }
     static constexpr auto name() { return _("float16"); }
 };
-}
-} //
+
+} // namespace detail
+} // namespace pybind11
 
 namespace py = pybind11;
 
@@ -65,7 +66,7 @@ static ScalarType numpyDtypeToScalarType(py::dtype dtype) {
     throw std::runtime_error(std::string("Got unsupported numpy dtype"));
 }
 
-Tensor tensor_from_numpy(const py::array &arr) {
+HMP_API Tensor tensor_from_numpy(const py::array &arr) {
     int ndim = arr.ndim();
     SizeArray shape, strides;
     auto itemsize = arr.itemsize();
@@ -80,19 +81,20 @@ Tensor tensor_from_numpy(const py::array &arr) {
     }
 
     auto buf_info = std::make_shared<pybind11::buffer_info>(arr.request());
-    auto ptr = DataPtr(buf_info->ptr,
-                       [buf_info](void *ptr) mutable {
-                           py::gil_scoped_acquire acquire;
-                           // explict release in gil guard
-                           buf_info.reset();
-                       },
-                       kCPU);
+    auto ptr = DataPtr(
+        buf_info->ptr,
+        [buf_info](void *ptr) mutable {
+            py::gil_scoped_acquire acquire;
+            // explict release in gil guard
+            buf_info.reset();
+        },
+        kCPU);
 
     return from_buffer(std::move(ptr), numpyDtypeToScalarType(arr.dtype()),
                        shape, strides);
 }
 
-py::array tensor_to_numpy(const Tensor &tensor) {
+HMP_API py::array tensor_to_numpy(const Tensor &tensor) {
     HMP_REQUIRE(tensor.is_cpu(),
                 "Only support convert cpu tensor to numpy, got {}",
                 tensor.device_type());

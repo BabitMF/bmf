@@ -18,7 +18,6 @@ class MediaDesc {
     template <typename T> class MediaParam : public std::optional<T> {
       public:
         MediaParam(MediaDesc *m = nullptr) : media(m) {}
-
         MediaParam(const MediaParam &mp) : std::optional<T>(mp) {}
 
         MediaParam(MediaParam &&mp) : std::optional<T>(mp) {}
@@ -39,7 +38,7 @@ class MediaDesc {
 
       private:
         // pinned after initialized
-        MediaDesc *const media;
+        MediaDesc *const media = nullptr;
     };
 
   public:

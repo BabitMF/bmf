@@ -1,3 +1,5 @@
+#pragma once
+
 #include <bmf/sdk/convert_backend.h>
 #include <bmf/sdk/ffmpeg_helper.h>
 
@@ -28,8 +30,8 @@ class AVConvertor : public Convertor {
             VideoFrame res = ffmpeg::to_video_frame(avf, true);
             src = res;
         } catch (std::exception &e) {
-            BMFLOG(BMF_ERROR) << "AVFrame convert to VideoFrame err: "
-                              << e.what();
+            BMFLOG(BMF_ERROR)
+                << "AVFrame convert to VideoFrame err: " << e.what();
             return -1;
         }
         return 0;
@@ -38,4 +40,4 @@ class AVConvertor : public Convertor {
 
 static Convertor *av_convert = new AVConvertor();
 BMF_REGISTER_CONVERTOR(MediaType::kAVFrame, av_convert);
-}
+} // namespace bmf_sdk

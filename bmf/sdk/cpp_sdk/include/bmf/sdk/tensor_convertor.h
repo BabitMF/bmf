@@ -1,35 +1,34 @@
 #pragma once
 
+#include <hmp/tensor.h>
 #include <bmf/sdk/sdk_interface.h>
 #include <bmf/sdk/log.h>
 #include <bmf/sdk/convert_backend.h>
-#include <hmp/cv2/cv2_helper.h>
 
 namespace bmf_sdk {
 
-template <> struct OpaqueDataInfo<cv::Mat> {
-    const static int key = OpaqueDataKey::kCVMat;
-    static OpaqueData construct(const cv::Mat *mat) {
-        return std::make_shared<cv::Mat>(*mat);
+template <> struct OpaqueDataInfo<hmp::Tensor> {
+    const static int key = OpaqueDataKey::kTensor;
+    static OpaqueData construct(const hmp::Tensor *tensor) {
+        return std::make_shared<Tensor>(*tensor);
     }
 };
 
-class OCVConvertor : public Convertor {
+class TensorConvertor : public Convertor {
   public:
-    OCVConvertor() {}
+    TensorConvertor() {}
     int media_cvt(VideoFrame &src, const MediaDesc &dp) override {
         try {
             if (!src.frame().pix_info().is_rgbx()) {
-                BMFLOG(BMF_ERROR) << "cvmat only support rgbx frame";
+                BMFLOG(BMF_ERROR) << "tensor only support rgbx frame";
                 return -1;
             }
             auto tensor = src.frame().data()[0];
-            cv::Mat mat = hmp::ocv::to_cv_mat(tensor, true);
-            cv::Mat *pmat = new cv::Mat(mat);
-            src.private_attach<cv::Mat>(pmat);
+            hmp::Tensor *pt = new hmp::Tensor(tensor);
+            src.private_attach<hmp::Tensor>(pt);
 
         } catch (std::exception &e) {
-            BMFLOG(BMF_ERROR) << "convert to cv::mat err: " << e.what();
+            BMFLOG(BMF_ERROR) << "convert to hmp::tensor err: " << e.what();
             return -1;
         }
         return 0;
@@ -39,30 +38,30 @@ class OCVConvertor : public Convertor {
         try {
             if (!dp.pixel_format.has_value()) {
                 BMFLOG(BMF_ERROR) << "VideoFrame format represented by the "
-                                     "cv::Mat must be specified.";
+                                     "Tensor must be specified.";
                 return -1;
             }
 
-            const cv::Mat *pmat = src.private_get<cv::Mat>();
-            if (!pmat) {
+            const hmp::Tensor *pt = src.private_get<hmp::Tensor>();
+            if (!pt) {
                 BMFLOG(BMF_ERROR) << "private data is null, please use "
                                      "private_attach before call this api";
                 return -1;
             }
-
-            Tensor tensor = hmp::ocv::from_cv_mat(*pmat);
+            Tensor tensor = *pt;
             VideoFrame vf(Frame(tensor, hmp::PixelInfo(dp.pixel_format())));
-            vf.private_attach<cv::Mat>(pmat);
+            vf.private_attach<hmp::Tensor>(pt);
             src = vf;
 
         } catch (std::exception &e) {
-            BMFLOG(BMF_ERROR) << "convert to cv::mat err: " << e.what();
+            BMFLOG(BMF_ERROR) << "convert to hmp::tensor err: " << e.what();
             return -1;
         }
         return 0;
     }
 };
 
-static Convertor *ocv_convert = new OCVConvertor();
-BMF_REGISTER_CONVERTOR(MediaType::kCVMat, ocv_convert);
+static Convertor *tensor_convert = new TensorConvertor();
+BMF_REGISTER_CONVERTOR(MediaType::kTensor, tensor_convert);
+
 } // namespace bmf_sdk

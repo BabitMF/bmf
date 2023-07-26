@@ -46,6 +46,35 @@ if(BMF_ENABLE_FFMPEG)
     endif()
 endif()
 
+##### Torch
+if(BMF_ENABLE_TORCH)
+    if(PYTHON_EXECUTABLE)
+        set(Python_EXECUTABLE ${PYTHON_EXECUTABLE})
+        set(Python_VERSION ${PYTHON_VERSION})
+    endif()
+    execute_process (
+        COMMAND bash -c "${Python_EXECUTABLE} -c 'import site; print(site.getsitepackages()[0])'"
+        OUTPUT_VARIABLE SITE_ROOT
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    set(CUDA_LINK_LIBRARIES_KEYWORD PRIVATE)
+    set(CUDNN_LIBRARY_PATH /usr/local/cuda/targets/x86_64-linux/lib/libcudnn.so.8)
+    find_package(Torch HINTS ${SITE_ROOT})
+    find_library(TORCH_PYTHON_LIB torch_python HINTS ${SITE_ROOT}/*/lib)
+    if(Torch_FOUND AND TORCH_PYTHON_LIB)
+        # -D_GLIBCXX_USE_CXX11_ABI=0 cause other library link failure
+        # https://stackoverflow.com/questions/62693218/how-to-solve-gtest-and-libtorch-linkage-conflict
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
+        add_definitions(-DTORCH_VERSION_MAJOR=${Torch_VERSION_MAJOR})
+        add_definitions(-DTORCH_VERSION_MINOR=${Torch_VERSION_MINOR})
+        add_definitions(-DTORCH_VERSION_PATCH=${Torch_VERSION_PATCH})
+
+        list(APPEND HMP_CORE_PRI_DEPS ${TORCH_LIBRARIES})
+    else()
+        message("Torch library not found, disable it")
+        set(HMP_ENABLE_TORCH OFF)
+    endif()
+endif()
+
 ## CUDA
 if(BMF_ENABLE_CUDA)
     set(CUDA_LINK_LIBRARIES_KEYWORD PRIVATE)

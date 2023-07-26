@@ -35,7 +35,7 @@ struct OpaqueDataKey {
         kBMFVideoFrame,
         kATTensor,
         kCVMat,
-        kReserved_6,
+        kTensor,
         kReserved_7,
         kNumKeys
     };
@@ -63,7 +63,7 @@ class BMF_API OpaqueDataSet {
      * @param args extra arguments pass to `OpaqueDataInfo<T>::construct(...)`
      */
     template <typename T, typename... Args>
-    void private_attach(const T *data, Args &&... args) {
+    void private_attach(const T *data, Args &&...args) {
         using Info = OpaqueDataInfo<T>;
         auto opaque = Info::construct(data, std::forward<Args>(args)...);
         set_private_data(Info::key, opaque);

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <hmp/torch/torch.h>
 #include <bmf/sdk/sdk_interface.h>
 #include <bmf/sdk/log.h>
@@ -53,7 +55,7 @@ class TorchConvertor : public Convertor {
             src = vf;
 
         } catch (std::exception &e) {
-            BMFLOG(BMF_ERROR) << "convert to cv::mat err: " << e.what();
+            BMFLOG(BMF_ERROR) << "convert to at::tensor err: " << e.what();
             return -1;
         }
         return 0;
@@ -62,4 +64,4 @@ class TorchConvertor : public Convertor {
 
 static Convertor *torch_convert = new TorchConvertor();
 BMF_REGISTER_CONVERTOR(MediaType::kATTensor, torch_convert);
-}
+} // namespace bmf_sdk

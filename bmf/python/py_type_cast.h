@@ -1,3 +1,5 @@
+#pragma once
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <hmp/tensor.h>
@@ -64,5 +66,5 @@ template <> struct type_caster<bmf_sdk::CBytes> {
 
 #define def_nogil(...)                                                         \
     def(__VA_ARGS__, py::call_guard<py::gil_scoped_release>())
-}
-}; // namespace pybind11::detail
+} // namespace detail
+}; // namespace pybind11

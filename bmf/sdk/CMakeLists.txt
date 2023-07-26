@@ -75,11 +75,11 @@ if(BMF_ENABLE_TEST)
             gtest
     )
 
-if(HMP_ENABLE_OPENCV)
-    # need by ffmpeg for hwframe support
-    target_link_libraries(test_bmf_module_sdk
-        PUBLIC hmp)
-endif()
+    if(HMP_ENABLE_OPENCV)
+        # need by ffmpeg for hwframe support
+        target_link_libraries(test_bmf_module_sdk
+            PUBLIC hmp)
+    endif()
 
 
     if(BMF_ENABLE_CUDA)
@@ -88,6 +88,11 @@ endif()
             PRIVATE cuda::cuda)
     endif()
 
+    if(BMF_ENABLE_TORCH)
+            target_include_directories(test_bmf_module_sdk PUBLIC ${TORCH_INCLUDE_DIRS})
+            target_link_libraries(test_bmf_module_sdk
+                PRIVATE ${TORCH_LIBRARIES})
+    endif()
 
     target_link_libraries(test_bmf_module_sdk PRIVATE gtest_main)
 

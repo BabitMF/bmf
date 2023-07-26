@@ -1,6 +1,15 @@
+#include <bmf/sdk/config.h>
+#ifdef BMF_ENABLE_TORCH
+#include <bmf/sdk/torch_convertor.h>
+#include <hmp/torch/torch.h>
+// cast implementation
+#include <torch/csrc/utils/pybind.h>
+#endif
+
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
+#include <pybind11/numpy.h>
 #include <map>
 #include <bmf/sdk/module_functor.h>
 #include <bmf/sdk/module_manager.h>
@@ -11,12 +20,20 @@
 #include <bmf/sdk/video_frame.h>
 #include <bmf/sdk/audio_frame.h>
 #include <bmf/sdk/bmf_av_packet.h>
+#include <bmf/sdk/media_description.h>
+#include <bmf/sdk/convert_backend.h>
+
+// enable tensor convert default
+#include <bmf/sdk/tensor_convertor.h>
 
 #ifdef BMF_ENABLE_FFMPEG
 #include <bmf/sdk/ffmpeg_helper.h>
 #endif
 
 namespace py = pybind11;
+
+hmp::Tensor tensor_from_numpy(const py::array &arr);
+py::array tensor_to_numpy(const hmp::Tensor &tensor);
 
 namespace bmf_sdk {
 
@@ -236,9 +253,12 @@ void module_sdk_bind(py::module &m) {
         .value("kBMFVideoFrame", OpaqueDataKey::kBMFVideoFrame)
         .value("kATTensor", OpaqueDataKey::kATTensor)
         .value("kCVMat", OpaqueDataKey::kCVMat)
-        .value("kReserved_6", OpaqueDataKey::kReserved_6)
+        .value("kTensor", OpaqueDataKey::kTensor)
         .value("kReserved_7", OpaqueDataKey::kReserved_7)
         .export_values();
+
+    // type alias
+    m.attr("MediaType") = m.attr("OpaqueDataKey");
 
     // ModuleInfo
     py::class_<ModuleInfo>(m, "ModuleInfo")
@@ -260,6 +280,23 @@ void module_sdk_bind(py::module &m) {
                          return py::none();
                      }
                      return py::cast(*json_sptr);
+
+                 } else if (cls_name == "numpy.ndarray") {
+                     const hmp::Tensor *tensor =
+                         self.private_get<hmp::Tensor>();
+                     if (!tensor) {
+                         return py::none();
+                     }
+                     return tensor_to_numpy(*tensor);
+
+#ifdef BMF_ENABLE_TORCH
+                 } else if (cls_name == "torch.Tensor") {
+                     const at::Tensor *tensor = self.private_get<at::Tensor>();
+                     if (!tensor) {
+                         return py::none();
+                     }
+                     return py::cast(*tensor);
+#endif
                  } else {
                      throw std::invalid_argument(
                          fmt::format("unsupported type {}", cls_name));
@@ -271,6 +308,16 @@ void module_sdk_bind(py::module &m) {
                  if (cls_name == "builtins.dict") {
                      auto json = obj.cast<JsonParam>();
                      self.private_attach<JsonParam>(&json);
+
+                 } else if (cls_name == "numpy.ndarray") {
+                     auto tensor = tensor_from_numpy(obj);
+                     self.private_attach<hmp::Tensor>(&tensor);
+
+#ifdef BMF_ENABLE_TORCH
+                 } else if (cls_name == "torch.Tensor") {
+                     at::Tensor attensor = py::cast<at::Tensor>(obj);
+                     self.private_attach<at::Tensor>(&attensor);
+#endif
                  } else {
                      throw std::invalid_argument(fmt::format(
                          "private attach type {} failed", cls_name));
@@ -296,6 +343,7 @@ void module_sdk_bind(py::module &m) {
 
     // VideoFrame
     py::class_<VideoFrame, OpaqueDataSet, SequenceData, Future>(m, "VideoFrame")
+        .def(py::init<>())
         .def(py::init<Frame>())
         .def(py::init([](int width, int height, const PixelInfo &pix_info,
                          py::kwargs kwargs) {
@@ -313,8 +361,9 @@ void module_sdk_bind(py::module &m) {
         .def("cpu", &VideoFrame::cpu, py::arg("non_blocking") = false)
         .def("cuda", &VideoFrame::cuda)
         .def("copy_", &VideoFrame::copy_)
-        .def("to", (VideoFrame (VideoFrame::*)(const Device &, bool) const) &
-                       VideoFrame::to,
+        .def("to",
+             (VideoFrame(VideoFrame::*)(const Device &, bool) const) &
+                 VideoFrame::to,
              py::arg("device"), py::arg("non_blocking") = false)
         .def("copy_props", &VideoFrame::copy_props, py::arg("from"))
         .def("reformat", &VideoFrame::reformat, py::arg("pix_info"));
@@ -455,28 +504,30 @@ void module_sdk_bind(py::module &m) {
              py::arg("stream_id"), py::arg("packet"))
         .def("pop_packet_from_out_queue", &Task::pop_packet_from_out_queue,
              py::arg("stream_id"), py::arg("packet"))
-        .def("pop_packet_from_out_queue",
-             [](Task &task, int stream_id) {
-                 Packet pkt;
-                 if (!task.pop_packet_from_out_queue(stream_id, pkt)) {
-                     throw std::runtime_error(fmt::format(
-                         "Pop packet from output stream {} failed", stream_id));
-                 }
-                 return pkt;
-             },
-             py::arg("stream_id"))
+        .def(
+            "pop_packet_from_out_queue",
+            [](Task &task, int stream_id) {
+                Packet pkt;
+                if (!task.pop_packet_from_out_queue(stream_id, pkt)) {
+                    throw std::runtime_error(fmt::format(
+                        "Pop packet from output stream {} failed", stream_id));
+                }
+                return pkt;
+            },
+            py::arg("stream_id"))
         .def("pop_packet_from_input_queue", &Task::pop_packet_from_input_queue,
              py::arg("stream_id"), py::arg("packet"))
-        .def("pop_packet_from_input_queue",
-             [](Task &task, int stream_id) {
-                 Packet pkt;
-                 if (!task.pop_packet_from_input_queue(stream_id, pkt)) {
-                     throw std::runtime_error(fmt::format(
-                         "Pop packet from input stream {} failed", stream_id));
-                 }
-                 return pkt;
-             },
-             py::arg("stream_id"))
+        .def(
+            "pop_packet_from_input_queue",
+            [](Task &task, int stream_id) {
+                Packet pkt;
+                if (!task.pop_packet_from_input_queue(stream_id, pkt)) {
+                    throw std::runtime_error(fmt::format(
+                        "Pop packet from input stream {} failed", stream_id));
+                }
+                return pkt;
+            },
+            py::arg("stream_id"))
         .def("output_queue_empty", &Task::output_queue_empty,
              py::arg("stream_id"))
         .def("input_queue_empty", &Task::input_queue_empty,
@@ -535,5 +586,24 @@ void module_sdk_bind(py::module &m) {
         .def_nogil("execute", &ModuleFunctor::execute, py::arg("inputs"),
                    py::arg("cleanup") = true)
         .def_nogil("fetch", &ModuleFunctor::fetch, py::arg("port"));
+
+#define DEFMEDIADESCBIND(value, type)                                          \
+    .def(#value, [](const MediaDesc &md) {                                     \
+        return md.value();                                                     \
+    }).def(#value, [](MediaDesc &md, type v) {                                 \
+        md.value(v);                                                           \
+        auto pyobj = py::cast(md, py::return_value_policy::reference);         \
+        return pyobj;                                                          \
+    })
+
+    py::class_<MediaDesc>(m, "MediaDesc")
+        .def(py::init<>()) DEFMEDIADESCBIND(width, int)
+            DEFMEDIADESCBIND(height, int)
+                DEFMEDIADESCBIND(pixel_format, hmp::PixelFormat)
+                    DEFMEDIADESCBIND(color_space, hmp::ColorSpace)
+                        DEFMEDIADESCBIND(device, hmp::Device)
+                            DEFMEDIADESCBIND(media_type, MediaType);
+
+    m.def("bmf_convert", &bmf_convert);
 
 } //

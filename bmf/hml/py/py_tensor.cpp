@@ -38,6 +38,59 @@ using namespace hmp;
 Tensor tensor_from_numpy(const py::array& arr);
 py::array tensor_to_numpy(const Tensor& tensor);
 
+static bool is_device_supported(DLDeviceType devType)
+{
+    switch (devType)
+    {
+    case kDLCUDAHost:
+    case kDLCUDA:
+    case kDLCUDAManaged:
+    case kDLCPU:
+        return true;
+    default:
+        return false;
+    }
+}
+
+Tensor tensor_from_dlpack(const py::object& o){
+    py::object tmp = py::reinterpret_borrow<py::object>(o);
+    Tensor ten;
+    if (hasattr(tmp, "__dlpack__"))
+    {
+        // Quickly check if we support the device
+        if (hasattr(tmp, "__dlpack_device__"))
+        {
+            py::tuple dlpackDevice = tmp.attr("__dlpack_device__")().cast<py::tuple>();
+            auto      devType      = static_cast<DLDeviceType>(dlpackDevice[0].cast<int>());
+            if (!is_device_supported(devType))
+            {
+                HMP_REQUIRE(false, "Only CPU and CUDA memory buffers can be wrapped");
+            }
+        }
+
+        py::capsule cap = tmp.attr("__dlpack__")(1).cast<py::capsule>();
+        py::handle* hdl = dynamic_cast<py::handle*>(&cap);
+        PyObject* pycap = *(PyObject**)hdl;
+
+        if (auto* tensor = static_cast<DLManagedTensor*>(cap.get_pointer()))
+        {
+            // m_dlTensor = DLPackTensor{std::move(*tensor)};
+            ten = from_dlpack(tensor);
+            // signal that producer don't have to call tensor's deleter, we
+            // (consumer will do it instead.
+            HMP_REQUIRE(PyCapsule_SetName(pycap, "used_dltensor") == 0, "Failed to rename dltensor capsule");
+        }
+        else
+        {
+            HMP_REQUIRE(false, "No dlpack tensor found");
+        }
+    }
+    else {
+        HMP_REQUIRE(false, "dlpack not supported in the src tensor");
+    }
+    return ten;
+}
+
 Device parse_device(const py::object &obj, const Device &ref)
 {
     Device device(ref);
@@ -101,6 +154,8 @@ void tensorBind(py::module &m)
       }
       return arr_list;
     })
+    .def("from_dlpack", (Tensor(*)(const py::object&))&tensor_from_dlpack,
+                          py::arg("tensor"))
 #ifdef HMP_ENABLE_TORCH
     .def("from_torch", [](const at::Tensor &t){
       return hmp::torch::from_tensor(t);
@@ -229,7 +284,6 @@ void tensorBind(py::module &m)
         .def("data_ptr", [](const Tensor &self){
             return reinterpret_cast<uint64_t>(self.unsafe_data());
         })
-        // .def("__dlpack__", &Tensor::to_dlpack, py::arg("stream")=1)
         .def("__dlpack__", [](const Tensor &self, const int stream){
             DLManagedTensor* dlMTensor = to_dlpack(self);
             py::capsule cap(dlMTensor, "dltensor", [](PyObject *ptr)

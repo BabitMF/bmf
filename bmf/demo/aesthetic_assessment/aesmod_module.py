@@ -88,9 +88,8 @@ class Aesmod:
         pred_score = np.clip(
             np.sum([x * (i + 1) for i, x in enumerate(raw_scores)]), raw_min,
             raw_max)
-        # pred_score = np.sqrt((pred_score - raw_min) / (raw_max - raw_min)) * 90 + 10
-        # return float(np.clip(pred_score, 0, 100.0))
-        return pred_score
+        pred_score = np.sqrt((pred_score - raw_min) / (raw_max - raw_min)) * 100
+        return float(np.clip(pred_score, 0, 100.0))
 
     def process(self, frames):
         frames = [
@@ -113,11 +112,11 @@ class Aesmod:
 
             raw_score = self.ort_session.run(None, {"input": frame})
             raw_score = raw_score[0][0]
-        score = self.score_pred_mapping(raw_score, 0, 10)
+        score = self.score_pred_mapping(raw_score)
         self._frm_scores.append(score)
         self._frm_idx += 1
         t2 = time.time()
-        LOGGER.info(f"[Aesmod] inference time: {(t2 - t1)*1000:0.1f} ms")
+        LOGGER.info(f"[Aesmod] inference time: {(t2 - t1) * 1000:0.1f} ms")
         return frames[0]
 
     def clean(self):

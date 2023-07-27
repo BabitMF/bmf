@@ -470,6 +470,12 @@ class FilterGraph {
                 av_frame_free(&filt_frame);
                 break;
             }
+            int w = av_buffersink_get_w(buffer_sink_ctx_[out_idx]);
+            int h = av_buffersink_get_h(buffer_sink_ctx_[out_idx]);
+            if (w > 0 && h > 0) {
+                filt_frame->width = w;
+                filt_frame->height = h;
+            }
             frames.push_back(filt_frame);
         }
 
@@ -576,6 +582,13 @@ class FilterGraph {
                 static int audio_frame_num = 0;
                 if (index == 0) {
                     video_frame_num++;
+                    //ffmpeg filter graph which contains hwfilters may change frame width/height, set frame width/height after getting from filter graph
+                    int w = av_buffersink_get_w(buffer_sink_ctx_[i]);
+                    int h = av_buffersink_get_h(buffer_sink_ctx_[i]);
+                    if (w > 0 && h > 0) {
+                        frame->width = w;
+                        frame->height = h;
+                    }
                 } else {
                     audio_frame_num++;
                 }

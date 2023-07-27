@@ -699,7 +699,7 @@ int CFFDecoder::init_filtergraph(int index, AVFrame *frame) {
 
     if (auto_rotate_flag_ && index == 0) {
         std::string rotate_desc = "";
-        get_rotate_desc(rotate_desc);
+        get_rotate_desc(rotate_desc, frame);
         if (!rotate_desc.empty()) {
             if (graph_descr != "")
                 graph_descr += "," + rotate_desc;
@@ -711,6 +711,8 @@ int CFFDecoder::init_filtergraph(int index, AVFrame *frame) {
         return 0;
     else
         graph_descr = head_descr + graph_descr + tail_descr;
+
+    BMFLOG_NODE(BMF_INFO, node_id_) << "ffmpeg_decoder, graph_descr: " << graph_descr;
 
     filter_graph_[index] = new FilterGraph();
     FilterConfig fg_config;
@@ -742,7 +744,7 @@ int CFFDecoder::init_filtergraph(int index, AVFrame *frame) {
     return filter_graph_[index]->config_graph(graph_descr, in_cfgs, out_cfgs);
 }
 
-int CFFDecoder::get_rotate_desc(std::string &filter_desc) {
+int CFFDecoder::get_rotate_desc(std::string &filter_desc, AVFrame *frame) {
     if (video_stream_ == NULL) {
         return 0;
     }
@@ -764,6 +766,30 @@ int CFFDecoder::get_rotate_desc(std::string &filter_desc) {
     }
 
     theta -= 360 * floor(theta / 360 + 0.9 / 360);
+
+    //check hwcontext
+    if (frame->hw_frames_ctx) {
+        AVHWFramesContext* ctx = (AVHWFramesContext*)frame->hw_frames_ctx->data;
+        if (ctx->device_ctx->type == AV_HWDEVICE_TYPE_CUDA) {
+            //check theta
+            if (fabs(theta - 90) < 1.0) {
+                filter_desc = "scale_npp=format=yuv420p,transpose_npp=clock,scale_npp=format=nv12";
+
+            } else if (fabs(theta - 270) < 1.0) {
+                filter_desc = "scale_npp=format=yuv420p,transpose_npp=cclock,scale_npp=format=nv12";
+
+            } else {
+                BMFLOG_NODE(BMF_ERROR, node_id_) << "theta is not supported: " << theta;
+
+            }
+
+        } else {
+            BMFLOG_NODE(BMF_ERROR, node_id_) << "device type is not supported, type: " << int(ctx->device_ctx->type);
+        }
+
+        return 0;
+    }
+
     if (fabs(theta - 90) < 1.0) {
         filter_desc = "transpose=clock";
     } else if (fabs(theta - 180) < 1.0) {

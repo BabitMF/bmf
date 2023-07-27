@@ -216,7 +216,7 @@ class CFFDecoder : public Module {
 
     int process(Task &task);
 
-    int get_rotate_desc(std::string &filter_desc);
+    int get_rotate_desc(std::string &filter_desc, AVFrame* frame);
 
     bool need_hungry_check(int input_stream_id) { return false; };
 

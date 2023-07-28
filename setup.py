@@ -1,6 +1,5 @@
 import os
 import re
-import glob
 import site
 import ctypes
 import platform
@@ -157,11 +156,12 @@ class CMakeBuild(build_ext):
         # a static config file. Obviously, setup.py is more convenient than pyproject.toml, so we manually copy
         # _bmf, _hmp, py_module_loader, go_module_loader and builtin_moduls before repair, instead of
         # the entire lib directory. the build directory is temporary, so we need to copy it here, instead of package_data.
-        shutil.copytree(os.path.join(build_temp, "output", "bmf", "bin"), os.path.join(extdir, "bmf", "bin"))
-        shutil.copytree(os.path.join(build_temp, "output", "bmf", "lib"), os.path.join(extdir, "bmf", "lib"))
-        shutil.copytree(os.path.join(build_temp, "output", "bmf", "include"), os.path.join(extdir, "bmf", "include"))
+        for output_dir in ["bin", "lib", "include", "cpp_modules", "python_modules"]: #"go_modules"
+            shutil.copytree(os.path.join(build_temp, "output", "bmf", output_dir), os.path.join(extdir, "bmf", output_dir))
         for file in ["BUILTIN_CONFIG.json"]:
            shutil.copyfile(os.path.join(build_temp, "output", "bmf", file), os.path.join(extdir, "bmf", file))
+
+        # TODO: Remove versioned libraries to reduce package size
 
         if sys.platform.startswith("darwin"):
             subprocess.run(

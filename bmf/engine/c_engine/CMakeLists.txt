@@ -33,13 +33,9 @@ target_link_libraries(engine
 if(NOT APPLE AND NOT ANDROID)
     set_target_properties(engine PROPERTIES
 	VERSION "${BMF_VERSION_MAJOR}.${BMF_VERSION_MINOR}.${BMF_VERSION_PATCH}"
+	SOVERSION "${BMF_VERSION_MAJOR}"
     )
 endif()
-
-add_custom_command(TARGET engine
-    POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-            ${CMAKE_CURRENT_SOURCE_DIR}/BUILTIN_CONFIG.json $<TARGET_FILE_DIR:engine>/../)
 
 
 # tests
@@ -75,16 +71,6 @@ if(BMF_ENABLE_TEST)
         POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                 ${CMAKE_CURRENT_SOURCE_DIR}/files $<TARGET_FILE_DIR:test_bmf_engine>/../files)
-
-    add_custom_command(TARGET test_bmf_engine
-        POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_CURRENT_SOURCE_DIR}/BUILTIN_CONFIG.json $<TARGET_FILE_DIR:test_bmf_engine>/../)
-
-    add_custom_command(TARGET test_bmf_engine
-        POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_CURRENT_SOURCE_DIR}/BUILTIN_CONFIG.json ${BMF_ASSEMBLE_ROOT}/bmf)
 endif()
 
 if(BMF_ENABLE_PYTHON)

@@ -1,0 +1,5 @@
+{
+    "name": "flip_gpu",
+    "type": "python",
+    "class": "flip_gpu"
+}

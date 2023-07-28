@@ -91,7 +91,7 @@ else
     # Set the output directory
     mkdir output
     mkdir output/dist
-    cp bmf/engine/c_engine/BUILTIN_CONFIG.json bmf
+    cp bmf/c_modules/meta/BUILTIN_CONFIG.json bmf
 
     # Compile for all listed python versions
     python_versions=(3.6 3.7 3.8 3.9)

@@ -28,12 +28,18 @@ class path {
     std::string p_;
 
   public:
+#ifdef _WIN32
+    constexpr static wchar_t preferred_separator = '\\';
+#else
+    constexpr static char preferred_separator = '/';
+#endif
+
     path(const std::string &p) : p_(p) {}
 
-    path operator/(const path &p) { return p_ + "/" + p.p_; }
+    path operator/(const path &p) { return p_ + preferred_separator + p.p_; }
 
     path &operator/=(const path &p) {
-        p_ = p_ + "/" + p.p_;
+        p_ = p_ + preferred_separator + p.p_;
         return *this;
     }
 

@@ -90,7 +90,7 @@ class BMF_API ModuleManager {
     get_loader(const std::string module_type);
 
     std::tuple<std::string, std::string>
-    parse_entry(const std::string &module_entry);
+    parse_entry(const std::string &module_entry, bool file_system);
 
     static ModuleManager &instance();
 

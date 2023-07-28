@@ -1,49 +1,110 @@
-
-file(GLOB HDRS include/*.h)
-if(BMF_ENABLE_FFMPEG)
-    file(GLOB SRCS src/*.cpp)
-else()
-    set(SRCS src/pass_through_module.cpp
-             src/clock_module.cpp
+function(mac_update)
+    if ($ENV{SCRIPT_EXEC_MODE} MATCHES "osx")
+        # Mac platform
+        set_target_properties(${ARGV0}
+            PROPERTIES
+            INSTALL_RPATH "@loader_path/../lib;@loader_path"
         )
-endif()
 
-add_library(builtin_modules SHARED ${SRCS} ${HDRS})
+        # Mac OSX excludes Python lib in linker to prevent embedding Python interpreter
+        target_include_directories(${ARGV0} PRIVATE ${Python_INCLUDE_DIRS})
+        set_target_properties(${ARGV0} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    endif()
+endfunction()
 
-target_include_directories(builtin_modules
-    PUBLIC
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/bmf/c_modules/include>
-)
+function(set_soname)
+    if(NOT APPLE AND NOT ANDROID)
+        set_target_properties(${ARGV0} PROPERTIES
+            VERSION "${BMF_VERSION_MAJOR}.${BMF_VERSION_MINOR}.${BMF_VERSION_PATCH}"
+            SOVERSION "${BMF_VERSION_MAJOR}"
+        )
+    endif()
+endfunction()
 
-if(BMF_ENABLE_CUDA)
-    # need by ffmpeg for hwframe support
+function(module_install)
+    set_target_properties(${ARGV0} PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/cpp_modules/Module_${ARGV0})
+
+    # copy meta.info
+    add_custom_command(TARGET ${ARGV0}
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/meta/${ARGV0}.info ${BMF_ASSEMBLE_ROOT}/bmf/cpp_modules/Module_${ARGV0}/meta.info
+    )
+endfunction()
+
+if(BMF_ENABLE_FFMPEG)
+    set(HDRS include/ffmpeg_decoder.h
+             include/ffmpeg_encoder.h
+             include/ffmpeg_filter.h
+             include/c_module.h
+             include/video_sync.h
+             include/av_common_utils.h
+             include/audio_fifo.h
+             include/audio_resampler.h
+    )
+    set(SRCS src/ffmpeg_decoder.cpp
+             src/ffmpeg_encoder.cpp
+             src/ffmpeg_filter.cpp
+             src/video_sync.cpp
+             src/audio_fifo.cpp
+             src/audio_resampler.cpp
+    )
+
+    add_library(builtin_modules SHARED ${SRCS} ${HDRS})
+    target_include_directories(builtin_modules
+        PUBLIC
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/bmf/c_modules/include>
+    )
+
+    if(BMF_ENABLE_CUDA)
+        # need by ffmpeg for hwframe support
+        target_link_libraries(builtin_modules
+            PRIVATE cuda::cuda)
+    endif()
+
     target_link_libraries(builtin_modules
-        PRIVATE cuda::cuda)
-endif()
-
-target_link_libraries(builtin_modules
-    PRIVATE
-        ${BMF_FFMPEG_TARGETS}
-        bmf_module_sdk
-)
-
-if(NOT APPLE AND NOT ANDROID)
-    set_target_properties(builtin_modules PROPERTIES
-	    VERSION "${BMF_VERSION_MAJOR}.${BMF_VERSION_MINOR}.${BMF_VERSION_PATCH}"
-    )
-endif()
-
-if ($ENV{SCRIPT_EXEC_MODE} MATCHES "osx")
-    # Mac platform
-    set_target_properties(builtin_modules
-        PROPERTIES
-        INSTALL_RPATH "@loader_path/../lib;@loader_path"
+        PRIVATE
+            ${BMF_FFMPEG_TARGETS}
+            bmf_module_sdk
     )
 
-    # Mac OSX excludes Python lib in linker to prevent embedding Python interpreter
-    target_include_directories(builtin_modules PRIVATE ${Python_INCLUDE_DIRS})
-    set_target_properties(builtin_modules PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    set_soname(builtin_modules)
+    mac_update(builtin_modules)
+
+
+    add_custom_command(TARGET builtin_modules
+        POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy
+                ${CMAKE_CURRENT_SOURCE_DIR}/meta/BUILTIN_CONFIG.json $<TARGET_FILE_DIR:builtin_modules>/../)
+
+    install(TARGETS builtin_modules
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+    )
+
+    install(FILES ${HDRS} DESTINATION include)
 endif()
+
+# pass_through module
+set(PASS_THROUGH_HDRS include/pass_through_module.h)
+set(PASS_THROUGH_SRCS src/pass_through_module.cpp)
+add_library(pass_through SHARED ${PASS_THROUGH_HDRS} ${PASS_THROUGH_SRCS})
+target_include_directories(pass_through PUBLIC include)
+target_link_libraries(pass_through PRIVATE bmf_module_sdk)
+set_soname(pass_through)
+mac_update(pass_through)
+module_install(pass_through)
+
+# clock module
+set(CLOCK_MODULE_HDRS include/clock_module.h)
+set(CLOCK_MODULE_SRCS src/clock_module.cpp)
+add_library(clock SHARED ${CLOCK_MODULE_HDRS} ${CLOCK_MODULE_SRCS})
+target_include_directories(clock PUBLIC include)
+target_link_libraries(clock PRIVATE bmf_module_sdk)
+set_soname(clock)
+mac_update(clock)
+module_install(clock)
+
 
 
 # tests
@@ -63,22 +124,5 @@ if(BMF_ENABLE_TEST)
 
     target_link_libraries(test_builtin_modules PRIVATE gtest_main)
 
-    if ($ENV{SCRIPT_EXEC_MODE} MATCHES "osx")
-        # Mac platform
-        set_target_properties(test_builtin_modules
-            PROPERTIES
-            INSTALL_RPATH "@loader_path/../lib;@loader_path"
-        )
-
-        # Mac OSX excludes Python lib in linker to prevent embedding Python interpreter
-        target_include_directories(test_builtin_modules PRIVATE ${Python_INCLUDE_DIRS})
-        set_target_properties(test_builtin_modules PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
-    endif()
+    mac_update(test_builtin_modules)
 endif()
-
-install(TARGETS builtin_modules
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-)
-
-install(FILES ${HDRS} DESTINATION include)

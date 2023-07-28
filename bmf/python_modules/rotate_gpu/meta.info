@@ -1,0 +1,5 @@
+{
+    "name": "rotate_gpu",
+    "type": "python",
+    "class": "rotate_gpu"
+}

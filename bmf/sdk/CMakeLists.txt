@@ -43,6 +43,7 @@ target_link_libraries(bmf_module_sdk
 if(NOT APPLE AND NOT ANDROID)
     set_target_properties(bmf_module_sdk PROPERTIES
 	VERSION "${BMF_VERSION_MAJOR}.${BMF_VERSION_MINOR}.${BMF_VERSION_PATCH}"
+	SOVERSION "${BMF_VERSION_MAJOR}"
     )
 endif()
 

@@ -1,0 +1,5 @@
+{
+    "name": "blur_gpu",
+    "type": "python",
+    "class": "blur_gpu"
+}

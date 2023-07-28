@@ -1,0 +1,5 @@
+{
+    "name": "clock",
+    "type": "c++",
+    "class": "ClockModule"
+}

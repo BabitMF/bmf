@@ -1,0 +1,5 @@
+{
+    "name": "pass_through",
+    "type": "c++",
+    "class": "PassThroughModule"
+}

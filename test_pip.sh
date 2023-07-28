@@ -30,7 +30,7 @@ cp -r dbglib/. output/bmf/lib
 cp -r output/bmf/lib bmf
 cp -r output/bmf/bin bmf
 cp -r output/bmf/include bmf
-cp bmf/engine/c_engine/BUILTIN_CONFIG.json bmf
+cp bmf/c_modules/meta/BUILTIN_CONFIG.json bmf
 cp output/bmf/lib/libcopy_module.so bmf/test/c_module
 /usr/bin/python3.7 setup.py bdist_wheel
 

@@ -1,0 +1,5 @@
+{
+    "name": "gamma_gpu",
+    "type": "python",
+    "class": "gamma_gpu"
+}

@@ -197,3 +197,7 @@ class rotate_gpu(Module):
             task.set_timestamp(Timestamp.DONE)
 
         return ProcessResult.OK
+
+def register_blur_gpu_info(info):
+    info.module_description = "Builtin module for rotate using GPU"
+    info.module_tag = ModuleTag.TAG_DEVICE_HWACCEL

@@ -80,7 +80,7 @@ then
     # Create an output directory at repo root for packaging
     mkdir -p output/dist
     mkdir -p output/3rd_party
-    cp bmf/engine/c_engine/BUILTIN_CONFIG.json bmf
+    cp bmf/c_modules/meta/BUILTIN_CONFIG.json bmf
 
     # Build x86
     python_versions=(3.6 3.7 3.8 3.9)

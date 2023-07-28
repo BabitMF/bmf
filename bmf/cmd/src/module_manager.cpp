@@ -78,16 +78,28 @@ int install_module(const bmf_sdk::ModuleInfo &info, bool force) {
   // check module_type and module_entry
   // for c++ and python, check that the entry is correct.
   // for go, parse the entry to get the dynamic library name
+  std::string module_file, _;
   auto &M = bmf_sdk::ModuleManager::instance();
-  std::string file_name, _;
   if (info.module_type == "c++" || info.module_type == "python" ||
       info.module_type == "go") {
     auto &M = bmf_sdk::ModuleManager::instance();
     try {
-      std::tie(file_name, _) = M.parse_entry(info.module_entry);
+      std::tie(module_file, _) = M.parse_entry(info.module_entry, true);
     } catch (std::exception &e) {
       BMFLOG(BMF_ERROR) << e.what() << std::endl;
       BMFLOG(BMF_ERROR) << "invalid module_entry:" << info.module_entry
+                        << std::endl;
+      return -1;
+    }
+
+    // check module file
+    if (info.module_type == "c++" || info.module_type == "go") {
+      module_file = fs::path(info.module_path) / (module_file + bmf_sdk::SharedLibrary::default_extension());
+    } else {
+      module_file = fs::path(info.module_path) / (module_file + ".py");
+    }
+    if (!fs::exists(module_file)) {
+      BMFLOG(BMF_ERROR) << "cannot find the module file:" << module_file
                         << std::endl;
       return -1;
     }
@@ -95,17 +107,6 @@ int install_module(const bmf_sdk::ModuleInfo &info, bool force) {
     BMFLOG(BMF_ERROR) << "invalid module_type, must be one of c++/python/go"
                       << std::endl;
     return -1;
-  }
-
-  // check so for c++ and go
-  auto so_file = file_name + bmf_sdk::SharedLibrary::default_extension();
-  if (info.module_type == "c++" || info.module_type == "go") {
-    auto so = fs::path(info.module_path) / so_file;
-    if (!fs::exists(so)) {
-      BMFLOG(BMF_ERROR) << "cannot find the module file:" << so.string()
-                        << std::endl;
-      return -1;
-    }
   }
 
   if (!fs::exists(module_root_path) and !fs::create_directories(module_root_path)) {
@@ -132,7 +133,7 @@ int install_module(const bmf_sdk::ModuleInfo &info, bool force) {
   meta["revision"] = info.module_revision;
   meta["type"] = info.module_type;
   meta["entry"] = info.module_entry;
-  meta["path"] = (installed_path / so_file).string();
+  // XXX: When "path" is empty, module_manager loader will automatically calculate
   bmf_sdk::JsonParam(meta).store((installed_path / "meta.info").string());
 
   std::cout << "Installing the module:" << info.module_name << " in "

@@ -1,0 +1,5 @@
+{
+    "name": "crop_gpu",
+    "type": "python",
+    "class": "crop_gpu"
+}

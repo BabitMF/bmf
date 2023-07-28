@@ -1,0 +1,5 @@
+{
+    "name": "cpu_gpu_trans_module",
+    "type": "python",
+    "class": "cpu_gpu_trans_module"
+}

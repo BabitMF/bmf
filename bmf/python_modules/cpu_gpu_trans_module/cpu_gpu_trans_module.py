@@ -51,3 +51,7 @@ class cpu_gpu_trans_module(Module):
             Log.log_node(LogLevel.DEBUG, self.node_, 'output stream', 'done')
             task.set_timestamp(Timestamp.DONE)
         return ProcessResult.OK
+
+def register_blur_gpu_info(info):
+    info.module_description = "Builtin cpu/gpu conversion module"
+    info.module_tag = ModuleTag.TAG_UTILS

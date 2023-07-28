@@ -17,7 +17,7 @@ const fs::path s_bmf_repo_root = "/usr/local/share/bmf_mods/";
 #endif
 
 static void string_split(std::vector<std::string> &tokens,
-	const std::string &str, const std::string &seps)
+    const std::string &str, const std::string &seps)
 {
     size_t j = 0;
     for(size_t i = 0; i < str.size(); ++i){
@@ -336,63 +336,84 @@ bool ModuleManager::resolve_from_meta(const std::string &module_name, ModuleInfo
         auto p = fs::path(r) / fmt::format("Module_{}", module_name) / std::string("meta.info");
         if(fs::exists(p)){
             meta_path = p.string();
-        }
-        if(meta_path.empty()){
+        } else {
             continue;
         }
 
         //read meta file
-        std::string pth, cls;
         JsonParam meta;
         meta.load(meta_path);
 
-        std::string module_type = meta.get<std::string>("type");
-        if (module_type == "PYTHON" || module_type == "python3" || module_type == "python") {
-            info.module_type = "python";
-        }
-        if (module_type == "binary" || module_type == "c++"){
-            info.module_type = "c++";
-        }
-        if (module_type == "golang" || module_type == "go"){
-            info.module_type = "go";
-        }
-        info.module_entry = meta.get<std::string>("entry");
-        auto module_path = fs::path(meta_path).parent_path();
+        auto vget = [&](const std::string &key, const std::string &def) {
+            return meta.has_key(key) ? meta.get<std::string>(key) : def;
+        };
 
-        //
-        if (info.module_entry.empty()){
-            info.module_entry = module_name + "." + module_name;
+        // module_name
+        if (info.module_name = vget("name", ""); module_name != info.module_name) {
+            BMFLOG(BMF_WARNING) << "The module_name in meta is: " << info.module_name << ", which is different from the actual module_name:" << module_name << std::endl;
+        }
+
+        // module_type
+        auto meta_module_type = vget("type", "");
+        if (meta_module_type == "python" || meta_module_type == "PYTHON" || meta_module_type == "python3") {
+                info.module_type = "python";
+        } else if (meta_module_type == "binary" || meta_module_type == "c++") {
+                info.module_type = "c++";
+        } else if (meta_module_type == "golang" || meta_module_type == "go") {
+                info.module_type = "go";
+        } else {
+                throw std::invalid_argument("unsupported module type.(must be c++/python/go");
+        }
+
+        // module_class, module_entry
+        auto meta_module_class = vget("class", "");
+        info.module_entry = vget("entry", "");
+        if (meta_module_class == "" && info.module_entry == "") {
+            throw std::invalid_argument("one of class or entry should be provided");
+        }
+        if (info.module_entry == "") {
+            if (info.module_type == "c++") {
+                info.module_entry = std::string(SharedLibrary::default_prefix()) + info.module_name + "." + meta_module_class;
+            }else if(info.module_type == "python") {
+                info.module_entry = meta_module_class + "." + meta_module_class;
+            }else if(info.module_type == "go") {
+                info.module_entry = info.module_name + "." + meta_module_class;
+            }
+            //BMFLOG(BMF_WARNING) << "Can not find entry from meta file, using default: " << info.module_entry << std::endl;
         }
         std::vector<std::string> entry_path;
         string_split(entry_path, info.module_entry, ".:");
-        auto module_class = entry_path[entry_path.size() - 1];
+        if (entry_path.size() < 2){
+            BMF_Error_(BMF_StsBadArg, "module_entry: ", info.module_entry.c_str(), "is not satisfy");
+        }
+        if (auto entry_module_class = entry_path[entry_path.size() - 1]; meta_module_class == "") {
+            meta_module_class = entry_module_class;
+        } else if (meta_module_class != entry_module_class) {
+            BMFLOG(BMF_WARNING) << "The module class in meta is: " << meta_module_class << ", which is different from the entry field:" << entry_module_class << std::endl;
+        }
         entry_path.pop_back();
+        info.module_entry = entry_path[entry_path.size() - 1] + "." + meta_module_class;
+        auto entry_module_path = fs::path(meta_path).parent_path();
         for(auto &e : entry_path){
-            module_path /= e;
-        }
-        info.module_entry = entry_path[entry_path.size() - 1] + "." + module_class;
-
-        //fix module path
-        if (info.module_type == "python"){
-            module_path = module_path.parent_path();
-        }
-        else if (info.module_type == "c++"){
-            module_path =
-                module_path.parent_path() /
-                module_path.filename().replace_extension(SharedLibrary::default_extension());
-        }
-        else if (info.module_type == "go"){
-            module_path =
-                module_path.parent_path() /
-                module_path.filename().replace_extension(SharedLibrary::default_extension());
-        }
-        info.module_path = module_path.string();
-        info.module_name = module_name;
-
-        if (meta.has_key("revision")) {
-            info.module_revision = meta.get<std::string>("revision");
+            entry_module_path /= e;
         }
 
+        // module_path
+        if (info.module_path = vget("path", ""); info.module_path.empty()) { // builtin modules
+            if (info.module_type == "c++" || info.module_type == "go") {
+                info.module_path = entry_module_path.parent_path() /
+                    entry_module_path.filename().replace_extension(SharedLibrary::default_extension());
+            }else if(info.module_type == "python") {
+                info.module_path = entry_module_path.parent_path();
+            }
+        }
+
+        info.module_revision = vget("revision", "");
+
+        // XXX: other attributes, such as envs...
+
+        BMFLOG(BMF_INFO) << info.module_name << " " << info.module_type << " " << info.module_path << " " << info.module_entry
+                         << std::endl;
         return true;
     }
     return false;
@@ -408,7 +429,7 @@ bool ModuleManager::initialize_loader(const std::string &module_type)
     if(module_type == "c++"){
         self->loaders["c++"] = [&](const ModuleInfo &info) -> ModuleFactoryI*{
             std::string _, class_name;
-            std::tie(_, class_name) = parse_entry(info.module_entry);
+            std::tie(_, class_name) = parse_entry(info.module_entry, false);
             return new CPPModuleFactory(info.module_path, class_name);
         };
         return true;
@@ -421,7 +442,7 @@ bool ModuleManager::initialize_loader(const std::string &module_type)
 
         self->loaders["python"] = [=](const ModuleInfo &info) -> ModuleFactoryI*{
             std::string module_file, class_name;
-            std::tie(module_file, class_name) = parse_entry(info.module_entry);
+            std::tie(module_file, class_name) = parse_entry(info.module_entry, false);
             auto import_func = lib->symbol<ModuleFactoryI*(*)(const char*, const char*, const char*, char**)>(
                                                              "bmf_import_py_module");
             char *errstr = nullptr;
@@ -461,17 +482,18 @@ bool ModuleManager::initialize_loader(const std::string &module_type)
 }
 
 
-std::tuple<std::string, std::string> ModuleManager::parse_entry(const std::string &module_entry)
+std::tuple<std::string, std::string> ModuleManager::parse_entry(const std::string &module_entry, bool file_system)
 {
     std::vector<std::string> entry_path;
     string_split(entry_path, module_entry, ".:");
     if (entry_path.size() < 2){
         BMF_Error_(BMF_StsBadArg, "module_entry: ", module_entry.c_str(), "is not satisfy");
     }
+    auto sep = file_system ? std::string{fs::path::preferred_separator} : ".";
     auto module_file = entry_path[0];
     for (int i = 1; i < entry_path.size() - 1; i++)
     {
-        module_file += "." + entry_path[i];
+        module_file += sep + entry_path[i];
     }
     auto module_class = entry_path[entry_path.size() - 1];
     return std::make_tuple(module_file, module_class);
@@ -525,6 +547,9 @@ void ModuleManager::init()
         inited = true;
         // initialize cpp/py/go loader lazily
     }
+    set_repo_root(fs::path(SharedLibrary::this_line_location()).parent_path().parent_path() / "cpp_modules");
+    set_repo_root(fs::path(SharedLibrary::this_line_location()).parent_path().parent_path() / "python_modules");
+    set_repo_root(fs::path(SharedLibrary::this_line_location()).parent_path().parent_path() / "go_modules");
     set_repo_root(s_bmf_repo_root.string());
     set_repo_root(fs::current_path().string());
 }

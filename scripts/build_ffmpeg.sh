@@ -1,7 +1,5 @@
 #!/bin/bash
-
 set -exuo pipefail
-
 DEVICE=cpu
 OS=$(uname)
 if [ ${OS} == "Linux" ]
@@ -44,27 +42,6 @@ function install_dependencies_linux() {
 
 function install_dependencies_macos() {
     brew install automake git libtool wget
-}
-
-function build_nasm_unix() {
-    cd $1
-    curl -O -L https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.bz2
-    tar xjvf nasm-2.15.05.tar.bz2
-    cd nasm-2.15.05
-    ./autogen.sh
-    ./configure --enable-shared
-    make -j $2
-    make install
-}
-
-function build_yasm_unix() {
-    cd $1
-    curl -O -L https://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz
-    tar xzvf yasm-1.3.0.tar.gz
-    cd yasm-1.3.0
-    ./configure
-    make -j $2
-    make install
 }
 
 function build_x264_unix() {
@@ -139,7 +116,8 @@ function build_ffmpeg_unix() {
 
     if [ ${OS} == "Linux" ] && [ ${DEVICE} == "gpu" ] && [ $(uname -m) == "x86_64" ]
     then
-        sed -i 's/gencode arch=compute_30,code=sm_30/gencode arch=compute_52,code=sm_52/g' configure
+        sed -i 's/-gencode arch=compute_30,code=sm_30 -O2/-arch=sm_52 -gencode=arch=compute_52,code=sm_52 -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_61,code=sm_61 -gencode=arch=compute_70,code=sm_70 -gencode=arch=compute_75,code=sm_75 -gencode=arch=compute_80,code=sm_80 -gencode=arch=compute_86,code=sm_86 -gencode=arch=compute_86,code=compute_86/g' configure
+        sed -i 's/ -ptx//g' configure
     fi
 
     trap 'cat ffbuild/config.log' ERR
@@ -149,7 +127,6 @@ function build_ffmpeg_unix() {
               --pkg-config-flags="--static" \
               --enable-shared \
               --disable-static \
-              --disable-autodetect \
               --extra-libs=-lpthread \
               --extra-libs=-lm \
               --cc='clang -arch x86_64' \
@@ -160,7 +137,6 @@ function build_ffmpeg_unix() {
               --pkg-config-flags="--static" \
               --enable-shared \
               --disable-static \
-              --disable-autodetect \
               --extra-libs=-lpthread \
               --extra-libs=-lm \
               --cc='clang -arch arm64' \
@@ -171,7 +147,6 @@ function build_ffmpeg_unix() {
               --pkg-config-flags="--static" \
               --enable-shared \
               --disable-static \
-              --disable-autodetect \
               --extra-libs=-lpthread \
               --extra-libs=-lm \
               ${@:4}
@@ -201,7 +176,7 @@ function install_cuda_linux() {
         dpkg -i cuda-repo-ubuntu1804-11-8-local_11.8.0-520.61.05-1_amd64.deb
         cp /var/cuda-repo-ubuntu1804-11-8-local/cuda-*-keyring.gpg /usr/share/keyrings/
         apt-get update
-        apt-get -y install cuda
+        apt-get -y install cuda-toolkit-11-8
     elif [[ ${NAME} == "Ubuntu" ]] && [[ ${VERSION_ID} == "20.04" ]]
     then
         wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
@@ -210,7 +185,9 @@ function install_cuda_linux() {
         dpkg -i cuda-repo-ubuntu2004-11-8-local_11.8.0-520.61.05-1_amd64.deb
         cp /var/cuda-repo-ubuntu2004-11-8-local/cuda-*-keyring.gpg /usr/share/keyrings/
         apt-get update
-        apt-get -y install cuda
+        apt-get -y install cuda-toolkit-11-8
+        rm -rf cuda-repo-ubuntu2004-11-8-local_11.8.0-520.61.05-1_amd64.deb
+        dpkg -r cuda-repo-ubuntu2004-11-8-local
     elif [[ ${NAME} == "Ubuntu" ]] && [[ ${VERSION_ID} == "22.04" ]]
     then
         wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
@@ -219,7 +196,7 @@ function install_cuda_linux() {
         dpkg -i cuda-repo-ubuntu2204-11-8-local_11.8.0-520.61.05-1_amd64.deb
         cp /var/cuda-repo-ubuntu2204-11-8-local/cuda-*-keyring.gpg /usr/share/keyrings/
         apt-get update
-        apt-get -y install cuda
+        apt-get -y install cuda-toolkit-11-8
     elif [[ ${NAME} =~ "Debian" ]] && [[ ${VERSION_ID} == "11" ]]
     then
         wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda-repo-debian11-11-8-local_11.8.0-520.61.05-1_amd64.deb
@@ -227,19 +204,76 @@ function install_cuda_linux() {
         cp /var/cuda-repo-debian11-11-8-local/cuda-*-keyring.gpg /usr/share/keyrings/
         add-apt-repository contrib
         apt-get update
-        apt-get -y install cuda
+        apt-get -y install cuda-toolkit-11-8
     fi
     export PATH=${PATH}:/usr/local/cuda/bin
     cd -
+}
+
+function install_cvcuda() {
+    mkdir -p cvcuda_source
+    cd cvcuda_source
+    wget https://github.com/CVCUDA/CV-CUDA/releases/download/v0.3.0-beta/nvcv_python-0.3.x_beta-cp38-cp38-linux_x86_64.whl
+    wget https://github.com/CVCUDA/CV-CUDA/releases/download/v0.3.0-beta/nvcv-lib-0.3.0_beta-cuda11-x86_64-linux.deb
+    wget https://github.com/CVCUDA/CV-CUDA/releases/download/v0.3.0-beta/nvcv-dev-0.3.0_beta-cuda11-x86_64-linux.deb
+    apt-get install -y ./nvcv-lib-0.3.0_beta-cuda11-x86_64-linux.deb ./nvcv-dev-0.3.0_beta-cuda11-x86_64-linux.deb
+    pip3 install ./nvcv_python-0.3.x_beta-cp38-cp38-linux_x86_64.whl
+    export PYTHONPATH=/usr/local/lib/python3.8/dist-packages/nvcv_python
+    cd -
+    rm -rf cvcuda_source
+}
+
+function install_trt() {
+    mkdir -p trt
+    cd trt
+    wget https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/secure/8.6.1/tars/TensorRT-8.6.1.6.Linux.x86_64-gnu.cuda-11.8.tar.gz
+    version="8.6.1.6"
+    arch=$(uname -m)
+    cuda="cuda-11.8"
+    tar -xzvf TensorRT-${version}.Linux.${arch}-gnu.${cuda}.tar.gz
+    python3 -m pip install --upgrade pip
+    cd TensorRT-${version}/python
+    python3 -m pip install tensorrt-*-cp38-none-linux_x86_64.whl --force-reinstall
+    python3 -m pip install tensorrt_lean-*-cp38-none-linux_x86_64.whl --force-reinstall
+    python3 -m pip install tensorrt_dispatch-*-cp38-none-linux_x86_64.whl --force-reinstall
+    cd -
+#    cd TensorRT-${version}/uff
+#    python3 -m pip install uff-0.6.9-py2.py3-none-any.whl --force-reinstall
+#    cd -
+    cd TensorRT-${version}/graphsurgeon
+
+    python3 -m pip install graphsurgeon-0.4.6-py2.py3-none-any.whl -force-reinstall
+    cd -
+    cd TensorRT-${version}/onnx_graphsurgeon
+        
+    python3 -m pip install onnx_graphsurgeon-0.3.12-py2.py3-none-any.whl -force-reinstall
+    cd ..
+    rm -rf python uff graphsurgeon onnx_graphsurgeon
+    cd ..
+    mv TensorRT-${version} /usr/local/
+    cd ..
+    rm -rf trt
+    export LD_LIBRARY_PATH=/usr/local/TensorRT-${version}/lib
+    export PATH=$PATH:/usr/local/TensorRT-${version}/bin
 }
 
 function build_ffnvcodec_linux() {
     cd $1
     git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git
     cd nv-codec-headers
-    git checkout n11.1.5.2
+    git checkout n10.0.26.2
     make install
 }
+
+function install_cudnn() {
+    mkdir cudnn
+    cd cudnn
+    wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2204/x86_64/libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
+    dpkg -i libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
+    cd -
+    rm -rf cudnn
+}
+
 
 function check_lib() {
     cd $1
@@ -281,7 +315,7 @@ then
     disable_asm="--disable-x86asm"
     ffmpeg_opts="--enable-gpl --enable-nonfree"
     mkdir -p ffmpeg_source
-    trap "cd $(pwd) && rm -rf ffmpeg_source" EXIT
+    trap "cd $(pwd) && rm -rf ffmpeg_source && pip cache purge && dpkg -r cuda-repo-ubuntu2004-11-8-local" EXIT
 
     if [ ${OS} == "Linux" ]
     then
@@ -289,6 +323,9 @@ then
         if [ ${DEVICE} == "gpu" ] && [ $(uname -m) == "x86_64" ]
         then
             install_cuda_linux $(pwd)/ffmpeg_source
+            install_cudnn
+            install_trt
+            install_cvcuda
             (build_ffnvcodec_linux $(pwd)/ffmpeg_source)
             ffmpeg_opts="${ffmpeg_opts} --enable-cuda-nvcc --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64"
         fi
@@ -301,7 +338,6 @@ then
     for arg in $@
     do
         (build_${arg}_unix $(pwd)/ffmpeg_source ${cores})
-
         if [ ${arg} == "nasm" ] || [ ${arg} == "yasm" ]
         then
             disable_asm=""

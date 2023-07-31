@@ -36,10 +36,10 @@ class path {
 
     path(const std::string &p) : p_(p) {}
 
-    path operator/(const path &p) { return p_ + preferred_separator + p.p_; }
+    path operator/(const path &p) { return p_ + std::string{preferred_separator} + p.p_; }
 
     path &operator/=(const path &p) {
-        p_ = p_ + preferred_separator + p.p_;
+        p_ = p_ + std::string{preferred_separator} + p.p_;
         return *this;
     }
 

@@ -5,12 +5,12 @@
 
 USE_BMF_SDK_NS
 
-class TestCvtColorModule : public Module
-{
-public:
-    TestCvtColorModule(int node_id,JsonParam option) : Module(node_id,option) { }
+class TestCvtColorModule : public Module {
+  public:
+    TestCvtColorModule(int node_id, JsonParam option)
+        : Module(node_id, option) {}
 
-    ~TestCvtColorModule() { }
+    ~TestCvtColorModule() {}
 
     virtual int process(Task &task);
 };
@@ -44,18 +44,23 @@ int TestCvtColorModule::process(Task &task) {
                 vframe = vframe.cuda();
             }
             // yuv2yuv
-            hmp::PixelInfo nv12info{hmp::PF_NV12, hmp::CS_BT470BG, hmp::CR_MPEG};
-            VideoFrame vframe_nv12{vframe.width(), vframe.height(), nv12info, kCUDA};
+            hmp::PixelInfo nv12info{hmp::PF_NV12, hmp::CS_BT470BG,
+                                    hmp::CR_MPEG};
+            VideoFrame vframe_nv12{vframe.width(), vframe.height(), nv12info,
+                                   kCUDA};
             hmp::TensorList nv12_tensor = vframe_nv12.frame().data();
             hmp::img::yuv_to_yuv(nv12_tensor, vframe.frame().data(),
-                                 vframe_nv12.frame().pix_info(), vframe.frame().pix_info());
+                                 vframe_nv12.frame().pix_info(),
+                                 vframe.frame().pix_info());
 
             // yuv2rgb
             hmp::PixelInfo cinfo{hmp::PF_RGB24, hmp::CS_BT709, hmp::CR_MPEG};
             hmp::PixelInfo pinfo{hmp::PF_YUV420P, hmp::CS_BT709, hmp::CR_MPEG};
-            VideoFrame vframe_out{vframe.width(), vframe.height(), cinfo, kCUDA};
+            VideoFrame vframe_out{vframe.width(), vframe.height(), cinfo,
+                                  kCUDA};
             hmp::Tensor out_tensor = vframe_out.frame().plane(0);
-            hmp::img::yuv_to_rgb(out_tensor, vframe.frame().data(), vframe.frame().pix_info(), hmp::kNHWC);
+            hmp::img::yuv_to_rgb(out_tensor, vframe.frame().data(),
+                                 vframe.frame().pix_info(), hmp::kNHWC);
 
             // Add output frame to output queue
             vframe_nv12.copy_props(vframe);

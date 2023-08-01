@@ -18,22 +18,18 @@
 #include <hmp/core/allocator.h>
 #include <hmp/core/scalar_type.h>
 
-namespace hmp{
+namespace hmp {
 
-void dummyDeleter(void*)
-{
-    //auto v = sizeof_scalar_type(kI8);
+void dummyDeleter(void *) {
+    // auto v = sizeof_scalar_type(kI8);
 }
-
 
 namespace {
 
-class CPUAllocator : public Allocator
-{
-public:
-    DataPtr alloc(int64_t size) override
-    {
-        //TODO: alignment support
+class CPUAllocator : public Allocator {
+  public:
+    DataPtr alloc(int64_t size) override {
+        // TODO: alignment support
         auto ptr = malloc(size);
         HMP_REQUIRE(ptr, "CPU out of memory");
         return DataPtr(ptr, free, kCPU);
@@ -43,8 +39,9 @@ public:
 static CPUAllocator sDefaultCPUAllocator;
 
 //+1(Pinned CPU allocator)
-const static int sNumberDeviceTypes = static_cast<int>(DeviceType::NumDeviceTypes); 
-static Allocator* sAllocators[sNumberDeviceTypes + 1];
+const static int sNumberDeviceTypes =
+    static_cast<int>(DeviceType::NumDeviceTypes);
+static Allocator *sAllocators[sNumberDeviceTypes + 1];
 
 } // namespace
 
@@ -52,19 +49,18 @@ HMP_DECLARE_ALLOCATOR(kCPU, 0);
 HMP_DECLARE_ALLOCATOR(kCPU, 1);
 HMP_DECLARE_ALLOCATOR(kCUDA, 0);
 
-
-HMP_API void set_allocator(DeviceType device, Allocator *allocator, unsigned flags)
-{
-    HMP_REQUIRE(device < DeviceType::NumDeviceTypes, "invalid device type {}", device);
-    if(device == kCPU && (flags & static_cast<unsigned>(AllocatorFlags::Pinned))){
+HMP_API void set_allocator(DeviceType device, Allocator *allocator,
+                           unsigned flags) {
+    HMP_REQUIRE(device < DeviceType::NumDeviceTypes, "invalid device type {}",
+                device);
+    if (device == kCPU &&
+        (flags & static_cast<unsigned>(AllocatorFlags::Pinned))) {
         sAllocators[sNumberDeviceTypes] = allocator;
-    }
-    else{
+    } else {
         sAllocators[static_cast<int>(device)] = allocator;
     }
 }
-HMP_API Allocator *get_allocator(DeviceType device, unsigned flags)
-{
+HMP_API Allocator *get_allocator(DeviceType device, unsigned flags) {
 #ifndef HMP_BUILD_SHARED
     HMP_IMPORT_ALLOCATOR(kCPU, 0);
 #ifdef HMP_ENABLE_CUDA
@@ -74,16 +70,16 @@ HMP_API Allocator *get_allocator(DeviceType device, unsigned flags)
 #endif
 
     //
-    HMP_REQUIRE(device < DeviceType::NumDeviceTypes, "invalid device type {}", device);
-    if(device == kCPU && (flags & static_cast<unsigned>(AllocatorFlags::Pinned))){
+    HMP_REQUIRE(device < DeviceType::NumDeviceTypes, "invalid device type {}",
+                device);
+    if (device == kCPU &&
+        (flags & static_cast<unsigned>(AllocatorFlags::Pinned))) {
         return sAllocators[sNumberDeviceTypes];
-    }
-    else{
+    } else {
         return sAllocators[static_cast<int>(device)];
     }
 }
 
-
 HMP_REGISTER_ALLOCATOR(kCPU, &sDefaultCPUAllocator, 0);
 
-} //namespace hmp
+} // namespace hmp

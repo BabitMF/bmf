@@ -38,28 +38,32 @@ extern "C" {
 
 USE_BMF_SDK_NS
 
-#define CHECK_NVJPEG(func, errer_log, _ret, WHETHER_RET)   \
-    do {                                                   \
-        auto status = func;                                \
-        if (status != NVJPEG_STATUS_SUCCESS) {             \
-            BMFLOG_NODE(BMF_ERROR, node_id_) << errer_log; \
-            if (WHETHER_RET)                               \
-                return _ret;                               \
-        }                                                  \
+#define CHECK_NVJPEG(func, errer_log, _ret, WHETHER_RET)                       \
+    do {                                                                       \
+        auto status = func;                                                    \
+        if (status != NVJPEG_STATUS_SUCCESS) {                                 \
+            BMFLOG_NODE(BMF_ERROR, node_id_) << errer_log;                     \
+            if (WHETHER_RET)                                                   \
+                return _ret;                                                   \
+        }                                                                      \
     } while (0);
 
 class jpeg_encoder : public bmf_sdk::Module {
-public:
-    jpeg_encoder(int node_id, bmf_sdk::JsonParam option) : bmf_sdk::Module(node_id, option) {
-        if (option.has_key("width") && option.json_value_["width"].is_number()) {
+  public:
+    jpeg_encoder(int node_id, bmf_sdk::JsonParam option)
+        : bmf_sdk::Module(node_id, option) {
+        if (option.has_key("width") &&
+            option.json_value_["width"].is_number()) {
             m_encode_w = option.json_value_["width"];
         }
-        if (option.has_key("height") && option.json_value_["height"].is_number()) {
+        if (option.has_key("height") &&
+            option.json_value_["height"].is_number()) {
             m_encode_h = option.json_value_["height"];
         }
-        BMFLOG_NODE(BMF_INFO, node_id_) << "encode frame size is: "
-                                        << m_encode_w << "x" << m_encode_h;
-        if (option.has_key("quality") && option.json_value_["quality"].is_number()) {
+        BMFLOG_NODE(BMF_INFO, node_id_)
+            << "encode frame size is: " << m_encode_w << "x" << m_encode_h;
+        if (option.has_key("quality") &&
+            option.json_value_["quality"].is_number()) {
             m_encode_q = option.json_value_["quality"];
         }
         BMFLOG_NODE(BMF_INFO, node_id_) << "encode param set to " << m_encode_q;
@@ -74,19 +78,22 @@ public:
         // nvjpeg
         CHECK_NVJPEG(nvjpegCreateSimple(&m_handle),
                      "nvjpeg create handle error. ", -1, true);
-        CHECK_NVJPEG(nvjpegEncoderParamsCreate(m_handle, &m_enc_param, m_stream),
-                     "nvjpeg create enc param error. ", -1, true);
+        CHECK_NVJPEG(
+            nvjpegEncoderParamsCreate(m_handle, &m_enc_param, m_stream),
+            "nvjpeg create enc param error. ", -1, true);
         CHECK_NVJPEG(nvjpegEncoderStateCreate(m_handle, &m_enc_state, m_stream),
                      "nvjpeg create jpeg enc state error. ", -1, true);
 
         // set param
-        CHECK_NVJPEG(nvjpegEncoderParamsSetQuality(m_enc_param, m_encode_q, m_stream),
-                     "nvjpeg set enc quality error. ", -1, true);
-        auto status = nvjpegEncoderParamsSetEncoding(m_enc_param,
-                                                     NVJPEG_ENCODING_BASELINE_DCT,
-                                                     m_stream);
-        status = nvjpegEncoderParamsSetOptimizedHuffman(m_enc_param, 2, m_stream);
-        status = nvjpegEncoderParamsSetSamplingFactors(m_enc_param, NVJPEG_CSS_420, m_stream);
+        CHECK_NVJPEG(
+            nvjpegEncoderParamsSetQuality(m_enc_param, m_encode_q, m_stream),
+            "nvjpeg set enc quality error. ", -1, true);
+        auto status = nvjpegEncoderParamsSetEncoding(
+            m_enc_param, NVJPEG_ENCODING_BASELINE_DCT, m_stream);
+        status =
+            nvjpegEncoderParamsSetOptimizedHuffman(m_enc_param, 2, m_stream);
+        status = nvjpegEncoderParamsSetSamplingFactors(
+            m_enc_param, NVJPEG_CSS_420, m_stream);
 
         return 0;
     }
@@ -109,7 +116,8 @@ public:
             cudaStreamDestroy(m_stream);
             m_stream = nullptr;
         }
-        BMFLOG_NODE(BMF_INFO, node_id_) << "encode " << m_frame_count << " frames.";
+        BMFLOG_NODE(BMF_INFO, node_id_) << "encode " << m_frame_count
+                                        << " frames.";
         return 0;
     }
 
@@ -121,7 +129,8 @@ public:
             bmf_sdk::Packet pkt;
             while (task.pop_packet_from_input_queue(label, pkt)) {
                 if (pkt.timestamp() == bmf_sdk::Timestamp::BMF_EOF) {
-                    task.fill_output_packet(label, bmf_sdk::Packet::generate_eof_packet());
+                    task.fill_output_packet(
+                        label, bmf_sdk::Packet::generate_eof_packet());
                     task.set_timestamp(bmf_sdk::Timestamp::DONE);
                     return 0;
                 }
@@ -137,8 +146,10 @@ public:
                 nvjpegImage_t image = {0};
                 if (vf.device() == kCUDA) {
                     if (2 != vf.frame().nplanes()) {
-                        BMFLOG_NODE(BMF_INFO, node_id_) << "input video frame error. must be nv12 format has 2 planes. this has "
-                                                        << vf.frame().nplanes() << " planes.";
+                        BMFLOG_NODE(BMF_INFO, node_id_)
+                            << "input video frame error. must be nv12 format "
+                               "has 2 planes. this has "
+                            << vf.frame().nplanes() << " planes.";
                     }
 
                     if (!vf_rgb)
@@ -146,29 +157,34 @@ public:
                     Tensor t_img = vf_rgb.frame().plane(0);
                     hmp::img::yuv_to_rgb(t_img, vf.frame().data(), NV12, kNHWC);
                     if (!vf_yuv_from_rgb)
-                        vf_yuv_from_rgb = VideoFrame::make(width, height, H420, kCUDA);
+                        vf_yuv_from_rgb =
+                            VideoFrame::make(width, height, H420, kCUDA);
                     TensorList tl = vf_yuv_from_rgb.frame().data();
-                    hmp::img::rgb_to_yuv(tl, vf_rgb.frame().plane(0), H420, kNHWC);
+                    hmp::img::rgb_to_yuv(tl, vf_rgb.frame().plane(0), H420,
+                                         kNHWC);
 
                     vf_final_p = &vf_yuv_from_rgb;
                 } else {
-                    BMFLOG_NODE(BMF_INFO, node_id_) << "frame comes from cpu decoder.";
+                    BMFLOG_NODE(BMF_INFO, node_id_)
+                        << "frame comes from cpu decoder.";
                     if (format != hmp::PF_YUV420P) {
                         vf_rfmt = ffmpeg::reformat(vf, "yuv420p");
-                        BMFLOG_NODE(BMF_INFO, node_id_) << "encode: frame pixel format to yuv420p.";
+                        BMFLOG_NODE(BMF_INFO, node_id_)
+                            << "encode: frame pixel format to yuv420p.";
                         vf_final_p = &vf_rfmt;
                     } else {
                         vf_final_p = &vf;
                     }
-
                 }
 
                 if (m_encode_w && m_encode_h) {
                     if (!vf_resize)
-                        vf_resize = VideoFrame::make(m_encode_w, m_encode_h, H420, kCUDA);
+                        vf_resize = VideoFrame::make(m_encode_w, m_encode_h,
+                                                     H420, kCUDA);
                     TensorList tl_resize = vf_resize.frame().data();
                     vf_cuda = vf_final_p->cuda();
-                    hmp::img::yuv_resize(tl_resize, vf_cuda.frame().data(), H420);
+                    hmp::img::yuv_resize(tl_resize, vf_cuda.frame().data(),
+                                         H420);
 
                     vf_final_p = &vf_resize;
                     width = m_encode_w;
@@ -183,16 +199,21 @@ public:
 
                 size_t length = 0;
                 CHECK_NVJPEG(nvjpegEncodeYUV(m_handle, m_enc_state, m_enc_param,
-                                             &image, NVJPEG_CSS_420, width, height, m_stream),
+                                             &image, NVJPEG_CSS_420, width,
+                                             height, m_stream),
                              "nvjpeg encode error. ", -1, true);
-                CHECK_NVJPEG(nvjpegEncodeRetrieveBitstream(m_handle, m_enc_state, nullptr, &length, m_stream),
+                CHECK_NVJPEG(nvjpegEncodeRetrieveBitstream(m_handle,
+                                                           m_enc_state, nullptr,
+                                                           &length, m_stream),
                              "nvjpeg get bit stream data error. ", -1, true);
                 cudaStreamSynchronize(m_stream);
 
                 // init output
                 auto bmf_avpkt = BMFAVPacket(length);
                 auto data = bmf_avpkt.data_ptr();
-                CHECK_NVJPEG(nvjpegEncodeRetrieveBitstream(m_handle, m_enc_state, (uint8_t *) data, &length, m_stream),
+                CHECK_NVJPEG(nvjpegEncodeRetrieveBitstream(
+                                 m_handle, m_enc_state, (uint8_t *)data,
+                                 &length, m_stream),
                              "nvjpeg get bit stream data error. ", -1, true);
                 cudaStreamSynchronize(m_stream);
 
@@ -202,17 +223,21 @@ public:
                 task.fill_output_packet(label, packet);
 
                 auto end = std::chrono::steady_clock::now();
-                auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
-                BMFLOG_NODE(BMF_INFO, node_id_)  << "encode jpeg " << width << "x"
-                                                 << height << " to " << length << " bytes. using "
-                                                 << ((float) duration) * 0.001f << " ms";
+                auto duration =
+                    std::chrono::duration_cast<std::chrono::microseconds>(end -
+                                                                          start)
+                        .count();
+                BMFLOG_NODE(BMF_INFO, node_id_)
+                    << "encode jpeg " << width << "x" << height << " to "
+                    << length << " bytes. using " << ((float)duration) * 0.001f
+                    << " ms";
                 m_frame_count++;
             }
         }
         return 0;
     }
 
-private:
+  private:
     nvjpegHandle_t m_handle = nullptr;
     nvjpegEncoderParams_t m_enc_param = nullptr;
     nvjpegEncoderState_t m_enc_state = nullptr;
@@ -224,7 +249,7 @@ private:
     VideoFrame vf_resize;
     VideoFrame vf_rfmt;
     VideoFrame vf_cuda;
-    VideoFrame* vf_final_p;
+    VideoFrame *vf_final_p;
     int32_t m_encode_w = 0;
     int32_t m_encode_h = 0;
     int32_t m_encode_q = 99;

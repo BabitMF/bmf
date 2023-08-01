@@ -19,15 +19,12 @@
 
 #include <ffmpeg/ffmpeg_utils.h>
 
-namespace hmp{
-namespace ffmpeg{
+namespace hmp {
+namespace ffmpeg {
 
-
-
-struct VideoReader::Private
-{
+struct VideoReader::Private {
     std::shared_ptr<AVFormatContext> avfc;
-    std::shared_ptr<AVCodecContext>  avcc;
+    std::shared_ptr<AVCodecContext> avcc;
     std::shared_ptr<AVPacket> avpkt;
     std::shared_ptr<AVFrame> avframe;
 
@@ -36,15 +33,14 @@ struct VideoReader::Private
     int streamIndex;
 };
 
-
-VideoReader::VideoReader(const std::string &fn)
-{
+VideoReader::VideoReader(const std::string &fn) {
     self = std::make_shared<Private>();
 
     //
     AVFormatContext *avfc = avformat_alloc_context();
     HMP_REQUIRE(avfc, "FFMPEG: allocate AVFormatContext failed");
-    self->avfc = decltype(self->avfc)(avfc, std::ptr_fun(avformat_free_context));
+    self->avfc =
+        decltype(self->avfc)(avfc, std::ptr_fun(avformat_free_context));
 
     auto rc = avformat_open_input(&avfc, fn.c_str(), NULL, NULL);
     HMP_REQUIRE(rc == 0, "FFMPEG: open file {} failed", fn);
@@ -52,10 +48,10 @@ VideoReader::VideoReader(const std::string &fn)
     rc = avformat_find_stream_info(avfc, NULL);
     HMP_REQUIRE(rc == 0, "FFMPEG: failed to get stream info");
 
-    //using first video stream
+    // using first video stream
     AVStream *avs = 0;
-    for(int i = 0; i < avfc->nb_streams; i ++){
-        if(avfc->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO){
+    for (int i = 0; i < avfc->nb_streams; i++) {
+        if (avfc->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
             avs = avfc->streams[i];
             self->streamIndex = i;
             break;
@@ -65,13 +61,13 @@ VideoReader::VideoReader(const std::string &fn)
     self->pix_info = make_pixel_info(*avs->codecpar);
 
     auto avc = avcodec_find_decoder(avs->codecpar->codec_id);
-    HMP_REQUIRE(avc,
-     "FFMPEG: failed to find the codec with code_id {}", avs->codecpar->codec_id);
+    HMP_REQUIRE(avc, "FFMPEG: failed to find the codec with code_id {}",
+                avs->codecpar->codec_id);
 
     auto avcc = avcodec_alloc_context3(avc);
     HMP_REQUIRE(avcc, "FFMPEG: failed to alloc AVCodecContext");
-    self->avcc = std::shared_ptr<AVCodecContext>(avcc,
-         [](AVCodecContext *ptr){ avcodec_free_context(&ptr); });
+    self->avcc = std::shared_ptr<AVCodecContext>(
+        avcc, [](AVCodecContext *ptr) { avcodec_free_context(&ptr); });
 
     rc = avcodec_parameters_to_context(avcc, avs->codecpar);
     HMP_REQUIRE(rc == 0, "FFMPEG: failed to fill codec context");
@@ -79,36 +75,35 @@ VideoReader::VideoReader(const std::string &fn)
     rc = avcodec_open2(avcc, avc, NULL);
     HMP_REQUIRE(rc == 0, "FFMPEG: failed to open codec");
 
-    self->avpkt = std::shared_ptr<AVPacket>(av_packet_alloc(), 
-        [](AVPacket *pkt) { av_packet_free(&pkt); });
+    self->avpkt = std::shared_ptr<AVPacket>(
+        av_packet_alloc(), [](AVPacket *pkt) { av_packet_free(&pkt); });
 
-    self->avframe = std::shared_ptr<AVFrame>(av_frame_alloc(), 
-        [](AVFrame *frame) { av_frame_free(&frame); });
+    self->avframe = std::shared_ptr<AVFrame>(
+        av_frame_alloc(), [](AVFrame *frame) { av_frame_free(&frame); });
 
     HMP_REQUIRE(self->avpkt && self->avframe,
-         "FFMPEG: alloc AVPacket or AVFrame failed");
+                "FFMPEG: alloc AVPacket or AVFrame failed");
 }
 
-std::vector<Frame> VideoReader::read(int64_t nframe)
-{
+std::vector<Frame> VideoReader::read(int64_t nframe) {
     auto &pix_info = self->pix_info;
     std::vector<Frame> frames;
 
     int nread = 0;
-    while(nread < nframe){
-        auto rc = av_read_frame(self->avfc.get(), self->avpkt.get()); 
-        if(rc >= 0){
-            if(self->avpkt->stream_index == self->streamIndex){
+    while (nread < nframe) {
+        auto rc = av_read_frame(self->avfc.get(), self->avpkt.get());
+        if (rc >= 0) {
+            if (self->avpkt->stream_index == self->streamIndex) {
                 rc = avcodec_send_packet(self->avcc.get(), self->avpkt.get());
                 HMP_REQUIRE(rc >= 0, "FFMPEG: decode failed, rc={}", rc);
 
-                while(rc >= 0){
-                    rc = avcodec_receive_frame(self->avcc.get(), self->avframe.get());
-                    if(rc == AVERROR(EAGAIN) || rc == AVERROR_EOF){
+                while (rc >= 0) {
+                    rc = avcodec_receive_frame(self->avcc.get(),
+                                               self->avframe.get());
+                    if (rc == AVERROR(EAGAIN) || rc == AVERROR_EOF) {
                         break;
-                    }
-                    else{
-                        HMP_REQUIRE(rc >= 0 , "FFMPEG: receive frame failed");
+                    } else {
+                        HMP_REQUIRE(rc >= 0, "FFMPEG: receive frame failed");
                     }
 
                     auto f = from_video_frame(self->avframe.get());
@@ -120,9 +115,8 @@ std::vector<Frame> VideoReader::read(int64_t nframe)
             }
 
             av_packet_unref(self->avpkt.get());
-        }
-        else{
-            if(rc != AVERROR_EOF){
+        } else {
+            if (rc != AVERROR_EOF) {
                 HMP_WRN("ReadFrame failed with error {}", AVErr2Str(rc));
             }
             break;
@@ -132,11 +126,9 @@ std::vector<Frame> VideoReader::read(int64_t nframe)
     return frames;
 }
 
-
-struct VideoWriter::Private
-{
+struct VideoWriter::Private {
     std::shared_ptr<AVFormatContext> avfc;
-    std::shared_ptr<AVCodecContext>  avcc;
+    std::shared_ptr<AVCodecContext> avcc;
     std::shared_ptr<AVPacket> avpkt;
     AVStream *avs;
 
@@ -150,53 +142,55 @@ struct VideoWriter::Private
     int64_t ptsStep; //[FIXME] workaround to make it works
 };
 
-//https://libav.org/documentation/doxygen/master/encode__video_8c_source.html
-static void encodeVideo(AVFormatContext *avfc, AVCodecContext *avcc, AVFrame *avframe, AVPacket *avpkt)
-{
+// https://libav.org/documentation/doxygen/master/encode__video_8c_source.html
+static void encodeVideo(AVFormatContext *avfc, AVCodecContext *avcc,
+                        AVFrame *avframe, AVPacket *avpkt) {
     auto rc = avcodec_send_frame(avcc, avframe);
 
-    while (rc >= 0){
+    while (rc >= 0) {
         rc = avcodec_receive_packet(avcc, avpkt);
-        if (rc == AVERROR(EAGAIN) || rc == AVERROR_EOF){
+        if (rc == AVERROR(EAGAIN) || rc == AVERROR_EOF) {
             break;
         }
         HMP_REQUIRE(rc >= 0,
-                    "VideoWriter: receiving packet failed with error {}", AVErr2Str(rc));
+                    "VideoWriter: receiving packet failed with error {}",
+                    AVErr2Str(rc));
 
         rc = av_interleaved_write_frame(avfc, avpkt);
         av_packet_unref(avpkt);
-        HMP_REQUIRE(rc == 0,
-                    "VideoWriter: write packet failed with error {}", AVErr2Str(rc));
+        HMP_REQUIRE(rc == 0, "VideoWriter: write packet failed with error {}",
+                    AVErr2Str(rc));
     }
 }
 
-
-VideoWriter::VideoWriter(const std::string &fn, int width, int height, int fps, const PixelInfo &pix_info, int kbs)
-{
+VideoWriter::VideoWriter(const std::string &fn, int width, int height, int fps,
+                         const PixelInfo &pix_info, int kbs) {
     self = std::make_shared<Private>();
 
-    //h265
+// h265
 #if 0
     const std::string codec("libx265");
     const std::string codec_priv_key = "x265-params";
     const std::string codec_priv_value = "keyint=60:min-keyint=60:scenecut=0";
 #else
-    //h264 
+    // h264
     const std::string codec("libx264");
     const std::string codec_priv_key = "x264-params";
-    const std::string codec_priv_value = "keyint=60:min-keyint=60:scenecut=0:force-cfr=1";
+    const std::string codec_priv_value =
+        "keyint=60:min-keyint=60:scenecut=0:force-cfr=1";
 #endif
 
     self->streamIndex = 0;
     self->pts = 0;
     self->fps = fps;
-    self->ptsStep = 12800/fps;
+    self->ptsStep = 12800 / fps;
 
     //
     AVFormatContext *avfc = nullptr;
     avformat_alloc_output_context2(&avfc, 0, 0, fn.c_str());
     HMP_REQUIRE(avfc, "VideoWriter: allocate AVFormatContext failed");
-    self->avfc = decltype(self->avfc)(avfc, std::ptr_fun(avformat_free_context));
+    self->avfc =
+        decltype(self->avfc)(avfc, std::ptr_fun(avformat_free_context));
 
     AVStream *avs = avformat_new_stream(avfc, NULL);
     self->avs = avs;
@@ -206,12 +200,13 @@ VideoWriter::VideoWriter(const std::string &fn, int width, int height, int fps, 
 
     auto avcc = avcodec_alloc_context3(avc);
     HMP_REQUIRE(avcc, "VideoWriter: allocate avcodec context failed");
-    self->avcc = std::shared_ptr<AVCodecContext>(avcc,
-         [](AVCodecContext *ptr){ avcodec_free_context(&ptr); });
+    self->avcc = std::shared_ptr<AVCodecContext>(
+        avcc, [](AVCodecContext *ptr) { avcodec_free_context(&ptr); });
 
     av_opt_set(avcc->priv_data, "preset", "fast", 0);
     av_opt_set(avcc->priv_data, "", "fast", 0);
-    av_opt_set(avcc->priv_data, codec_priv_key.c_str(), codec_priv_value.c_str(), 0);
+    av_opt_set(avcc->priv_data, codec_priv_key.c_str(),
+               codec_priv_value.c_str(), 0);
     avcc->width = width;
     avcc->height = height;
     avcc->sample_aspect_ratio = av_make_q(1, 1);
@@ -219,7 +214,7 @@ VideoWriter::VideoWriter(const std::string &fn, int width, int height, int fps, 
     avcc->rc_buffer_size = kbs * 2000;
     avcc->rc_max_rate = kbs * 1500;
     avcc->rc_min_rate = kbs * 1000;
-    avcc->time_base =  AVRational{1, fps*2};
+    avcc->time_base = AVRational{1, fps * 2};
     avcc->framerate = AVRational{fps, 1};
     avcc->gop_size = 10;
     avcc->max_b_frames = 1;
@@ -232,70 +227,63 @@ VideoWriter::VideoWriter(const std::string &fn, int width, int height, int fps, 
     self->pix_info = pix_info;
 
     //
-    self->avpkt = std::shared_ptr<AVPacket>(av_packet_alloc(), 
-        [](AVPacket *pkt) { av_packet_free(&pkt); });
+    self->avpkt = std::shared_ptr<AVPacket>(
+        av_packet_alloc(), [](AVPacket *pkt) { av_packet_free(&pkt); });
     self->avpkt->stream_index = self->streamIndex;
     self->avpkt->duration = 1;
 
-    HMP_REQUIRE(self->avpkt,
-         "FFMPEG: alloc AVPacket or AVFrame failed");
+    HMP_REQUIRE(self->avpkt, "FFMPEG: alloc AVPacket or AVFrame failed");
 
     //
-    HMP_REQUIRE(avcodec_open2(avcc, avc, NULL) >= 0, "VideoWriter: open codec failed");
+    HMP_REQUIRE(avcodec_open2(avcc, avc, NULL) >= 0,
+                "VideoWriter: open codec failed");
     avcodec_parameters_from_context(avs->codecpar, avcc);
 
-    if(avfc->oformat->flags & AVFMT_GLOBALHEADER){
+    if (avfc->oformat->flags & AVFMT_GLOBALHEADER) {
         avfc->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
     }
 
-    if(!(avfc->oformat->flags & AVFMT_NOFILE)){
+    if (!(avfc->oformat->flags & AVFMT_NOFILE)) {
         auto rc = avio_open(&avfc->pb, fn.c_str(), AVIO_FLAG_WRITE);
         HMP_REQUIRE(rc >= 0, "VideoWriter: open file({}) to write failed", fn);
     }
 
-    AVDictionary* muxer_opts = NULL;
-    HMP_REQUIRE(
-        avformat_write_header(avfc, &muxer_opts) >= 0,
-        "VideoWriter: write header failed");
-
+    AVDictionary *muxer_opts = NULL;
+    HMP_REQUIRE(avformat_write_header(avfc, &muxer_opts) >= 0,
+                "VideoWriter: write header failed");
 }
 
-VideoWriter::~VideoWriter()
-{
-    //flush
+VideoWriter::~VideoWriter() {
+    // flush
     encodeVideo(self->avfc.get(), self->avcc.get(), NULL, self->avpkt.get());
     av_write_trailer(self->avfc.get());
 }
 
-
-void VideoWriter::write(const std::vector<Frame> &images)
-{
+void VideoWriter::write(const std::vector<Frame> &images) {
     HMP_REQUIRE(images[0].format() == self->pix_info.format(),
-         "VideoWriter: invalid pixel format, expect {}, got {}",
-         self->pix_info.format(), images[0].format());
-    HMP_REQUIRE(images[0].width() == self->avcc->width && 
-                images[0].height() == self->avcc->height,
-         "VideoWriter: invalid image size");
+                "VideoWriter: invalid pixel format, expect {}, got {}",
+                self->pix_info.format(), images[0].format());
+    HMP_REQUIRE(images[0].width() == self->avcc->width &&
+                    images[0].height() == self->avcc->height,
+                "VideoWriter: invalid image size");
     HMP_REQUIRE(images[0].plane(0).is_cpu(),
-        "VideoWriter: only support CPU images, got {}", 
-        stringfy(images[0].plane(0).device()));
+                "VideoWriter: only support CPU images, got {}",
+                stringfy(images[0].plane(0).device()));
 
     int batch = images.size();
-    for(int i = 0; i < batch; ++i){
+    for (int i = 0; i < batch; ++i) {
         //
 
-        auto avframe = std::shared_ptr<AVFrame>(
-            to_video_frame(images[i]),
-            [](AVFrame *avf){
-                    av_frame_free(&avf);
-            });
+        auto avframe =
+            std::shared_ptr<AVFrame>(to_video_frame(images[i]),
+                                     [](AVFrame *avf) { av_frame_free(&avf); });
 
         avframe->pts = self->pts;
         self->pts += self->ptsStep;
 
-        encodeVideo(self->avfc.get(), self->avcc.get(), avframe.get(), self->avpkt.get());
+        encodeVideo(self->avfc.get(), self->avcc.get(), avframe.get(),
+                    self->avpkt.get());
     }
 }
-
-
-}} //namespace hmp::ffmpeg
+}
+} // namespace hmp::ffmpeg

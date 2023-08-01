@@ -18,24 +18,20 @@
 #include <utility>
 #include <vector>
 
+namespace bmf_sdk {
+namespace {
 
-namespace bmf_sdk
-{
-namespace
-{
-
-struct LogBufferPrivate
-{
+struct LogBufferPrivate {
     std::mutex mutex;
     std::map<int, std::function<void(std::string const)>> log_cb_hooks;
     int log_cb_idx = 0;
     bool avlog_cb_set = false;
-    int avlog_level = 32; //AV_LOG_INFO
+    int avlog_level = 32; // AV_LOG_INFO
     std::map<std::string, short> log_levels;
-    void (*av_log_set_callback)(void (*callback)(void *, int, const char *, va_list)) = nullptr;
+    void (*av_log_set_callback)(void (*callback)(void *, int, const char *,
+                                                 va_list)) = nullptr;
 
-    LogBufferPrivate()
-    {
+    LogBufferPrivate() {
         log_levels = std::map<std::string, short>{
             {"quiet", -8},   // AV_LOG_QUIET   },
             {"panic", 0},    // AV_LOG_PANIC   },
@@ -49,8 +45,7 @@ struct LogBufferPrivate
         };
     }
 
-    static LogBufferPrivate& inst()
-    {
+    static LogBufferPrivate &inst() {
         static LogBufferPrivate p;
         return p;
     }
@@ -60,8 +55,7 @@ struct LogBufferPrivate
 
 } // namespace
 
-void LogBuffer::register_av_log_set_callback(void *func)
-{
+void LogBuffer::register_av_log_set_callback(void *func) {
     std::lock_guard l(self.mutex);
     self.av_log_set_callback = decltype(self.av_log_set_callback)(func);
 
@@ -70,8 +64,7 @@ void LogBuffer::register_av_log_set_callback(void *func)
     }
 }
 
-int LogBuffer::set_cb_hook(std::function<void(std::string const)> cb)
-{
+int LogBuffer::set_cb_hook(std::function<void(std::string const)> cb) {
     std::lock_guard<std::mutex> _(self.mutex);
     if (!self.avlog_cb_set)
         set_av_log_callback();
@@ -79,14 +72,12 @@ int LogBuffer::set_cb_hook(std::function<void(std::string const)> cb)
     return self.log_cb_idx++;
 }
 
-void LogBuffer::remove_cb_hook(int idx)
-{
+void LogBuffer::remove_cb_hook(int idx) {
     std::lock_guard<std::mutex> _(self.mutex);
     self.log_cb_hooks.erase(idx);
 }
 
-void LogBuffer::lb_callback(void *ptr, int level, const char *fmt, va_list vl)
-{
+void LogBuffer::lb_callback(void *ptr, int level, const char *fmt, va_list vl) {
     std::lock_guard<std::mutex> _(self.mutex);
     if (level > self.avlog_level)
         return;
@@ -98,49 +89,37 @@ void LogBuffer::lb_callback(void *ptr, int level, const char *fmt, va_list vl)
         cb.second(msg);
 }
 
-void LogBuffer::set_av_log_callback()
-{
-    //std::lock_guard<std::mutex> _(self.mutex);
-    if (!self.avlog_cb_set && self.av_log_set_callback != nullptr)
-    {
+void LogBuffer::set_av_log_callback() {
+    // std::lock_guard<std::mutex> _(self.mutex);
+    if (!self.avlog_cb_set && self.av_log_set_callback != nullptr) {
         self.av_log_set_callback(lb_callback);
         self.avlog_cb_set = true;
     }
 }
 
-LogBuffer::LogBuffer(std::vector<std::string> &log_buffer)
-{
-    hook_idx = set_cb_hook([&log_buffer](std::string const log) -> void
-                           { log_buffer.push_back(log); });
+LogBuffer::LogBuffer(std::vector<std::string> &log_buffer) {
+    hook_idx = set_cb_hook([&log_buffer](std::string const log) -> void {
+        log_buffer.push_back(log);
+    });
 }
 
-LogBuffer::LogBuffer(std::function<void(const std::string)> log_callback, std::string level)
-{
+LogBuffer::LogBuffer(std::function<void(const std::string)> log_callback,
+                     std::string level) {
     if (self.log_levels.count(level) > 0)
         self.avlog_level = self.log_levels[level];
     hook_idx = set_cb_hook(log_callback);
 }
 
-void LogBuffer::close()
-{
-    remove_cb_hook(hook_idx);
-}
+void LogBuffer::close() { remove_cb_hook(hook_idx); }
 
-
-bool LogBuffer::avlog_cb_set()
-{
+bool LogBuffer::avlog_cb_set() {
     std::lock_guard<std::mutex> _(self.mutex);
     return self.avlog_cb_set;
 }
 
-
-int LogBuffer::infer_level(const std::string &level_name)
-{
+int LogBuffer::infer_level(const std::string &level_name) {
     return self.log_levels[level_name];
 }
 
-LogBuffer::~LogBuffer()
-{
-    close();
-}
-} //namespace bmf_sdk
+LogBuffer::~LogBuffer() { close(); }
+} // namespace bmf_sdk

@@ -32,7 +32,7 @@ TEST(task, task) {
     EXPECT_EQ(task.get_input_stream_ids().size(), 2);
     EXPECT_EQ(task.get_output_stream_ids().size(), 1);
 
-    //TEST input stream
+    // TEST input stream
     {
         Packet pkt0(0);
         pkt0.set_timestamp(9);
@@ -41,26 +41,25 @@ TEST(task, task) {
         Packet pkt1(0);
         pkt1.set_timestamp(9);
         task.fill_input_packet(1, pkt1);
-        
+
         Packet pkt_output;
-        std::cout << task.pop_packet_from_input_queue(0, pkt_output) << std::endl;
+        std::cout << task.pop_packet_from_input_queue(0, pkt_output)
+                  << std::endl;
         EXPECT_EQ(pkt_output.timestamp(), 9);
-        
+
         PacketQueueMap input_stream_map = task.get_inputs();
         EXPECT_EQ(input_stream_map[0]->size(), 0);
         EXPECT_EQ(input_stream_map[1]->size(), 1);
-
     }
-    //TEST output stream
+    // TEST output stream
     {
         Packet pkt(0);
         pkt.set_timestamp(88);
-        task.fill_output_packet(0,pkt);
+        task.fill_output_packet(0, pkt);
         Packet pkt_output;
         task.pop_packet_from_out_queue(0, pkt_output);
         EXPECT_EQ(pkt_output.timestamp(), 88);
         PacketQueueMap output_stream_map = task.get_outputs();
         EXPECT_EQ(output_stream_map[0]->size(), 0);
     }
-
 }

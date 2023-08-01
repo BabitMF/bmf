@@ -21,6 +21,7 @@ USE_BMF_ENGINE_NS
 USE_BMF_SDK_NS
 TEST(scheduler, start) {
     SchedulerCallBack callback;
-    std::shared_ptr<Scheduler> scheduler = std::make_shared<Scheduler>(callback, 1);
-//    scheduler->start();
+    std::shared_ptr<Scheduler> scheduler =
+        std::make_shared<Scheduler>(callback, 1);
+    //    scheduler->start();
 }

@@ -1,6 +1,5 @@
 #include "../include/clock_module.h"
 
-
 #include <unistd.h>
 
 #include <string>
@@ -32,7 +31,8 @@ ClockModule::ClockModule(int node_id, JsonParam option) {
 int ClockModule::process(Task &task) {
     auto now = std::chrono::high_resolution_clock::now();
 
-    if (lst_ts_.time_since_epoch() == std::chrono::high_resolution_clock::duration::zero()) {
+    if (lst_ts_.time_since_epoch() ==
+        std::chrono::high_resolution_clock::duration::zero()) {
         lst_ts_ = now;
     } else if (now - lst_ts_ < tick_) {
         // Can be 10us quicker, in order to decrease delay.
@@ -43,14 +43,13 @@ int ClockModule::process(Task &task) {
 
     lst_ts_ += tick_;
     Packet pkt(0);
-    pkt.set_timestamp((fps_tick_ * frm_cnt_++).to_int_based(time_base_) * 1000000);
-    //pkt.set_timestamp((fps_tick_ * frm_cnt_++).to_int_based(time_base_));
+    pkt.set_timestamp((fps_tick_ * frm_cnt_++).to_int_based(time_base_) *
+                      1000000);
+    // pkt.set_timestamp((fps_tick_ * frm_cnt_++).to_int_based(time_base_));
     task.fill_output_packet(0, pkt);
     return 0;
 }
 
-bool ClockModule::is_hungry(int input_stream_id) {
-    return true;
-}
+bool ClockModule::is_hungry(int input_stream_id) { return true; }
 
 REGISTER_MODULE_CLASS(ClockModule)

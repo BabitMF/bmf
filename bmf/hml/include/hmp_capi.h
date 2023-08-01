@@ -178,7 +178,7 @@ HMP_API hmp_Frame hmp_frame_clone(const hmp_Frame frame);
 HMP_API hmp_Frame hmp_frame_crop(const hmp_Frame frame, int left, int top,
                                  int width, int height);
 HMP_API hmp_Frame hmp_frame_reformat(const hmp_Frame frame,
-                             const hmp_PixelInfo pix_info);
+                                     const hmp_PixelInfo pix_info);
 HMP_API const char *hmp_frame_stringfy(const hmp_Frame frame, int *size);
 
 #ifdef __cplusplus

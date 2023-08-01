@@ -16,53 +16,51 @@
 #include <iostream>
 #include <hmp/core/tensor_info.h>
 
-namespace hmp{
+namespace hmp {
 
-
-TensorInfo::TensorInfo(const Buffer &buffer, const SizeArray &shape, int64_t bufferOffset)
-{
+TensorInfo::TensorInfo(const Buffer &buffer, const SizeArray &shape,
+                       int64_t bufferOffset) {
     buffer_ = buffer;
     setSizesAndStrides(shape, bufferOffset);
 }
 
-TensorInfo::TensorInfo(const Buffer &buffer, const SizeArray &shape, const SizeArray &strides, int64_t bufferOffset)
-{
+TensorInfo::TensorInfo(const Buffer &buffer, const SizeArray &shape,
+                       const SizeArray &strides, int64_t bufferOffset) {
     buffer_ = buffer;
     setSizesAndStrides(shape, strides, bufferOffset);
 }
 
-
-void TensorInfo::setSizesAndStrides(const SizeArray &shape, int64_t bufferOffset)
-{
+void TensorInfo::setSizesAndStrides(const SizeArray &shape,
+                                    int64_t bufferOffset) {
     auto strides = calcContiguousStrides(shape);
     setSizesAndStrides(shape, strides, bufferOffset);
 }
 
-void TensorInfo::setSizesAndStrides(const SizeArray &shape, const SizeArray &strides, int64_t bufferOffset)
-{
+void TensorInfo::setSizesAndStrides(const SizeArray &shape,
+                                    const SizeArray &strides,
+                                    int64_t bufferOffset) {
     HMP_REQUIRE(shape.size() == strides.size(),
-         "Invalid size of shape({}) and strides({}) are not matched", shape.size(), strides.size());
+                "Invalid size of shape({}) and strides({}) are not matched",
+                shape.size(), strides.size());
     HMP_REQUIRE(bufferOffset >= 0, "Invalid bufferOffset = {}", bufferOffset);
     HMP_REQUIRE(buffer_.defined(), "Buffer is not defined");
 
-    //NOTE: we won't check if shape and strides are out of range
+    // NOTE: we won't check if shape and strides are out of range
     bufferOffset_ = bufferOffset;
     shape_ = shape;
     strides_ = strides;
     nitems_ = calcNumel(shape);
 }
 
-
-bool TensorInfo::is_contiguous() const
-{
+bool TensorInfo::is_contiguous() const {
     auto cStrides = calcContiguousStrides(shape_);
-    for(size_t i = 0; i < cStrides.size(); ++i){
-        if(cStrides[i] != strides_[i]){
+    for (size_t i = 0; i < cStrides.size(); ++i) {
+        if (cStrides[i] != strides_[i]) {
             return false;
         }
     }
-    
+
     return true;
 }
 
-} //namespace
+} // namespace

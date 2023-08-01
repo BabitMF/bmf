@@ -34,24 +34,21 @@ using namespace hmp;
 
 namespace {
 
-
 const static int ResizeBatch = 100;
 
-
-template<DeviceType device, ScalarType dtype, ImageFilterMode mode, ChannelFormat cformat>
-void BM_img_resize(benchmark::State &state)
-{
+template <DeviceType device, ScalarType dtype, ImageFilterMode mode,
+          ChannelFormat cformat>
+void BM_img_resize(benchmark::State &state) {
     auto swidth = state.range(0);
     auto sheight = state.range(1);
     auto dwidth = state.range(2);
     auto dheight = state.range(3);
     auto options = TensorOptions(device).dtype(dtype);
     SizeArray sshape, dshape;
-    if(cformat == kNHWC){
+    if (cformat == kNHWC) {
         sshape = {ResizeBatch, sheight, swidth, 3};
         dshape = {ResizeBatch, dheight, dwidth, 3};
-    }
-    else{
+    } else {
         sshape = {ResizeBatch, 3, sheight, swidth};
         dshape = {ResizeBatch, 3, dheight, dwidth};
     }
@@ -60,10 +57,9 @@ void BM_img_resize(benchmark::State &state)
     auto dst = empty(dshape, options);
 
     auto timer = create_timer(device);
-    for(auto _ : state){
+    for (auto _ : state) {
         timer.start();
-        benchmark::DoNotOptimize(
-            img::resize(dst, src, mode, cformat));
+        benchmark::DoNotOptimize(img::resize(dst, src, mode, cformat));
         timer.stop();
         current_stream(device)->synchronize();
 
@@ -71,33 +67,38 @@ void BM_img_resize(benchmark::State &state)
     }
 }
 
-
 BENCHMARK_TEMPLATE(BM_img_resize, kCPU, kUInt8, kBicubic, kNHWC)
-    ->Args({1280, 720, 1920, 1080})->Unit(benchmark::kMicrosecond);
+    ->Args({1280, 720, 1920, 1080})
+    ->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE(BM_img_resize, kCPU, kUInt8, kBicubic, kNCHW)
-    ->Args({1280, 720, 1920, 1080})->Unit(benchmark::kMicrosecond);
+    ->Args({1280, 720, 1920, 1080})
+    ->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE(BM_img_resize, kCPU, kUInt8, kBilinear, kNHWC)
-    ->Args({1280, 720, 1920, 1080})->Unit(benchmark::kMicrosecond);
+    ->Args({1280, 720, 1920, 1080})
+    ->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE(BM_img_resize, kCPU, kUInt8, kBilinear, kNCHW)
-    ->Args({1280, 720, 1920, 1080})->Unit(benchmark::kMicrosecond);
+    ->Args({1280, 720, 1920, 1080})
+    ->Unit(benchmark::kMicrosecond);
 
 #ifdef HMP_ENABLE_CUDA
 BENCHMARK_TEMPLATE(BM_img_resize, kCUDA, kUInt8, kBicubic, kNCHW)
-    ->Args({1280, 720, 1920, 1080})->Unit(benchmark::kMicrosecond);
+    ->Args({1280, 720, 1920, 1080})
+    ->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE(BM_img_resize, kCUDA, kUInt8, kBicubic, kNHWC)
-    ->Args({1280, 720, 1920, 1080})->Unit(benchmark::kMicrosecond);
+    ->Args({1280, 720, 1920, 1080})
+    ->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE(BM_img_resize, kCUDA, kUInt8, kBilinear, kNCHW)
-    ->Args({1280, 720, 1920, 1080})->Unit(benchmark::kMicrosecond);
+    ->Args({1280, 720, 1920, 1080})
+    ->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE(BM_img_resize, kCUDA, kUInt8, kBilinear, kNHWC)
-    ->Args({1280, 720, 1920, 1080})->Unit(benchmark::kMicrosecond);
+    ->Args({1280, 720, 1920, 1080})
+    ->Unit(benchmark::kMicrosecond);
 #endif
 
 #ifdef HMP_ENABLE_OPENCV
 
-
-template<DeviceType device, int format, int mode>
-void BM_cv_resize(benchmark::State &state)
-{
+template <DeviceType device, int format, int mode>
+void BM_cv_resize(benchmark::State &state) {
     auto swidth = state.range(0);
     auto sheight = state.range(1);
     auto dwidth = state.range(2);
@@ -107,25 +108,26 @@ void BM_cv_resize(benchmark::State &state)
     cv::Mat dst;
 
 #ifdef HMP_ENABLE_CUDA
-    //default stream: call_resize_cubic_glob
-    //        other : call_resize_cubic_tex 
-    auto stream = create_stream(kCUDA); 
+    // default stream: call_resize_cubic_glob
+    //        other : call_resize_cubic_tex
+    auto stream = create_stream(kCUDA);
     cv::cuda::GpuMat gpu_src;
     cv::cuda::GpuMat gpu_dst;
-    auto cv_stream = cv::cuda::StreamAccessor::wrapStream((cudaStream_t)stream.handle());
+    auto cv_stream =
+        cv::cuda::StreamAccessor::wrapStream((cudaStream_t)stream.handle());
     gpu_src.upload(src);
 #endif
 
     auto timer = create_timer(device);
-    for(auto _ : state){
+    for (auto _ : state) {
         timer.start();
-        for(int i = 0; i < ResizeBatch; ++i){
-            if(device == kCPU){
+        for (int i = 0; i < ResizeBatch; ++i) {
+            if (device == kCPU) {
                 cv::resize(src, dst, cv::Size(dwidth, dheight), 0, 0, mode);
-            }
-            else{
+            } else {
 #ifdef HMP_ENABLE_CUDA
-                cv::cuda::resize(gpu_src, gpu_dst, cv::Size(dwidth, dheight), 0, 0, mode, cv_stream);
+                cv::cuda::resize(gpu_src, gpu_dst, cv::Size(dwidth, dheight), 0,
+                                 0, mode, cv_stream);
 #endif
             }
         }
@@ -136,21 +138,22 @@ void BM_cv_resize(benchmark::State &state)
     }
 }
 
-
 BENCHMARK_TEMPLATE(BM_cv_resize, kCPU, CV_8UC3, cv::INTER_CUBIC)
-    ->Args({1280, 720, 1920, 1080})->Unit(benchmark::kMicrosecond);
+    ->Args({1280, 720, 1920, 1080})
+    ->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE(BM_cv_resize, kCPU, CV_8UC3, cv::INTER_LINEAR)
-    ->Args({1280, 720, 1920, 1080})->Unit(benchmark::kMicrosecond);
+    ->Args({1280, 720, 1920, 1080})
+    ->Unit(benchmark::kMicrosecond);
 
 #ifdef HMP_ENABLE_CUDA
 BENCHMARK_TEMPLATE(BM_cv_resize, kCUDA, CV_8UC3, cv::INTER_CUBIC)
-    ->Args({1280, 720, 1920, 1080})->Unit(benchmark::kMicrosecond);
+    ->Args({1280, 720, 1920, 1080})
+    ->Unit(benchmark::kMicrosecond);
 BENCHMARK_TEMPLATE(BM_cv_resize, kCUDA, CV_8UC3, cv::INTER_LINEAR)
-    ->Args({1280, 720, 1920, 1080})->Unit(benchmark::kMicrosecond);
+    ->Args({1280, 720, 1920, 1080})
+    ->Unit(benchmark::kMicrosecond);
 #endif
 
-
 #endif
 
-
-} //namespace
+} // namespace

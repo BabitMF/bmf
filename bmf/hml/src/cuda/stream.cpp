@@ -22,27 +22,26 @@
 #include <thread>
 #include <deque>
 
-namespace hmp{
-namespace cuda{
+namespace hmp {
+namespace cuda {
 
-class CUDAStreamCache
-{
+class CUDAStreamCache {
     std::mutex mutex_;
     std::deque<cudaStream_t> streamCache_[MaxDevices];
-public:
-    cudaStream_t create(int device)
-    {
+
+  public:
+    cudaStream_t create(int device) {
         std::lock_guard<std::mutex> l(mutex_);
         HMP_REQUIRE(device < MaxDevices,
-             "CUDAStreamCache: device index({}) is out of range {}", device, MaxDevices);
+                    "CUDAStreamCache: device index({}) is out of range {}",
+                    device, MaxDevices);
 
         cudaStream_t stream = 0;
         auto &cache = streamCache_[device];
-        if(!cache.empty()){
+        if (!cache.empty()) {
             stream = cache.back();
             cache.pop_back();
-        }
-        else{
+        } else {
             int oldDevice;
             HMP_CUDA_CHECK(cudaGetDevice(&oldDevice));
             HMP_CUDA_CHECK(cudaSetDevice(device));
@@ -53,10 +52,10 @@ public:
         return stream;
     }
 
-    void destroy(cudaStream_t stream, int device)
-    {
+    void destroy(cudaStream_t stream, int device) {
         HMP_REQUIRE(device < MaxDevices,
-             "CUDAStreamCache: device index({}) is out of range {}", device, MaxDevices);
+                    "CUDAStreamCache: device index({}) is out of range {}",
+                    device, MaxDevices);
         HMP_CUDA_CHECK(cudaStreamSynchronize(stream));
         //
         std::lock_guard<std::mutex> l(mutex_);
@@ -64,113 +63,96 @@ public:
     }
 };
 
-
-static CUDAStreamCache &streamCache()
-{
+static CUDAStreamCache &streamCache() {
     static CUDAStreamCache scache;
     return scache;
 }
 
-
-
-class CUDAStream : public StreamInterface
-{
+class CUDAStream : public StreamInterface {
     Device device_;
     cudaStream_t stream_;
     bool own_;
-public:
-    CUDAStream() : own_(false), stream_(0) //default stream
+
+  public:
+    CUDAStream()
+        : own_(false), stream_(0) // default stream
     {
         auto device = current_device(kCUDA);
         HMP_REQUIRE(device, "No CUDA device have been selected");
         device_ = device.value();
     }
 
-    CUDAStream(cudaStream_t stream, bool own) : own_(own), stream_(stream) //default stream
+    CUDAStream(cudaStream_t stream, bool own)
+        : own_(own), stream_(stream) // default stream
     {
         auto device = current_device(kCUDA);
         HMP_REQUIRE(device, "No CUDA device have been selected");
         device_ = device.value();
     }
 
-    CUDAStream(uint64_t flags)
-        : CUDAStream()
-    {
+    CUDAStream(uint64_t flags) : CUDAStream() {
         stream_ = streamCache().create(device_.index());
         own_ = true;
     }
 
-    ~CUDAStream()
-    {
-        //do not destroy stream, as it may used in allocator
-        if(stream_ != 0 && own_){
+    ~CUDAStream() {
+        // do not destroy stream, as it may used in allocator
+        if (stream_ != 0 && own_) {
             streamCache().destroy(stream_, device_.index());
         }
     }
 
-    const Device &device() const override
-    {
-        return device_;
-    }
+    const Device &device() const override { return device_; }
 
-    StreamHandle handle() const override
-    {
-        static_assert(sizeof(StreamHandle) >= sizeof(cudaStream_t), "invalid size of cudaStream_t");
+    StreamHandle handle() const override {
+        static_assert(sizeof(StreamHandle) >= sizeof(cudaStream_t),
+                      "invalid size of cudaStream_t");
         return reinterpret_cast<StreamHandle>(stream_);
     }
 
-    bool query() override
-    {
+    bool query() override {
         auto rc = cudaStreamQuery(stream_);
         return rc == cudaSuccess;
     }
 
-    virtual void synchronize() override
-    {
+    virtual void synchronize() override {
         HMP_CUDA_CHECK(cudaStreamSynchronize(stream_));
     }
-}; 
+};
 
-
-HMP_API Stream wrap_stream(StreamHandle stream, bool own)
-{
+HMP_API Stream wrap_stream(StreamHandle stream, bool own) {
     return Stream(makeRefPtr<CUDAStream>(cudaStream_t(stream), own));
 }
 
 //
-static thread_local RefPtr<CUDAStream> sCurrentStream; 
+static thread_local RefPtr<CUDAStream> sCurrentStream;
 
-class CUDAStreamManager : public impl::StreamManager
-{
-public:
-    void setCurrent(const Stream& stream) override
-    {
+class CUDAStreamManager : public impl::StreamManager {
+  public:
+    void setCurrent(const Stream &stream) override {
         auto ref = stream.unsafeGet();
-        auto cudaStream = dynamic_cast<CUDAStream*>(ref.get());
+        auto cudaStream = dynamic_cast<CUDAStream *>(ref.get());
         HMP_REQUIRE(cudaStream, "Invalid CUDA stream");
 
         sCurrentStream = ref.cast<CUDAStream>();
     }
 
-    optional<Stream> getCurrent() const override
-    {
-        if(!sCurrentStream){
-            return Stream(makeRefPtr<CUDAStream>()); //get default stream by default
-        }
-        else{
+    optional<Stream> getCurrent() const override {
+        if (!sCurrentStream) {
+            return Stream(
+                makeRefPtr<CUDAStream>()); // get default stream by default
+        } else {
             return Stream(sCurrentStream);
         }
     }
 
-    Stream create(uint64_t flags = 0) override
-    {
+    Stream create(uint64_t flags = 0) override {
         return Stream(makeRefPtr<CUDAStream>(flags));
     }
-
 };
 
 static CUDAStreamManager sCUDAStreamManager;
 
 HMP_REGISTER_STREAM_MANAGER(kCUDA, &sCUDAStreamManager);
-
-}} //namesapce
+}
+} // namesapce

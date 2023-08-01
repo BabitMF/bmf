@@ -80,7 +80,7 @@ class BMF_API Exception : public std::exception {
     int code;         ///< error code @see BMFStatus
     std::string err;  ///< error description
     std::string func; ///< function name. Available only when the compiler
-                      ///supports getting it
+                      /// supports getting it
     std::string file; ///< source file name where the error has occurred
     int line; ///< line number in the source file where the error has occurred
 };

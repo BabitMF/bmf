@@ -4,7 +4,7 @@
 
 USE_BMF_SDK_NS
 
-int main(int argc, char ** argv) {
+int main(int argc, char **argv) {
 #ifndef NO_TRACE
     // Perform log formatting to tracelog without including trace tool's
     // additional information e.g. on buffer capacity etc

@@ -13,8 +13,11 @@
  */
 #include "audio_resampler.h"
 
-AudioResampler::AudioResampler(int input_format, int output_format, int input_channel_layout, int output_channel_layout,
-                               int input_sample_rate, int output_sample_rate, AVRational input_time_base,
+AudioResampler::AudioResampler(int input_format, int output_format,
+                               int input_channel_layout,
+                               int output_channel_layout, int input_sample_rate,
+                               int output_sample_rate,
+                               AVRational input_time_base,
                                AVRational output_time_base) {
     int ret;
     input_format_ = input_format;
@@ -36,7 +39,7 @@ AudioResampler::AudioResampler(int input_format, int output_format, int input_ch
     av_opt_set_int(swr_ctx_, "in_sample_rate", input_sample_rate, 0);
     av_opt_set_int(swr_ctx_, "out_sample_rate", output_sample_rate, 0);
     ret = swr_init(swr_ctx_);
-    ratio_ = (double) output_sample_rate / input_sample_rate;
+    ratio_ = (double)output_sample_rate / input_sample_rate;
     if (ret < 0)
         BMFLOG(BMF_ERROR) << "init swr failed:" << ret;
     return;
@@ -72,35 +75,41 @@ int AudioResampler::resample(AVFrame *insamples, AVFrame *&outsamples) {
         return 0;
     }
 
-
     // get output samples pts
     if (insamples) {
         if (insamples->pts != AV_NOPTS_VALUE && input_time_base_.num != -1) {
 
-            //translate pts to timestamps which is in 1/(in_sample_rate * out_sample_rate) units.
-            int64_t inpts = av_rescale(insamples->pts, input_time_base_.num *
-                                                       output_sample_rate_ * insamples->sample_rate,
-                                       input_time_base_.den);
-            // get outpts whose timestamps is 1/(in_sample_rate * out_sample_rate)
+            // translate pts to timestamps which is in 1/(in_sample_rate *
+            // out_sample_rate) units.
+            int64_t inpts = av_rescale(
+                insamples->pts, input_time_base_.num * output_sample_rate_ *
+                                    insamples->sample_rate,
+                input_time_base_.den);
+            // get outpts whose timestamps is 1/(in_sample_rate *
+            // out_sample_rate)
             int64_t outpts = swr_next_pts(swr_ctx_, inpts);
 
             // translate pts to timestamps is output_time_base;
-            outsamples->pts = av_rescale(outpts, output_time_base_.den,
-                                         output_time_base_.num * output_sample_rate_ * insamples->sample_rate);
+            outsamples->pts =
+                av_rescale(outpts, output_time_base_.den,
+                           output_time_base_.num * output_sample_rate_ *
+                               insamples->sample_rate);
         } else {
             outsamples->pts = AV_NOPTS_VALUE;
         }
     } else {
         int64_t outpts = swr_next_pts(swr_ctx_, INT64_MIN);
-        outsamples->pts = av_rescale(outpts, output_time_base_.den,
-                                     output_time_base_.num * output_sample_rate_ * input_sample_rate_);
+        outsamples->pts = av_rescale(
+            outpts, output_time_base_.den,
+            output_time_base_.num * output_sample_rate_ * input_sample_rate_);
     }
 
     uint8_t **input_data = NULL;
     if (insamples != NULL) {
-        input_data = (uint8_t **) insamples->extended_data;
+        input_data = (uint8_t **)insamples->extended_data;
     }
-    n_out = swr_convert(swr_ctx_, outsamples->extended_data, n_out, (const uint8_t**)input_data, n_in);
+    n_out = swr_convert(swr_ctx_, outsamples->extended_data, n_out,
+                        (const uint8_t **)input_data, n_in);
     if (n_out <= 0) {
         return n_out;
     }

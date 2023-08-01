@@ -30,8 +30,8 @@ void CopyModule::process(Task &task) {
             // Get packet data
             // Here we should know the data type in packet
 
-//            const VideoFrame &frame = pkt.get_data<VideoFrame>();
-//            const ndarray &frame = extract<ndarray>(pkt.data_);
+            //            const VideoFrame &frame = pkt.get_data<VideoFrame>();
+            //            const ndarray &frame = extract<ndarray>(pkt.data_);
             const ndarray &frame = pkt.get_data<ndarray>();
             // Create output frame
             ndarray new_frame = frame.copy();

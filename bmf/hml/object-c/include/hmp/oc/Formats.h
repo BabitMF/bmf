@@ -32,7 +32,7 @@ typedef enum _HmpColorPrimaries {
         4, ///< also FCC Title 47 Code of Federal Regulations 73.682 (a)(20)
 
     CP_BT470BG = 5, ///< also ITU-R BT601-6 625 / ITU-R BT1358 625 / ITU-R
-                    ///BT1700 625 PAL & SECAM
+                    /// BT1700 625 PAL & SECAM
     CP_SMPTE170M =
         6, ///< also ITU-R BT601-6 525 / ITU-R BT1358 525 / ITU-R BT1700 NTSC
     CP_SMPTE240M = 7, ///< functionally identical to above
@@ -60,7 +60,7 @@ typedef enum _HmpColorTransferCharacteristic {
     CTC_GAMMA22 = 4,   ///< also ITU-R BT470M / ITU-R BT1700 625 PAL & SECAM
     CTC_GAMMA28 = 5,   ///< also ITU-R BT470BG
     CTC_SMPTE170M = 6, ///< also ITU-R BT601-6 525 or 625 / ITU-R BT1358 525 or
-                       ///625 / ITU-R BT1700 NTSC
+                       /// 625 / ITU-R BT1700 NTSC
     CTC_SMPTE240M = 7,
     CTC_LINEAR = 8,    ///< "Linear transfer characteristics"
     CTC_LOG = 9,       ///< "Logarithmic transfer characteristic (100:1 range)"
@@ -93,7 +93,7 @@ typedef enum _HmpColorSpace {
     CS_RESERVED = 3,
     CS_FCC = 4,     ///< FCC Title 47 Code of Federal Regulations 73.682 (a)(20)
     CS_BT470BG = 5, ///< also ITU-R BT601-6 625 / ITU-R BT1358 625 / ITU-R
-                    ///BT1700 625 PAL & SECAM / IEC 61966-2-4 xvYCC601
+                    /// BT1700 625 PAL & SECAM / IEC 61966-2-4 xvYCC601
     CS_SMPTE170M =
         6, ///< also ITU-R BT601-6 525 / ITU-R BT1358 525 / ITU-R BT1700 NTSC
     CS_SMPTE240M = 7, ///< functionally identical to above
@@ -131,8 +131,8 @@ typedef enum _HmpPixelFormat {
     PF_YUV444P =
         5, ///< planar YUV 4:4:4, 24bpp, (1 Cr & Cb sample per 1x1 Y samples)
     PF_NV12 = 23, ///< planar YUV 4:2:0, 12bpp, 1 plane for Y and 1 plane for
-                  ///the UV components, which are interleaved (first byte U and
-                  ///the following byte V)
+                  /// the UV components, which are interleaved (first byte U and
+    /// the following byte V)
     PF_NV21 = 24, ///< as above, but U and V bytes are swapped
 
     PF_GRAY8 = 8, ///<        Y        ,  8bpp
@@ -148,14 +148,14 @@ typedef enum _HmpPixelFormat {
     PF_YUVA420P = 33, ///< planar YUV 4:2:0, 20bpp, (1 Cr & Cb sample per 2x2 Y
                       ///& A samples)
     PF_RGB48 = 35,    ///< packed RGB 16:16:16, 48bpp, 16R, 16G, 16B, the 2-byte
-                   ///value for each R/G/B component is stored as little-endian
+    /// value for each R/G/B component is stored as little-endian
     PF_YA8 = 58,     ///< 8 bits gray, 8 bits alpha
     PF_RGBA64 = 107, ///< packed RGBA 16:16:16:16, 64bpp, 16R, 16G, 16B, 16A,
-                     ///the 2-byte value for each R/G/B/A component is stored as
-                     ///little-endian
+    /// the 2-byte value for each R/G/B/A component is stored as
+    /// little-endian
 
     PF_P010LE = 161, ///< like NV12, with 10bpp per component, data in the high
-                     ///bits, zeros in the low bits, little-endian
+                     /// bits, zeros in the low bits, little-endian
     PF_P016LE = 172, ///< like NV12, with 16bpp per component, little-endian
 } HmpPixelFormat;
 

@@ -19,9 +19,7 @@
 
 USE_BMF_SDK_NS
 
-void test_bmf_error() {
-    BMF_Error(-2, "some error happen");
-}
+void test_bmf_error() { BMF_Error(-2, "some error happen"); }
 
 void test_bmf_error_(std::string error_str) {
     BMF_Error_(-1, "some error happen %s\n", error_str.c_str());
@@ -31,15 +29,13 @@ TEST(exception, simple_exception) {
     Exception e;
     try {
         test_bmf_error();
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
         std::cout << e.what() << std::endl;
     }
     try {
         std::string test_error_info = "hello_world";
         test_bmf_error_(test_error_info);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
         std::cout << e.what() << std::endl;
     }
 }

@@ -1,7 +1,8 @@
 #pragma once
 
 #ifdef __APPLE__
-#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && __IPHONE_OS_VERSION_MIN_REQUIRED < 130000
+#if defined(__IPHONE_OS_VERSION_MIN_REQUIRED) &&                               \
+    __IPHONE_OS_VERSION_MIN_REQUIRED < 130000
 #define CUSTOM_FILESYSTEM
 #endif //__IPHONE_OS_VERSION_MIN_REQUIRED
 #endif //__APPLE__
@@ -36,7 +37,9 @@ class path {
 
     path(const std::string &p) : p_(p) {}
 
-    path operator/(const path &p) { return p_ + std::string{preferred_separator} + p.p_; }
+    path operator/(const path &p) {
+        return p_ + std::string{preferred_separator} + p.p_;
+    }
 
     path &operator/=(const path &p) {
         p_ = p_ + std::string{preferred_separator} + p.p_;

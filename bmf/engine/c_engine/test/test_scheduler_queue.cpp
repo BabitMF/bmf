@@ -18,7 +18,7 @@
 #include "../include/scheduler_queue.h"
 
 #include "gtest/gtest.h"
-//bool operator<(const Item &lhs, const Item &rhs) {
+// bool operator<(const Item &lhs, const Item &rhs) {
 //    if (lhs.task.get_timestamp()>rhs.task.get_timestamp())
 //    {
 //        return true;
@@ -36,10 +36,11 @@ USE_BMF_ENGINE_NS
 USE_BMF_SDK_NS
 TEST(scheduler_queue, start) {
     SchedulerQueueCallBack callback;
-    std::shared_ptr<SchedulerQueue> scheduler_queue = std::make_shared<SchedulerQueue>(0, callback);
-//    scheduler_queue->start();
+    std::shared_ptr<SchedulerQueue> scheduler_queue =
+        std::make_shared<SchedulerQueue>(0, callback);
+    //    scheduler_queue->start();
 }
-//TEST(scheduler_queue,item){
+// TEST(scheduler_queue,item){
 //    SafePriorityQueue<Item> queue;
 //    for (int i=0;i<100;i++){
 //        Task task = Task(0,1,1);

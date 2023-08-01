@@ -16,8 +16,8 @@
 #include <kernel/unary_ops.h>
 #include <kernel/kernel_utils.h>
 
-namespace hmp{
-namespace kernel{
+namespace hmp {
+namespace kernel {
 
 HMP_DEFINE_DISPATCH_STUB(round_stub)
 HMP_DEFINE_DISPATCH_STUB(ceil_stub)
@@ -26,13 +26,11 @@ HMP_DEFINE_DISPATCH_STUB(abs_stub)
 HMP_DEFINE_DISPATCH_STUB(minus_stub)
 HMP_DEFINE_DISPATCH_STUB(clip_stub)
 
-
-#define WRAP_UNARY_OP(op) \
-    Tensor& op(Tensor& out, const Tensor &input) \
-    { \
-        checkShape({out, input}, input.shape(), #op); \
-        checkDevice({out, input}, input.device(), #op); \
-        return op##_stub(input.device_type(), out, input); \
+#define WRAP_UNARY_OP(op)                                                      \
+    Tensor &op(Tensor &out, const Tensor &input) {                             \
+        checkShape({out, input}, input.shape(), #op);                          \
+        checkDevice({out, input}, input.device(), #op);                        \
+        return op##_stub(input.device_type(), out, input);                     \
     }
 
 WRAP_UNARY_OP(round)
@@ -41,16 +39,12 @@ WRAP_UNARY_OP(floor)
 WRAP_UNARY_OP(abs)
 WRAP_UNARY_OP(minus)
 
-
-
-Tensor& clip(Tensor &out, const Tensor &input, const Scalar &min, const Scalar &max)
-{
+Tensor &clip(Tensor &out, const Tensor &input, const Scalar &min,
+             const Scalar &max) {
     checkShape({out, input}, input.shape(), "clip");
     checkDevice({out, input}, input.device(), "clip");
 
     return clip_stub(input.device_type(), out, input, min, max);
 }
-
-
-
-}} //namespace hmp::kernel
+}
+} // namespace hmp::kernel

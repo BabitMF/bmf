@@ -14,10 +14,11 @@
 
 #include "audio_fifo.h"
 
-AudioFifo::AudioFifo(int format, int channels, uint64_t channel_layout, AVRational time_base, int sample_rate) {
+AudioFifo::AudioFifo(int format, int channels, uint64_t channel_layout,
+                     AVRational time_base, int sample_rate) {
     format_ = format;
     channels_ = channels;
-    audio_fifo_ = av_audio_fifo_alloc((AVSampleFormat) format, channels, 2048);
+    audio_fifo_ = av_audio_fifo_alloc((AVSampleFormat)format, channels, 2048);
     time_base_ = time_base;
     channel_layout_ = channel_layout;
     sample_rate_ = sample_rate;
@@ -26,7 +27,8 @@ AudioFifo::AudioFifo(int format, int channels, uint64_t channel_layout, AVRation
         BMFLOG(BMF_ERROR) << "Could not allocate audio_fifo_";
 }
 
-int AudioFifo::read(int samples, bool partial, bool &got_frame, AVFrame *&frame) {
+int AudioFifo::read(int samples, bool partial, bool &got_frame,
+                    AVFrame *&frame) {
     int ret;
     got_frame = false;
     int buffered_samples = av_audio_fifo_size(audio_fifo_);
@@ -49,7 +51,8 @@ int AudioFifo::read(int samples, bool partial, bool &got_frame, AVFrame *&frame)
         BMFLOG(BMF_ERROR) << "Error allocating an audio buffer";
         return ret;
     }
-    int read_samples = av_audio_fifo_read(audio_fifo_, (void **) (frame->extended_data), samples);
+    int read_samples = av_audio_fifo_read(
+        audio_fifo_, (void **)(frame->extended_data), samples);
     if (read_samples < 0) {
         BMFLOG(BMF_ERROR) << "av_audio_fifo_read " << read_samples;
         return read_samples;
@@ -57,7 +60,7 @@ int AudioFifo::read(int samples, bool partial, bool &got_frame, AVFrame *&frame)
     got_frame = true;
     frame->nb_samples = read_samples;
     if (first_pts_ != AV_NOPTS_VALUE) {
-        frame->pts = (int64_t) (pts_per_sample_ * samples_read_) + first_pts_;
+        frame->pts = (int64_t)(pts_per_sample_ * samples_read_) + first_pts_;
     } else {
         frame->pts = AV_NOPTS_VALUE;
     }
@@ -65,7 +68,8 @@ int AudioFifo::read(int samples, bool partial, bool &got_frame, AVFrame *&frame)
     return 0;
 }
 
-int AudioFifo::read_many(int samples, bool partial, std::vector<AVFrame *> &frame_list) {
+int AudioFifo::read_many(int samples, bool partial,
+                         std::vector<AVFrame *> &frame_list) {
     while (1) {
         AVFrame *frame = NULL;
         frame = av_frame_alloc();
@@ -93,7 +97,8 @@ int AudioFifo::write(AVFrame *frame) {
         first_pts_ = frame->pts;
         first_frame_ = false;
     }
-    ret = av_audio_fifo_write(audio_fifo_, (void **) (frame->extended_data), frame->nb_samples);
+    ret = av_audio_fifo_write(audio_fifo_, (void **)(frame->extended_data),
+                              frame->nb_samples);
     return ret;
 }
 

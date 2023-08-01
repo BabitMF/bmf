@@ -17,13 +17,11 @@
 USE_BMF_ENGINE_NS
 USE_BMF_SDK_NS
 
-int main(int argc, char ** argv) {
+int main(int argc, char **argv) {
     if (argc != 2) {
-        std::cerr
-            << "Invalid arguments!"
-            << std::endl
-            << "Please use: run_bmf_graph /path_to_graph_config.json" 
-            << std::endl;
+        std::cerr << "Invalid arguments!" << std::endl
+                  << "Please use: run_bmf_graph /path_to_graph_config.json"
+                  << std::endl;
         exit(EXIT_FAILURE);
     }
 
@@ -50,9 +48,8 @@ int main(int argc, char ** argv) {
             std::string input_path;
             node.get_option().get_string(input_path_key, input_path);
             if (!fs::exists(input_path)) {
-                std::cerr
-                    << "Input file path " << input_path 
-                    << " does not exists!" << std::endl;
+                std::cerr << "Input file path " << input_path
+                          << " does not exists!" << std::endl;
                 exit(EXIT_FAILURE);
             }
         }
@@ -66,31 +63,17 @@ int main(int argc, char ** argv) {
     return 0;
 }
 #ifdef BMF_USE_MEDIACODEC
-extern "C" JNIEXPORT void InitializeSignalChain() {
+extern "C" JNIEXPORT void InitializeSignalChain() {}
 
-}
+extern "C" JNIEXPORT void ClaimSignalChain() {}
 
-extern "C" JNIEXPORT void ClaimSignalChain() {
+extern "C" JNIEXPORT void UnclaimSignalChain() {}
 
-}
+extern "C" JNIEXPORT void InvokeUserSignalHandler() {}
 
-extern "C" JNIEXPORT void UnclaimSignalChain() {
+extern "C" JNIEXPORT void EnsureFrontOfChain() {}
 
-}
+extern "C" JNIEXPORT void AddSpecialSignalHandlerFn() {}
 
-extern "C" JNIEXPORT void InvokeUserSignalHandler() {
-
-}
-
-extern "C" JNIEXPORT void EnsureFrontOfChain() {
-
-}
-
-extern "C" JNIEXPORT void AddSpecialSignalHandlerFn() {
-
-}
-
-extern "C" JNIEXPORT void RemoveSpecialSignalHandlerFn() {
-
-}
+extern "C" JNIEXPORT void RemoveSpecialSignalHandlerFn() {}
 #endif

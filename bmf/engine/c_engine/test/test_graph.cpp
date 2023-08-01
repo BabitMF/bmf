@@ -29,12 +29,12 @@ TEST(graph, start) {
     std::ifstream gs(config_file);
     gs >> graph_json;
     GraphConfig graph_config(graph_json);
-    std::map<int, std::shared_ptr<Module> > pre_modules;
-    std::map<int, std::shared_ptr<ModuleCallbackLayer> > callback_bindings;
-    std::shared_ptr<Graph> graph = std::make_shared<Graph>(graph_config, pre_modules,callback_bindings);
+    std::map<int, std::shared_ptr<Module>> pre_modules;
+    std::map<int, std::shared_ptr<ModuleCallbackLayer>> callback_bindings;
+    std::shared_ptr<Graph> graph =
+        std::make_shared<Graph>(graph_config, pre_modules, callback_bindings);
     graph->start();
     graph->close();
-
 }
 
 void SignalHandle2(const char *data, int size) {
@@ -42,10 +42,10 @@ void SignalHandle2(const char *data, int size) {
     std::string str = std::string(data, size);
     fs << str;
     fs.close();
-    
+
     BMFLOG(BMF_ERROR) << str;
 }
-//TEST(graph, decode){
+// TEST(graph, decode){
 ////    google::InitGoogleLogging("main");
 //    google::SetStderrLogging(google::INFO);
 //    google::InstallFailureSignalHandler();
@@ -60,7 +60,8 @@ void SignalHandle2(const char *data, int size) {
 //    std::string config_file = "../files/decode_graph.json";
 //    GraphConfig graph_config(config_file);
 //    std::map<int, std::shared_ptr<Module> > pre_modules;
-//    std::shared_ptr<Graph> graph = std::make_shared<Graph>(graph_config, pre_modules);
+//    std::shared_ptr<Graph> graph = std::make_shared<Graph>(graph_config,
+//    pre_modules);
 //    std::cout<<"init graph success"<<std::endl;
 //    PyEval_InitThreads();
 //    PyEval_ReleaseThread(PyThreadState_Get());
@@ -79,16 +80,16 @@ TEST(graph, decode_encode) {
     std::ifstream gs(config_file);
     gs >> graph_json;
     GraphConfig graph_config(graph_json);
-    std::map<int, std::shared_ptr<Module> > pre_modules;
-    std::map<int, std::shared_ptr<ModuleCallbackLayer> > callback_bindings;
-    std::shared_ptr<Graph> graph = std::make_shared<Graph>(graph_config, pre_modules,callback_bindings);
+    std::map<int, std::shared_ptr<Module>> pre_modules;
+    std::map<int, std::shared_ptr<ModuleCallbackLayer>> callback_bindings;
+    std::shared_ptr<Graph> graph =
+        std::make_shared<Graph>(graph_config, pre_modules, callback_bindings);
     std::cout << "init graph success" << std::endl;
 
     graph->start();
     graph->close();
     time_t time2 = clock();
     std::cout << "time:" << time2 - time1 << std::endl;
-
 }
 
 TEST(graph, c_decode_encode) {
@@ -100,17 +101,17 @@ TEST(graph, c_decode_encode) {
     std::ifstream gs(config_file);
     gs >> graph_json;
     GraphConfig graph_config(graph_json);
-    std::map<int, std::shared_ptr<Module> > pre_modules;
-    std::map<int, std::shared_ptr<ModuleCallbackLayer> > callback_bindings;
-    std::shared_ptr<Graph> graph = std::make_shared<Graph>(graph_config, pre_modules,callback_bindings);
+    std::map<int, std::shared_ptr<Module>> pre_modules;
+    std::map<int, std::shared_ptr<ModuleCallbackLayer>> callback_bindings;
+    std::shared_ptr<Graph> graph =
+        std::make_shared<Graph>(graph_config, pre_modules, callback_bindings);
     std::cout << "init graph success" << std::endl;
 
-//    PyEval_ReleaseThread(PyThreadState_Get());
+    //    PyEval_ReleaseThread(PyThreadState_Get());
     graph->start();
     graph->close();
     time_t time2 = clock();
     std::cout << "time:" << time2 - time1 << std::endl;
-
 }
 
 TEST(graph, dynamic_add) {
@@ -121,9 +122,10 @@ TEST(graph, dynamic_add) {
     std::string dyn_config_file = "../files/dynamic_add.json";
     GraphConfig graph_config(config_file);
     GraphConfig dyn_config(dyn_config_file);
-    std::map<int, std::shared_ptr<Module> > pre_modules;
-    std::map<int, std::shared_ptr<ModuleCallbackLayer> > callback_bindings;
-    std::shared_ptr<Graph> graph = std::make_shared<Graph>(graph_config, pre_modules, callback_bindings);
+    std::map<int, std::shared_ptr<Module>> pre_modules;
+    std::map<int, std::shared_ptr<ModuleCallbackLayer>> callback_bindings;
+    std::shared_ptr<Graph> graph =
+        std::make_shared<Graph>(graph_config, pre_modules, callback_bindings);
     std::cout << "init graph success" << std::endl;
 
     graph->start();
@@ -135,7 +137,6 @@ TEST(graph, dynamic_add) {
     graph->close();
     time_t time2 = clock();
     std::cout << "time:" << time2 - time1 << std::endl;
-
 }
 
 TEST(graph, dynamic_remove) {
@@ -148,9 +149,10 @@ TEST(graph, dynamic_remove) {
     GraphConfig graph_config(config_file);
     GraphConfig dyn_add_config(dyn_add_config_file);
     GraphConfig dyn_remove_config(dyn_remove_config_file);
-    std::map<int, std::shared_ptr<Module> > pre_modules;
-    std::map<int, std::shared_ptr<ModuleCallbackLayer> > callback_bindings;
-    std::shared_ptr<Graph> graph = std::make_shared<Graph>(graph_config, pre_modules, callback_bindings);
+    std::map<int, std::shared_ptr<Module>> pre_modules;
+    std::map<int, std::shared_ptr<ModuleCallbackLayer>> callback_bindings;
+    std::shared_ptr<Graph> graph =
+        std::make_shared<Graph>(graph_config, pre_modules, callback_bindings);
     std::cout << "init graph success" << std::endl;
 
     graph->start();
@@ -164,10 +166,9 @@ TEST(graph, dynamic_remove) {
     graph->update(dyn_remove_config);
     sleep(2);
 
-    graph->force_close();//here only the pass_through_module lefted
+    graph->force_close(); // here only the pass_through_module lefted
     time_t time2 = clock();
     std::cout << "time:" << time2 - time1 << std::endl;
-
 }
 
 TEST(graph, decode_filter_encode) {
@@ -177,9 +178,10 @@ TEST(graph, decode_filter_encode) {
     std::ifstream gs(config_file);
     gs >> graph_json;
     GraphConfig graph_config(graph_json);
-    std::map<int, std::shared_ptr<Module> > pre_modules;
-    std::map<int, std::shared_ptr<ModuleCallbackLayer> > callback_bindings;
-    std::shared_ptr<Graph> graph = std::make_shared<Graph>(graph_config, pre_modules,callback_bindings);
+    std::map<int, std::shared_ptr<Module>> pre_modules;
+    std::map<int, std::shared_ptr<ModuleCallbackLayer>> callback_bindings;
+    std::shared_ptr<Graph> graph =
+        std::make_shared<Graph>(graph_config, pre_modules, callback_bindings);
     graph->start();
     graph->close();
 }
@@ -192,14 +194,15 @@ TEST(graph, c_decode_filter_encode) {
     std::ifstream gs(config_file);
     gs >> graph_json;
     GraphConfig graph_config(graph_json);
-    std::map<int, std::shared_ptr<Module> > pre_modules;
-    std::map<int, std::shared_ptr<ModuleCallbackLayer> > callback_bindings;
-    std::shared_ptr<Graph> graph = std::make_shared<Graph>(graph_config, pre_modules,callback_bindings);
+    std::map<int, std::shared_ptr<Module>> pre_modules;
+    std::map<int, std::shared_ptr<ModuleCallbackLayer>> callback_bindings;
+    std::shared_ptr<Graph> graph =
+        std::make_shared<Graph>(graph_config, pre_modules, callback_bindings);
 
     graph->start();
     graph->close();
 }
-//TEST(graph, multi_process) {
+// TEST(graph, multi_process) {
 //    google::InitGoogleLogging("main");
 //    google::SetStderrLogging(google::INFO);
 //    google::InstallFailureSignalHandler();
@@ -211,7 +214,8 @@ TEST(graph, c_decode_filter_encode) {
 //        std::string config_file = "../files/multi.json";
 //        GraphConfig graph_config(config_file);
 //        std::map<int, std::shared_ptr<Module> > pre_modules;
-//        std::shared_ptr<Graph> graph = std::make_shared<Graph>(graph_config, pre_modules);
+//        std::shared_ptr<Graph> graph = std::make_shared<Graph>(graph_config,
+//        pre_modules);
 //        graph->start();
 //        graph->close();
 //        std::cout<<"close graph*******"<<std::endl;

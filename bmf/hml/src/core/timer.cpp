@@ -17,92 +17,76 @@
 #include <hmp/format.h>
 #include <chrono>
 
-namespace hmp{
+namespace hmp {
 
-namespace impl{
+namespace impl {
 
-static TimerManager *sTimerManagers[static_cast<int>(DeviceType::NumDeviceTypes)];
+static TimerManager
+    *sTimerManagers[static_cast<int>(DeviceType::NumDeviceTypes)];
 
-void registerTimerManager(DeviceType dtype, TimerManager *tm)
-{
-    //as it only init before main, so no lock is needed
-    sTimerManagers[static_cast<int>(dtype)] = tm; 
+void registerTimerManager(DeviceType dtype, TimerManager *tm) {
+    // as it only init before main, so no lock is needed
+    sTimerManagers[static_cast<int>(dtype)] = tm;
 }
 
-} //namespace impl
+} // namespace impl
 
-
-std::string stringfy(const Timer &timer)
-{
+std::string stringfy(const Timer &timer) {
     return fmt::format("Timer({}, {})", timer.device(), timer.is_stopped());
 }
 
-Timer create_timer(DeviceType dtype)
-{
+Timer create_timer(DeviceType dtype) {
     auto tm = impl::sTimerManagers[static_cast<int>(dtype)];
     HMP_REQUIRE(tm, "Timer on device type {} is not supported", dtype);
     return tm->create();
 }
-
 
 //////
 namespace {
 
 const static Device sCPUDevice(kCPU);
 
-class CPUTimer : public TimerInterface
-{
-    using TimePoint = decltype(std::chrono::high_resolution_clock::now()); 
+class CPUTimer : public TimerInterface {
+    using TimePoint = decltype(std::chrono::high_resolution_clock::now());
     TimePoint begin_, end_;
     int state_ = -1; // -1 - not inited, 0 - stopped, 1 - started
-public:
-    void start() override 
-    {
+  public:
+    void start() override {
         begin_ = std::chrono::high_resolution_clock::now();
         state_ = 1;
     }
 
-    void stop() override
-    {
+    void stop() override {
         HMP_REQUIRE(state_ == 1, "CPUTimer is not started");
         end_ = std::chrono::high_resolution_clock::now();
         state_ = 0;
     }
 
-    double elapsed() override
-    {
+    double elapsed() override {
         TimePoint end = end_;
-        if(state_ != 0){
+        if (state_ != 0) {
             HMP_REQUIRE(state_ == 1, "CPUTimer is not inited");
             end = std::chrono::high_resolution_clock::now();
         }
-        return std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin_).count()/1e9;
+        return std::chrono::duration_cast<std::chrono::nanoseconds>(end -
+                                                                    begin_)
+                   .count() /
+               1e9;
     }
 
-    bool is_stopped() const override
-    {
-        return state_ == 0 || state_ == -1;
-    }
+    bool is_stopped() const override { return state_ == 0 || state_ == -1; }
 
-    const Device& device() const override
-    {
-        return sCPUDevice;
-    }
+    const Device &device() const override { return sCPUDevice; }
 };
 
-class CPUTimerManager : public impl::TimerManager
-{
-public:
-    RefPtr<TimerInterface> create() override
-    {
-        return makeRefPtr<CPUTimer>();
-    }
+class CPUTimerManager : public impl::TimerManager {
+  public:
+    RefPtr<TimerInterface> create() override { return makeRefPtr<CPUTimer>(); }
 };
-
 
 static CPUTimerManager scpuTimerManager;
 HMP_REGISTER_TIMER_MANAGER(kCPU, &scpuTimerManager);
 
-} //namespace
+} // namespace
 
-} //namespace hmp
+} // namespace hmp

@@ -17,7 +17,8 @@
 #include <bmf/sdk/bmf_av_packet.h>
 #include <bmf/sdk/log.h>
 
-GoMockDecoder::GoMockDecoder(int node_id, JsonParam json_param) : Module(node_id, json_param) {
+GoMockDecoder::GoMockDecoder(int node_id, JsonParam json_param)
+    : Module(node_id, json_param) {
     BMFLOG_NODE(BMF_INFO, node_id_) << "init";
     return;
 }
@@ -25,7 +26,7 @@ GoMockDecoder::GoMockDecoder(int node_id, JsonParam json_param) : Module(node_id
 int GoMockDecoder::process(Task &task) {
     BMFLOG_NODE(BMF_INFO, node_id_) << "process";
     number_++;
-    for (auto output_queue:task.get_outputs()) {
+    for (auto output_queue : task.get_outputs()) {
         auto avpkt = BMFAVPacket(100);
         avpkt.data().fill_(0);
         avpkt.set_pts(number_);
@@ -33,25 +34,23 @@ int GoMockDecoder::process(Task &task) {
         auto packet = Packet(avpkt);
         packet.set_timestamp(number_);
 
-        BMFLOG_NODE(BMF_INFO, node_id_) << packet.timestamp() << "data type:" << packet.type_info().name;
+        BMFLOG_NODE(BMF_INFO, node_id_)
+            << packet.timestamp() << "data type:" << packet.type_info().name;
         task.fill_output_packet(output_queue.first, packet);
 
         sleep(1);
         if (number_ == 10) {
-            task.fill_output_packet(output_queue.first, Packet::generate_eof_packet());
+            task.fill_output_packet(output_queue.first,
+                                    Packet::generate_eof_packet());
             task.set_timestamp(DONE);
         }
     }
-    BMFLOG_NODE(BMF_INFO, node_id_) << "GoMockDecoder process result output queue size: "
-                                    << task.get_outputs()[0]->size()
-                                    << std::endl;
+    BMFLOG_NODE(BMF_INFO, node_id_)
+        << "GoMockDecoder process result output queue size: "
+        << task.get_outputs()[0]->size() << std::endl;
     return 0;
 }
 
-int GoMockDecoder::reset() {
-    return 0;
-}
+int GoMockDecoder::reset() { return 0; }
 
-int GoMockDecoder::close() {
-    return 0;
-}
+int GoMockDecoder::close() { return 0; }

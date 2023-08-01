@@ -17,12 +17,16 @@
 #include "call_back_for_test.h"
 
 CallBackForTest::CallBackForTest() {
-    callback_add_or_remove_node_ = std::bind(&CallBackForTest::add_or_remove_node, this, std::placeholders::_1,
-                                             std::placeholders::_2);
-    callback_node_to_schedule_node_ = std::bind(&CallBackForTest::node_to_schedule_node, this);
-    callback_scheduler_to_schedule_node_ = std::bind(&CallBackForTest::scheduler_to_schedule_node, this,
-                                                     std::placeholders::_1);
-    callback_node_is_closed_cb_ = std::bind(&CallBackForTest::node_is_closed_cb, this);
+    callback_add_or_remove_node_ =
+        std::bind(&CallBackForTest::add_or_remove_node, this,
+                  std::placeholders::_1, std::placeholders::_2);
+    callback_node_to_schedule_node_ =
+        std::bind(&CallBackForTest::node_to_schedule_node, this);
+    callback_scheduler_to_schedule_node_ =
+        std::bind(&CallBackForTest::scheduler_to_schedule_node, this,
+                  std::placeholders::_1);
+    callback_node_is_closed_cb_ =
+        std::bind(&CallBackForTest::node_is_closed_cb, this);
 }
 
 void CallBackForTest::add_or_remove_node(int node_id, bool is_add) {
@@ -39,6 +43,4 @@ bool CallBackForTest::node_to_schedule_node() {
     return true;
 }
 
-bool CallBackForTest::node_is_closed_cb() {
-    return false;
-}
+bool CallBackForTest::node_is_closed_cb() { return false; }

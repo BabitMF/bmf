@@ -19,42 +19,44 @@
 #include <cstdarg>
 
 BEGIN_BMF_SDK_NS
-    std::string format(const char *fmt, ...) {
-        va_list args;
-        char buff_size[1024];
-        va_start(args, fmt);
-        vsnprintf(buff_size, 1023, fmt, args);
-        va_end(args);
-        std::string result = buff_size;
-        return result;
-    }
+std::string format(const char *fmt, ...) {
+    va_list args;
+    char buff_size[1024];
+    va_start(args, fmt);
+    vsnprintf(buff_size, 1023, fmt, args);
+    va_end(args);
+    std::string result = buff_size;
+    return result;
+}
 
-    Exception::Exception() {
-        code = 0;
-        line = 0;
-    }
+Exception::Exception() {
+    code = 0;
+    line = 0;
+}
 
-    Exception::Exception(int _code, const char *_err, const char *_func, const char *_file,
-                         int _line)
-            : code(_code), err(_err), func(_func), file(_file), line(_line) {
-        formatMessage();
-    }
+Exception::Exception(int _code, const char *_err, const char *_func,
+                     const char *_file, int _line)
+    : code(_code), err(_err), func(_func), file(_file), line(_line) {
+    formatMessage();
+}
 
-    Exception::~Exception() throw() {}
+Exception::~Exception() throw() {}
 
 /*!
  \return the error description and the context as a text string.
  */
-    const char *Exception::what() const throw() { return msg.c_str(); }
+const char *Exception::what() const throw() { return msg.c_str(); }
 
-    void Exception::formatMessage() {
-        msg = format("BMF(%s) %s:%d: error: (%d:%s) %s in function '%s'\n", BMF_SDK_VERSION, file.c_str(), line,
-                     code, BMFErrorStr(code), err.c_str(), func.c_str());
-    }
+void Exception::formatMessage() {
+    msg = format("BMF(%s) %s:%d: error: (%d:%s) %s in function '%s'\n",
+                 BMF_SDK_VERSION, file.c_str(), line, code, BMFErrorStr(code),
+                 err.c_str(), func.c_str());
+}
 
-    void error(int _code, const char *_err, const char *_func, const char *_file, int _line) {
-        Exception exception = Exception(_code, _err, _func, _file, _line);
-        throw exception;
-    }
+void error(int _code, const char *_err, const char *_func, const char *_file,
+           int _line) {
+    Exception exception = Exception(_code, _err, _func, _file, _line);
+    throw exception;
+}
 
 END_BMF_SDK_NS

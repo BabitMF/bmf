@@ -23,36 +23,41 @@ void dump_node_json(JsonParam &json_param) {
     std::cout << "********node json:" << json_param.dump() << std::endl;
 }
 
-void create_python_module(JsonParam &node_param, std::shared_ptr<PythonModule> &python_module) {
+void create_python_module(JsonParam &node_param,
+                          std::shared_ptr<PythonModule> &python_module) {
     std::string module_name;
     dump_node_json(node_param);
     node_param.get_string("module", module_name);
     JsonParam node_option_json;
     node_param.get_object("option", node_option_json);
-    python_module = std::make_shared<PythonModule>(module_name, module_name, 0, node_option_json);
+    python_module = std::make_shared<PythonModule>(module_name, module_name, 0,
+                                                   node_option_json);
 }
 
-void get_python_module_info(JsonParam &node_param, std::string &module_name, std::string &option) {
-//    dump_node_json(node_param);
+void get_python_module_info(JsonParam &node_param, std::string &module_name,
+                            std::string &option) {
+    //    dump_node_json(node_param);
     node_param.get_string("module", module_name);
     JsonParam node_option_json;
     node_param.get_object("option", node_option_json);
     option = node_option_json.dump();
 }
 
-void create_python_module_from_string(std::string module_name, std::string option,
-                                      std::shared_ptr<PythonModule> &python_module) {
+void create_python_module_from_string(
+    std::string module_name, std::string option,
+    std::shared_ptr<PythonModule> &python_module) {
     std::istringstream s;
     nlohmann::json opt;
     s.str(option);
     s >> opt;
-    python_module = std::make_shared<PythonModule>(module_name, module_name, 0, JsonParam(opt));
+    python_module = std::make_shared<PythonModule>(module_name, module_name, 0,
+                                                   JsonParam(opt));
 }
 
 TEST(python_module, ffmpeg_module) {
 
-    setenv("PYTHONPATH",
-           "../../../3rd_party/pyav/:.:../../python_modules:../../python_module_sdk",
+    setenv("PYTHONPATH", "../../../3rd_party/pyav/:.:../../python_modules:../"
+                         "../python_module_sdk",
            1);
     Py_Initialize();
     JsonParam graph_config;
@@ -60,7 +65,7 @@ TEST(python_module, ffmpeg_module) {
     std::vector<JsonParam> node_jsons;
     graph_config.get_object_list("nodes", node_jsons);
     std::shared_ptr<PythonModule> python_module;
-    std::cout<<node_jsons[0].dump()<<std::endl;
+    std::cout << node_jsons[0].dump() << std::endl;
     create_python_module(node_jsons[0], python_module);
     std::vector<int> input_labels;
     std::vector<int> output_labels;
@@ -71,17 +76,17 @@ TEST(python_module, ffmpeg_module) {
 }
 
 void thread_decode(std::shared_ptr<PythonModule> decoder_module2) {
-//    setenv("PYTHONPATH",
-//           "/Users/bytedance/Project/company/python3/bmf_python3/bmf/3rd_party/pyav:.:/Users/bytedance/Project/company/python2/bmf_master/bmf/bmf/c_engine/python_sdk",
-//           1);
-//    Py_Initialize();
+    //    setenv("PYTHONPATH",
+    //           "/Users/bytedance/Project/company/python3/bmf_python3/bmf/3rd_party/pyav:.:/Users/bytedance/Project/company/python2/bmf_master/bmf/bmf/c_engine/python_sdk",
+    //           1);
+    //    Py_Initialize();
     PyGILState_STATE gstate;
     gstate = PyGILState_Ensure();
     boost::python::object python_file = boost::python::import("timestamp");
     sleep(1);
-//    PyGILState_Release(gstate);
-//    sleep(10);
-//    gstate = PyGILState_Ensure();
+    //    PyGILState_Release(gstate);
+    //    sleep(10);
+    //    gstate = PyGILState_Ensure();
 
     std::string decoder_name;
     std::string decoder_option;
@@ -94,23 +99,24 @@ void thread_decode(std::shared_ptr<PythonModule> decoder_module2) {
     std::shared_ptr<PythonModule> decoder_module;
     get_python_module_info(node_jsons[0], decoder_name, decoder_option);
     get_python_module_info(node_jsons[1], encoder_name, encoder_option);
-    create_python_module_from_string(decoder_name, decoder_option, decoder_module);
+    create_python_module_from_string(decoder_name, decoder_option,
+                                     decoder_module);
 
     bool decoder_finished = false;
-//    while (true) {
-//
-//        Task task = Task(0, 0, 2);
-//        std::cout << "decoder_module start" << std::endl;
-//        if (not decoder_finished) {
-//            decoder_module->process(task);
-//        }
-//        std::cout << "decoder_module end" << std::endl;
-//        if (task.get_timestamp() == DONE) {
-//            decoder_finished = true;
-//            break;
-//        }
-////        sleep(1);
-//    }
+    //    while (true) {
+    //
+    //        Task task = Task(0, 0, 2);
+    //        std::cout << "decoder_module start" << std::endl;
+    //        if (not decoder_finished) {
+    //            decoder_module->process(task);
+    //        }
+    //        std::cout << "decoder_module end" << std::endl;
+    //        if (task.get_timestamp() == DONE) {
+    //            decoder_finished = true;
+    //            break;
+    //        }
+    ////        sleep(1);
+    //    }
     /* Release the thread. No Python API allowed beyond this point. */
     PyGILState_Release(gstate);
 }
@@ -138,12 +144,12 @@ void SignalHandle(const char *data, int size) {
 }
 
 TEST(python_module, decode) {
-//    google::InitGoogleLogging("main");
-//    google::SetStderrLogging(google::INFO);
-//    google::InstallFailureSignalHandler();
-//    google::InstallFailureWriter(&SignalHandle);
-    setenv("PYTHONPATH",
-           "../../../3rd_party/pyav/:.:../../python_modules:../../python_module_sdk",
+    //    google::InitGoogleLogging("main");
+    //    google::SetStderrLogging(google::INFO);
+    //    google::InstallFailureSignalHandler();
+    //    google::InstallFailureWriter(&SignalHandle);
+    setenv("PYTHONPATH", "../../../3rd_party/pyav/:.:../../python_modules:../"
+                         "../python_module_sdk",
            1);
     time_t time1 = clock();
     Py_Initialize();
@@ -156,14 +162,14 @@ TEST(python_module, decode) {
     std::vector<JsonParam> node_jsons;
     graph_config.get_object_list("nodes", node_jsons);
     std::shared_ptr<PythonModule> decoder_module;
-//    std::shared_ptr<PythonModule> encode_module;
+    //    std::shared_ptr<PythonModule> encode_module;
     get_python_module_info(node_jsons[0], decoder_name, decoder_option);
     std::cout << "create_python_module_from_string start" << std::endl;
-    create_python_module_from_string(decoder_name, decoder_option, decoder_module);
+    create_python_module_from_string(decoder_name, decoder_option,
+                                     decoder_module);
     std::cout << "create_python_module_from_string end" << std::endl;
     bool decoder_finished = false;
     bool encoder_finished = false;
-
 
     while (true) {
         std::vector<int> input_labels;
@@ -187,16 +193,15 @@ TEST(python_module, decode) {
     }
     time_t time2 = clock();
     LOG(INFO) << "time:" << time2 - time1 << std::endl;
-
 }
 
 TEST(python_module, decode_encode) {
-//        google::InitGoogleLogging("main");
-//    google::SetStderrLogging(google::INFO);
-//    google::InstallFailureSignalHandler();
-//    google::InstallFailureWriter(&SignalHandle);
-    setenv("PYTHONPATH",
-           "../../../3rd_party/pyav/:.:../../python_modules:../../python_module_sdk",
+    //        google::InitGoogleLogging("main");
+    //    google::SetStderrLogging(google::INFO);
+    //    google::InstallFailureSignalHandler();
+    //    google::InstallFailureWriter(&SignalHandle);
+    setenv("PYTHONPATH", "../../../3rd_party/pyav/:.:../../python_modules:../"
+                         "../python_module_sdk",
            1);
     Py_Initialize();
     std::string decoder_name;
@@ -211,14 +216,15 @@ TEST(python_module, decode_encode) {
     std::shared_ptr<PythonModule> encode_module;
     get_python_module_info(node_jsons[0], decoder_name, decoder_option);
     get_python_module_info(node_jsons[1], encoder_name, encoder_option);
-    create_python_module_from_string(decoder_name, decoder_option, decoder_module);
-//    create_python_module(node_jsons[0],decoder_module);
-    create_python_module_from_string(encoder_name, encoder_option, encode_module);
-//    create_python_module(node_jsons[1],encode_module);
+    create_python_module_from_string(decoder_name, decoder_option,
+                                     decoder_module);
+    //    create_python_module(node_jsons[0],decoder_module);
+    create_python_module_from_string(encoder_name, encoder_option,
+                                     encode_module);
+    //    create_python_module(node_jsons[1],encode_module);
     bool decoder_finished = false;
     bool encoder_finished = false;
-//    return ;
-
+    //    return ;
 
     while (true) {
         std::vector<int> input_labels;
@@ -255,12 +261,12 @@ TEST(python_module, decode_encode) {
 }
 
 TEST(python_module, gil) {
-    setenv("PYTHONPATH",
-           "../../../3rd_party/pyav/:.:../../python_modules:../../python_module_sdk",
+    setenv("PYTHONPATH", "../../../3rd_party/pyav/:.:../../python_modules:../"
+                         "../python_module_sdk",
            1);
     Py_Initialize();
     PyEval_InitThreads();
-//    PyEval_ReleaseThread(PyThreadState_Get());
+    //    PyEval_ReleaseThread(PyThreadState_Get());
     PyThreadState *state = PyEval_SaveThread();
     PyGILState_STATE new_state = PyGILState_Ensure();
     boost::python::object python_file = boost::python::import("timestamp");
@@ -269,12 +275,11 @@ TEST(python_module, gil) {
     /* Release the thread. No Python API allowed beyond this point. */
     PyGILState_Release(new_state);
     PyGILState_Ensure();
-
 }
 
 TEST(python_module, decode_filter_encoder) {
-    setenv("PYTHONPATH",
-           "../../../3rd_party/pyav/:.:../../python_modules:../../python_module_sdk",
+    setenv("PYTHONPATH", "../../../3rd_party/pyav/:.:../../python_modules:../"
+                         "../python_module_sdk",
            1);
     Py_Initialize();
     std::string decoder_name;
@@ -293,18 +298,21 @@ TEST(python_module, decode_filter_encoder) {
     get_python_module_info(node_jsons[0], decoder_name, decoder_option);
     get_python_module_info(node_jsons[1], filter_name, filter_opiton);
     get_python_module_info(node_jsons[2], encoder_name, encoder_option);
-    create_python_module_from_string(decoder_name, decoder_option, decoder_module);
+    create_python_module_from_string(decoder_name, decoder_option,
+                                     decoder_module);
 
-//    create_python_module(node_jsons[0],decoder_module);
-//    filter_opiton= "{\"filters\": [{\"inputs\": [{\"stream\": 0,\"pin\": 0}],\"name\": \"scale\",\"para\": \"100:200\",\"outputs\": [   {\"stream\": 0,\"pin\": 0}]}]}";
+    //    create_python_module(node_jsons[0],decoder_module);
+    //    filter_opiton= "{\"filters\": [{\"inputs\": [{\"stream\": 0,\"pin\":
+    //    0}],\"name\": \"scale\",\"para\": \"100:200\",\"outputs\": [
+    //    {\"stream\": 0,\"pin\": 0}]}]}";
     create_python_module_from_string(filter_name, filter_opiton, filter_module);
 
-    create_python_module_from_string(encoder_name, encoder_option, encode_module);
-//    create_python_module(node_jsons[1],encode_module);
+    create_python_module_from_string(encoder_name, encoder_option,
+                                     encode_module);
+    //    create_python_module(node_jsons[1],encode_module);
     bool decoder_finished = false;
     bool encoder_finished = false;
-//    return ;
-
+    //    return ;
 
     while (true) {
         std::vector<int> input_labels;

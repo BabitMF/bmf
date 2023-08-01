@@ -7,16 +7,13 @@
 
 namespace bmf_sdk {
 
+static std::unordered_map<MediaType, Convertor *> iConvertors;
 
-static std::unordered_map<MediaType, Convertor*> iConvertors;
-
-BMF_API void set_convertor(const MediaType &media_type, Convertor* convertor)
-{
+BMF_API void set_convertor(const MediaType &media_type, Convertor *convertor) {
     iConvertors[media_type] = convertor;
 }
 
-BMF_API Convertor *get_convertor(const MediaType &media_type)
-{
+BMF_API Convertor *get_convertor(const MediaType &media_type) {
     if (iConvertors.find(media_type) == iConvertors.end()) {
         BMFLOG(BMF_WARNING) << "the media type is not supported by bmf backend";
         return NULL;
@@ -24,8 +21,7 @@ BMF_API Convertor *get_convertor(const MediaType &media_type)
     return iConvertors[media_type];
 }
 
-BMF_API VideoFrame bmf_convert(VideoFrame& vf, const MediaDesc &dp)
-{
+BMF_API VideoFrame bmf_convert(VideoFrame &vf, const MediaDesc &dp) {
     auto convt = get_convertor(MediaType::kBMFVideoFrame);
     if (dp.media_type.has_value()) {
         convt = get_convertor(dp.media_type());
@@ -37,8 +33,8 @@ BMF_API VideoFrame bmf_convert(VideoFrame& vf, const MediaDesc &dp)
     return device_vf;
 }
 
-BMF_API VideoFrame bmf_convert_to_videoframe(VideoFrame& vf, const MediaDesc &dp)
-{
+BMF_API VideoFrame bmf_convert_to_videoframe(VideoFrame &vf,
+                                             const MediaDesc &dp) {
     VideoFrame frame;
     auto convt = get_convertor(MediaType::kBMFVideoFrame);
     if (dp.media_type.has_value()) {
@@ -52,15 +48,16 @@ BMF_API VideoFrame bmf_convert_to_videoframe(VideoFrame& vf, const MediaDesc &dp
     return vf;
 }
 
-//media type is kBMFVideoFrame
+// media type is kBMFVideoFrame
 bool mt_is_vf(const MediaDesc &dp) {
-    return !(dp.media_type.has_value() && dp.media_type() != MediaType::kBMFVideoFrame);
+    return !(dp.media_type.has_value() &&
+             dp.media_type() != MediaType::kBMFVideoFrame);
 }
 
-BMF_API VideoFrame bmf_convert(VideoFrame& src_vf, const MediaDesc &src_dp, const MediaDesc &dst_dp)
-{
+BMF_API VideoFrame bmf_convert(VideoFrame &src_vf, const MediaDesc &src_dp,
+                               const MediaDesc &dst_dp) {
     VideoFrame frame;
-    //VideoFrame transfer to other mediatype
+    // VideoFrame transfer to other mediatype
     if (mt_is_vf(src_dp)) {
         frame = bmf_convert(src_vf, dst_dp);
 
@@ -69,27 +66,24 @@ BMF_API VideoFrame bmf_convert(VideoFrame& src_vf, const MediaDesc &src_dp, cons
         frame = bmf_convert(frame, dst_dp);
 
     } else {
-        BMFLOG(BMF_ERROR) << "can not tranfer from src type: " << static_cast<int>(src_dp.media_type()) 
-                        << " to dst type: " << static_cast<int>(dst_dp.media_type());
+        BMFLOG(BMF_ERROR) << "can not tranfer from src type: "
+                          << static_cast<int>(src_dp.media_type())
+                          << " to dst type: "
+                          << static_cast<int>(dst_dp.media_type());
     }
 
     return frame;
 }
 
+Convertor::Convertor() {}
 
-Convertor::Convertor()
-{
-
-}
-
-VideoFrame Convertor::format_cvt(VideoFrame &src, const MediaDesc &dp)
-{
+VideoFrame Convertor::format_cvt(VideoFrame &src, const MediaDesc &dp) {
     VideoFrame dst = src;
     // do scale
     if (dp.width.has_value() || dp.height.has_value()) {
         int w = 0;
         int h = 0;
-        if(!dp.width.has_value()) {
+        if (!dp.width.has_value()) {
             h = dp.height();
             w = src.width() * h / src.height();
 
@@ -109,36 +103,33 @@ VideoFrame Convertor::format_cvt(VideoFrame &src, const MediaDesc &dp)
 
     if (dp.pixel_format.has_value()) {
         if (dp.color_space.has_value()) {
-            dst = bmf_csc_func_with_param(dst, hmp::PixelInfo(dp.pixel_format(), dp.color_space()));
+            dst = bmf_csc_func_with_param(
+                dst, hmp::PixelInfo(dp.pixel_format(), dp.color_space()));
 
         } else {
-            dst = bmf_csc_func_with_param(dst, hmp::PixelInfo(dp.pixel_format()));
+            dst =
+                bmf_csc_func_with_param(dst, hmp::PixelInfo(dp.pixel_format()));
         }
     }
 
     return dst;
 }
 
-VideoFrame Convertor::device_cvt(VideoFrame &src, const MediaDesc &dp)
-{
+VideoFrame Convertor::device_cvt(VideoFrame &src, const MediaDesc &dp) {
     if (dp.device.has_value()) {
         return src.to(dp.device());
     }
     return src;
 }
 
-int Convertor::media_cvt(VideoFrame &src, const MediaDesc &dp)
-{
+int Convertor::media_cvt(VideoFrame &src, const MediaDesc &dp) { return 0; }
+
+int Convertor::media_cvt_to_videoframe(VideoFrame &src, const MediaDesc &dp) {
     return 0;
 }
 
-int Convertor::media_cvt_to_videoframe(VideoFrame &src, const MediaDesc &dp)
-{
-    return 0;
-}
-
-static Convertor* iDefaultBMFConvertor = new Convertor();
+static Convertor *iDefaultBMFConvertor = new Convertor();
 
 BMF_REGISTER_CONVERTOR(MediaType::kBMFVideoFrame, iDefaultBMFConvertor);
 
-} //namespace bmf_sdk
+} // namespace bmf_sdk

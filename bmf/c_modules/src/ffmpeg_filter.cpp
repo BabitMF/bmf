@@ -18,7 +18,6 @@
 #include <bmf/sdk/log_buffer.h>
 USE_BMF_SDK_NS
 
-
 CFFFilter::CFFFilter(int node_id, JsonParam option) {
     node_id_ = node_id;
     num_input_streams_ = 0;
@@ -33,23 +32,20 @@ CFFFilter::CFFFilter(int node_id, JsonParam option) {
     stream_first_dts_ = AV_NOPTS_VALUE;
 
     option_ = option;
-    //avfilter_register_all();
+    // avfilter_register_all();
 }
 
-CFFFilter::~CFFFilter() {
-    clean();
-}
+CFFFilter::~CFFFilter() { clean(); }
 
 bool CFFFilter::is_hungry(int input_stream_id) {
-    if (input_cache_.count(input_stream_id) == 0 || input_cache_[input_stream_id].size() < 5 || filter_graph_ == NULL) {
+    if (input_cache_.count(input_stream_id) == 0 ||
+        input_cache_[input_stream_id].size() < 5 || filter_graph_ == NULL) {
         return true;
     }
     return false;
 }
 
-bool CFFFilter::is_infinity() {
-    return is_inf_;
-}
+bool CFFFilter::is_infinity() { return is_inf_; }
 
 int CFFFilter::clean() {
     reset_check_mutex_.lock();
@@ -71,16 +67,20 @@ int CFFFilter::close() {
     return 0;
 }
 
-int CFFFilter::parse_filter(std::vector<JsonParam> &f_param, int idx, std::string &result) {
+int CFFFilter::parse_filter(std::vector<JsonParam> &f_param, int idx,
+                            std::string &result) {
     std::vector<JsonParam> in_param;
     int ret;
 
     f_param[idx].get_object_list("inputs", in_param);
 
     //"stream" means the id of input/output stream
-    //"pin" mainly used for the sequence number of the pin of the filter which the input stream connected to, and for output of the filter, the pin should always be zero now.
+    //"pin" mainly used for the sequence number of the pin of the filter which
+    //the input stream connected to, and for output of the filter, the pin
+    //should always be zero now.
 
-    for (int i = 0; i < in_param.size(); i++) {// [i0_0] [i1_0] [i2_0] [i3_0] ... [inputStream_Pin]
+    for (int i = 0; i < in_param.size();
+         i++) { // [i0_0] [i1_0] [i2_0] [i3_0] ... [inputStream_Pin]
         if (in_param[i].has_key("stream") && in_param[i].has_key("pin")) {
             int stream_id;
             in_param[i].get_int("stream", stream_id);
@@ -93,7 +93,8 @@ int CFFFilter::parse_filter(std::vector<JsonParam> &f_param, int idx, std::strin
     }
     std::vector<JsonParam> out_param;
     f_param[idx].get_object_list("outputs", out_param);
-    for (int i = 0; i < out_param.size(); i++) {// [o0_0] [o1_0] .... [outputStream_Pin]
+    for (int i = 0; i < out_param.size();
+         i++) { // [o0_0] [o1_0] .... [outputStream_Pin]
         if (out_param[i].has_key("stream") && out_param[i].has_key("pin")) {
             int stream_id;
             out_param[i].get_int("stream", stream_id);
@@ -149,7 +150,7 @@ int CFFFilter::graph_descr(JsonParam &option, std::string &result) {
     int ret;
 
     if (!option.has_key("filters")) {
-        //Log: No filter config
+        // Log: No filter config
         BMFLOG_NODE(BMF_ERROR, node_id_) << "No filter config";
         return -1;
     }
@@ -187,14 +188,17 @@ int CFFFilter::init_filtergraph() {
         config_[it->first].channels = frm->channels;
         config_[it->first].channel_layout = frm->channel_layout;
 
-        config_[it->first].tb = (frm->width && frm->height) ? (AVRational){1, 25} : (AVRational){1, frm->sample_rate};
+        config_[it->first].tb = (frm->width && frm->height)
+                                    ? (AVRational){1, 25}
+                                    : (AVRational){1, frm->sample_rate};
 
         if (frm->metadata) {
             AVDictionaryEntry *tag = NULL;
-            while ((tag = av_dict_get(frm->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
+            while ((tag = av_dict_get(frm->metadata, "", tag,
+                                      AV_DICT_IGNORE_SUFFIX))) {
                 if (!strcmp(tag->key, "time_base")) {
                     std::string svalue = tag->value;
-                    int pos = svalue.find(",");//"num,den"
+                    int pos = svalue.find(","); //"num,den"
                     if (pos > 0) {
                         AVRational r;
                         r.num = stoi(svalue.substr(0, pos));
@@ -233,12 +237,12 @@ int CFFFilter::init_filtergraph() {
     filter_graph_ = new FilterGraph();
     std::map<int, FilterConfig> out_cfgs;
 
-    //AVFrame *frame = input_cache_.begin()->second.front();
+    // AVFrame *frame = input_cache_.begin()->second.front();
     for (auto it : input_cache_) {
         auto ctx = it.second.front()->hw_frames_ctx;
         if (ctx) {
             filter_graph_->hw_frames_ctx_map_[it.first] = av_buffer_ref(ctx);
-        } 
+        }
     }
 
     ret = filter_graph_->config_graph(g_desc_, config_, out_cfgs);
@@ -250,19 +254,23 @@ int CFFFilter::init_filtergraph() {
 }
 
 Packet CFFFilter::convert_avframe_to_packet(AVFrame *frame, int index) {
-    AVRational tb = av_buffersink_get_time_base(filter_graph_->buffer_sink_ctx_[index]);
+    AVRational tb =
+        av_buffersink_get_time_base(filter_graph_->buffer_sink_ctx_[index]);
     std::string s_tb = std::to_string(tb.num) + "," + std::to_string(tb.den);
     av_dict_set(&frame->metadata, "time_base", s_tb.c_str(), 0);
 
     if (frame->width > 0) {
-        AVRational frame_rate = av_buffersink_get_frame_rate(filter_graph_->buffer_sink_ctx_[index]);
+        AVRational frame_rate = av_buffersink_get_frame_rate(
+            filter_graph_->buffer_sink_ctx_[index]);
         if (frame_rate.num > 0 && frame_rate.den > 0)
-            s_tb = std::to_string(frame_rate.num) + "," + std::to_string(frame_rate.den);
+            s_tb = std::to_string(frame_rate.num) + "," +
+                   std::to_string(frame_rate.den);
         else
             s_tb = "0,1";
         av_dict_set(&frame->metadata, "frame_rate", s_tb.c_str(), 0);
 
-        AVRational sar = av_buffersink_get_sample_aspect_ratio(filter_graph_->buffer_sink_ctx_[index]);
+        AVRational sar = av_buffersink_get_sample_aspect_ratio(
+            filter_graph_->buffer_sink_ctx_[index]);
         if (sar.num > 0 && sar.den > 0)
             s_tb = std::to_string(sar.num) + "," + std::to_string(sar.den);
         else
@@ -289,8 +297,12 @@ Packet CFFFilter::convert_avframe_to_packet(AVFrame *frame, int index) {
         auto packet = Packet(video_frame);
         if (orig_pts_time_cache_.size() > 0) {
             if (orig_pts_time_cache_.count(frame->coded_picture_number) > 0) {
-                av_dict_set(&frame->metadata, "orig_pts_time", orig_pts_time_cache_[frame->coded_picture_number].c_str(), 0);
-                packet.set_time(std::stod(orig_pts_time_cache_[frame->coded_picture_number]));
+                av_dict_set(
+                    &frame->metadata, "orig_pts_time",
+                    orig_pts_time_cache_[frame->coded_picture_number].c_str(),
+                    0);
+                packet.set_time(std::stod(
+                    orig_pts_time_cache_[frame->coded_picture_number]));
                 orig_pts_time_cache_.erase(frame->coded_picture_number);
             }
         }
@@ -310,11 +322,12 @@ std::string get_meta_info(AVFrame *temp_frame, std::string key) {
     if (temp_frame != NULL) {
         if (temp_frame->metadata) {
             AVDictionaryEntry *tag = NULL;
-            while ((tag = av_dict_get(temp_frame->metadata, "", tag, AV_DICT_IGNORE_SUFFIX))) {
+            while ((tag = av_dict_get(temp_frame->metadata, "", tag,
+                                      AV_DICT_IGNORE_SUFFIX))) {
                 if (!strcmp(tag->key, key.c_str())) {
                     std::string svalue = tag->value;
-                    //int64_t stream_frame_number = stol(svalue);
-                    //return stream_frame_number;
+                    // int64_t stream_frame_number = stol(svalue);
+                    // return stream_frame_number;
                     return svalue;
                 }
             }
@@ -324,7 +337,7 @@ std::string get_meta_info(AVFrame *temp_frame, std::string key) {
 }
 
 int CFFFilter::get_cache_frame(int index, AVFrame *&frame, int &choose_index) {
-    //from input cache, choose the first frame decode from the same node.
+    // from input cache, choose the first frame decode from the same node.
     int choose_node_id = -1;
     int64_t choose_node_frame_number = INT64_MAX;
     choose_index = index;
@@ -344,16 +357,19 @@ int CFFFilter::get_cache_frame(int index, AVFrame *&frame, int &choose_index) {
             int same_node_index = input_stream_node.first;
             if (input_cache_[same_node_index].size() > 0) {
                 AVFrame *temp_frame = input_cache_[same_node_index].front();
-                std::string svalue = get_meta_info(temp_frame, "stream_frame_number");
+                std::string svalue =
+                    get_meta_info(temp_frame, "stream_frame_number");
                 int64_t stream_frame_number = svalue != "" ? stol(svalue) : -1;
-                if (stream_frame_number != -1 && stream_frame_number < choose_node_frame_number) {
+                if (stream_frame_number != -1 &&
+                    stream_frame_number < choose_node_frame_number) {
                     choose_node_frame_number = stream_frame_number;
                     choose_index = same_node_index;
                 }
 
                 svalue = get_meta_info(temp_frame, "orig_pts_time");
                 if (svalue != "")
-                    orig_pts_time_cache_[temp_frame->coded_picture_number] = svalue;
+                    orig_pts_time_cache_[temp_frame->coded_picture_number] =
+                        svalue;
             }
         }
     }
@@ -405,17 +421,20 @@ int CFFFilter::process_filter_graph(Task &task) {
     if (num_input_streams_ > 0) {
         while (true) {
             std::map<int, std::vector<AVFrame *>> output_frames;
-            int ret = filter_graph_->reap_filters(output_frames, push_frame_flag);
+            int ret =
+                filter_graph_->reap_filters(output_frames, push_frame_flag);
             push_frame_flag = 0;
             for (auto output_frame : output_frames) {
-                for (int index = 0; index < output_frame.second.size(); index++) {
+                for (int index = 0; index < output_frame.second.size();
+                     index++) {
                     if (output_frame.second[index] == NULL) {
                         out_eof_[output_frame.first] = true;
                         continue;
                     }
                     static int conver_av_frame = 0;
                     conver_av_frame++;
-                    auto packet = convert_avframe_to_packet(output_frame.second[index], output_frame.first);
+                    auto packet = convert_avframe_to_packet(
+                        output_frame.second[index], output_frame.first);
                     av_frame_free(&(output_frame.second[index]));
                     task.fill_output_packet(output_frame.first, packet);
                 }
@@ -456,7 +475,8 @@ int CFFFilter::process_filter_graph(Task &task) {
             }
         }
     } else {
-        // this is a source filter, so we get frame from sink for one time in a process.
+        // this is a source filter, so we get frame from sink for one time in a
+        // process.
         std::map<int, std::vector<AVFrame *>> output_frames;
         int ret = filter_graph_->reap_filters(output_frames, 0);
         for (auto output_frame : output_frames) {
@@ -465,7 +485,8 @@ int CFFFilter::process_filter_graph(Task &task) {
                     out_eof_[output_frame.first] = true;
                     continue;
                 }
-                auto packet = convert_avframe_to_packet(output_frame.second[index], output_frame.first);
+                auto packet = convert_avframe_to_packet(
+                    output_frame.second[index], output_frame.first);
                 av_frame_free(&(output_frame.second[index]));
                 task.fill_output_packet(output_frame.first, packet);
             }
@@ -491,9 +512,11 @@ int CFFFilter::process(Task &task) {
     bool b_eof = true;
     int ret = 0;
 
-    //in case of possiblity to be used in dynamical remove/add, just return now
-    if (num_input_streams_ != 0 && num_input_streams_ != task.get_inputs().size()) {
-        BMFLOG_NODE(BMF_INFO, node_id_) << "the inputs number has changed, just return";
+    // in case of possiblity to be used in dynamical remove/add, just return now
+    if (num_input_streams_ != 0 &&
+        num_input_streams_ != task.get_inputs().size()) {
+        BMFLOG_NODE(BMF_INFO, node_id_)
+            << "the inputs number has changed, just return";
         return PROCESS_OK;
     }
 
@@ -514,7 +537,7 @@ int CFFFilter::process(Task &task) {
         }
     }
 
-    //cache task data to input_cache
+    // cache task data to input_cache
     for (int index = 0; index < num_input_streams_; index++) {
         while (task.pop_packet_from_input_queue(index, packet)) {
             if (packet.timestamp() == BMF_EOF) {
@@ -524,7 +547,8 @@ int CFFFilter::process(Task &task) {
             }
 
             if (packet.timestamp() == BMF_PAUSE) {
-                BMFLOG_NODE(BMF_INFO, node_id_) << "Got BMF PAUSE in the filter";
+                BMFLOG_NODE(BMF_INFO, node_id_)
+                    << "Got BMF PAUSE in the filter";
                 for (auto &outputs : task.get_outputs())
                     outputs.second->push(packet);
                 continue;
@@ -537,14 +561,12 @@ int CFFFilter::process(Task &task) {
             }
 
             if (packet.is<VideoFrame>()) {
-                auto& video_frame = packet.get<VideoFrame>();
+                auto &video_frame = packet.get<VideoFrame>();
                 frame = ffmpeg::from_video_frame(video_frame, true);
-            }
-            else if (packet.is<AudioFrame>()) {
-                auto& audio_frame = packet.get<AudioFrame>();
+            } else if (packet.is<AudioFrame>()) {
+                auto &audio_frame = packet.get<AudioFrame>();
                 frame = ffmpeg::from_audio_frame(audio_frame, true);
-            }
-            else {
+            } else {
                 return PROCESS_ERROR;
             }
             input_cache_[index].push(frame);
@@ -563,7 +585,7 @@ int CFFFilter::process(Task &task) {
             task.fill_output_packet(index, packet);
         }
         task.set_timestamp(DONE);
-        //clear input_cache
+        // clear input_cache
         for (auto input : input_cache_) {
             while (input.second.size() > 0) {
                 AVFrame *frame = input.second.front();
@@ -595,8 +617,7 @@ int CFFFilter::reset() {
 REGISTER_MODULE_CLASS(CFFFilter);
 REGISTER_MODULE_INFO(CFFFilter, info) {
     info.module_description = "Builtin FFmpeg-based filting module.";
-    info.module_tag = ModuleTag::BMF_TAG_FILTER|
-        ModuleTag::BMF_TAG_IMAGE_PROCESSOR|
-        ModuleTag::BMF_TAG_AUDIO_PROCESSOR|
-        ModuleTag::BMF_TAG_VIDEO_PROCESSOR;
+    info.module_tag =
+        ModuleTag::BMF_TAG_FILTER | ModuleTag::BMF_TAG_IMAGE_PROCESSOR |
+        ModuleTag::BMF_TAG_AUDIO_PROCESSOR | ModuleTag::BMF_TAG_VIDEO_PROCESSOR;
 }

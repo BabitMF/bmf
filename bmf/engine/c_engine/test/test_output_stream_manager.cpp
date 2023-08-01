@@ -30,8 +30,10 @@ TEST(output_stream_manager, propagate_packets) {
     StreamConfig a;
     a.identifier = "audio";
     output_stream_names.push_back(a);
-    OutputStreamManager output_stream_manager = OutputStreamManager(output_stream_names);
-    std::shared_ptr<SafeQueue<Packet> > packets = std::make_shared<SafeQueue<Packet> >();
+    OutputStreamManager output_stream_manager =
+        OutputStreamManager(output_stream_names);
+    std::shared_ptr<SafeQueue<Packet>> packets =
+        std::make_shared<SafeQueue<Packet>>();
     Packet packet(0);
     packet.set_timestamp(10);
     packets->push(packet);

@@ -17,79 +17,69 @@
 #include <kernel/unary_ops.h>
 #include <kernel/cpu/kernel_utils.h>
 
-namespace hmp{
-namespace kernel{
+namespace hmp {
+namespace kernel {
 namespace {
 
-Tensor& round_cpu(Tensor &out, const Tensor &in)
-{
-    HMP_DISPATCH_FLOATING_POINT_TYPES_AND_HALF(in.scalar_type(), "round_cpu", [&](){
-        cpu::uop_kernel<scalar_t, scalar_t>(out, in, [&](scalar_t v){
-            return std::round(v);
+Tensor &round_cpu(Tensor &out, const Tensor &in) {
+    HMP_DISPATCH_FLOATING_POINT_TYPES_AND_HALF(
+        in.scalar_type(), "round_cpu", [&]() {
+            cpu::uop_kernel<scalar_t, scalar_t>(
+                out, in, [&](scalar_t v) { return std::round(v); });
         });
+    return out;
+}
+
+Tensor &ceil_cpu(Tensor &out, const Tensor &in) {
+    HMP_DISPATCH_FLOATING_POINT_TYPES_AND_HALF(
+        in.scalar_type(), "ceil_cpu", [&]() {
+            cpu::uop_kernel<scalar_t, scalar_t>(
+                out, in, [&](scalar_t v) { return std::ceil(v); });
+        });
+    return out;
+}
+
+Tensor &floor_cpu(Tensor &out, const Tensor &in) {
+    HMP_DISPATCH_FLOATING_POINT_TYPES_AND_HALF(
+        in.scalar_type(), "floor_cpu", [&]() {
+            cpu::uop_kernel<scalar_t, scalar_t>(
+                out, in, [&](scalar_t v) { return std::floor(v); });
+        });
+    return out;
+}
+
+Tensor &abs_cpu(Tensor &out, const Tensor &in) {
+    HMP_DISPATCH_ALL_TYPES_AND_HALF(in.scalar_type(), "abs_cpu", [&]() {
+        cpu::uop_kernel<scalar_t, scalar_t>(
+            out, in, [&](scalar_t v) { return std::abs(v); });
     });
     return out;
 }
 
-Tensor& ceil_cpu(Tensor &out, const Tensor &in)
-{
-    HMP_DISPATCH_FLOATING_POINT_TYPES_AND_HALF(in.scalar_type(), "ceil_cpu", [&](){
-        cpu::uop_kernel<scalar_t, scalar_t>(out, in, [&](scalar_t v){
-            return std::ceil(v);
-        });
+Tensor &minus_cpu(Tensor &out, const Tensor &in) {
+    HMP_DISPATCH_ALL_TYPES_AND_HALF(in.scalar_type(), "minus_cpu", [&]() {
+        cpu::uop_kernel<scalar_t, scalar_t>(out, in,
+                                            [&](scalar_t v) { return -v; });
     });
     return out;
 }
 
-Tensor& floor_cpu(Tensor &out, const Tensor &in)
-{
-    HMP_DISPATCH_FLOATING_POINT_TYPES_AND_HALF(in.scalar_type(), "floor_cpu", [&](){
-        cpu::uop_kernel<scalar_t, scalar_t>(out, in, [&](scalar_t v){
-            return std::floor(v);
-        });
-    });
-    return out;
-}
-
-
-Tensor& abs_cpu(Tensor &out, const Tensor &in)
-{
-    HMP_DISPATCH_ALL_TYPES_AND_HALF(in.scalar_type(), "abs_cpu", [&](){
-        cpu::uop_kernel<scalar_t, scalar_t>(out, in, [&](scalar_t v){
-            return std::abs(v);
-        });
-    });
-    return out;
-}
-
-
-Tensor& minus_cpu(Tensor &out, const Tensor &in)
-{
-    HMP_DISPATCH_ALL_TYPES_AND_HALF(in.scalar_type(), "minus_cpu", [&](){
-        cpu::uop_kernel<scalar_t, scalar_t>(out, in, [&](scalar_t v){
-            return -v;
-        });
-    });
-    return out;
-}
-
-
-Tensor& clip_cpu(Tensor &out, const Tensor &in, const Scalar &min, const Scalar &max)
-{
-    HMP_DISPATCH_ALL_TYPES_AND_HALF(in.scalar_type(), "clip_cpu", [&](){
+Tensor &clip_cpu(Tensor &out, const Tensor &in, const Scalar &min,
+                 const Scalar &max) {
+    HMP_DISPATCH_ALL_TYPES_AND_HALF(in.scalar_type(), "clip_cpu", [&]() {
         auto min_v = min.to<scalar_t>();
         auto max_v = max.to<scalar_t>();
 
         HMP_REQUIRE(min_v <= max_v,
-             "clip_cpu: expect min <= max, got min={}, max={}", min_v, max_v);
+                    "clip_cpu: expect min <= max, got min={}, max={}", min_v,
+                    max_v);
 
-        cpu::uop_kernel<scalar_t, scalar_t>(out, in, [&](scalar_t v){
+        cpu::uop_kernel<scalar_t, scalar_t>(out, in, [&](scalar_t v) {
             return v < min_v ? min_v : (v > max_v ? max_v : v);
         });
     });
     return out;
 }
-
 
 HMP_DEVICE_DISPATCH(kCPU, round_stub, &round_cpu)
 HMP_DEVICE_DISPATCH(kCPU, ceil_stub, &ceil_cpu)
@@ -97,6 +87,6 @@ HMP_DEVICE_DISPATCH(kCPU, floor_stub, &floor_cpu)
 HMP_DEVICE_DISPATCH(kCPU, abs_stub, &abs_cpu)
 HMP_DEVICE_DISPATCH(kCPU, minus_stub, &minus_cpu)
 HMP_DEVICE_DISPATCH(kCPU, clip_stub, &clip_cpu)
-
-
-}}} //
+}
+}
+} //

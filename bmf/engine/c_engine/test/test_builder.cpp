@@ -40,10 +40,12 @@ TEST(builder, decode_encode) {
     encoder_para["video_params"] = video_para;
     encoder_para["audio_params"] = audio_para;
 
-    auto graph = bmf::builder::Graph(bmf::builder::NormalMode, bmf_sdk::JsonParam());
+    auto graph =
+        bmf::builder::Graph(bmf::builder::NormalMode, bmf_sdk::JsonParam());
     auto video = graph.Decode(bmf_sdk::JsonParam(decoder_para));
 
-    graph.Encode(video["video"], video["audio"], bmf_sdk::JsonParam(encoder_para));
+    graph.Encode(video["video"], video["audio"],
+                 bmf_sdk::JsonParam(encoder_para));
 
     std::cout << graph.Dump() << std::endl;
     graph.Run();
@@ -70,11 +72,13 @@ TEST(builder, decode_passthrough_encode) {
     encoder_para["video_params"] = video_para;
     encoder_para["audio_params"] = audio_para;
 
-    auto graph = bmf::builder::Graph(bmf::builder::NormalMode, bmf_sdk::JsonParam());
+    auto graph =
+        bmf::builder::Graph(bmf::builder::NormalMode, bmf_sdk::JsonParam());
     auto video = graph.Decode(bmf_sdk::JsonParam(decoder_para));
 
-    graph.Encode(video["video"].CppModule({}, "pass_through", bmf_sdk::JsonParam()), video["audio"],
-                 bmf_sdk::JsonParam(encoder_para));
+    graph.Encode(
+        video["video"].CppModule({}, "pass_through", bmf_sdk::JsonParam()),
+        video["audio"], bmf_sdk::JsonParam(encoder_para));
 
     std::cout << graph.Dump() << std::endl;
     graph.Run();
@@ -100,7 +104,8 @@ TEST(builder, decode_filter_encode) {
     encoder_para["video_params"] = video_para;
     encoder_para["audio_params"] = audio_para;
 
-    auto graph = bmf::builder::Graph(bmf::builder::NormalMode, bmf_sdk::JsonParam());
+    auto graph =
+        bmf::builder::Graph(bmf::builder::NormalMode, bmf_sdk::JsonParam());
     auto video = graph.Decode(bmf_sdk::JsonParam(decoder_para));
 
     auto audio = video["audio"].Atrim("start=0:end=6");
@@ -109,10 +114,9 @@ TEST(builder, decode_filter_encode) {
 
     std::cout << graph.Dump() << std::endl;
     graph.Run();
-
 }
 
-#if 0  //FIXME: need go module sdk support
+#if 0 // FIXME: need go module sdk support
 TEST(builder, custom_module) {
     google::InitGoogleLogging("main");
     google::SetStderrLogging(google::INFO);

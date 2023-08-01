@@ -20,17 +20,14 @@
 #include <hmp/core/logging.h>
 #include <hmp/core/device.h>
 
-namespace hmp{
-
+namespace hmp {
 
 HMP_DECLARE_DEVICE(kCPU);
 #ifdef HMP_ENABLE_CUDA
 HMP_DECLARE_DEVICE(kCUDA);
 #endif
 
-Device::Device(Type type, Index index)
-    : type_(type), index_(index)
-{
+Device::Device(Type type, Index index) : type_(type), index_(index) {
     HMP_REQUIRE(index >= 0, "invalid device index {} of {}", index, type);
 
 #ifndef HMP_BUILD_SHARED
@@ -39,16 +36,13 @@ Device::Device(Type type, Index index)
     HMP_IMPORT_DEVICE(kCUDA);
 #endif
 #endif
-
 }
 
-
-Device::Device(const std::string &devstr)
-{
+Device::Device(const std::string &devstr) {
     auto cpos = devstr.find(":");
     std::string_view dstr{devstr};
     int index = 0;
-    if(cpos != std::string::npos){
+    if (cpos != std::string::npos) {
         dstr = std::string_view(devstr.c_str(), cpos);
         const char *start = devstr.c_str() + cpos + 1;
         char *end = nullptr;
@@ -56,132 +50,105 @@ Device::Device(const std::string &devstr)
         HMP_REQUIRE(start < end, "invalid device index in devstr '{}'", devstr);
     }
 
-    if(dstr == "cpu"){
+    if (dstr == "cpu") {
         type_ = kCPU;
-    }
-    else if(dstr == "cuda"){
+    } else if (dstr == "cuda") {
         type_ = kCUDA;
-    }
-    else{
+    } else {
         HMP_REQUIRE(false, "invalid device string '{}'", devstr);
     }
 
     //
     auto count = device_count(type_);
-    HMP_REQUIRE(index < count,
-         "device index({}) is out of range({})", index, count);
+    HMP_REQUIRE(index < count, "device index({}) is out of range({})", index,
+                count);
     index_ = index;
 }
 
-bool Device::operator==(const Device &other) const
-{
+bool Device::operator==(const Device &other) const {
     return type_ == other.type() && index_ == other.index();
 }
 
-
-
-std::string stringfy(const Device &device)
-{
-    if(device.type() == kCPU){
+std::string stringfy(const Device &device) {
+    if (device.type() == kCPU) {
         return "cpu";
-    }
-    else if(device.type() == kCUDA){
+    } else if (device.type() == kCUDA) {
         return fmt::format("cuda:{}", device.index());
-    }
-    else{
+    } else {
         return "InvalidDevice";
     }
 }
 
-
 /////////
 
-namespace impl{
+namespace impl {
 
-static DeviceManager *sDeviceManagers[static_cast<int>(DeviceType::NumDeviceTypes)];
+static DeviceManager
+    *sDeviceManagers[static_cast<int>(DeviceType::NumDeviceTypes)];
 
-void registerDeviceManager(DeviceType dtype, DeviceManager *dm)
-{
-    //as it only init before main, so no lock is needed
-    sDeviceManagers[static_cast<int>(dtype)] = dm; 
+void registerDeviceManager(DeviceType dtype, DeviceManager *dm) {
+    // as it only init before main, so no lock is needed
+    sDeviceManagers[static_cast<int>(dtype)] = dm;
 }
 
 ////
-class CPUDeviceManager : public DeviceManager
-{
+class CPUDeviceManager : public DeviceManager {
     static Device cpuDevice_;
-public:
-    void setCurrent(const Device &) override
-    {
-    }
-    optional<Device> getCurrent() const override
-    {
-        return cpuDevice_;
-    }
 
-    int64_t count() const override
-    {
-        return 1;
-    }
+  public:
+    void setCurrent(const Device &) override {}
+    optional<Device> getCurrent() const override { return cpuDevice_; }
+
+    int64_t count() const override { return 1; }
 };
 Device CPUDeviceManager::cpuDevice_{};
 
 static CPUDeviceManager sCPUDeviceManager;
 HMP_REGISTER_DEVICE_MANAGER(kCPU, &sCPUDeviceManager);
 
-} //namespace impl
+} // namespace impl
 
-
-optional<Device> current_device(DeviceType dtype)
-{
+optional<Device> current_device(DeviceType dtype) {
     auto dm = impl::sDeviceManagers[static_cast<int>(dtype)];
     HMP_REQUIRE(dm, "Device type {} is not supported", dtype);
     return dm->getCurrent();
 }
 
-void set_current_device(const Device &device)
-{
+void set_current_device(const Device &device) {
     auto dtype = device.type();
     auto dm = impl::sDeviceManagers[static_cast<int>(dtype)];
     HMP_REQUIRE(dm, "Device type {} is not supported", dtype);
     dm->setCurrent(device);
 }
 
-int64_t device_count(DeviceType dtype)
-{
+int64_t device_count(DeviceType dtype) {
     auto dm = impl::sDeviceManagers[static_cast<int>(dtype)];
-    if(dm){
+    if (dm) {
         return dm->count();
-    }
-    else{
+    } else {
         return 0;
     }
 }
 
-DeviceGuard::DeviceGuard(const Device &device)
-{
+DeviceGuard::DeviceGuard(const Device &device) {
     auto current = current_device(device.type());
-    if (current != device){
+    if (current != device) {
         set_current_device(device);
         origin_ = current;
     }
 }
 
-DeviceGuard::DeviceGuard(DeviceGuard &&other)
-{
+DeviceGuard::DeviceGuard(DeviceGuard &&other) {
     origin_ = other.origin_;
     other.origin_.reset();
 }
 
-DeviceGuard::~DeviceGuard()
-{
-    if(origin_){
+DeviceGuard::~DeviceGuard() {
+    if (origin_) {
         set_current_device(origin_.value());
     }
 }
 
 //
 
-
-
-} //namespace hmp
+} // namespace hmp

@@ -17,11 +17,9 @@
 #include <hmp/tensor.h>
 #include <hmp/format.h>
 
-
 #ifdef HMP_ENABLE_CUDA
 
-TEST(TestTensorOptions, Construct)
-{
+TEST(TestTensorOptions, Construct) {
     using namespace hmp;
 
     auto opt0 = TensorOptions::make(kCUDA, kFloat64, true);

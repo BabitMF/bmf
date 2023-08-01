@@ -17,21 +17,22 @@
 #include "mapping.h"
 
 namespace bmf::internal {
-    InstanceMapping<bmf_engine::Graph> &ConnectorMapping::GraphInstanceMapping() {
-        static auto *graph_instance_mapping = new InstanceMapping<bmf_engine::Graph>();
-        return *graph_instance_mapping;
-    }
+InstanceMapping<bmf_engine::Graph> &ConnectorMapping::GraphInstanceMapping() {
+    static auto *graph_instance_mapping =
+        new InstanceMapping<bmf_engine::Graph>();
+    return *graph_instance_mapping;
+}
 
-    InstanceMapping<bmf_sdk::Module> &ConnectorMapping::ModuleInstanceMapping() {
-        static auto *module_instance_mapping = new InstanceMapping<bmf_sdk::Module>();
-        return *module_instance_mapping;
-    }
+InstanceMapping<bmf_sdk::Module> &ConnectorMapping::ModuleInstanceMapping() {
+    static auto *module_instance_mapping =
+        new InstanceMapping<bmf_sdk::Module>();
+    return *module_instance_mapping;
+}
 
-    InstanceMapping<std::function<bmf_sdk::CBytes(bmf_sdk::CBytes)> > &
-    ConnectorMapping::ModuleCallbackInstanceMapping() {
-        static auto *module_callback_instance_mapping =
-                new InstanceMapping<std::function<bmf_sdk::CBytes(bmf_sdk::CBytes)> >();
-        return *module_callback_instance_mapping;
-    }
-
+InstanceMapping<std::function<bmf_sdk::CBytes(bmf_sdk::CBytes)>> &
+ConnectorMapping::ModuleCallbackInstanceMapping() {
+    static auto *module_callback_instance_mapping =
+        new InstanceMapping<std::function<bmf_sdk::CBytes(bmf_sdk::CBytes)>>();
+    return *module_callback_instance_mapping;
+}
 }

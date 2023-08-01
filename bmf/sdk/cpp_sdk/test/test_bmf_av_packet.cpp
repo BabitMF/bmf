@@ -2,17 +2,14 @@
 #include <bmf/sdk/bmf_av_packet.h>
 #include <gtest/gtest.h>
 
-
 using namespace bmf_sdk;
 
-
-TEST(bmf_av_packet, constructors)
-{
+TEST(bmf_av_packet, constructors) {
     BMFAVPacket pkt0;
     EXPECT_FALSE(pkt0);
 
     EXPECT_THROW(pkt0 = BMFAVPacket(Tensor()), std::runtime_error);
-    auto d0 = hmp::empty({1024}).slice(0, 0, -1, 2); //non-contiguous
+    auto d0 = hmp::empty({1024}).slice(0, 0, -1, 2); // non-contiguous
     EXPECT_THROW(pkt0 = BMFAVPacket(d0), std::runtime_error);
 
     auto pkt1 = BMFAVPacket::make(1024);
@@ -23,9 +20,7 @@ TEST(bmf_av_packet, constructors)
     EXPECT_TRUE(pkt1.data_ptr() != nullptr);
 }
 
-
-TEST(bmf_av_packet, copy_props)
-{
+TEST(bmf_av_packet, copy_props) {
     auto pkt0 = BMFAVPacket::make(1024);
     pkt0.set_time_base(Rational(1, 2));
     pkt0.set_pts(100);

@@ -23,7 +23,7 @@ void Menu::update_screen() {
                 prefix = " [ ]";
         } else if (cursor == i)
             prefix = "  > ";
-            
+
         mvprintw(next_row, 0, (prefix + options[i].title).c_str());
         next_row++;
     }
@@ -78,17 +78,17 @@ bool Menu::select_option() {
     return false;
 }
 
-Menu& Menu::Text(std::string text) {
+Menu &Menu::Text(std::string text) {
     pretext.push_back(text);
     return *this;
 }
 
-Menu& Menu::SubMenu(Menu submenu) {
+Menu &Menu::SubMenu(Menu submenu) {
     options.push_back(submenu);
     return *this;
 }
 
-Menu& Menu::Option(std::string text, MenuOptionTag tag) {
+Menu &Menu::Option(std::string text, MenuOptionTag tag) {
     Menu menu = Menu(text);
     menu_type = MENU_MULTI;
     menu.menu_type = MENU_OPTION;
@@ -97,7 +97,7 @@ Menu& Menu::Option(std::string text, MenuOptionTag tag) {
     return *this;
 }
 
-Menu& Menu::Back(std::string text) {
+Menu &Menu::Back(std::string text) {
     Menu menu = Menu(text);
     menu.menu_type = MENU_BACK;
     options.push_back(menu);
@@ -106,29 +106,29 @@ Menu& Menu::Back(std::string text) {
 
 Menu Menu::CreateQuitMenu() {
     Menu menu = Menu("退出（或按ESC）")
-        .Text("你想退出吗？")
-        .Text("[YES] 如果想退出，请按 Y，SPACE 或 ENTER。")
-        .Text("[NO] 想继续菜单，请按任何其他键。");
+                    .Text("你想退出吗？")
+                    .Text("[YES] 如果想退出，请按 Y，SPACE 或 ENTER。")
+                    .Text("[NO] 想继续菜单，请按任何其他键。");
     menu.menu_type = MENU_QUIT;
     return menu;
 }
 
-Menu& Menu::Quit() {
+Menu &Menu::Quit() {
     options.push_back(CreateQuitMenu());
     return *this;
 }
 
-Menu& Menu::Confirmation() {
+Menu &Menu::Confirmation() {
     menu_type = MENU_CONFIRM;
     return *this;
 }
 
-Menu& Menu::get_selected_menu() {
-    Menu& selected_menu = options[cursor];
+Menu &Menu::get_selected_menu() {
+    Menu &selected_menu = options[cursor];
     return selected_menu;
 }
 
-Menu& Menu::Acceptance(std::function<void()> cb) {
+Menu &Menu::Acceptance(std::function<void()> cb) {
     callback = cb;
     return *this;
 }

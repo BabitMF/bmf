@@ -8,10 +8,13 @@
 
 using namespace bmf_sdk;
 
-TEST(media_description, construct)
-{
+TEST(media_description, construct) {
     MediaDesc dp;
-    dp.width(1920).height(1080).device(hmp::Device("cpu")).pixel_format(hmp::PF_YUV420P).media_type(MediaType::kAVFrame);
+    dp.width(1920)
+        .height(1080)
+        .device(hmp::Device("cpu"))
+        .pixel_format(hmp::PF_YUV420P)
+        .media_type(MediaType::kAVFrame);
 
     EXPECT_EQ(dp.width(), 1920);
     EXPECT_EQ(dp.height(), 1080);
@@ -20,8 +23,7 @@ TEST(media_description, construct)
     EXPECT_EQ(dp.media_type(), MediaType::kAVFrame);
 }
 
-TEST(media_description, has_value)
-{
+TEST(media_description, has_value) {
     MediaDesc dp;
     dp.width(1920).device(hmp::Device("cpu")).pixel_format(hmp::PF_YUV420P);
     EXPECT_TRUE(dp.width.has_value());
@@ -31,31 +33,33 @@ TEST(media_description, has_value)
     EXPECT_FALSE(dp.media_type.has_value());
 }
 
-TEST(convert_backend, format_cvt) 
-{
+TEST(convert_backend, format_cvt) {
     MediaDesc dp;
     dp.width(1920).pixel_format(hmp::PF_YUV420P);
     auto rgbformat = hmp::PixelInfo(hmp::PF_RGB24);
     auto src_vf = VideoFrame::make(640, 320, rgbformat);
-    auto dst_vf = bmf_convert(src_vf, MediaDesc{},  dp);
+    auto dst_vf = bmf_convert(src_vf, MediaDesc{}, dp);
     EXPECT_EQ(dst_vf.width(), 1920);
     EXPECT_EQ(dst_vf.height(), 960);
     EXPECT_EQ(dst_vf.frame().format(), hmp::PF_YUV420P);
 }
 
 #ifdef BMF_ENABLE_FFMPEG
-//use for register
+// use for register
 #include <bmf/sdk/av_convertor.h>
 TEST(convert_backend, convert_AVFrame) {
     MediaDesc dp;
-    dp.width(1920).height(1080).pixel_format(hmp::PF_RGB24).media_type(MediaType::kAVFrame);
+    dp.width(1920)
+        .height(1080)
+        .pixel_format(hmp::PF_RGB24)
+        .media_type(MediaType::kAVFrame);
     auto yuvformat = hmp::PixelInfo(hmp::PF_YUV420P);
     auto src_vf = VideoFrame::make(640, 320, yuvformat);
 
     auto dst_vf = bmf_convert(src_vf, MediaDesc{}, dp);
     EXPECT_TRUE(static_cast<bool>(dst_vf));
 
-    const AVFrame* frame = dst_vf.private_get<AVFrame>();
+    const AVFrame *frame = dst_vf.private_get<AVFrame>();
     EXPECT_EQ(frame->width, 1920);
     EXPECT_EQ(frame->height, 1080);
     EXPECT_EQ(frame->format, AV_PIX_FMT_RGB24);
@@ -79,7 +83,10 @@ TEST(convert_backend, convert_AVFrame) {
 #include <bmf/sdk/ocv_convertor.h>
 TEST(convert_backend, convert_OCV) {
     MediaDesc dp;
-    dp.width(1920).height(1080).pixel_format(hmp::PF_RGB24).media_type(MediaType::kCVMat);
+    dp.width(1920)
+        .height(1080)
+        .pixel_format(hmp::PF_RGB24)
+        .media_type(MediaType::kCVMat);
     auto yuvformat = hmp::PixelInfo(hmp::PF_YUV420P);
     auto src_vf = VideoFrame::make(640, 320, yuvformat);
 
@@ -94,7 +101,7 @@ TEST(convert_backend, convert_OCV) {
     EXPECT_EQ(mat->size[0], 1080);
     EXPECT_EQ(mat->size[1], 1920);
 
-    cv::Mat *roi_mat = new cv::Mat((*mat)({0,0,1280,720}));
+    cv::Mat *roi_mat = new cv::Mat((*mat)({0, 0, 1280, 720}));
 
     VideoFrame src_with_ocv;
     src_with_ocv.private_attach<cv::Mat>(roi_mat);
@@ -105,7 +112,7 @@ TEST(convert_backend, convert_OCV) {
     EXPECT_EQ(vf.height(), 720);
     EXPECT_EQ(vf.frame().format(), hmp::PF_RGB24);
 
-    cv::Mat *roi_mat2 = new cv::Mat((*mat)({0,0,1440,720}));
+    cv::Mat *roi_mat2 = new cv::Mat((*mat)({0, 0, 1440, 720}));
     VideoFrame src_with_ocv2;
     src_with_ocv2.private_attach<cv::Mat>(roi_mat2);
     MediaDesc dst_dp;
@@ -121,7 +128,10 @@ TEST(convert_backend, convert_OCV) {
 #ifdef BMF_ENABLE_TORCH
 TEST(convert_backend, convert_torch) {
     MediaDesc dp;
-    dp.width(1920).height(1080).pixel_format(hmp::PF_RGB24).media_type(MediaType::kATTensor);
+    dp.width(1920)
+        .height(1080)
+        .pixel_format(hmp::PF_RGB24)
+        .media_type(MediaType::kATTensor);
     auto yuvformat = hmp::PixelInfo(hmp::PF_YUV420P);
     auto src_vf = VideoFrame::make(640, 320, yuvformat);
 
@@ -147,7 +157,11 @@ TEST(convert_backend, convert_torch) {
 #if defined(BMF_ENABLE_TORCH) && defined(BMF_ENABLE_CUDA)
 TEST(convert_backend, convert_torch_cuda) {
     MediaDesc dp;
-    dp.width(1920).height(1080).pixel_format(hmp::PF_RGB24).device("cuda").media_type(MediaType::kATTensor);
+    dp.width(1920)
+        .height(1080)
+        .pixel_format(hmp::PF_RGB24)
+        .device("cuda")
+        .media_type(MediaType::kATTensor);
     auto yuvformat = hmp::PixelInfo(hmp::PF_YUV420P);
     auto src_vf = VideoFrame::make(640, 320, yuvformat);
 

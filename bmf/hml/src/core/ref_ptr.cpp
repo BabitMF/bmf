@@ -15,18 +15,16 @@
  */
 #include <hmp/core/ref_ptr.h>
 
-namespace hmp{
+namespace hmp {
 
-RefObject::~RefObject()
-{
+RefObject::~RefObject() {
     auto refcount = refcount_.load();
 
-    //sanit check
-    if(refcount){
-        HMP_ERR("RefObject: invalid state of RefObject {}, refcount={}", (void*)this, refcount);
+    // sanit check
+    if (refcount) {
+        HMP_ERR("RefObject: invalid state of RefObject {}, refcount={}",
+                (void *)this, refcount);
     }
 }
 
-
-
-} //namespace
+} // namespace

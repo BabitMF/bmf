@@ -23,22 +23,18 @@ namespace py = pybind11;
 
 using namespace hmp;
 
-
-void cudaBind(py::module &m)
-{
+void cudaBind(py::module &m) {
 #ifdef HMP_ENABLE_CUDA
     auto cu = m.def_submodule("cuda");
 
     py::class_<cuda::Event>(cu, "Event")
-        .def(py::init<bool, bool, bool>(), 
-            py::arg("enable_timing"), py::arg("blocking")=true, py::arg("interprocess")=false)
+        .def(py::init<bool, bool, bool>(), py::arg("enable_timing"),
+             py::arg("blocking") = true, py::arg("interprocess") = false)
         .def("is_created", &cuda::Event::is_created)
-        .def("record", &cuda::Event::record, py::arg("stream")=py::none())
-        .def("block", &cuda::Event::block, py::arg("stream")=py::none())
+        .def("record", &cuda::Event::record, py::arg("stream") = py::none())
+        .def("block", &cuda::Event::block, py::arg("stream") = py::none())
         .def("query", &cuda::Event::query)
         .def("synchronize", &cuda::Event::synchronize)
-        .def("elapsed", &cuda::Event::elapsed)
-    ;
+        .def("elapsed", &cuda::Event::elapsed);
 #endif
-
 }

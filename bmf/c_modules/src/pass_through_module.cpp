@@ -15,7 +15,8 @@
 #include "pass_through_module.h"
 #include <bmf/sdk/log.h>
 
-PassThroughModule::PassThroughModule(int node_id, JsonParam json_param) : Module(node_id, json_param) {
+PassThroughModule::PassThroughModule(int node_id, JsonParam json_param)
+    : Module(node_id, json_param) {
     BMFLOG_NODE(BMF_INFO, node_id_) << "pass through module";
     last_input_num_ = 0;
     last_output_num_ = 0;
@@ -24,23 +25,25 @@ PassThroughModule::PassThroughModule(int node_id, JsonParam json_param) : Module
 
 int PassThroughModule::process(Task &task) {
     if (task.get_inputs().size() != last_input_num_) {
-        BMFLOG_NODE(BMF_INFO, node_id_) << "Input Queue size changed from " << last_input_num_
-            << " to " << task.get_inputs().size();
+        BMFLOG_NODE(BMF_INFO, node_id_) << "Input Queue size changed from "
+                                        << last_input_num_ << " to "
+                                        << task.get_inputs().size();
         last_input_num_ = task.get_inputs().size();
     }
     if (task.get_outputs().size() != last_output_num_) {
-        BMFLOG_NODE(BMF_INFO, node_id_) << "Output Queue size changed from " << last_output_num_
-            << " to " << task.get_outputs().size();
+        BMFLOG_NODE(BMF_INFO, node_id_) << "Output Queue size changed from "
+                                        << last_output_num_ << " to "
+                                        << task.get_outputs().size();
         last_output_num_ = task.get_outputs().size();
     }
 
     if (in_eof_.size() != task.get_inputs().size()) {
         in_eof_.clear();
-        for (auto input_queue:task.get_inputs())
+        for (auto input_queue : task.get_inputs())
             in_eof_[input_queue.first] = false;
     }
 
-    for (auto input_queue:task.get_inputs()) {
+    for (auto input_queue : task.get_inputs()) {
         Packet packet;
 
         if (in_eof_[input_queue.first] == true)
@@ -51,14 +54,15 @@ int PassThroughModule::process(Task &task) {
             if (packet.timestamp() == BMF_EOF) {
                 in_eof_[input_queue.first] = true;
             }
-            BMFLOG_NODE(BMF_INFO, node_id_) << "get packet :" << packet.timestamp() << " data:"
-                                            << packet.type_info().name << " in queue:"
-                                            << input_queue.first;
+            BMFLOG_NODE(BMF_INFO, node_id_)
+                << "get packet :" << packet.timestamp()
+                << " data:" << packet.type_info().name
+                << " in queue:" << input_queue.first;
         }
     }
 
     bool all_eof = true;
-    for (auto f_eof:in_eof_) {
+    for (auto f_eof : in_eof_) {
         if (f_eof.second == false) {
             all_eof = false;
             break;
@@ -75,6 +79,4 @@ int PassThroughModule::reset() {
     return 0;
 }
 
-int PassThroughModule::close() {
-    return 0;
-}
+int PassThroughModule::close() { return 0; }

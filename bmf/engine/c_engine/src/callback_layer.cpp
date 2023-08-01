@@ -19,13 +19,14 @@
 #include <utility>
 
 BEGIN_BMF_ENGINE_NS
-    void ModuleCallbackLayer::add_callback(int64_t key, std::function<CBytes(CBytes)> callback) {
-        callback_binding[key] = std::move(callback);
-    }
+void ModuleCallbackLayer::add_callback(int64_t key,
+                                       std::function<CBytes(CBytes)> callback) {
+    callback_binding[key] = std::move(callback);
+}
 
-    CBytes ModuleCallbackLayer::call(int64_t key, CBytes para) {
-        if (!callback_binding.count(key))
-            return CBytes::make(nullptr, 0);
-        return callback_binding[key](para);
-    }
+CBytes ModuleCallbackLayer::call(int64_t key, CBytes para) {
+    if (!callback_binding.count(key))
+        return CBytes::make(nullptr, 0);
+    return callback_binding[key](para);
+}
 END_BMF_ENGINE_NS

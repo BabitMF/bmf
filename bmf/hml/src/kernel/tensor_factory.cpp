@@ -17,18 +17,17 @@
 #include <kernel/tensor_factory.h>
 #include <hmp/format.h>
 
-namespace hmp{
-namespace kernel{
+namespace hmp {
+namespace kernel {
 
 HMP_DEFINE_DISPATCH_STUB(fill_stub)
 HMP_DEFINE_DISPATCH_STUB(copy_stub)
 HMP_DEFINE_DISPATCH_STUB(arange_stub)
 
-Tensor empty(const SizeArray &shape, const TensorOptions &options)
-{
+Tensor empty(const SizeArray &shape, const TensorOptions &options) {
     int64_t nitems = TensorInfo::calcNumel(shape);
     unsigned flags = 0;
-    if(options.pinned_memory()){
+    if (options.pinned_memory()) {
         flags |= static_cast<unsigned>(AllocatorFlags::Pinned);
     }
 
@@ -39,12 +38,11 @@ Tensor empty(const SizeArray &shape, const TensorOptions &options)
     HMP_REQUIRE(nitems > 0, "Invalid tensor shape={}", shape);
 
     return Tensor(makeRefPtr<TensorInfo>(
-        Buffer(scalar_type, nitems, allocator, options.pinned_memory()), shape));
+        Buffer(scalar_type, nitems, allocator, options.pinned_memory()),
+        shape));
 }
 
-
-Tensor& copy(Tensor &self, const Tensor &other)
-{
+Tensor &copy(Tensor &self, const Tensor &other) {
 #ifndef HMP_BUILD_SHARED
     HMP_IMPORT_DEVICE_DISPATCH(kCPU, copy_stub);
 #ifdef HMP_EANBLE_CUDA
@@ -53,12 +51,13 @@ Tensor& copy(Tensor &self, const Tensor &other)
 #endif
 
     HMP_REQUIRE(self.shape() == other.shape(),
-         "copy: can not copy data from shape {}, expect shape {}", other.shape(), self.shape());
+                "copy: can not copy data from shape {}, expect shape {}",
+                other.shape(), self.shape());
 
-    //always do copy in device kernel
-    auto device_type = self.device_type() == kCPU ? other.device_type() : self.device_type();
+    // always do copy in device kernel
+    auto device_type =
+        self.device_type() == kCPU ? other.device_type() : self.device_type();
     return copy_stub(device_type, self, other);
 }
-
-
-}} //
+}
+} //

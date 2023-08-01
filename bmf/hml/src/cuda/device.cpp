@@ -21,19 +21,13 @@
 #include <cuda_runtime.h>
 #include <cuda.h>
 
-namespace hmp{
-namespace cuda{
+namespace hmp {
+namespace cuda {
 
-
-class CUDADeviceManager : public impl::DeviceManager
-{
-public:
-    CUDADeviceManager()
-    {
-        initContext();
-    }
-    static void initContext()
-    {
+class CUDADeviceManager : public impl::DeviceManager {
+  public:
+    CUDADeviceManager() { initContext(); }
+    static void initContext() {
         cuInit(0);
         CUdevice device;
         const unsigned int flags = CU_CTX_SCHED_BLOCKING_SYNC;
@@ -41,26 +35,24 @@ public:
         HMP_CUDA_CHECK(cudaGetDeviceCount(&count));
         for (int idx = 0; idx < count; idx++) {
             auto ret = cuDeviceGet(&device, idx);
-            HMP_REQUIRE(ret == CUDA_SUCCESS, "get CUdevice {} failed={}", idx, ret);
+            HMP_REQUIRE(ret == CUDA_SUCCESS, "get CUdevice {} failed={}", idx,
+                        ret);
             ret = cuDevicePrimaryCtxSetFlags(device, flags);
-            HMP_REQUIRE(ret == CUDA_SUCCESS, "set device {} primary ctx flags failed={}", idx, ret);
+            HMP_REQUIRE(ret == CUDA_SUCCESS,
+                        "set device {} primary ctx flags failed={}", idx, ret);
         }
         return;
     }
-    void setCurrent(const Device &dev) override
-    {
+    void setCurrent(const Device &dev) override {
         HMP_CUDA_CHECK(cudaSetDevice(dev.index()));
-
     }
-    optional<Device> getCurrent() const override
-    {
+    optional<Device> getCurrent() const override {
         int index = 0;
         HMP_CUDA_CHECK(cudaGetDevice(&index));
         return Device(kCUDA, index);
     }
 
-    int64_t count() const
-    {
+    int64_t count() const {
         int count = 0;
         HMP_CUDA_CHECK(cudaGetDeviceCount(&count));
         return count;
@@ -70,19 +62,19 @@ public:
 static CUDADeviceManager sCUDADeviceManager;
 HMP_REGISTER_DEVICE_MANAGER(kCUDA, &sCUDADeviceManager);
 
-static const cudaDeviceProp &get_device_prop(int device)
-{
+static const cudaDeviceProp &get_device_prop(int device) {
     static cudaDeviceProp sProps[MaxDevices];
-    static cudaDeviceProp* sPProps[MaxDevices];
+    static cudaDeviceProp *sPProps[MaxDevices];
     static std::mutex sPropsLock;
 
-    HMP_REQUIRE(device < MaxDevices, 
-        "{} is exceed cuda::MaxDevices limitation {}", device, MaxDevices);
+    HMP_REQUIRE(device < MaxDevices,
+                "{} is exceed cuda::MaxDevices limitation {}", device,
+                MaxDevices);
 
-    if(sPProps[device] == nullptr){
+    if (sPProps[device] == nullptr) {
         std::lock_guard l(sPropsLock);
-        if(sPProps[device] == nullptr){
-            HMP_CUDA_CHECK(cudaGetDeviceProperties(sProps+device, device));
+        if (sPProps[device] == nullptr) {
+            HMP_CUDA_CHECK(cudaGetDeviceProperties(sProps + device, device));
             sPProps[device] = sProps + device;
         }
     }
@@ -90,17 +82,12 @@ static const cudaDeviceProp &get_device_prop(int device)
     return *sPProps[device];
 }
 
-
-int64_t DeviceProp::texture_pitch_alignment()
-{
+int64_t DeviceProp::texture_pitch_alignment() {
     int device;
     HMP_CUDA_CHECK(cudaGetDevice(&device));
 
     auto &prop = get_device_prop(device);
     return prop.texturePitchAlignment;
 }
-
-
-
-
-}} //namespace
+}
+} // namespace

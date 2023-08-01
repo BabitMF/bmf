@@ -19,105 +19,92 @@
 #include <hmp/tensor.h>
 #include <py_type_cast.h>
 
-
-namespace pybind11{
-namespace detail{
+namespace pybind11 {
+namespace detail {
 
 const static int NPY_HALF_ = 23;
 
-template <>
-struct npy_format_descriptor<hmp::Half> {
-  static pybind11::dtype dtype() {
-    handle ptr = npy_api::get().PyArray_DescrFromType_(NPY_HALF_);
-    return reinterpret_borrow<pybind11::dtype>(ptr);
-  }
-  static std::string format() {
-    // following: https://docs.python.org/3/library/struct.html#format-characters
-    return "e";
-  }
-  static constexpr auto name() {
-    return _("float16");
-  }
+template <> struct npy_format_descriptor<hmp::Half> {
+    static pybind11::dtype dtype() {
+        handle ptr = npy_api::get().PyArray_DescrFromType_(NPY_HALF_);
+        return reinterpret_borrow<pybind11::dtype>(ptr);
+    }
+    static std::string format() {
+        // following:
+        // https://docs.python.org/3/library/struct.html#format-characters
+        return "e";
+    }
+    static constexpr auto name() { return _("float16"); }
 };
-
-
-}} //
-
-
+}
+} //
 
 namespace py = pybind11;
 
 using namespace hmp;
 
-
-static py::dtype scalarTypeToNumpyDtype(const ScalarType scalar_type) 
-{
-  switch (scalar_type) {
-#define TO_FORMAT_STR(scalar_t, scalar_type)\
-    case ::hmp::ScalarType::scalar_type: \
+static py::dtype scalarTypeToNumpyDtype(const ScalarType scalar_type) {
+    switch (scalar_type) {
+#define TO_FORMAT_STR(scalar_t, scalar_type)                                   \
+    case ::hmp::ScalarType::scalar_type:                                       \
         return py::dtype::of<scalar_t>();
-    HMP_FORALL_SCALAR_TYPES(TO_FORMAT_STR)
+        HMP_FORALL_SCALAR_TYPES(TO_FORMAT_STR)
     default:
-      throw std::runtime_error(std::string("Got unsupported ScalarType ") + stringfy(scalar_type));
-  }
+        throw std::runtime_error(std::string("Got unsupported ScalarType ") +
+                                 stringfy(scalar_type));
+    }
 }
 
-static ScalarType numpyDtypeToScalarType(py::dtype dtype) 
-{
-#define TO_SCALAR_TYPE(scalar_t, scalar_type)\
-        if (py::dtype::of<scalar_t>().is(dtype)) {\
-            return ::hmp::ScalarType::scalar_type;\
-        }
+static ScalarType numpyDtypeToScalarType(py::dtype dtype) {
+#define TO_SCALAR_TYPE(scalar_t, scalar_type)                                  \
+    if (py::dtype::of<scalar_t>().is(dtype)) {                                 \
+        return ::hmp::ScalarType::scalar_type;                                 \
+    }
     HMP_FORALL_SCALAR_TYPES(TO_SCALAR_TYPE)
 
     throw std::runtime_error(std::string("Got unsupported numpy dtype"));
 }
 
-
-
-Tensor tensor_from_numpy(const py::array& arr)
-{
+Tensor tensor_from_numpy(const py::array &arr) {
     int ndim = arr.ndim();
     SizeArray shape, strides;
     auto itemsize = arr.itemsize();
-    for(int i = 0; i < ndim; ++i){
+    for (int i = 0; i < ndim; ++i) {
         auto size = arr.shape()[i];
         auto stride = arr.strides()[i];
-        HMP_REQUIRE(stride%itemsize == 0 && stride >= 0,
-             "unsupported numpy stride {} at {}", stride, i);
+        HMP_REQUIRE(stride % itemsize == 0 && stride >= 0,
+                    "unsupported numpy stride {} at {}", stride, i);
 
         shape.push_back(static_cast<int64_t>(size));
-        strides.push_back(static_cast<int64_t>(stride/itemsize));
+        strides.push_back(static_cast<int64_t>(stride / itemsize));
     }
 
     auto buf_info = std::make_shared<pybind11::buffer_info>(arr.request());
-    auto ptr = DataPtr(buf_info->ptr, [buf_info](void *ptr) mutable {
-                              py::gil_scoped_acquire acquire;
-                              //explict release in gil guard
-                              buf_info.reset();
-                              }, kCPU);
+    auto ptr = DataPtr(buf_info->ptr,
+                       [buf_info](void *ptr) mutable {
+                           py::gil_scoped_acquire acquire;
+                           // explict release in gil guard
+                           buf_info.reset();
+                       },
+                       kCPU);
 
-    return from_buffer(
-        std::move(ptr),
-        numpyDtypeToScalarType(arr.dtype()),
-        shape,
-        strides);
+    return from_buffer(std::move(ptr), numpyDtypeToScalarType(arr.dtype()),
+                       shape, strides);
 }
 
-py::array tensor_to_numpy(const Tensor& tensor)
-{
+py::array tensor_to_numpy(const Tensor &tensor) {
     HMP_REQUIRE(tensor.is_cpu(),
-         "Only support convert cpu tensor to numpy, got {}", tensor.device_type());
+                "Only support convert cpu tensor to numpy, got {}",
+                tensor.device_type());
 
     auto dtype = scalarTypeToNumpyDtype(tensor.scalar_type());
     std::vector<ssize_t> shape, strides;
     auto itemsize = tensor.itemsize();
-    for(int i = 0; i < tensor.dim(); ++i){
+    for (int i = 0; i < tensor.dim(); ++i) {
         shape.push_back(tensor.size(i));
-        strides.push_back(tensor.stride(i)*itemsize);
+        strides.push_back(tensor.stride(i) * itemsize);
     }
 
-    return py::array(dtype, shape, strides, tensor.unsafe_data(), py::cast(tensor));
+    return py::array(dtype, shape, strides, tensor.unsafe_data(),
+                     py::cast(tensor));
 }
-
-

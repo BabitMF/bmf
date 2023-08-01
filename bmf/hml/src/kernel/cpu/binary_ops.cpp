@@ -16,136 +16,95 @@
 #include <kernel/binary_ops.h>
 #include <kernel/cpu/kernel_utils.h>
 
-namespace hmp{
-namespace kernel{
+namespace hmp {
+namespace kernel {
 namespace {
 
-Tensor& mul_cpu(Tensor &out, const Tensor &ina, const Tensor &inb)
-{
-    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "mul_cpu", [&](){
-        cpu::bop_kernel<scalar_t, scalar_t, scalar_t>(out, ina, inb, 
-            [&](scalar_t a, scalar_t b){
-                return a * b;
-        });
+Tensor &mul_cpu(Tensor &out, const Tensor &ina, const Tensor &inb) {
+    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "mul_cpu", [&]() {
+        cpu::bop_kernel<scalar_t, scalar_t, scalar_t>(
+            out, ina, inb, [&](scalar_t a, scalar_t b) { return a * b; });
     });
     return out;
 }
 
-
-Tensor& mul_scalar_cpu(Tensor &out, const Tensor &ina, const Scalar &inb)
-{
-    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "mul_scalar_cpu", [&](){
+Tensor &mul_scalar_cpu(Tensor &out, const Tensor &ina, const Scalar &inb) {
+    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "mul_scalar_cpu", [&]() {
         auto b = inb.to<scalar_t>();
         cpu::uop_kernel<scalar_t, scalar_t>(out, ina,
-            [&](scalar_t a){
-                return a * b;
-        });
+                                            [&](scalar_t a) { return a * b; });
     });
     return out;
 }
 
-
-Tensor& add_cpu(Tensor &out, const Tensor &ina, const Tensor &inb)
-{
-    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "add_cpu", [&](){
-        cpu::bop_kernel<scalar_t, scalar_t, scalar_t>(out, ina, inb, 
-            [&](scalar_t a, scalar_t b){
-                return a + b;
-        });
+Tensor &add_cpu(Tensor &out, const Tensor &ina, const Tensor &inb) {
+    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "add_cpu", [&]() {
+        cpu::bop_kernel<scalar_t, scalar_t, scalar_t>(
+            out, ina, inb, [&](scalar_t a, scalar_t b) { return a + b; });
     });
     return out;
 }
 
-
-Tensor& add_scalar_cpu(Tensor &out, const Tensor &ina, const Scalar &inb)
-{
-    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "add_scalar_cpu", [&](){
+Tensor &add_scalar_cpu(Tensor &out, const Tensor &ina, const Scalar &inb) {
+    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "add_scalar_cpu", [&]() {
         auto b = inb.to<scalar_t>();
         cpu::uop_kernel<scalar_t, scalar_t>(out, ina,
-            [&](scalar_t a){
-                return a + b;
-        });
+                                            [&](scalar_t a) { return a + b; });
     });
     return out;
 }
 
-
-Tensor& sub_cpu(Tensor &out, const Tensor &ina, const Tensor &inb)
-{
-    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "sub_cpu", [&](){
-        cpu::bop_kernel<scalar_t, scalar_t, scalar_t>(out, ina, inb, 
-            [&](scalar_t a, scalar_t b){
-                return a - b;
-        });
+Tensor &sub_cpu(Tensor &out, const Tensor &ina, const Tensor &inb) {
+    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "sub_cpu", [&]() {
+        cpu::bop_kernel<scalar_t, scalar_t, scalar_t>(
+            out, ina, inb, [&](scalar_t a, scalar_t b) { return a - b; });
     });
     return out;
 }
 
-
-Tensor& sub_scalar_cpu(Tensor &out, const Tensor &ina, const Scalar &inb)
-{
-    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "sub_scalar_cpu", [&](){
+Tensor &sub_scalar_cpu(Tensor &out, const Tensor &ina, const Scalar &inb) {
+    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "sub_scalar_cpu", [&]() {
         auto b = inb.to<scalar_t>();
         cpu::uop_kernel<scalar_t, scalar_t>(out, ina,
-            [&](scalar_t a){
-                return a - b;
-        });
+                                            [&](scalar_t a) { return a - b; });
     });
     return out;
 }
 
-
-Tensor& sub_scalar2_cpu(Tensor &out, const Scalar &ina, const Tensor &inb)
-{
-    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "sub_scalar_cpu", [&](){
+Tensor &sub_scalar2_cpu(Tensor &out, const Scalar &ina, const Tensor &inb) {
+    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "sub_scalar_cpu", [&]() {
         auto a = ina.to<scalar_t>();
         cpu::uop_kernel<scalar_t, scalar_t>(out, inb,
-            [&](scalar_t b){
-                return a - b;
-        });
+                                            [&](scalar_t b) { return a - b; });
     });
     return out;
 }
 
-
-Tensor& div_cpu(Tensor &out, const Tensor &ina, const Tensor &inb)
-{
-    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "div_cpu", [&](){
-        cpu::bop_kernel<scalar_t, scalar_t, scalar_t>(out, ina, inb, 
-            [&](scalar_t a, scalar_t b){
-                return a / b;
-        });
+Tensor &div_cpu(Tensor &out, const Tensor &ina, const Tensor &inb) {
+    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "div_cpu", [&]() {
+        cpu::bop_kernel<scalar_t, scalar_t, scalar_t>(
+            out, ina, inb, [&](scalar_t a, scalar_t b) { return a / b; });
     });
     return out;
 }
 
-
-Tensor& div_scalar_cpu(Tensor &out, const Tensor &ina, const Scalar &inb)
-{
-    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "div_scalar_cpu", [&](){
+Tensor &div_scalar_cpu(Tensor &out, const Tensor &ina, const Scalar &inb) {
+    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "div_scalar_cpu", [&]() {
         auto b = inb.to<scalar_t>();
         cpu::uop_kernel<scalar_t, scalar_t>(out, ina,
-            [&](scalar_t a){
-                return a / b;
-        });
+                                            [&](scalar_t a) { return a / b; });
     });
     return out;
 }
 
-
-Tensor& div_scalar2_cpu(Tensor &out, const Scalar &ina, const Tensor &inb)
-{
-    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "div_scalar_cpu", [&](){
+Tensor &div_scalar2_cpu(Tensor &out, const Scalar &ina, const Tensor &inb) {
+    HMP_DISPATCH_ALL_TYPES_AND_HALF(out.scalar_type(), "div_scalar_cpu", [&]() {
         auto a = ina.to<scalar_t>();
         cpu::uop_kernel<scalar_t, scalar_t>(out, inb,
-            [&](scalar_t b){
-                return a / b;
-        });
+                                            [&](scalar_t b) { return a / b; });
     });
     return out;
 }
-
-
 
 HMP_DEVICE_DISPATCH(kCPU, mul_stub, &mul_cpu)
 HMP_DEVICE_DISPATCH(kCPU, mul_scalar_stub, &mul_scalar_cpu)
@@ -157,6 +116,6 @@ HMP_DEVICE_DISPATCH(kCPU, sub_scalar_stub2, &sub_scalar2_cpu)
 HMP_DEVICE_DISPATCH(kCPU, div_stub, &div_cpu)
 HMP_DEVICE_DISPATCH(kCPU, div_scalar_stub, &div_scalar_cpu)
 HMP_DEVICE_DISPATCH(kCPU, div_scalar_stub2, &div_scalar2_cpu)
-
-
-}}} //
+}
+}
+} //

@@ -17,35 +17,40 @@
 #include <bmf/sdk/module_registry.h>
 
 BEGIN_BMF_SDK_NS
-    ModuleRegistry::ConstructorRegistry &ModuleRegistry::Registry() {
-        static ConstructorRegistry *real_registry = new ConstructorRegistry();
-        return *real_registry;
-    }
+ModuleRegistry::ConstructorRegistry &ModuleRegistry::Registry() {
+    static ConstructorRegistry *real_registry = new ConstructorRegistry();
+    return *real_registry;
+}
 
-    void ModuleRegistry::AddConstructor(std::string const &module_name, std::string const &sdk_version,
-                                        Constructor constructor) {
-        ConstructorRegistry &registry = Registry();
-        registry[module_name] = {sdk_version, constructor};
-    }
+void ModuleRegistry::AddConstructor(std::string const &module_name,
+                                    std::string const &sdk_version,
+                                    Constructor constructor) {
+    ConstructorRegistry &registry = Registry();
+    registry[module_name] = {sdk_version, constructor};
+}
 
-    std::shared_ptr<Module>
-    ModuleRegistry::ConstructModule(std::string const &module_name, int node_id, JsonParam json_param) {
-        ConstructorRegistry &registry = Registry();
-        return registry[module_name].second(node_id, json_param);
-    }
+std::shared_ptr<Module>
+ModuleRegistry::ConstructModule(std::string const &module_name, int node_id,
+                                JsonParam json_param) {
+    ConstructorRegistry &registry = Registry();
+    return registry[module_name].second(node_id, json_param);
+}
 
-    std::string ModuleRegistry::GetModuleUsingSDKVersion(const std::string &module_name) {
-        ConstructorRegistry &registry = Registry();
-        return registry[module_name].first;
-    }
+std::string
+ModuleRegistry::GetModuleUsingSDKVersion(const std::string &module_name) {
+    ConstructorRegistry &registry = Registry();
+    return registry[module_name].first;
+}
 
-    ModuleRegister::ModuleRegister(std::string const &module_name, std::string const &sdk_version,
-                                   std::shared_ptr<Module> (*constructor)(int node_id, JsonParam json_param)) {
-        ModuleRegistry::AddConstructor(module_name, sdk_version, constructor);
-    }
+ModuleRegister::ModuleRegister(
+    std::string const &module_name, std::string const &sdk_version,
+    std::shared_ptr<Module> (*constructor)(int node_id, JsonParam json_param)) {
+    ModuleRegistry::AddConstructor(module_name, sdk_version, constructor);
+}
 
-    ModuleRegister::ModuleRegister(const std::string &module_name,
-                                   std::shared_ptr<Module> (*constructor)(int, JsonParam)) {
-        ModuleRegistry::AddConstructor(module_name, "V0.0.1", constructor);
-    }
+ModuleRegister::ModuleRegister(
+    const std::string &module_name,
+    std::shared_ptr<Module> (*constructor)(int, JsonParam)) {
+    ModuleRegistry::AddConstructor(module_name, "V0.0.1", constructor);
+}
 END_BMF_SDK_NS

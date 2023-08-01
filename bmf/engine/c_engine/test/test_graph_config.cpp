@@ -28,5 +28,6 @@ TEST(graph_config, graph_config) {
     std::ifstream gs(config_file);
     gs >> graph_json;
     GraphConfig graph_config(graph_json);
-    EXPECT_EQ(graph_config.get_nodes()[0].get_module_info().module_name, "c_ffmpeg_decoder");
+    EXPECT_EQ(graph_config.get_nodes()[0].get_module_info().module_name,
+              "c_ffmpeg_decoder");
 }

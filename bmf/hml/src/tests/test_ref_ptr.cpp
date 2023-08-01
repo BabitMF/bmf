@@ -17,43 +17,39 @@
 #include <gtest/gtest.h>
 #include <hmp/core/ref_ptr.h>
 
-namespace hmp{
+namespace hmp {
 
 namespace {
 
-struct DummyObject : public RefObject
-{
+struct DummyObject : public RefObject {
     std::atomic<int> count = 0;
 };
 
+} // namespace
 
-} //namespace
-
-
-
-TEST(RefPtr, multi_thread_ops)
-{
+TEST(RefPtr, multi_thread_ops) {
     const int nthreads = 16;
     const int nops = 100000;
 
     auto obj = makeRefPtr<DummyObject>();
 
     std::atomic<int> wait_count = 0;
-    auto op_func = [&](){
+    auto op_func = [&]() {
         wait_count += 1;
         std::vector<RefPtr<DummyObject>> copy_objs;
         std::vector<RefPtr<DummyObject>> move_objs;
 
-        //wait
-        while(wait_count >= 0); //barrier
+        // wait
+        while (wait_count >= 0)
+            ; // barrier
 
-        //copy
-        for(int i = 0; i < nops; ++i){
+        // copy
+        for (int i = 0; i < nops; ++i) {
             copy_objs.push_back(obj);
         }
 
-        //move
-        for(auto &o : copy_objs){
+        // move
+        for (auto &o : copy_objs) {
             o->count += 1;
             move_objs.push_back(std::move(o));
         }
@@ -61,25 +57,24 @@ TEST(RefPtr, multi_thread_ops)
 
     //
     std::vector<std::thread> threads;
-    for(int i = 0; i < nthreads; ++i){
+    for (int i = 0; i < nthreads; ++i) {
         threads.push_back(std::thread(op_func));
     }
 
-    //wait all threads startup
-    while(wait_count != nthreads); //barrier
+    // wait all threads startup
+    while (wait_count != nthreads)
+        ; // barrier
 
     //
     wait_count.store(-1); //
 
-    //join
-    for(auto &t : threads){
+    // join
+    for (auto &t : threads) {
         t.join();
     }
 
     EXPECT_EQ(1, obj.refcount());
-    EXPECT_EQ(nthreads*nops, obj->count);
+    EXPECT_EQ(nthreads * nops, obj->count);
 }
 
-
-
-} //namespace
+} // namespace

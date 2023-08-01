@@ -3,24 +3,21 @@
 #include "module_factory.h"
 #include <bmf/sdk/video_frame.h>
 
-
 #ifndef BMF_ENABLE_MOBILE
 
 using namespace bmf_engine;
 using namespace bmf_sdk;
 
-TEST(go_module, module_loader)
-{
+TEST(go_module, module_loader) {
     auto module_path = "../lib/go_pass_through.so";
-    if(!std::filesystem::exists(module_path)){
+    if (!std::filesystem::exists(module_path)) {
         GTEST_SKIP();
     }
 
-    std::shared_ptr<Module> module;  
+    std::shared_ptr<Module> module;
     JsonParam option;
-    ModuleFactory::create_module(
-        "PassThrough", 42, option, "go", module_path,
-        "", module);
+    ModuleFactory::create_module("PassThrough", 42, option, "go", module_path,
+                                 "", module);
 
     // get module info
     JsonParam module_info;
@@ -36,12 +33,12 @@ TEST(go_module, module_loader)
     //
     EXPECT_THROW(module->reset(), std::runtime_error);
 
-    //process
-    std::vector<int> iids{1, 2}, oids{2,3};
+    // process
+    std::vector<int> iids{1, 2}, oids{2, 3};
     Task task(42, iids, oids);
 
-    //fill inputs
-    for(int i = 0; i < 10; ++i){
+    // fill inputs
+    for (int i = 0; i < 10; ++i) {
         auto rgb = hmp::PixelInfo(hmp::PF_RGB24);
         auto vf0 = VideoFrame::make(1920, 1080, rgb);
         auto vf1 = VideoFrame::make(1280, 720, rgb);
@@ -60,7 +57,7 @@ TEST(go_module, module_loader)
 
     EXPECT_EQ(task.timestamp(), Timestamp::DONE);
 
-    for(int i = 0; i < 10; ++i){
+    for (int i = 0; i < 10; ++i) {
         Packet pkt;
         EXPECT_TRUE(task.pop_packet_from_out_queue(2, pkt));
         auto vf0 = pkt.get<VideoFrame>();
@@ -74,4 +71,4 @@ TEST(go_module, module_loader)
     }
 }
 
-#endif //BMF_ENABLE_MOBILE
+#endif // BMF_ENABLE_MOBILE

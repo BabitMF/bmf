@@ -21,26 +21,26 @@
 USE_BMF_SDK_NS
 
 TEST(json_param, parse_json) {
-     JsonParam json_param;
-     std::string path = getcwd(NULL,0);
-     std::string file_name = "../../example/run_by_config/config.json";
-     json_param.load(file_name);
-     std::string mode;
-     json_param.get_string("mode", mode);
-     EXPECT_EQ(mode, "normal");
-     std::vector<JsonParam> node_config_list;
-     json_param.get_object_list("nodes", node_config_list);
-     JsonParam json_param2;
-     json_param2 = json_param;
-     EXPECT_EQ(node_config_list.size(), 4);
-     JsonParam module_info;
-     std::string module_name;
-     node_config_list[0].get_object("module_info", module_info);
-     module_info.get_string("name", module_name);
-     EXPECT_EQ(module_name, "c_ffmpeg_decoder");
+    JsonParam json_param;
+    std::string path = getcwd(NULL, 0);
+    std::string file_name = "../../example/run_by_config/config.json";
+    json_param.load(file_name);
+    std::string mode;
+    json_param.get_string("mode", mode);
+    EXPECT_EQ(mode, "normal");
+    std::vector<JsonParam> node_config_list;
+    json_param.get_object_list("nodes", node_config_list);
+    JsonParam json_param2;
+    json_param2 = json_param;
+    EXPECT_EQ(node_config_list.size(), 4);
+    JsonParam module_info;
+    std::string module_name;
+    node_config_list[0].get_object("module_info", module_info);
+    module_info.get_string("name", module_name);
+    EXPECT_EQ(module_name, "c_ffmpeg_decoder");
 }
 
-TEST(json_param, basic_type){
+TEST(json_param, basic_type) {
     std::string str = "{\"double\":0.01,\"int\":100,\"long\":999999999}";
     JsonParam json_param = JsonParam(str);
 
@@ -59,8 +59,10 @@ TEST(json_param, basic_type){
     EXPECT_EQ(value, str);
 }
 
-TEST(json_param, basic_list_type){
-    std::string str = "{\"int_list\":[1,2,3,4,5,6],\"double_list\":[0.001,0.002,0.003],\"string_list\":[\"test_str_001\",\"test_str_002\"]}";
+TEST(json_param, basic_list_type) {
+    std::string str = "{\"int_list\":[1,2,3,4,5,6],\"double_list\":[0.001,0."
+                      "002,0.003],\"string_list\":[\"test_str_001\",\"test_str_"
+                      "002\"]}";
     nlohmann::json json_value = nlohmann::json::parse(str);
     JsonParam json_param = JsonParam(json_value);
 
@@ -77,7 +79,7 @@ TEST(json_param, basic_list_type){
     EXPECT_EQ(string_list.size(), 2);
 }
 
-TEST(json_param, remove_element){
+TEST(json_param, remove_element) {
     std::string str = "{\"id1\":\"100\",\"id2\":\"200\", \"id3\":\"300\"}";
     JsonParam json_param;
     json_param.parse(str);
@@ -85,12 +87,12 @@ TEST(json_param, remove_element){
     std::vector<std::pair<std::string, std::string>> group;
     json_param.get_iterated(group);
     EXPECT_EQ(group.size(), 3);
-    for (auto &it: group){
-        if(it.first == "id1"){
+    for (auto &it : group) {
+        if (it.first == "id1") {
             EXPECT_EQ(it.second, "100");
-        }else if(it.first == "id2"){
+        } else if (it.first == "id2") {
             EXPECT_EQ(it.second, "200");
-        }else{
+        } else {
             EXPECT_EQ(it.first, "id3");
             EXPECT_EQ(it.second, "300");
         }
@@ -100,10 +102,10 @@ TEST(json_param, remove_element){
     group.clear();
     json_param.get_iterated(group);
     EXPECT_EQ(group.size(), 2);
-    for (auto &it: group){
-        if (it.first == "id2"){
+    for (auto &it : group) {
+        if (it.first == "id2") {
             EXPECT_EQ(it.second, "200");
-        }else if (it.first == "id3"){
+        } else if (it.first == "id3") {
             EXPECT_EQ(it.second, "300");
         }
     }

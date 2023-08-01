@@ -16,35 +16,25 @@
 #include <gtest/gtest.h>
 #include <hmp/core/scalar.h>
 
-namespace hmp{
+namespace hmp {
 
-
-template<typename T>
-void test_scalar_precision(int64_t value)
-{
-    T v = *reinterpret_cast<T*>(&value);
+template <typename T> void test_scalar_precision(int64_t value) {
+    T v = *reinterpret_cast<T *>(&value);
     auto scalar = Scalar(v);
 
     auto cast_v = scalar.to<T>();
     EXPECT_EQ(v, cast_v);
 }
 
-TEST(TestScalar, precision_test)
-{
+TEST(TestScalar, precision_test) {
     int64_t magic_value = 0xdeadbeefdeadbeefll;
 
-
-#define DISPATCH(dtype, _) { \
-        test_scalar_precision<dtype>(magic_value); \
-    }
+#define DISPATCH(dtype, _)                                                     \
+    { test_scalar_precision<dtype>(magic_value); }
 
     HMP_FORALL_SCALAR_TYPES(DISPATCH)
 
 #undef DISPATCH
 }
 
-
-
-
-} //namespace
-
+} // namespace

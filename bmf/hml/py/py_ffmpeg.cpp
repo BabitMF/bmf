@@ -25,10 +25,7 @@
 
 namespace py = pybind11;
 
-
-
-void ffmpegBind(py::module &m)
-{
+void ffmpegBind(py::module &m) {
 #ifdef HMP_ENABLE_FFMPEG
     using namespace hmp;
 
@@ -39,8 +36,9 @@ void ffmpegBind(py::module &m)
         .def("read", &ffmpeg::VideoReader::read);
 
     py::class_<ffmpeg::VideoWriter>(ff, "VideoWriter")
-        .def(py::init<std::string, int, int, int, const PixelInfo&, int>(), 
-            py::arg("fn"), py::arg("width"), py::arg("height"), py::arg("fps"), py::arg("pix_info"), py::arg("kbs")=2000)
+        .def(py::init<std::string, int, int, int, const PixelInfo &, int>(),
+             py::arg("fn"), py::arg("width"), py::arg("height"), py::arg("fps"),
+             py::arg("pix_info"), py::arg("kbs") = 2000)
         .def("write", &ffmpeg::VideoWriter::write);
 #endif
 }

@@ -29,5 +29,4 @@ TEST(safe_queue, single_thread) {
     int item;
     safe_queue.pop(item);
     EXPECT_EQ(item, 1);
-
 }

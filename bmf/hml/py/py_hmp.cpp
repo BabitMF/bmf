@@ -28,7 +28,7 @@ void imageBind(py::module &m);
 
 void cudaBind(py::module &m);
 
-static std::map<const char*, int> sHMPConfigs{
+static std::map<const char *, int> sHMPConfigs{
 #define DEF_CONFIG(M, value) std::make_pair(#M, value),
 #ifdef HMP_ENABLE_CUDA
     DEF_CONFIG(HMP_ENABLE_CUDA, 1)
@@ -37,53 +37,50 @@ static std::map<const char*, int> sHMPConfigs{
 #endif
 
 #ifdef HMP_ENABLE_FFMPEG
-    DEF_CONFIG(HMP_ENABLE_FFMPEG, 1)
+        DEF_CONFIG(HMP_ENABLE_FFMPEG, 1)
 #else
-    DEF_CONFIG(HMP_ENABLE_FFMPEG, 0)
+        DEF_CONFIG(HMP_ENABLE_FFMPEG, 0)
 #endif
 
 #ifdef HMP_ENABLE_OPENCV
-    DEF_CONFIG(HMP_ENABLE_OPENCV, 1)
+            DEF_CONFIG(HMP_ENABLE_OPENCV, 1)
 #else
-    DEF_CONFIG(HMP_ENABLE_OPENCV, 0)
+            DEF_CONFIG(HMP_ENABLE_OPENCV, 0)
 #endif
 
 #ifdef HMP_ENABLE_NPP
-    DEF_CONFIG(HMP_ENABLE_NPP, 1)
+                DEF_CONFIG(HMP_ENABLE_NPP, 1)
 #else
-    DEF_CONFIG(HMP_ENABLE_NPP, 0)
+                DEF_CONFIG(HMP_ENABLE_NPP, 0)
 #endif
 
 #ifdef HMP_ENABLE_OPENMP
-    DEF_CONFIG(HMP_ENABLE_OPENMP, 1)
+                    DEF_CONFIG(HMP_ENABLE_OPENMP, 1)
 #else
-    DEF_CONFIG(HMP_ENABLE_OPENMP, 0)
+                    DEF_CONFIG(HMP_ENABLE_OPENMP, 0)
 #endif
 
 #ifdef HMP_ENABLE_TORCH
-    DEF_CONFIG(HMP_ENABLE_TORCH, 1)
+                        DEF_CONFIG(HMP_ENABLE_TORCH, 1)
 #else
-    DEF_CONFIG(HMP_ENABLE_TORCH, 0)
+                        DEF_CONFIG(HMP_ENABLE_TORCH, 0)
 #endif
 
 #undef DEF_CONFIG
 };
 
-
-
-PYBIND11_MODULE(_hmp, m)
-{
+PYBIND11_MODULE(_hmp, m) {
     m.doc() = "Python binding for hmp library";
 
     m.attr("__version__") = HMP_VERSION_STR();
-    
+
     m.attr("__config__") = sHMPConfigs;
 
-    //core modules
+    // core modules
     coreBind(m);
     tensorBind(m);
 
-    //sub modules
+    // sub modules
     imageBind(m);
 
     ffmpegBind(m);

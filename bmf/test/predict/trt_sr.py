@@ -140,7 +140,7 @@ class trt_sr(Module):
                                 mp.ColorRange.kCR_MPEG)
             RGB = mp.PixelInfo(mp.PixelFormat.kPF_RGB24,
                                mp.ColorSpace.kCS_BT709, mp.ColorRange.kCR_MPEG)
-            frame = mp.Frame(mp.from_torch(output_tensor[i].contiguous()), RGB)
+            frame = mp.Frame(mp.from_dlpack(output_tensor[i].contiguous()), RGB)
             out_frame = mp.Frame(frame.width(),
                                  frame.height(),
                                  NV12,

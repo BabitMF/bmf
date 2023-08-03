@@ -47,7 +47,7 @@ This demo shows how to demux a video in mp4 format and remuxing it into hls slic
 ```python
 import bmf
 
-input_video_path = "../files/big_bunny_10s_30fps.mp4"
+input_video_path = "../../files/big_bunny_10s_30fps.mp4"
 output_path = "./remux_output.m3u8"
 
 # create graph

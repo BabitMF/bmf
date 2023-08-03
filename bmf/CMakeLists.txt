@@ -115,7 +115,7 @@ add_custom_command(TARGET bmf_assem
 if(BMF_ENABLE_TEST)
     add_custom_command(TARGET bmf_assem
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:copy_module> ${BMF_ASSEMBLE_ROOT}/test/c_module)
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:copy_module> ${BMF_ASSEMBLE_ROOT}/test/c_module/lib/$<TARGET_FILE_NAME:copy_module>)
     add_custom_command(TARGET bmf_assem
         POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cvtcolor> ${BMF_ASSEMBLE_ROOT}/demo/gpu_module)
@@ -140,7 +140,7 @@ if(NOT APPLE AND NOT ANDROID)
     add_custom_command(TARGET bmf_assem
         POST_BUILD
             COMMAND cp -a 
-            $<TARGET_FILE_DIR:hmp>/${CMAKE_SHARED_LIBRARY_PREFIX}hmp${CMAKE_SHARED_LIBRARY_SUFFIX}.* ${BMF_ASSEMBLE_ROOT}/bmf/lib
+            $<TARGET_FILE_DIR:hmp>/${CMAKE_SHARED_LIBRARY_PREFIX}hmp${CMAKE_SHARED_LIBRARY_SUFFIX}* ${BMF_ASSEMBLE_ROOT}/bmf/lib
     )
 
     if(BMF_ENABLE_JNI)

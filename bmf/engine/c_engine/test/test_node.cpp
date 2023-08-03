@@ -27,7 +27,7 @@ USE_BMF_SDK_NS
 int init_node(std::shared_ptr<Node> &node) {
     int node_id = 1;
     JsonParam json_param;
-    json_param.load("../files/node.json");
+    json_param.load("../../files/node.json");
     NodeConfig node_config = NodeConfig(json_param);
     CallBackForTest callback_for_test;
     NodeCallBack callback;

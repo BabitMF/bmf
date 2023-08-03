@@ -8,7 +8,7 @@ sys.path.append("../../")
 if __name__ == '__main__':
     Log.set_log_level(LogLevel.DEBUG)
 
-    input_video_path = "../files/header.mp4"
+    input_video_path = "../../files/header.mp4"
 
     try:
         my_graph = bmf.graph()

@@ -11,16 +11,16 @@ using namespace bmf_sdk;
 
 TEST(go_module, module_loader)
 {
-    auto module_path = "../lib/go_pass_through.so";
-    if(!std::filesystem::exists(module_path)){
-        GTEST_SKIP();
-    }
+    std::string module_name = "test_go_module";
 
-    std::shared_ptr<Module> module;  
+    int node_id=42;
     JsonParam option;
-    ModuleFactory::create_module(
-        "PassThrough", 42, option, "go", module_path,
-        "", module);
+    std::string module_type;
+    std::string module_path;
+    std::string module_entry;
+    std::shared_ptr<Module> module;
+    ModuleFactory::create_module(module_name,node_id,option,module_type,module_path,module_entry,module);
+    EXPECT_EQ(module == nullptr, 0);
 
     // get module info
     JsonParam module_info;

@@ -21,7 +21,7 @@ The example below decode a media file only:
 ```python
         import bmf
 
-        input_video_path = "../files/test.mp4"
+        input_video_path = "../../files/test.mp4"
 
         graph = bmf.graph()
 

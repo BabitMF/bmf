@@ -37,7 +37,7 @@ bmf::builder::Graph graph = bmf::builder::Graph(bmf::builder::NormalMode);
 
 // create decoder
 nlohmann::json decoder_option = {
-    {"input_path", "../files/overlay.png"}
+    {"input_path", "../../files/overlay.png"}
 };
 auto decoder = graph.Sync(std::vector<int> {}, std::vector<int> {0}, 
     bmf_sdk::JsonParam(decoder_option), "c_ffmpeg_decoder");

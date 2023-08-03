@@ -9,10 +9,10 @@ from bmf import Log, LogLevel
 
 def main():
 
-    # v1.engine can be built by the command: trtexec --onnx=version-RFB-640.onnx --buildOnly --saveEngine=version-RFB-640.engine
+    # v1.engine can be built by the command: trtexec --onnx=../../models/version-RFB-640.onnx --buildOnly --saveEngine=../../models/version-RFB-640.engine
     trt_face_detect = bmf.create_module(
         "trt_face_detect", {
-            "model_path": "version-RFB-640.engine",
+            "model_path": "../../models/version-RFB-640.engine",
             "label_to_frame": 1,
             "input_shapes": {
                 "input": [1, 3, 480, 640]
@@ -20,7 +20,7 @@ def main():
         })
 
     (bmf.graph().decode({
-        "input_path": "../files/face.mp4",
+        "input_path": "../../files/face.mp4",
         "video_params": {
             "hwaccel": "cuda",
         }

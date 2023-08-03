@@ -32,7 +32,7 @@ def create_node_test(module_name,
 class TestPreModule(BaseTestCase):
 
     def test_pre_module(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
         output_path = "./output.mp4"
 
         # pre_allocate a module

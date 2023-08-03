@@ -6,7 +6,7 @@ import time
 
 
 def test_3_concat():
-    input_video_path = "../files/1min.mp4"
+    input_video_path = "../../files/1min.mp4"
     output_path = "./3_concat.mp4"
 
     # create graph
@@ -45,7 +45,7 @@ def test_3_concat():
 
 
 def test_triangle_concat():
-    input_video_path = "../files/img.mp4"
+    input_video_path = "../../files/img.mp4"
     output_path = "./triangle_concat.mp4"
 
     # create graph
@@ -71,7 +71,7 @@ def test_triangle_concat():
 
 
 def test_last_pic():
-    input_video_path_ = '../files/img.mp4'
+    input_video_path_ = '../../files/img.mp4'
     output_path = "./last_pic.mp4"
     my_graph = bmf.graph({"dump_graph": 1, "graph_name": "last_pic"})
     # main video
@@ -97,7 +97,7 @@ def test_last_pic():
 
 
 def test_split_passthrough_concat():
-    input_video_path = "../files/1min.mp4"
+    input_video_path = "../../files/1min.mp4"
     output_path = "./split_passthrough_concat.mp4"
 
     # create graph
@@ -122,11 +122,11 @@ def test_split_passthrough_concat():
 
 
 def test_several_long_bmf():
-    input_path = "../files/1min.mp4"
+    input_path = "../../files/1min.mp4"
     output_path = "../output/several_long_bmf.mp4"
 
     duration = 120
-    if input_path == "../files/img.mp4":
+    if input_path == "../../files/img.mp4":
         duration = 7
 
     overlay_option = {
@@ -183,11 +183,11 @@ def test_several_long_bmf():
 
     # three logo video
     logo_1 = my_graph.decode(
-        {'input_path': "../files/sample_prefix_logo_x.mov"})['video']
+        {'input_path': "../../files/sample_prefix_logo_x.mov"})['video']
     logo_2 = my_graph.decode(
-        {'input_path': "../files/sample_prefix_logo_x.mov"})['video']
+        {'input_path': "../../files/sample_prefix_logo_x.mov"})['video']
     logo_3 = my_graph.decode(
-        {'input_path': "../files/sample_prefix_logo_x.mov"})['video']
+        {'input_path': "../../files/sample_prefix_logo_x.mov"})['video']
 
     # three videos
     video1 = my_graph.decode({
@@ -236,8 +236,8 @@ def test_several_long_bmf():
 
 
 def test_video_audio_concat():
-    input_video_path = "../files/1min.mp4"
-    output_path = "../files/video_audio_concat.mp4"
+    input_video_path = "../../files/1min.mp4"
+    output_path = "../../files/video_audio_concat.mp4"
 
     # create graph
     my_graph = bmf.graph({"dump_graph": 1, "graph_name": "video_audio_concat"})
@@ -264,7 +264,7 @@ def test_video_audio_concat():
 
 
 def test_multi_output_filter():
-    input_video_path = "../files/img.mp4"
+    input_video_path = "../../files/img.mp4"
     output_path = "./multi_output_filter.mp4"
 
     # create graph
@@ -306,7 +306,7 @@ def test_multi_output_filter():
 
 
 def test_decoder_encoder():
-    input_video_path = "../files/1min.mp4"
+    input_video_path = "../../files/1min.mp4"
     output_path = "./decoder_encoder.mp4"
 
     # create graph
@@ -327,7 +327,7 @@ def test_decoder_encoder():
 
 
 def test_split_fast_slow():
-    input_video_path = "../files/1min.mp4"
+    input_video_path = "../../files/1min.mp4"
     output_path = "./split_fast_slow.mp4"
     # create graph
     my_graph = bmf.graph({
@@ -349,7 +349,7 @@ def test_split_fast_slow():
 
 def test_5_concat():
     bmf.Log.set_log_level(bmf.LogLevel.DEBUG)
-    input_video_path = "../files/img.mp4"
+    input_video_path = "../../files/img.mp4"
     output_path = "./5_concat.mp4"
 
     # create graph

@@ -33,9 +33,9 @@
 ```
 (
 	bmf.graph()
-	    .decode({'input_path': "../files/img_s.mp4"})['video']
-	    .module('onnx_sr', {"model_path": "v1.onnx"})
-	    .encode(None, {"output_path": "../files/out.mp4"})
+	    .decode({'input_path': "../../files/img_s.mp4"})['video']
+	    .module('onnx_sr', {"model_path": "../../models/v1.onnx"})
+	    .encode(None, {"output_path": "../../files/out.mp4"})
 	    .run()
 )
 ```

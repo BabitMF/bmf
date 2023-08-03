@@ -11,7 +11,7 @@ from bmf import GraphMode, Module, Log, LogLevel, InputType, ProcessResult, Pack
 import threading
 import timeout_decorator
 
-sys.path.append("../")
+sys.path.append("../../test/")
 from base_test.base_test_case import BaseTestCase
 
 
@@ -51,7 +51,7 @@ class TestPushData(BaseTestCase):
         graph.run_wo_block(mode=GraphMode.PUSHDATA)
         pts_ = 0
         for index in range(100, 105):
-            file_name = "../files/aac_slice/" + str(index) + ".aac"
+            file_name = "../../files/aac_slice/" + str(index) + ".aac"
             with open(file_name, "rb") as fp:
                 lines = fp.read()
                 buf = BMFAVPacket(len(lines))
@@ -108,10 +108,10 @@ class TestPushData(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_push_raw_stream_into_decoder(self):
-        input_video_content = "../files/video_content.txt"
-        input_content_size = "../files/video_length.txt"
+        input_video_content = "../../files/video_content.txt"
+        input_content_size = "../../files/video_length.txt"
         output_path = "./push_pkt_output.mp4"
-        expect_result = '../transcode/push_pkt_output.mp4|480|640|9.7|MOV,MP4,M4A,3GP,3G2,MJ2|200132|242661|h264|{"fps": "27.63"}'
+        expect_result = './push_pkt_output.mp4|480|640|9.7|MOV,MP4,M4A,3GP,3G2,MJ2|200132|242661|h264|{"fps": "27.63"}'
 
         self.remove_result_data(output_path)
 
@@ -119,7 +119,7 @@ class TestPushData(BaseTestCase):
 
         video_stream = graph.input_stream("outside_raw_video")
 
-        decode_stream = video_stream.module('ffmpeg_decoder',
+        decode_stream = video_stream.module('c_ffmpeg_decoder',
                                             option={
                                                 "video_codec": "h264",
                                                 'video_time_base': "1,30000",
@@ -165,7 +165,7 @@ class TestPushData(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_push_pkt_into_decoder_multi_output(self):
-        input_file1 = "../files/big_bunny_stream0.flv"
+        input_file1 = "../../files/big_bunny_stream0.flv"
         output_path = "./stream_copy.mp4"
         expect_result = 'stream_copy.mp4|1080|1920|10.03|MOV,MP4,M4A,3GP,3G2,MJ2|2039125|2556553|h264|{"fps": "29.998265996185193"}'
         output_path1 = "./output1.mp4"
@@ -256,8 +256,8 @@ class TestPushData(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_cut_off_stream_graph(self):
-        input_file1 = "../files/big_bunny_stream0.flv"
-        input_file2 = "../files/big_bunny_stream1.flv"
+        input_file1 = "../../files/big_bunny_stream0.flv"
+        input_file2 = "../../files/big_bunny_stream1.flv"
         output_path = "./stream_copy.mp4"
         expect_result = 'stream_copy.mp4|1080|1920|20.092|MOV,MP4,M4A,3GP,3G2,MJ2|2374954|5964699|h264|{"fps": "29.99488141955298"}'
         output_path1 = "./output1.mp4"
@@ -358,8 +358,8 @@ class TestPushData(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_push_raw_audio_into_decoder(self):
-        input_audio_content = "../files/audio_content.txt"
-        input_content_size = "../files/audio_length.txt"
+        input_audio_content = "../../files/audio_content.txt"
+        input_content_size = "../../files/audio_length.txt"
         output_path = "./push_audio_output.mp4"
         expect_result = './push_audio_output.mp4|0|0|10.031|MOV,MP4,M4A,3GP,3G2,MJ2|132429|166050||{}'
         self.remove_result_data(output_path)
@@ -368,7 +368,7 @@ class TestPushData(BaseTestCase):
 
         audio_stream = graph.input_stream("outside_raw_audio")
 
-        decode_stream = audio_stream.module('ffmpeg_decoder',
+        decode_stream = audio_stream.module('c_ffmpeg_decoder',
                                             option={
                                                 "audio_codec": "aac",
                                                 "channels": 2,

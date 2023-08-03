@@ -7,7 +7,7 @@ sys.path.append("../..")
 import bmf
 import timeout_decorator
 
-sys.path.append("../")
+sys.path.append("../../test/")
 from base_test.base_test_case import BaseTestCase
 from base_test.media_info import MediaInfo
 
@@ -18,18 +18,15 @@ class TestVideoCModule(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_video(self):
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         output_path = "./output.mp4"
         expect_result = '../c_module/output.mp4|1080|1920|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|1918880|2400520|h264|' \
                         '{"fps": "30.0662251656"}'
         self.remove_result_data(output_path)
-        c_module_path = './libcopy_module.so'
-        c_module_entry = 'copy_module:CopyModule'
         # decode
         video = bmf.graph().decode({'input_path': input_video_path})
         # c module processing
-        video_2 = (video['video'].c_module("copy_module", c_module_path,
-                                           c_module_entry))
+        video_2 = (video['video'].c_module("test_cpp_module"))
 
         # encode
         (bmf.encode(
@@ -49,15 +46,12 @@ class TestVideoCModule(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_image(self):
-        input_video_path = "../files/overlay.png"
+        input_video_path = "../../files/overlay.png"
         output_path = "output.jpg"
         expect_result = 'output.jpg|240|320|0.040000|IMAGE2|975400|4877|mjpeg|{"fps": "25.0"}'
         self.remove_result_data(output_path)
-        c_module_path = './libcopy_module.so'
-        c_module_entry = 'copy_module:CopyModule'
         (bmf.graph().decode({'input_path': input_video_path})['video'].scale(
-            320, 240).c_module("copy_module", c_module_path,
-                               c_module_entry).encode(
+            320, 240).c_module("test_cpp_module").encode(
                                    None, {
                                        "output_path": output_path,
                                        "format": "mjpeg",

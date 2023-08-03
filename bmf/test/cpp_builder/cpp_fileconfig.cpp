@@ -8,14 +8,14 @@
 #include "cpp_test_helper.h"
 
 TEST(cpp_fileconfig, run_by_config) {
-    std::string output_file = "../files/out.mp4";
+    std::string output_file = "../../files/out.mp4";
     BMF_CPP_FILE_REMOVE(output_file);
 
     nlohmann::json graph_para = {
         {"dump_graph", 1}
     };
     // auto graph = bmf::builder::Graph(bmf::builder::NormalMode, bmf_sdk::JsonParam(graph_para));
-    std::string filepath = "../../example/run_by_config/config.json";
+    std::string filepath = "../../test/run_by_config/config.json";
     // nlohmann::json graph_json;
     // std::ifstream gs(filepath);
     // gs >> graph_json;
@@ -24,6 +24,6 @@ TEST(cpp_fileconfig, run_by_config) {
     graph.close();
     BMF_CPP_FILE_CHECK(
         output_file, 
-        "../files/out.mp4|240|320|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|175470|219513|h264|{\"fps\": \"30.0662251656\"}"
+        "../../files/out.mp4|240|320|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|175470|219513|h264|{\"fps\": \"30.0662251656\"}"
     );
 }

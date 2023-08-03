@@ -5,7 +5,7 @@
 ```python
 frames = (
     bmf.graph()
-        .decode({'input_path': "../files/img.mp4"})['video']
+        .decode({'input_path': "../../files/img.mp4"})['video']
         .ff_filter('scale', 299, 299)  # or you can use '.scale(299, 299)'
         .start()  # this will return a packet generator
 )

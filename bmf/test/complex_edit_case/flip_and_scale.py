@@ -18,7 +18,7 @@ class flip_and_scale(SubGraph):
         a1 = a1.atrim(start=0, end=5).asetpts('PTS-STARTPTS')
 
         video2 = self.graph.decode(
-            {'input_path': "../files/big_bunny_1min_30fps_only_video.mp4"})
+            {'input_path': "../../files/big_bunny_1min_30fps_only_video.mp4"})
         v2 = video2['video']
         v2 = v2.trim(start=30, end=35).setpts('PTS-STARTPTS').scale(500, 400)
         a2 = video2['audio']

@@ -13,7 +13,7 @@ from base_test.base_test_case import BaseTestCase
 class TestTranscode(BaseTestCase):
 
     def test_audio(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
         output_path = "./audio.mp4"
         # create graph
         graph = bmf.graph()
@@ -33,14 +33,14 @@ class TestTranscode(BaseTestCase):
             }).run())
 
     def test_with_input_only_audio(self):
-        input_video_path = "../files/img_a.mp4"
+        input_video_path = "../../files/img_a.mp4"
         output_path = "./output.mp4"
         mygraph = bmf.graph()
         streams = mygraph.decode({'input_path': input_video_path})
         bmf.encode(None, streams["audio"], {"output_path": output_path}).run()
 
     def test_with_encode_with_audio_stream_but_no_audio_frame(self):
-        input_video_path = "../files/img_v.mp4"
+        input_video_path = "../../files/img_v.mp4"
         output_path = "./output.mp4"
         mygraph = bmf.graph()
         streams = mygraph.decode({'input_path': input_video_path})
@@ -49,7 +49,7 @@ class TestTranscode(BaseTestCase):
         }).run()
 
     def test_with_null_audio(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
         output_path = "./with_null_audio.mp4"
         # create graph
         graph = bmf.graph()
@@ -80,7 +80,7 @@ class TestTranscode(BaseTestCase):
             }).run())
 
     def test_simple(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
         output_path = "./simple.mp4"
 
         # create graph
@@ -108,7 +108,7 @@ class TestTranscode(BaseTestCase):
             }).run())
 
     def test_cb(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
         output_path = "./cb.mp4"
 
         # create graph
@@ -138,7 +138,7 @@ class TestTranscode(BaseTestCase):
         graph.run()
 
     def test_option(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
         output_path = "./option.mp4"
 
         # create graph
@@ -175,7 +175,7 @@ class TestTranscode(BaseTestCase):
             }).run())
 
     def test_image(self):
-        input_video_path = "../files/overlay.png"
+        input_video_path = "../../files/overlay.png"
         output_path = "./image.jpg"
         (bmf.graph().decode({'input_path': input_video_path
                              })['video'].scale(320, 240).encode(
@@ -217,8 +217,8 @@ class TestTranscode(BaseTestCase):
         }).run())
 
     def test_short_video_concat(self):
-        input_video_path = "../files/img.mp4"
-        input_video_path2 = "../files/single_frame.mp4"
+        input_video_path = "../../files/img.mp4"
+        input_video_path2 = "../../files/single_frame.mp4"
 
         output_path = "./short_video_concat.mp4"
         # create graph

@@ -50,8 +50,8 @@ test_video_overlays中的示例代码通过BMF应用层接口：graph(), decode(
 
 ```python
 def test_video_overlays(self):
-    input_video_path = "../files/img.mp4"
-    logo_path = "../files/xigua_prefix_logo_x.mov"
+    input_video_path = "../../files/img.mp4"
+    logo_path = "../../files/xigua_prefix_logo_x.mov"
     output_path = "./overlays.mp4"
 
     # create graph
@@ -95,8 +95,8 @@ if __name__ == '__main__':
 
 ```python
 def test_video_overlays(self):
-    input_video_path = "../files/img.mp4"
-    logo_path = "../files/xigua_prefix_logo_x.mov"
+    input_video_path = "../../files/img.mp4"
+    logo_path = "../../files/xigua_prefix_logo_x.mov"
     output_path = "./overlays.mp4"
 
     # create graph

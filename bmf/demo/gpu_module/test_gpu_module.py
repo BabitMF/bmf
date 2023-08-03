@@ -6,7 +6,7 @@ import bmf
 
 
 def test():
-    input_video_path = "../files/demo_JHH.mp4"
+    input_video_path = "../../files/demo_JHH.mp4"
     output_path = "./output.mp4"
 
     graph = bmf.graph()

@@ -25,7 +25,7 @@ USE_BMF_ENGINE_NS
 USE_BMF_SDK_NS
 TEST(graph, start) {
     nlohmann::json graph_json;
-    std::string config_file = "../files/graph_start.json";
+    std::string config_file = "../../files/graph_start.json";
     std::ifstream gs(config_file);
     gs >> graph_json;
     GraphConfig graph_config(graph_json);
@@ -57,7 +57,7 @@ void SignalHandle2(const char *data, int size) {
 //
 ////
 //    time_t time1=clock();
-//    std::string config_file = "../files/decode_graph.json";
+//    std::string config_file = "../../files/decode_graph.json";
 //    GraphConfig graph_config(config_file);
 //    std::map<int, std::shared_ptr<Module> > pre_modules;
 //    std::shared_ptr<Graph> graph = std::make_shared<Graph>(graph_config, pre_modules);
@@ -75,7 +75,7 @@ TEST(graph, decode_encode) {
 
     time_t time1 = clock();
     nlohmann::json graph_json;
-    std::string config_file = "../files/graph.json";
+    std::string config_file = "../../files/graph.json";
     std::ifstream gs(config_file);
     gs >> graph_json;
     GraphConfig graph_config(graph_json);
@@ -96,7 +96,7 @@ TEST(graph, c_decode_encode) {
 
     time_t time1 = clock();
     nlohmann::json graph_json;
-    std::string config_file = "../files/graph_c.json";
+    std::string config_file = "../../files/graph_c.json";
     std::ifstream gs(config_file);
     gs >> graph_json;
     GraphConfig graph_config(graph_json);
@@ -117,8 +117,8 @@ TEST(graph, dynamic_add) {
     BMFLOG_SET_LEVEL(BMF_INFO);
 
     time_t time1 = clock();
-    std::string config_file = "../files/graph_dyn.json";
-    std::string dyn_config_file = "../files/dynamic_add.json";
+    std::string config_file = "../../files/graph_dyn.json";
+    std::string dyn_config_file = "../../files/dynamic_add.json";
     GraphConfig graph_config(config_file);
     GraphConfig dyn_config(dyn_config_file);
     std::map<int, std::shared_ptr<Module> > pre_modules;
@@ -142,9 +142,9 @@ TEST(graph, dynamic_remove) {
     BMFLOG_SET_LEVEL(BMF_INFO);
 
     time_t time1 = clock();
-    std::string config_file = "../files/graph_passthru.json";
-    std::string dyn_add_config_file = "../files/dynamic_passthru.json";
-    std::string dyn_remove_config_file = "../files/dynamic_remove.json";
+    std::string config_file = "../../files/graph_passthru.json";
+    std::string dyn_add_config_file = "../../files/dynamic_passthru.json";
+    std::string dyn_remove_config_file = "../../files/dynamic_remove.json";
     GraphConfig graph_config(config_file);
     GraphConfig dyn_add_config(dyn_add_config_file);
     GraphConfig dyn_remove_config(dyn_remove_config_file);
@@ -173,7 +173,7 @@ TEST(graph, dynamic_remove) {
 TEST(graph, decode_filter_encode) {
     BMFLOG_SET_LEVEL(BMF_INFO);
     nlohmann::json graph_json;
-    std::string config_file = "../files/filter_opt_graph.json";
+    std::string config_file = "../../files/filter_opt_graph.json";
     std::ifstream gs(config_file);
     gs >> graph_json;
     GraphConfig graph_config(graph_json);
@@ -188,7 +188,7 @@ TEST(graph, c_decode_filter_encode) {
     BMFLOG_SET_LEVEL(BMF_INFO);
 
     nlohmann::json graph_json;
-    std::string config_file = "../files/filter_opt_graph_c.json";
+    std::string config_file = "../../files/filter_opt_graph_c.json";
     std::ifstream gs(config_file);
     gs >> graph_json;
     GraphConfig graph_config(graph_json);
@@ -208,7 +208,7 @@ TEST(graph, c_decode_filter_encode) {
 //    for (int i = 1; i <= 100; i++) {
 //        std::cout<<"********test time:"<<i<<std::endl;
 //        LOG(ERROR)<<"start";
-//        std::string config_file = "../files/multi.json";
+//        std::string config_file = "../../files/multi.json";
 //        GraphConfig graph_config(config_file);
 //        std::map<int, std::shared_ptr<Module> > pre_modules;
 //        std::shared_ptr<Graph> graph = std::make_shared<Graph>(graph_config, pre_modules);

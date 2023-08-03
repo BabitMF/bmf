@@ -23,7 +23,7 @@ USE_BMF_SDK_NS
 TEST(json_param, parse_json) {
      JsonParam json_param;
      std::string path = getcwd(NULL,0);
-     std::string file_name = "../../example/run_by_config/config.json";
+     std::string file_name = "../../test/run_by_config/config.json";
      json_param.load(file_name);
      std::string mode;
      json_param.get_string("mode", mode);

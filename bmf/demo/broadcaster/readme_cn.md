@@ -14,9 +14,9 @@
 - wallclock module
     wallclock用于均匀生成音视频时戳，比如导播配置为fps 25帧，44100双声道lc-aac输出，wallclock生成每一帧音视频的时戳，作为背景音视频时戳输入给到streamhub模块，同时作为稳定源驱动整个graph，使导播App源源不断输出流
 
-- ffmpeg_decoder module
+- c_ffmpeg_decoder module
 
-    导播的素材源，它能生成音视频流。本demo中使用了bmf内置的ffmpeg_decoder module, demo中支持rtmp输入流，且音频为44100双声道的lc-aac源。该module对接streamhub模块。
+    导播的素材源，它能生成音视频流。本demo中使用了bmf内置的c_ffmpeg_decoder module, demo中支持rtmp输入流，且音频为44100双声道的lc-aac源。该module对接streamhub模块。
     
 - streamhub module
 
@@ -30,7 +30,7 @@
 
     videolayout根据streamhub输出的framelist混屏，可配置不同的混屏参数，控制多路流的显示坐标。
 
-- ffmpeg_encoder module
+- c_ffmpeg_encoder module
 
     导播输出模块,对接videolayout和audiomix，编码输出rtmp流
 

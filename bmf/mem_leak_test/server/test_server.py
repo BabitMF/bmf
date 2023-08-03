@@ -20,9 +20,9 @@ def process_thread(server_gateway, packet):
 class TestServer(BaseTestCase):
 
     def test_single_video(self):
-        input_video_path_1 = "../files/img.mp4"
+        input_video_path_1 = "../../files/img.mp4"
         graph = bmf.graph({"dump_graph": 0})
-        video_stream = graph.module('ffmpeg_decoder')
+        video_stream = graph.module('c_ffmpeg_decoder')
         video_stream['video'].pass_through().encode(
             video_stream['audio'], {
                 "output_prefix": "./output_video_dir",
@@ -63,13 +63,13 @@ class TestServer(BaseTestCase):
         server_gateway.close()
 
     def test_multiple_pictures(self):
-        input_video_path_1 = "../files/blue.png"
+        input_video_path_1 = "../../files/blue.png"
         input_video_path_2 = '../files/overlay.png'
 
         graph = bmf.graph({"dump_graph": 1})
 
         video_stream = graph.input_stream('graph_input_name').module(
-            'ffmpeg_decoder')
+            'c_ffmpeg_decoder')
         video_stream['video'].pass_through().encode(
             None, {
                 "output_prefix": "./output_multi_pic_dir",
@@ -119,7 +119,7 @@ class TestServer(BaseTestCase):
         input_video_path = '../files/img.mp4'
 
         graph = bmf.graph({"dump_graph": 0})
-        video_stream = graph.module('ffmpeg_decoder')
+        video_stream = graph.module('c_ffmpeg_decoder')
         video_stream['video'].vflip().pass_through().scale(100, 200).encode(
             video_stream['audio'], {
                 "output_prefix": "./output_filter_condition_dir",
@@ -193,11 +193,11 @@ class TestServer(BaseTestCase):
         server_gateway.close()
 
     def test_all_results_at_one_time(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
 
         graph = bmf.graph({"dump_graph": 1})
 
-        video_stream = graph.module('ffmpeg_decoder')
+        video_stream = graph.module('c_ffmpeg_decoder')
         server_gateway = video_stream['video'].pass_through().vflip().encode(
             None, {
                 "output_prefix": "./all_results_at_one_time",
@@ -234,10 +234,10 @@ class TestServer(BaseTestCase):
         assert res['res_4'] == './all_results_at_one_time/4'
 
     def test_specified_job_result_unblock(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
 
         graph = bmf.graph({"dump_graph": 1})
-        video_stream = graph.module('ffmpeg_decoder')
+        video_stream = graph.module('c_ffmpeg_decoder')
         server_gateway = video_stream['video'].pass_through().vflip().encode(
             None, {
                 "output_prefix": "./specified_job_result_unblock",
@@ -276,10 +276,10 @@ class TestServer(BaseTestCase):
         assert res is None
 
     def test_specified_job_result_block(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
 
         graph = bmf.graph({"dump_graph": 1})
-        video_stream = graph.module('ffmpeg_decoder')
+        video_stream = graph.module('c_ffmpeg_decoder')
         server_gateway = video_stream['video'].pass_through().vflip().encode(
             None, {
                 "output_prefix": "./specified_job_result_block",
@@ -318,10 +318,10 @@ class TestServer(BaseTestCase):
         assert len(res) == 1
 
     def test_pop_from_result_queue(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
 
         graph = bmf.graph({"dump_graph": 1})
-        video_stream = graph.module('ffmpeg_decoder')
+        video_stream = graph.module('c_ffmpeg_decoder')
         server_gateway = video_stream['video'].pass_through().vflip().encode(
             None, {
                 "output_prefix": "./pop_from_result_queue",

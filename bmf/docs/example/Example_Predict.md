@@ -6,7 +6,7 @@
 
 ```python
 sr_mod = bmf.create_module('onnx_sr', {
-    "model_path": "v1.onnx"
+    "model_path": "../../models/v1.onnx"
 })
 ```
 
@@ -14,9 +14,9 @@ sr_mod = bmf.create_module('onnx_sr', {
 
 ```python
 bmf.graph()
-    .decode({'input_path': "../files/img_s.mp4"})['video']
+    .decode({'input_path': "../../files/img_s.mp4"})['video']
     .module('onnx_sr', pre_module=sr_mod)
-    .encode(None, {"output_path": "../files/out.mp4"})
+    .encode(None, {"output_path": "../../files/out.mp4"})
     .run()
 ```
 

@@ -8,7 +8,7 @@ import bmf
 
 
 def test_simple():
-    input_video_path = "../files/img.mp4"
+    input_video_path = "../../files/img.mp4"
     output_path = "./simple.mp4"
     expect_result = '../transcode/simple.mp4|240|320|7.617000|MOV,MP4,M4A,3GP,3G2,MJ2|369643|351947|h264|' \
                     '{"fps": "30.0662251656"}'
@@ -39,7 +39,7 @@ def test_simple():
 
 
 def test_audio():
-    input_video_path = "../files/img.mp4"
+    input_video_path = "../../files/img.mp4"
     output_path = "./audio.mp4"
     expect_result = '../transcode/audio.mp4|0|0|7.617000|MOV,MP4,M4A,3GP,3G2,MJ2|136092|129577||{}'
     # create graph
@@ -61,11 +61,11 @@ def test_audio():
 
 
 def test_video():
-    input_video_path_1 = "../files/header.mp4"
-    input_video_path_2 = "../files/header.mp4"
-    input_video_path_3 = '../files/img.mp4'
-    logo_video_path_1 = "../files/xigua_prefix_logo_x.mov"
-    logo_video_path_2 = "../files/xigua_loop_logo2_x.mov"
+    input_video_path_1 = "../../files/header.mp4"
+    input_video_path_2 = "../../files/header.mp4"
+    input_video_path_3 = '../../files/img.mp4'
+    logo_video_path_1 = "../../files/xigua_prefix_logo_x.mov"
+    logo_video_path_2 = "../../files/xigua_loop_logo2_x.mov"
     output_path = "./video.mp4"
     expect_result = '../transcode/video.mp4|720|1280|13.652000|MOV,MP4,M4A,3GP,3G2,MJ2|3902352|6659364|h264|' \
                     '{"fps": "69.7605893186"}'
@@ -148,7 +148,7 @@ def test_video():
 
 
 def test_cb():
-    input_video_path = "../files/img.mp4"
+    input_video_path = "../../files/img.mp4"
     output_path = "./cb.mp4"
     expect_result = '../transcode/cb.mp4|240|320|7.615000|MOV,MP4,M4A,3GP,3G2,MJ2|366635|348991|h264|' \
                     '{"fps": "30.0662251656"}'
@@ -202,7 +202,7 @@ def compareProfile(graph_file):
 
 
 def compare():
-    input_video_path = "../files/img.mp4"
+    input_video_path = "../../files/img.mp4"
     output_path = "./simple.mp4"
 
     # create graph

@@ -1,0 +1,115 @@
+name: Build and test for every PR
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: write
+
+jobs:
+  build_and_test:
+    name: build and test
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Check out source code
+      uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+
+    - name: prepare envs
+      run: |
+        apt update
+        apt install -y make git pkg-config libssl-dev cmake binutils-dev libgoogle-glog-dev gcc g++ golang wget libgl1
+        apt install -y python3.9 python3-dev python3-pip
+        python3 -m pip install timeout_decorator numpy onnxruntime pytest opencv-python
+        # The version of ffmpeg installed via apt is 4.2, but the current test results are based on version 4.4, so here we need to compile version 4.4 of ffmpeg from source code
+        #apt install -y ffmpeg libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavresample-dev libavutil-dev libpostproc-dev libswresample-dev libswscale-dev
+        scripts/build_ffmpeg.sh nasm yasm x264 x265 opus
+
+    - name: build
+      id: build
+      env:
+        CMAKE_ARGS: "-DCMAKE_VERBOSE_MAKEFILE=ON"
+      run: |
+        ./build.sh
+
+    - name: test
+      id: test
+      env:
+        C_INCLUDE_PATH: ${C_INCLUDE_PATH}:$(pwd)/output/bmf/include
+        CPLUS_INCLUDE_PATH: ${CPLUS_INCLUDE_PATH}:$(pwd)/output/bmf/include
+        LIBRARY_PATH: ${LIBRARY_PATH}:$(pwd)/output/bmf/lib
+        LD_LIBRARY_PATH: ${LD_LIBRARY_PATH}:$(pwd)/output/bmf/lib
+        PATH: ${PATH}:$(pwd)/output/bmf/bin
+        PYTHONPATH: $(pwd)/output/bmf/lib:$(pwd)/output
+        HMP_TEST_DATA_ROOT: $(pwd)/bmf/hml/tests/tests/data
+      run: |
+        # install test modules for c++/python/go
+        module_manager install test_python_module python my_module:my_module $(pwd)/output/test/customize_module v0.0.1
+        module_manager install test_cpp_module c++ libcopy_module:CopyModule $(pwd)/output/test/c_module/lib v0.0.1
+        (cd $(pwd)/output/test/go_module && go build -buildmode c-shared -o lib/test_go_module.so test_go_module.go)
+        module_manager install test_go_module go test_go_module:PassThrough $(pwd)/output/test/go_module/lib v0.0.1
+        # download files
+        (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz && tar xvf files.tar.gz && rm -rf files.tar.gz)
+        (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/models.tar.gz && tar xvf models.tar.gz && rm -rf models.tar.gz)
+        # test bmf
+        (cd output/bmf/bin && ./test_bmf_module_sdk && ./test_bmf_engine && ./test_builtin_modules && ./test_cpp_builder)
+        (cd output/demo/transcode               && python3 test_transcode.py)
+        (cd output/demo/edit                    && python3 test_edit.py)
+        (cd output/test/audio_copy              && python3 test_simple.py)
+        (cd output/test/pre_module              && python3 test_pre_module.py)
+        (cd output/test/sync_mode               && python3 test_sync_mode.py)
+        (cd output/test/generator               && python3 test_generator.py)
+        (cd output/test/run_by_config           && python3 test_run_by_config.py)
+        (cd output/test/server                  && python3 test_server.py)
+        (cd output/test/c_module                && python3 test_video_c_module.py)
+        (cd output/test/predict                 && python3 predict_sample.py)
+        (cd output/test/dynamical_graph         && python3 dynamical_graph.py)
+        #(cd output/test/av_log_buffer           && python3 test_av_log_buffer.py)
+        #(cd output/test/push_data_into_graph    && python3 test_push_data.py)
+        (cd output/test/complex_edit_case       && python3 test_complex_case.py)
+        (cd output/test/complex_edit_case       && python3 test_compare_with_edit.py)
+        # test hmp
+        (cd bmf/hml/tests/data                  && ./gen.sh)
+        (cd bmf/hml/tests                       && pytest)
+
+    - name: Set PR status check for test result
+      if: ${{ always() }} # This ensures that this step is always executed, even if previous steps fail.
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const prNumber = context.payload.pull_request.number;
+          const context = 'ci/pull-request';
+
+          if (${{ failure() }}) {
+            // Test failed, set the status check to failure and prevent PR merging
+            const state = 'failure';
+            const description = 'The pull request cannot be merged due to a failed test.';
+            github.repos.createCommitStatus({
+              ...context.repo,
+              sha: context.sha,
+              state,
+              description,
+              context,
+              target_url: `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
+            });
+            core.setFailed('Test failed, merging the pull request is not allowed.');
+          } else {
+            // Test succeeded, set the status check to success
+            const state = 'success';
+            const description = 'The pull request passed all checks.';
+            github.repos.createCommitStatus({
+              ...context.repo,
+              sha: context.sha,
+              state,
+              description,
+              context
+            });
+          }
+
+    - name: Setup tmate session
+      if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3

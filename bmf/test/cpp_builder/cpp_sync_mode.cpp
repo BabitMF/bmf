@@ -11,7 +11,7 @@ TEST(cpp_sync_mode, sync_videoframe) {
 
     // create decoder
     nlohmann::json decoder_option = {
-        {"input_path", "../files/overlay.png"}
+        {"input_path", "../../files/overlay.png"}
     };
     auto decoder = graph.Sync(std::vector<int> {}, std::vector<int> {0}, 
         bmf_sdk::JsonParam(decoder_option), "c_ffmpeg_decoder");
@@ -71,7 +71,7 @@ TEST(cpp_sync_mode, sync_audioframe) {
 
     // create decoder
     nlohmann::json decoder_option = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}
     };
     auto decoder = graph.Sync(std::vector<int> {}, std::vector<int> {1}, decoder_option, "c_ffmpeg_decoder");
 
@@ -115,7 +115,7 @@ TEST(cpp_sync_mode, sync_video_by_pkts) {
 
     // create sync modules
     nlohmann::json decoder_option = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}
     };
     auto decoder = graph.Sync(std::vector<int> {}, std::vector<int> {0,1}, decoder_option, "c_ffmpeg_decoder");
 
@@ -191,7 +191,7 @@ TEST(cpp_sync_mode, sync_audio) {
 
     // create sync modules
     nlohmann::json decoder_option = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}
     };
     auto decoder = graph.Sync(std::vector<int> {}, std::vector<int> {1}, decoder_option, "c_ffmpeg_decoder");
 
@@ -234,7 +234,7 @@ TEST(cpp_sync_mode, sync_video) {
 
     // create sync modules
     nlohmann::json decoder_option = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}
     };
     auto decoder = graph.Sync(std::vector<int> {}, std::vector<int> {0,1}, decoder_option, "c_ffmpeg_decoder");
 
@@ -310,7 +310,7 @@ TEST(cpp_sync_mode, sync_eof_flush_data) {
 
     // create decoder
     nlohmann::json decoder_option = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}
     };
     auto decoder = graph.Sync(std::vector<int> {}, std::vector<int> {0}, 
         bmf_sdk::JsonParam(decoder_option), "c_ffmpeg_decoder");

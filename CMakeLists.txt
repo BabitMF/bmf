@@ -61,6 +61,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         set(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations -Wl,-z,defs ${CMAKE_COVERAGE_FLAGS}") #report unresolved symbols
     endif()
 endif()
+add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
 
 if(ANDROID)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections -fdata-sections -g")

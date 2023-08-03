@@ -17,19 +17,19 @@ def test_push_pkt_into_decoder(self):
     output_path = "./aac.mp4"
 
     self.remove_result_data(output_path)
-    
+
     graph = bmf.graph({"dump_graph": 1})
 
     video_stream = graph.input_stream("outside_raw_video")
     decode_stream = video_stream.decode()
     bmf.encode(None,decode_stream["audio"],{"output_path": output_path})
-    
+
     graph.run_wo_block(mode = GraphMode.PUSHDATA)
     pts_ = 0
     for index in range(100,105):
-        file_name = "../files/aac_slice/"+str(index)+".aac"
+        file_name = "../../files/aac_slice/"+str(index)+".aac"
         with open(file_name, "rb") as fp:
-            lines = fp.read()    
+            lines = fp.read()
             buf = BMFAVPacket(len(lines))
             buf.data.numpy()[:] = np.frombuffer(lines, dtype=np.uint8)
             buf.pts = pts_
@@ -50,8 +50,8 @@ Let's look at another more complex video processing example:
 
 ```
 def test_push_raw_stream_into_decoder(self):
-    input_video_content = "../files/video_content.txt"
-    input_content_size = "../files/video_length.txt"
+    input_video_content = "../../files/video_content.txt"
+    input_content_size = "../../files/video_length.txt"
     output_path = "./push_pkt_output.mp4"
 
     self.remove_result_data(output_path)
@@ -59,9 +59,9 @@ def test_push_raw_stream_into_decoder(self):
     graph = bmf.graph({"dump_graph": 1})
 
     video_stream = graph.input_stream("outside_raw_video")
-    
+
     decode_stream = video_stream.module(
-        'ffmpeg_decoder', 
+        'c_ffmpeg_decoder',
         option={
             "video_codec": "h264", 'video_time_base': "1,30000",
             "push_raw_stream": 1

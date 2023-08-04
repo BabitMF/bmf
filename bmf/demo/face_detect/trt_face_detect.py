@@ -17,28 +17,7 @@ sys.path.append("../../")
 
 from bmf import *
 import bmf.hml.hmp as mp
-
-
-class DetectResult(object):
-
-    def __init__(self, x1, y1, x2, y2, label, score, pts=0):
-        self.x1_ = x1
-        self.y1_ = y1
-        self.x2_ = x2
-        self.y2_ = y2
-        self.label_ = label
-        self.score_ = score
-
-    def __str__(self):
-        msg = "x1:{},y1:{},x2:{},y2:{},label:{},score:{}".format(
-            self.x1_, self.y1_, self.x2_, self.y2_, self.label_, self.score_)
-        return msg
-
-    def __repr__(self):
-        msg = "x1:{},y1:{},x2:{},y2:{},label:{},score:{}".format(
-            self.x1_, self.y1_, self.x2_, self.y2_, self.label_, self.score_)
-        return msg
-
+from nms import NMS
 
 class trt_face_detect(Module):
 
@@ -145,23 +124,26 @@ class trt_face_detect(Module):
 
         return input_tensor
 
-    def post_process(self, pil_image_array, boxes, scores):
+    def post_process(self, input_pil_arrays, boxes, scores):
         output_list = []
-        boxes_num = boxes.shape[1]
-        for image_id in range(len(pil_image_array)):
-            image = pil_image_array[image_id]
-            box_data = []
-            for index in range(boxes_num):
-                if (scores[image_id, index, 1] > 0.8):
-                    box = boxes[image_id, index, :]
+        boxes_data = []
+        scores_data = []
+        for image_id in range(len(input_pil_arrays)):
+
+            image = input_pil_arrays[image_id]
+            output_data = []
+            for index in range(len(boxes[image_id])):
+                if (scores[image_id][index][1]) > 0.8:
+                    box = (boxes[image_id][index])
                     x1 = int(box[0] * image.size[0])
                     y1 = int(box[1] * image.size[1])
                     x2 = int(box[2] * image.size[0])
                     y2 = int(box[3] * image.size[1])
-                    detect_result = DetectResult(x1, y1, x2, y2, 1,
-                                                 scores[image_id, index, 1])
-                    box_data.append(detect_result)
-            output_list.append(box_data)
+                    boxes_data.append([x1, y1, x2, y2])
+                    scores_data.append(scores[image_id][index][1])
+            
+            nms_boxes, nms_scores = NMS(boxes_data, scores_data)
+            output_list.append(nms_boxes)
         return output_list
 
     def label_frame(self, input_frames, pil_image_array, detect_result_list):
@@ -173,8 +155,8 @@ class trt_face_detect(Module):
             for index_box in range(len(detect_result_list[index_frame])):
                 detect_result = detect_result_list[index_frame][index_box]
                 draw.rectangle([
-                    detect_result.x1_, detect_result.y1_, detect_result.x2_,
-                    detect_result.y2_
+                    detect_result[0], detect_result[1], detect_result[2],
+                    detect_result[3]
                 ])
             del draw
             numpy_image = np.asarray(image)

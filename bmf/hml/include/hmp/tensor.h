@@ -188,6 +188,8 @@ HMP_API Tensor from_buffer(DataPtr &&data, ScalarType scalar_type,
                            const SizeArray &shape,
                            const optional<SizeArray> &strides = nullopt);
 HMP_API Tensor empty(const SizeArray &shape, const TensorOptions &options = {});
+HMP_API Tensor empty_tensor_buffer(const int64_t &nitems,
+                                   const TensorOptions &options = {});
 HMP_API Tensor empty_like(const Tensor &other,
                           const optional<TensorOptions> &options = nullopt);
 HMP_API Tensor zeros(const SizeArray &shape, const TensorOptions &options = {});

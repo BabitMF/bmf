@@ -42,6 +42,23 @@ Tensor empty(const SizeArray &shape, const TensorOptions &options) {
         shape));
 }
 
+Tensor empty_tensor_buffer(const int64_t &nitems,
+                           const TensorOptions &options) {
+    unsigned flags = 0;
+    if (options.pinned_memory()) {
+        flags |= static_cast<unsigned>(AllocatorFlags::Pinned);
+    }
+
+    auto scalar_type = options.scalar_type();
+    auto device_type = options.device().type();
+    auto allocator = get_allocator(device_type, flags);
+    HMP_REQUIRE(allocator, "Device type {} is not supported", device_type);
+
+    return Tensor(makeRefPtr<TensorInfo>(
+        Buffer(scalar_type, nitems, allocator, options.pinned_memory()),
+        std::vector<int64_t>(1, nitems)));
+}
+
 Tensor &copy(Tensor &self, const Tensor &other) {
 #ifndef HMP_BUILD_SHARED
     HMP_IMPORT_DEVICE_DISPATCH(kCPU, copy_stub);

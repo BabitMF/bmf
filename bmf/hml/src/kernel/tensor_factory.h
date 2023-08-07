@@ -26,6 +26,7 @@ HMP_DECLARE_DISPATCH_STUB(arange_stub,
                           Tensor &(*)(Tensor &, int64_t, int64_t, int64_t))
 
 Tensor empty(const SizeArray &shape, const TensorOptions &options);
+Tensor empty_tensor_buffer(const int64_t &nitems, const TensorOptions &options);
 Tensor &copy(Tensor &self, const Tensor &other);
 } // namespace kernel
 } // namespace hmp

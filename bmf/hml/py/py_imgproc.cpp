@@ -225,6 +225,7 @@ void imageBind(py::module &m) {
         .def("crop", &Frame::crop, py::arg("left"), py::arg("top"),
              py::arg("width"), py::arg("height"))
         .def("reformat", &Frame::reformat, py::arg("pix_info"))
+        .def("storage", (Tensor & (Frame::*)()) & Frame::storage)
         .def("numpy", [](const Frame &frame) {
             py::list arr_list;
             for (auto &tensor : frame.data()) {

@@ -500,4 +500,44 @@ TEST(video_frame, reformat_by_ffmpeg) {
         EXPECT_EQ(yuv_vf.frame().plane(2).stride(0), 1920 / 2);
     }
 }
+
+#ifdef HMP_ENABLE_CUDA
+TEST(video_frame, check_continue) {
+    int width = 1920;
+    int height = 1080;
+    auto H420 = PixelInfo(hmp::PF_YUV420P, hmp::CS_BT709);
+    auto vf = VideoFrame::make(width, height, H420, Device(kCUDA, 0)); //
+    EXPECT_EQ(hmp::ffmpeg::check_cuda_frame_need_copy_for_ffmpeg(vf.frame()),
+              false);
+}
+
+TEST(video_frame, copy_frame_test) {
+    static const int count = 100;
+    VideoFrame vf[count];
+    int width = 1920;
+    int height = 1080;
+    auto H420 = PixelInfo(hmp::PF_YUV420P, hmp::CS_BT709);
+    for (int i = 0; i < count; ++i) {
+        vf[i] = VideoFrame::make(width, height, H420); //
+    }
+
+    {
+        for (int i = 0; i < count; ++i) {
+            auto cudaframe = vf[i].cuda();
+            EXPECT_EQ(hmp::ffmpeg::check_cuda_frame_need_copy_for_ffmpeg(
+                          cudaframe.frame()),
+                      false);
+        }
+    }
+}
 #endif
+
+#endif
+
+TEST(video_frame, yuv_frame_storage) {
+    int width = 1920;
+    int height = 1080;
+    auto H420 = PixelInfo(hmp::PF_YUV420P, hmp::CS_BT709);
+    auto vf = VideoFrame::make(width, height, H420); //
+    ASSERT_TRUE(vf.frame().storage().defined());
+}

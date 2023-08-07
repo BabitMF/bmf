@@ -273,6 +273,14 @@ Tensor empty(const SizeArray &shape, const TensorOptions &options) {
     return kernel::empty(shape, options);
 }
 
+Tensor empty_tensor_buffer(const int64_t &nitems,
+                           const TensorOptions &options) {
+    HMP_REQUIRE(nitems > 0, "nitems is invalid: {}", nitems);
+    DeviceGuard dguard(options.device());
+
+    return kernel::empty_tensor_buffer(nitems, options);
+}
+
 Tensor empty_like(const Tensor &other,
                   const optional<TensorOptions> &options_) {
     auto options = options_.value_or(other.options());

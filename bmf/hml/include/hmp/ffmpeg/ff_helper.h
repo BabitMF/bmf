@@ -533,6 +533,30 @@ static Frame from_video_frame(const AVFrame *avf) {
     return Frame(planes, avf->width, avf->height, pix_info);
 }
 
+// ffmpeg nv12 require
+static bool check_cuda_frame_need_copy_for_ffmpeg(const Frame &frame) {
+    if (!frame.storage().defined()) {
+        return true;
+    }
+
+    char *last_addr = static_cast<char *>(frame.plane(0).unsafe_data());
+    int64_t last_nbytes = frame.plane(0).nbytes();
+
+    // check planes' buffer is contiguous
+    // auto pix_desc = PixelFormatDesc(frame.format());
+    for (int i = 1; i < frame.nplanes(); ++i) {
+        char *addr = static_cast<char *>(frame.plane(i).unsafe_data());
+        // not continue
+        if (addr != last_addr + last_nbytes) {
+            return true;
+        }
+        last_addr = addr;
+        last_nbytes = frame.plane(i).nbytes();
+    }
+
+    return false;
+}
+
 /**
  * @brief convert Frame to AVFrame,
  * if frame.deivce() != kCPU, hw_frames_ctx info must be provided either by
@@ -556,7 +580,8 @@ static AVFrame *to_video_frame(const Frame &frame,
 
 #ifdef HMP_ENABLE_CUDA
     if (frame.device().type() == kCUDA &&
-        (!avf_ref || (avf_ref && !avf_ref->hw_frames_ctx))) {
+        (!avf_ref || (avf_ref && !avf_ref->hw_frames_ctx)) &&
+        check_cuda_frame_need_copy_for_ffmpeg(frame)) {
         HMP_REQUIRE(frame.pix_info().format() == hmp::PF_NV12,
                     "cuda hardware encode need NV12 frame");
         auto nv12 = bmf_sdk::PixelInfo(hmp::PF_NV12, hmp::CS_BT709);

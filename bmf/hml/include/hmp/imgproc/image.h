@@ -31,9 +31,11 @@ class HMP_API Frame {
           const Device &device = kCPU);
 
     Frame(const TensorList &data, int width, int height,
-          const PixelInfo &pix_info);
-    Frame(const TensorList &data, const PixelInfo &pix_info);
-    Frame(const Tensor &data, const PixelInfo &pix_info);
+          const PixelInfo &pix_info, const Tensor &storage_tensor = {});
+    Frame(const TensorList &data, const PixelInfo &pix_info,
+          const Tensor &storage_tensor = {});
+    Frame(const Tensor &data, const PixelInfo &pix_info,
+          const Tensor &storage_tensor = {});
 
     /**
      * @brief check is this frame is defined
@@ -176,14 +178,23 @@ class HMP_API Frame {
      * @return Frame
      */
     Frame reformat(const PixelInfo &pix_info);
+    const Tensor &storage() const { return storage_tensor_; }
 
   private:
     int width_, height_;
     PixelFormatDesc pix_desc_;
     PixelInfo pix_info_;
     TensorList data_;
+
+    /// Each plane of the frame is represented using a tensor
+    /// and we want the memory of multi-planes frame to be allocated
+    /// continuously. This requires an additional member variable to represent a
+    /// contiguous storage space.
+    Tensor storage_tensor_;
 };
 
 HMP_API std::string stringfy(const Frame &frame);
+TensorList from_storage_tensor(const Tensor &storage_tensor,
+                               const TensorList &mirror);
 
 } // namespace hmp

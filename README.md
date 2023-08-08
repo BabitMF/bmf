@@ -64,21 +64,28 @@ If you want to have a quick experiment, you can try it on [![Open In Colab](http
 
 This demo shows the how to integrate the state of art AI algorithms into the BMF video processing pipeline. The famous open source colorization algorithm [DeOldify](https://github.com/jantic/DeOldify) is wrapped as an BMF pyhton module in less than 100 lines of codes. The final effect is illustrated below, with the original video on the left side and the colored video on the right. 
 
-If you wan't to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/colorization_python/deoldify_demo_colab.ipynb)
+If you want to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/colorization_python/deoldify_demo_colab.ipynb)
 
 ![](bmf/demo/colorization_python/deoldify.gif)
  
 #### Supper Resolution
 This demo implements the super-resolution inference process of [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN) as a BMF module, showcasing a BMF pipeline that combines decoding, super-resolution inference and encoding.
 
-If you wan't to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/video_enhance/bmf-enhance-demo.ipynb)
+If you want to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/video_enhance/bmf-enhance-demo.ipynb)
 
 
 #### Video Quality Score
 
 This demo shows how to invoke our aesthetic assessment model using bmf. Our deep learning model Aesmode has achieved a binary classification accuracy of 83.8% on AVA dataset, reaching the level of academic SOTA, and can be directly used to evaluate the aesthetic degree of videos by means of frame extraction processing. 
 
-If you wan't to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/aesthetic_assessment/aesmod_bmfv3_fin.ipynb)
+If you want to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/aesthetic_assessment/aesmod_bmfv3_fin.ipynb)
+
+#### Face Detect With TensorRT
+
+This Demo shows a full-link face detect pipeline based on TensorRT acceleration, which internally uses the TensorRT-accelerated Onnx model to process the input video, and uses the NMS algorithm to filter repeated candidate boxes to form an output, which can be used to efficiently process a Face Detection Task.
+
+If you want to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/face_detect/facedetect_demo_colab.ipynb)
+
 
 
 
@@ -98,6 +105,7 @@ If you wan't to have a quick experiment, you can try it on [![Open In Colab](htt
     - [Deoldify](#deoldify)
     - [Supper Resolution](#supper-resolution)
     - [Video Quality Score](#video-quality-score)
+    - [Face Detect With TensorRT](#face-detect-with-tensorrt)
 
 - [Getting Started Yourself](https://babitmf.github.io/docs/bmf/getting_started_yourself/)
   - [Install](https://babitmf.github.io/docs/bmf/getting_started_yourself/install/)

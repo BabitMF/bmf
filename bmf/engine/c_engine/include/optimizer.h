@@ -70,7 +70,7 @@ void merge_subgraph(GraphConfig &main_config, GraphConfig &sub_config,
 void subgraph_preprocess(GraphConfig &main_graph_config,
                          std::map<int, std::shared_ptr<Module>> &premodules);
 void dump_graph(GraphConfig graph_config, bool merged);
-}
+} // namespace Optimizer
 
 END_BMF_ENGINE_NS
 

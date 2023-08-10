@@ -249,7 +249,7 @@ class RealGraph : public std::enable_shared_from_this<RealGraph> {
     std::map<std::string, std::shared_ptr<RealStream>> existedStreamAlias_;
     std::map<std::string, std::shared_ptr<RealNode>> existedNodeAlias_;
 };
-}
+} // namespace internal
 
 std::string GetVersion();
 
@@ -789,7 +789,7 @@ class Graph {
                                            const bmf_sdk::JsonParam &filterPara,
                                            std::string const &alias = "");
 };
-}
+} // namespace bmf::builder
 
 #include "builder.ipp"
 

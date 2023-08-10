@@ -35,7 +35,7 @@ class ConnectorMapping {
     static InstanceMapping<std::function<bmf_sdk::CBytes(bmf_sdk::CBytes)>> &
     ModuleCallbackInstanceMapping();
 };
-}
-}
+} // namespace internal
+} // namespace bmf
 
 #endif // CONNECTOR_MAPPING_H

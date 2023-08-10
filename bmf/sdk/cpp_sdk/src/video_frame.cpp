@@ -89,4 +89,4 @@ VideoFrame VideoFrame::reformat(const PixelInfo &pix_info) {
     return VideoFrame(frame);
 }
 
-} // namespacebmf_sdk
+} // namespace bmf_sdk

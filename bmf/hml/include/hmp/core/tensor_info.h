@@ -99,12 +99,12 @@ class HMP_API TensorOptions {
     TensorOptions &options() { return *this; }
 
     template <typename T, typename... Args>
-    TensorOptions &options(T v, Args &&... args) {
+    TensorOptions &options(T v, Args &&...args) {
         option(v);
         return options(std::forward<Args>(args)...);
     }
 
-    template <typename... Args> static TensorOptions make(Args &&... args) {
+    template <typename... Args> static TensorOptions make(Args &&...args) {
         return TensorOptions().options(std::forward<Args>(args)...);
     }
 

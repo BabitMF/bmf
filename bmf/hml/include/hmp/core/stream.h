@@ -100,4 +100,4 @@ HMP_API void registerStreamManager(DeviceType dtype, StreamManager *dm);
     HMP_IMPORT_TAG(__s##device##StreamManager)
 
 } // namespace impl
-}
+} // namespace hmp

@@ -298,4 +298,4 @@ BMFCallback &BMFCallback::operator=(BMFCallback const &cb) {
 uint32_t BMFCallback::uid() { return callback_uid_; }
 
 void ChangeDmpPath(std::string path) { internal::env_init.ChangeDmpPath(path); }
-}
+} // namespace bmf

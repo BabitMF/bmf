@@ -182,4 +182,4 @@ void setDispatch(D &d, const DeviceType &device, Func func) {
         }                                                                      \
     }()
 
-} //
+} // namespace hmp

@@ -277,5 +277,5 @@ void dump_stack_trace(int max) {
 }
 
 #endif
-}
-} // namespace hmp::logging
+} // namespace logging
+} // namespace hmp

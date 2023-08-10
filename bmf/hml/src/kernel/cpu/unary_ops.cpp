@@ -87,6 +87,6 @@ HMP_DEVICE_DISPATCH(kCPU, floor_stub, &floor_cpu)
 HMP_DEVICE_DISPATCH(kCPU, abs_stub, &abs_cpu)
 HMP_DEVICE_DISPATCH(kCPU, minus_stub, &minus_cpu)
 HMP_DEVICE_DISPATCH(kCPU, clip_stub, &clip_cpu)
-}
-}
-} //
+} // namespace
+} // namespace kernel
+} // namespace hmp

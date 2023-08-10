@@ -32,14 +32,14 @@
                Device:(NSString *)device
                Pinned:(bool)pinned_memory;
 + (instancetype)fromfile:(NSString *)
-                      fn:(HmpScalarType)
-                   dtype:(int64_t)
-                   count:(int64_t)offset;
+                      fn:(HmpScalarType)dtype
+                        :(int64_t)count
+                        :(int64_t)offset;
 + (instancetype)from_buffer:(void *)
-                       data:(NSMutableArray *)
-                      shape:(HmpScalarType)
-                      dtype:(NSString *)
-                     device:(NSMutableArray *)strides;
+                       data:(NSMutableArray *)shape
+                           :(HmpScalarType)dtype
+                           :(NSString *)device
+                           :(NSMutableArray *)strides;
 
 - (instancetype)initFromPtr:(void *)ptr:(bool)own;
 
@@ -56,8 +56,8 @@
 - (HmpTensor *)view:(NSMutableArray *)shape;
 
 - (HmpTensor *)as_strided:(NSMutableArray *)
-                    shape:(NSMutableArray *)
-                  strides:(int64_t)offset;
+                    shape:(NSMutableArray *)strides
+                         :(int64_t)offset;
 
 - (HmpTensor *)permute:(NSMutableArray *)dims;
 

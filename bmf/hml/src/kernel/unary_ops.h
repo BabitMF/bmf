@@ -37,5 +37,5 @@ Tensor &abs(Tensor &out, const Tensor &in);
 Tensor &minus(Tensor &out, const Tensor &in);
 Tensor &clip(Tensor &out, const Tensor &in, const Scalar &min,
              const Scalar &max);
-}
-} // namespace
+} // namespace kernel
+} // namespace hmp

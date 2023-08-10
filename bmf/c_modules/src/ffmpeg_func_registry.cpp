@@ -13,5 +13,5 @@ class FFMPEGRegistry {
 };
 
 FFMPEGRegistry sFFRegistery;
-}
-}; // bmf_sdk
+} // namespace
+}; // namespace bmf_sdk

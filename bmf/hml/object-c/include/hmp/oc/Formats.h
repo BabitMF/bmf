@@ -19,10 +19,10 @@
 #import <Foundation/Foundation.h>
 
 /**
-  * Map from AVColorPrimaries
-  * Chromaticity coordinates of the source primaries.
-  * These values match the ones defined by ISO/IEC 23001-8_2013 § 7.1.
-  */
+ * Map from AVColorPrimaries
+ * Chromaticity coordinates of the source primaries.
+ * These values match the ones defined by ISO/IEC 23001-8_2013 § 7.1.
+ */
 typedef enum _HmpColorPrimaries {
     CP_RESERVED0 = 0,
     CP_BT709 = 1, ///< also ITU-R BT1361 / IEC 61966-2-4 / SMPTE RP177 Annex B
@@ -169,9 +169,9 @@ typedef enum _HmpChannelFormat { kNCHW = 0, kNHWC = 1 } HmpChannelFormat;
 
 - (instancetype)init:(HmpColorSpace)cs:(HmpColorRange)cr;
 - (instancetype)initEx:(HmpColorSpace)
-                    cs:(HmpColorRange)
-                    cr:(HmpColorPrimaries)
-                    cp:(HmpColorTransferCharacteristic)ctc;
+                    cs:(HmpColorRange)cr
+                      :(HmpColorPrimaries)cp
+                      :(HmpColorTransferCharacteristic)ctc;
 - (instancetype)initFromPtr:(void *)ptr:(bool)own;
 
 - (void *)ptr;

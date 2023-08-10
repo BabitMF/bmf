@@ -219,4 +219,4 @@ HMP_API Tensor fromfile(const std::string &fn, ScalarType dtype = kFloat32,
                         int64_t count = -1, int64_t offset = 0);
 HMP_API void tofile(const Tensor &data, const std::string &fn);
 
-} // namespace
+} // namespace hmp

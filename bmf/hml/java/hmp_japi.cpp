@@ -97,9 +97,10 @@ JNIEXPORT jlong JNICALL
 Java_com_bytedance_hmp_Api_device_1make__Ljava_lang_String_2(JNIEnv *env,
                                                              jclass,
                                                              jstring dstr) {
-    JNI_PROTECT(auto str = jni::fromJString(env, dstr); if (str.size()) {
-        return jni::makePtr<Device>(str);
-    } else { return jni::makePtr<Device>(); })
+    JNI_PROTECT(
+        auto str = jni::fromJString(env, dstr); if (str.size()) {
+            return jni::makePtr<Device>(str);
+        } else { return jni::makePtr<Device>(); })
     return 0;
 }
 
@@ -328,10 +329,11 @@ JNIEXPORT jlong JNICALL Java_com_bytedance_hmp_Api_tensor_1empty(
 JNIEXPORT jlong JNICALL Java_com_bytedance_hmp_Api_tensor_1arange(
     JNIEnv *env, jclass, jlong start, jlong end, jlong step, jint dtype,
     jstring device, jboolean pinned_memory) {
-    JNI_PROTECT(return jni::makePtr<Tensor>(arange(
-        start, end, step, TensorOptions(jni::fromJString(env, device))
-                              .dtype((ScalarType)dtype)
-                              .pinned_memory(pinned_memory)));)
+    JNI_PROTECT(return jni::makePtr<Tensor>(
+                           arange(start, end, step,
+                                  TensorOptions(jni::fromJString(env, device))
+                                      .dtype((ScalarType)dtype)
+                                      .pinned_memory(pinned_memory)));)
     return 0;
 }
 

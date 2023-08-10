@@ -64,5 +64,5 @@ static CUDATimerManager scudaTimerManager;
 HMP_REGISTER_TIMER_MANAGER(kCUDA, &scudaTimerManager);
 
 } // namespace
-}
-} // namespace
+} // namespace cuda
+} // namespace hmp

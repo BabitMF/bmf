@@ -5,8 +5,8 @@
 namespace bmf_sdk {
 namespace metal {
 
-using hmp::metal::Texture;
 using hmp::metal::Device;
+using hmp::metal::Texture;
 
 } // namespace metal
 

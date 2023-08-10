@@ -100,4 +100,4 @@ std::string stringfy(const Tensor &tensor) {
     }
 }
 
-} // namespace
+} // namespace hmp

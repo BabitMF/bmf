@@ -31,5 +31,5 @@ static std::string AVErr2Str(int rc) {
     av_make_error_string(av_error, AV_ERROR_MAX_STRING_SIZE, rc);
     return std::string(av_error);
 }
-}
-} //
+} // namespace ffmpeg
+} // namespace hmp

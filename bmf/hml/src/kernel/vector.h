@@ -26,7 +26,7 @@ template <typename T, int Size> struct alignas(T) Vector {
     HMP_HOST_DEVICE inline Vector() : data{0} {}
 
     template <typename... Args>
-    explicit HMP_HOST_DEVICE inline Vector(Args &&... args)
+    explicit HMP_HOST_DEVICE inline Vector(Args &&...args)
         : data{static_cast<T>(args)...} {}
 
     template <typename U>
@@ -129,10 +129,12 @@ DEFINE_BOP(/)
 
 #undef DEFINE_BOP
 
-template <typename T> struct scalar_type_traits { using type = T; };
+template <typename T> struct scalar_type_traits {
+    using type = T;
+};
 
 template <typename T, int Size> struct scalar_type_traits<Vector<T, Size>> {
     using type = T;
 };
-}
-} // namespace hmp::kernel
+} // namespace kernel
+} // namespace hmp

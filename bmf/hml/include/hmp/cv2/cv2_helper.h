@@ -81,8 +81,9 @@ static Tensor from_cv_mat(const cv::Mat &mat) {
 
     // no device index info in gpu::Mat
     return from_buffer(
-        DataPtr(static_cast<void *>(mat.data), [mat](void *) {}, kCPU), dtype,
-        sizes, strides);
+        DataPtr(
+            static_cast<void *>(mat.data), [mat](void *) {}, kCPU),
+        dtype, sizes, strides);
 }
 
 static cv::Mat to_cv_mat(const Tensor &tensor, bool channel_last = true) {
@@ -115,5 +116,5 @@ static cv::Mat to_cv_mat(const Tensor &tensor, bool channel_last = true) {
     return cv::Mat(tensor.dim() - channel_last, sizes.data(), type,
                    tensor.unsafe_data(), steps.data());
 }
-}
-} // namespace hmp::ocv
+} // namespace ocv
+} // namespace hmp

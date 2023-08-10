@@ -49,8 +49,10 @@ TEST(log_buffer, init_by_function) {
     register_av_log_set_callback();
 
     std::vector<std::string> buffer_str;
-    std::function<void(const std::string)> log_callback = [&buffer_str](
-        std::string const log) -> void { buffer_str.push_back(log); };
+    std::function<void(const std::string)> log_callback =
+        [&buffer_str](std::string const log) -> void {
+        buffer_str.push_back(log);
+    };
     std::string log_level = "info";
     LogBuffer log_buffer = LogBuffer(log_callback, log_level);
     EXPECT_EQ(buffer_str.size(), 0);

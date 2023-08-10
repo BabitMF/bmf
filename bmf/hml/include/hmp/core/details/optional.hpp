@@ -238,7 +238,7 @@ template <class T> void adl_swap(T &t, T &u) noexcept(noexcept(swap(t, u))) {
 
 } // namespace swap_ns
 
-} // namespace detail
+} // namespace detail_
 
 constexpr struct trivial_init_t {
 } trivial_init{};
@@ -270,7 +270,7 @@ template <class T> union storage_t {
     constexpr storage_t(trivial_init_t) noexcept : dummy_(){};
 
     template <class... Args>
-    constexpr storage_t(Args &&... args)
+    constexpr storage_t(Args &&...args)
         : value_(constexpr_forward<Args>(args)...) {}
 
     ~storage_t() {}
@@ -283,7 +283,7 @@ template <class T> union constexpr_storage_t {
     constexpr constexpr_storage_t(trivial_init_t) noexcept : dummy_(){};
 
     template <class... Args>
-    constexpr constexpr_storage_t(Args &&... args)
+    constexpr constexpr_storage_t(Args &&...args)
         : value_(constexpr_forward<Args>(args)...) {}
 
     ~constexpr_storage_t() = default;
@@ -301,14 +301,14 @@ template <class T> struct optional_base {
         : init_(true), storage_(constexpr_move(v)) {}
 
     template <class... Args>
-    explicit optional_base(in_place_t, Args &&... args)
+    explicit optional_base(in_place_t, Args &&...args)
         : init_(true), storage_(constexpr_forward<Args>(args)...) {}
 
     template <
         class U, class... Args,
         TR2_OPTIONAL_REQUIRES(is_constructible<T, std::initializer_list<U>>)>
     explicit optional_base(in_place_t, std::initializer_list<U> il,
-                           Args &&... args)
+                           Args &&...args)
         : init_(true), storage_(il, std::forward<Args>(args)...) {}
 
     ~optional_base() {
@@ -321,8 +321,8 @@ template <class T> struct constexpr_optional_base {
     bool init_;
     constexpr_storage_t<T> storage_;
 
-    constexpr constexpr_optional_base() noexcept : init_(false),
-                                                   storage_(trivial_init){};
+    constexpr constexpr_optional_base() noexcept
+        : init_(false), storage_(trivial_init){};
 
     explicit constexpr constexpr_optional_base(const T &v)
         : init_(true), storage_(v) {}
@@ -331,14 +331,14 @@ template <class T> struct constexpr_optional_base {
         : init_(true), storage_(constexpr_move(v)) {}
 
     template <class... Args>
-    explicit constexpr constexpr_optional_base(in_place_t, Args &&... args)
+    explicit constexpr constexpr_optional_base(in_place_t, Args &&...args)
         : init_(true), storage_(constexpr_forward<Args>(args)...) {}
 
     template <
         class U, class... Args,
         TR2_OPTIONAL_REQUIRES(is_constructible<T, std::initializer_list<U>>)>
     OPTIONAL_CONSTEXPR_INIT_LIST explicit constexpr_optional_base(
-        in_place_t, std::initializer_list<U> il, Args &&... args)
+        in_place_t, std::initializer_list<U> il, Args &&...args)
         : init_(true), storage_(il, std::forward<Args>(args)...) {}
 
     ~constexpr_optional_base() = default;
@@ -399,7 +399,7 @@ template <class T> class optional : private OptionalBase<T> {
     }
 
     template <class... Args>
-    void initialize(Args &&... args) noexcept(
+    void initialize(Args &&...args) noexcept(
         noexcept(T(std::forward<Args>(args)...))) {
         assert(!OptionalBase<T>::init_);
         ::new (static_cast<void *>(dataptr())) T(std::forward<Args>(args)...);
@@ -407,7 +407,7 @@ template <class T> class optional : private OptionalBase<T> {
     }
 
     template <class U, class... Args>
-    void initialize(std::initializer_list<U> il, Args &&... args) noexcept(
+    void initialize(std::initializer_list<U> il, Args &&...args) noexcept(
         noexcept(T(il, std::forward<Args>(args)...))) {
         assert(!OptionalBase<T>::init_);
         ::new (static_cast<void *>(dataptr()))
@@ -442,7 +442,7 @@ template <class T> class optional : private OptionalBase<T> {
     constexpr optional(T &&v) : OptionalBase<T>(constexpr_move(v)) {}
 
     template <class... Args>
-    explicit constexpr optional(in_place_t, Args &&... args)
+    explicit constexpr optional(in_place_t, Args &&...args)
         : OptionalBase<T>(in_place_t{}, constexpr_forward<Args>(args)...) {}
 
     template <
@@ -450,7 +450,7 @@ template <class T> class optional : private OptionalBase<T> {
         TR2_OPTIONAL_REQUIRES(is_constructible<T, std::initializer_list<U>>)>
     OPTIONAL_CONSTEXPR_INIT_LIST explicit optional(in_place_t,
                                                    std::initializer_list<U> il,
-                                                   Args &&... args)
+                                                   Args &&...args)
         : OptionalBase<T>(in_place_t{}, il, constexpr_forward<Args>(args)...) {}
 
     // 20.5.4.2, Destructor
@@ -496,20 +496,20 @@ template <class T> class optional : private OptionalBase<T> {
         return *this;
     }
 
-    template <class... Args> void emplace(Args &&... args) {
+    template <class... Args> void emplace(Args &&...args) {
         clear();
         initialize(std::forward<Args>(args)...);
     }
 
     template <class U, class... Args>
-    void emplace(initializer_list<U> il, Args &&... args) {
+    void emplace(initializer_list<U> il, Args &&...args) {
         clear();
         initialize<U, Args...>(il, std::forward<Args>(args)...);
     }
 
     // 20.5.4.4, Swap
     void swap(optional<T> &rhs) noexcept(
-        is_nothrow_move_constructible<T>::value &&noexcept(
+        is_nothrow_move_constructible<T>::value && noexcept(
             detail_::swap_ns::adl_swap(declval<T &>(), declval<T &>()))) {
         if (initialized() == true && rhs.initialized() == false) {
             rhs.initialize(std::move(**this));
@@ -719,8 +719,9 @@ template <class T> class optional<T &> {
     constexpr bool has_value() const noexcept { return ref != nullptr; }
 
     template <class V> constexpr typename decay<T>::type value_or(V &&v) const {
-        return *this ? **this : detail_::convert<typename decay<T>::type>(
-                                    constexpr_forward<V>(v));
+        return *this ? **this
+                     : detail_::convert<typename decay<T>::type>(
+                           constexpr_forward<V>(v));
     }
 
     // x.x.x.x, modifiers
@@ -1031,7 +1032,7 @@ template <typename T> struct hash<std::experimental::optional<T &>> {
         return arg ? std::hash<T>{}(*arg) : result_type{};
     }
 };
-}
+} // namespace std
 
 #undef TR2_OPTIONAL_REQUIRES
 #undef TR2_OPTIONAL_ASSERTED_EXPRESSION

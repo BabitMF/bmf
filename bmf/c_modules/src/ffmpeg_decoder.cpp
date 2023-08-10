@@ -92,8 +92,8 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
         option.get_string("loglevel", log_level);
         if (!LogBuffer::avlog_cb_set()) {
             av_log_set_level(LogBuffer::infer_level(log_level));
-            BMFLOG_NODE(BMF_INFO, node_id_) << "decode setting log level to: "
-                                            << log_level;
+            BMFLOG_NODE(BMF_INFO, node_id_)
+                << "decode setting log level to: " << log_level;
         }
     }
 
@@ -483,8 +483,8 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
 CFFDecoder::~CFFDecoder() {
     std::lock_guard<std::mutex> lock(mutex_);
     clean();
-    BMFLOG_NODE(BMF_INFO, node_id_) << "video frame decoded:"
-                                    << ist_[0].frame_decoded;
+    BMFLOG_NODE(BMF_INFO, node_id_)
+        << "video frame decoded:" << ist_[0].frame_decoded;
     BMFLOG_NODE(BMF_INFO, node_id_)
         << "audio frame decoded:" << ist_[1].frame_decoded
         << ", sample decoded:" << ist_[1].sample_decoded;
@@ -553,8 +553,8 @@ int CFFDecoder::init_android_vm() {
     }
     int status = init_jvm(&vm, &env);
     if (status != 0) {
-        BMFLOG_NODE(BMF_WARNING, node_id_) << "Initialization failure ("
-                                           << status << ":" << dlerror();
+        BMFLOG_NODE(BMF_WARNING, node_id_)
+            << "Initialization failure (" << status << ":" << dlerror();
         return -1;
     }
     av_jni_set_java_vm(vm, 0);
@@ -597,17 +597,17 @@ int CFFDecoder::codec_context(int *stream_idx, AVCodecContext **dec_ctx,
             }
         }
         if (!dec) {
-            BMFLOG_NODE(BMF_ERROR, node_id_) << "Failed to find "
-                                             << av_get_media_type_string(type)
-                                             << " codec";
+            BMFLOG_NODE(BMF_ERROR, node_id_)
+                << "Failed to find " << av_get_media_type_string(type)
+                << " codec";
             return AVERROR(EINVAL);
         }
 
         *dec_ctx = avcodec_alloc_context3(dec);
         if (!*dec_ctx) {
-            BMFLOG_NODE(BMF_ERROR, node_id_) << "Failed to allocate the "
-                                             << av_get_media_type_string(type)
-                                             << " codec context";
+            BMFLOG_NODE(BMF_ERROR, node_id_)
+                << "Failed to allocate the " << av_get_media_type_string(type)
+                << " codec context";
             return AVERROR(ENOMEM);
         }
 
@@ -647,9 +647,9 @@ int CFFDecoder::codec_context(int *stream_idx, AVCodecContext **dec_ctx,
         }
 #endif
         if ((ret = avcodec_open2(*dec_ctx, dec, &opts)) < 0) {
-            BMFLOG_NODE(BMF_ERROR, node_id_) << "Failed to open "
-                                             << av_get_media_type_string(type)
-                                             << " codec";
+            BMFLOG_NODE(BMF_ERROR, node_id_)
+                << "Failed to open " << av_get_media_type_string(type)
+                << " codec";
             return ret;
         }
         *stream_idx = stream_index;
@@ -1438,7 +1438,7 @@ int CFFDecoder::pkt_ts(AVPacket *pkt, int index) {
         !copy_ts_ && (input_fmt_ctx_->iformat->flags & AVFMT_TS_DISCONT) &&
         last_ts_ != AV_NOPTS_VALUE
         //! force_dts_monotonicity
-        ) {
+    ) {
         int64_t delta = pkt_dts - last_ts_;
         if (delta < -1LL * dts_delta_threshold * AV_TIME_BASE ||
             delta > 1LL * dts_delta_threshold * AV_TIME_BASE) {
@@ -1471,7 +1471,7 @@ int CFFDecoder::pkt_ts(AVPacket *pkt, int index) {
     if (pkt_dts != AV_NOPTS_VALUE && ist->next_dts != AV_NOPTS_VALUE &&
         !copy_ts_
         //! force_dts_monotonicity
-        ) {
+    ) {
         int64_t delta = pkt_dts - ist->next_dts;
         float dts_error_threshold = 3600 * 30;
         if (input_fmt_ctx_->iformat->flags & AVFMT_TS_DISCONT) {
@@ -1479,8 +1479,9 @@ int CFFDecoder::pkt_ts(AVPacket *pkt, int index) {
                 delta > 1LL * dts_delta_threshold * AV_TIME_BASE ||
                 pkt_dts + AV_TIME_BASE / 10 < FFMAX(ist->pts, ist->dts)) {
                 ts_offset_ -= delta;
-                av_log(NULL, AV_LOG_DEBUG, "timestamp discontinuity %" PRId64
-                                           ", new offset= %" PRId64 "\n",
+                av_log(NULL, AV_LOG_DEBUG,
+                       "timestamp discontinuity %" PRId64
+                       ", new offset= %" PRId64 "\n",
                        delta, ts_offset_);
                 pkt->dts -=
                     av_rescale_q(delta, AV_TIME_BASE_Q, stream->time_base);
@@ -1491,8 +1492,9 @@ int CFFDecoder::pkt_ts(AVPacket *pkt, int index) {
         } else {
             if (delta < -1LL * dts_error_threshold * AV_TIME_BASE ||
                 delta > 1LL * dts_error_threshold * AV_TIME_BASE) {
-                av_log(NULL, AV_LOG_WARNING, "DTS %" PRId64 ", next:%" PRId64
-                                             " st:%d invalid dropping\n",
+                av_log(NULL, AV_LOG_WARNING,
+                       "DTS %" PRId64 ", next:%" PRId64
+                       " st:%d invalid dropping\n",
                        pkt->dts, ist->next_dts, pkt->stream_index);
                 pkt->dts = AV_NOPTS_VALUE;
             }
@@ -1696,8 +1698,8 @@ int CFFDecoder::decode_send_packet(Task &task, AVPacket *pkt, int *got_frame) {
                                       ? "video"
                                       : "audio";
                 std::string msg = error_msg(ret);
-                BMFLOG_NODE(BMF_ERROR, node_id_) << "Error decoding " << tmp
-                                                 << ", " << msg;
+                BMFLOG_NODE(BMF_ERROR, node_id_)
+                    << "Error decoding " << tmp << ", " << msg;
                 decode_error_[1]++;
                 return ret;
             }
@@ -1733,9 +1735,8 @@ int CFFDecoder::decode_send_packet(Task &task, AVPacket *pkt, int *got_frame) {
             // The following line may be required in some cases where there is
             // no parser
             // or the parser does not has_b_frames correctly
-            if (video_stream_ &&
-                video_stream_->codecpar->video_delay <
-                    video_decode_ctx_->has_b_frames) {
+            if (video_stream_ && video_stream_->codecpar->video_delay <
+                                     video_decode_ctx_->has_b_frames) {
                 if (video_decode_ctx_->codec_id == AV_CODEC_ID_H264) {
                     video_stream_->codecpar->video_delay =
                         video_decode_ctx_->has_b_frames;
@@ -1863,9 +1864,9 @@ int CFFDecoder::close() {
     clean();
     if ((decode_error_[0] + decode_error_[1]) * max_error_rate_ <
         decode_error_[1]) {
-        std::string err_msg = "decoded: " + std::to_string(decode_error_[0]) +
-                              " , failed to decode: " +
-                              std::to_string(decode_error_[1]) + ".";
+        std::string err_msg =
+            "decoded: " + std::to_string(decode_error_[0]) +
+            " , failed to decode: " + std::to_string(decode_error_[1]) + ".";
         BMF_Error(BMF_TranscodeError, err_msg.c_str());
     }
     return 0;

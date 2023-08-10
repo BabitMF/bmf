@@ -58,7 +58,7 @@ class PixelBuffer {
 
 int toCVPixelFormat(PixelFormat format, ColorRange range);
 PixelFormat fromCVPixelFormat(int cvFormat);
-}
-} // namespace
+} // namespace oc
+} // namespace hmp
 
 #endif

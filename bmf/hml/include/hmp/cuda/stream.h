@@ -21,4 +21,4 @@ namespace cuda {
 
 HMP_API Stream wrap_stream(StreamHandle stream, bool own);
 }
-}; // namespace hmp::cuda
+}; // namespace hmp

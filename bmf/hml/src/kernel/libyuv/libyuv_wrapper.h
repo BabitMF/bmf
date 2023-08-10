@@ -116,5 +116,5 @@ inline void libyuvMirrorPlane<uint8_t>(Tensor &dst, const Tensor &src,
             -src.size(0), libyuv::kRotate0);
     }
 }
-}
-} // namespace hmp::kernel
+} // namespace kernel
+} // namespace hmp

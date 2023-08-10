@@ -144,4 +144,4 @@ TEST(TestAllocator, cuda_device_allocator_inactive) {
 
 #endif
 
-} // namespace
+} // namespace hmp

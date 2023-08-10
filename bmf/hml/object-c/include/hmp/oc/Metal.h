@@ -87,7 +87,7 @@ class Device {
     static Device &current();
     static void set_current(const Device &dev);
 };
-}
-} // namespace
+} // namespace metal
+} // namespace hmp
 
 #endif

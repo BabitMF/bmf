@@ -63,5 +63,5 @@ WRAP_BINARY_OP(mul)
 WRAP_BINARY_OP(add)
 WRAP_BINARY_OP2(sub)
 WRAP_BINARY_OP2(div)
-}
-} // namespace hmp::kernel
+} // namespace kernel
+} // namespace hmp

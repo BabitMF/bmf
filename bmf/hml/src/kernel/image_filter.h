@@ -145,5 +145,5 @@ struct Filter<ImageFilterMode::Bicubic, Iter, WType, OType> {
                         expectMode, #name);                                    \
         }                                                                      \
     }()
-}
-} // hmp::kernel
+} // namespace kernel
+} // namespace hmp

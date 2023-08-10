@@ -116,8 +116,8 @@ class jpeg_encoder : public bmf_sdk::Module {
             cudaStreamDestroy(m_stream);
             m_stream = nullptr;
         }
-        BMFLOG_NODE(BMF_INFO, node_id_) << "encode " << m_frame_count
-                                        << " frames.";
+        BMFLOG_NODE(BMF_INFO, node_id_)
+            << "encode " << m_frame_count << " frames.";
         return 0;
     }
 

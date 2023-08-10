@@ -126,8 +126,9 @@ inline TensorOptions from_tensor_options(const c10::TensorOptions &options) {
 at::Tensor tensor(const Tensor &from) {
     auto info = from.tensorInfo();
 
-    return at::from_blob(info->unsafe_data(), info->shape(), info->strides(),
-                         [info](void *) {}, tensor_options(from.options()));
+    return at::from_blob(
+        info->unsafe_data(), info->shape(), info->strides(), [info](void *) {},
+        tensor_options(from.options()));
 }
 
 Tensor from_tensor(const at::Tensor &from) {
@@ -135,9 +136,10 @@ Tensor from_tensor(const at::Tensor &from) {
     auto strides = from.strides();
 
     return from_buffer(
-        DataPtr(from.data_ptr(), [from](void *) {}, from_device(from.device())),
+        DataPtr(
+            from.data_ptr(), [from](void *) {}, from_device(from.device())),
         from_scalar_type(from.dtype()), SizeArray(sizes.begin(), sizes.end()),
         SizeArray(strides.begin(), strides.end()));
 }
-}
-} //
+} // namespace torch
+} // namespace hmp

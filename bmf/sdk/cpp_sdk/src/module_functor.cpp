@@ -111,8 +111,8 @@ std::vector<Packet> ModuleFunctor::fetch(int idx) {
     return pkts;
 }
 
-std::vector<Packet> ModuleFunctor::
-operator()(const std::vector<Packet> &inputs) {
+std::vector<Packet>
+ModuleFunctor::operator()(const std::vector<Packet> &inputs) {
     execute(inputs);
 
     std::vector<Packet> outputs;
@@ -134,8 +134,9 @@ operator()(const std::vector<Packet> &inputs) {
         }
 
         //
-        HMP_REQUIRE(opkts.size() <= 1, "ModuleFunctor: more than one output "
-                                       "packet is not supported, got {}",
+        HMP_REQUIRE(opkts.size() <= 1,
+                    "ModuleFunctor: more than one output "
+                    "packet is not supported, got {}",
                     opkts.size());
         if (opkts.size()) {
             outputs.push_back(opkts[0]);

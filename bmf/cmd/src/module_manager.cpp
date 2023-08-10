@@ -22,7 +22,7 @@ int list_modules() {
     auto &M = bmf_sdk::ModuleManager::instance();
     auto known_modules = M.resolve_all_modules();
 
-    for (const auto & [ module_name, module_info ] : known_modules) {
+    for (const auto &[module_name, module_info] : known_modules) {
         std::cout << module_name << std::endl;
     }
     return 0;
@@ -35,9 +35,9 @@ int dump_module(std::string module_name) {
     bool get_module_register_info = false;
     try {
         factory = M.load_module(info, &info);
-        get_module_register_info = factory->module_info(
-            info); // XXX: will throw an exception when dump a
-                   // python non-module package
+        get_module_register_info =
+            factory->module_info(info); // XXX: will throw an exception when
+                                        // dump a python non-module package
     } catch (const std::exception &e) {
         BMFLOG(BMF_ERROR) << "could not find module:" << module_name << ", "
                           << e.what() << std::endl;
@@ -87,8 +87,8 @@ int install_module(const bmf_sdk::ModuleInfo &info, bool force) {
             std::tie(module_file, _) = M.parse_entry(info.module_entry, true);
         } catch (std::exception &e) {
             BMFLOG(BMF_ERROR) << e.what() << std::endl;
-            BMFLOG(BMF_ERROR) << "invalid module_entry:" << info.module_entry
-                              << std::endl;
+            BMFLOG(BMF_ERROR)
+                << "invalid module_entry:" << info.module_entry << std::endl;
             return -1;
         }
 
@@ -101,8 +101,8 @@ int install_module(const bmf_sdk::ModuleInfo &info, bool force) {
             module_file = fs::path(info.module_path) / (module_file + ".py");
         }
         if (!fs::exists(module_file)) {
-            BMFLOG(BMF_ERROR) << "cannot find the module file:" << module_file
-                              << std::endl;
+            BMFLOG(BMF_ERROR)
+                << "cannot find the module file:" << module_file << std::endl;
             return -1;
         }
     } else {
@@ -123,8 +123,8 @@ int install_module(const bmf_sdk::ModuleInfo &info, bool force) {
         if (force) {
             fs::remove_all(installed_path);
         } else {
-            BMFLOG(BMF_WARNING) << info.module_name << " has already installed."
-                                << std::endl;
+            BMFLOG(BMF_WARNING)
+                << info.module_name << " has already installed." << std::endl;
             return -1;
         }
     }
@@ -149,8 +149,8 @@ int install_module(const bmf_sdk::ModuleInfo &info, bool force) {
 int uninstall_module(std::string module_name) {
     auto module_path = module_root_path / ("Module_" + module_name);
     if (!fs::exists(module_path) or !fs::is_directory(module_path)) {
-        BMFLOG(BMF_WARNING) << "Module:" << module_name << " is not exist"
-                            << std::endl;
+        BMFLOG(BMF_WARNING)
+            << "Module:" << module_name << " is not exist" << std::endl;
         return -1;
     }
     fs::remove_all(module_path);

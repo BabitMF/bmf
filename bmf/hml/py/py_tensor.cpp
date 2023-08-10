@@ -181,19 +181,21 @@ void tensorBind(py::module &m) {
                  auto options = parse_tensor_options(kwargs, other.options());
                  return ones_like(other, options);
              })
-        .def("arange",
-             [](int64_t start, int64_t end, int64_t step,
-                const py::kwargs &kwargs) {
-                 auto options = parse_tensor_options(kwargs);
-                 return arange(start, end, step, options);
-             },
-             py::arg("start"), py::arg("end"), py::arg("step") = 1)
-        .def("arange",
-             [](int64_t end, const py::kwargs &kwargs) {
-                 auto options = parse_tensor_options(kwargs);
-                 return arange(0, end, 1, options);
-             },
-             py::arg("end"))
+        .def(
+            "arange",
+            [](int64_t start, int64_t end, int64_t step,
+               const py::kwargs &kwargs) {
+                auto options = parse_tensor_options(kwargs);
+                return arange(start, end, step, options);
+            },
+            py::arg("start"), py::arg("end"), py::arg("step") = 1)
+        .def(
+            "arange",
+            [](int64_t end, const py::kwargs &kwargs) {
+                auto options = parse_tensor_options(kwargs);
+                return arange(0, end, 1, options);
+            },
+            py::arg("end"))
         .def("copy", &copy)
 
         // shape transformation
@@ -272,17 +274,17 @@ void tensorBind(py::module &m) {
              py::arg("end") = py::none(), py::arg("step") = 1)
         .def("select", &Tensor::select)
 
-        .def("to",
-             (Tensor (Tensor::*)(const Device &, bool) const) & Tensor::to,
+        .def("to", (Tensor(Tensor::*)(const Device &, bool) const) & Tensor::to,
              py::arg("device"), py::arg("non_blocking") = false)
-        .def("to", (Tensor (Tensor::*)(DeviceType, bool) const) & Tensor::to,
+        .def("to", (Tensor(Tensor::*)(DeviceType, bool) const) & Tensor::to,
              py::arg("device"), py::arg("non_blocking") = false)
-        .def("to",
-             [](const Tensor &self, const std::string &deviceStr) {
-                 return self.to(Device(deviceStr));
-             },
-             py::arg("device"))
-        .def("to", (Tensor (Tensor::*)(ScalarType) const) & Tensor::to,
+        .def(
+            "to",
+            [](const Tensor &self, const std::string &deviceStr) {
+                return self.to(Device(deviceStr));
+            },
+            py::arg("device"))
+        .def("to", (Tensor(Tensor::*)(ScalarType) const) & Tensor::to,
              py::arg("dtype"))
         .def("copy_", &Tensor::copy_, py::arg("src"))
 
@@ -294,24 +296,25 @@ void tensorBind(py::module &m) {
              [](const Tensor &self) {
                  return reinterpret_cast<uint64_t>(self.unsafe_data());
              })
-        .def("__dlpack__",
-             [](const Tensor &self, const int stream) {
-                 DLManagedTensor *dlMTensor = to_dlpack(self);
-                 py::capsule cap(dlMTensor, "dltensor", [](PyObject *ptr) {
-                     if (PyCapsule_IsValid(ptr, "dltensor")) {
-                         // If consumer didn't delete the tensor,
-                         if (auto *dlTensor = static_cast<DLManagedTensor *>(
-                                 PyCapsule_GetPointer(ptr, "dltensor"))) {
-                             // Delete the tensor.
-                             if (dlTensor->deleter != nullptr) {
-                                 dlTensor->deleter(dlTensor);
-                             }
-                         }
-                     }
-                 });
-                 return cap;
-             },
-             py::arg("stream") = 1)
+        .def(
+            "__dlpack__",
+            [](const Tensor &self, const int stream) {
+                DLManagedTensor *dlMTensor = to_dlpack(self);
+                py::capsule cap(dlMTensor, "dltensor", [](PyObject *ptr) {
+                    if (PyCapsule_IsValid(ptr, "dltensor")) {
+                        // If consumer didn't delete the tensor,
+                        if (auto *dlTensor = static_cast<DLManagedTensor *>(
+                                PyCapsule_GetPointer(ptr, "dltensor"))) {
+                            // Delete the tensor.
+                            if (dlTensor->deleter != nullptr) {
+                                dlTensor->deleter(dlTensor);
+                            }
+                        }
+                    }
+                });
+                return cap;
+            },
+            py::arg("stream") = 1)
         .def("__dlpack_device__",
              [](const Tensor &self) {
                  DLDeviceType device_type;
@@ -356,10 +359,8 @@ void tensorBind(py::module &m) {
         .def(py::self op Scalar())                                             \
         .def(py::self op## = Scalar())                                         \
         .def(Scalar() op py::self)                                             \
-        .def(#name,                                                            \
-             (Tensor (Tensor::*)(const Tensor &b) const) & Tensor::name)       \
-        .def(#name,                                                            \
-             (Tensor (Tensor::*)(const Scalar &b) const) & Tensor::name)       \
+        .def(#name, (Tensor(Tensor::*)(const Tensor &b) const) & Tensor::name) \
+        .def(#name, (Tensor(Tensor::*)(const Scalar &b) const) & Tensor::name) \
         .def(#name "_",                                                        \
              (Tensor & (Tensor::*)(const Tensor &b)) & Tensor::name##_)        \
         .def(#name "_",                                                        \

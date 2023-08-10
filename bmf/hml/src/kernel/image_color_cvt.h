@@ -170,5 +170,5 @@ struct YUV2YUV {
         dst_iter.set(batch, w, h, yuv_out);
     }
 };
-}
-} // namespace hmp::kernel
+} // namespace kernel
+} // namespace hmp

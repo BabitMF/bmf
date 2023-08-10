@@ -60,9 +60,9 @@ template <typename Pixel> struct DefaultPixelValue {
 
 template <typename T> struct DefaultPixelValue<Vector<T, 4>> {
     HMP_HOST_DEVICE static Vector<T, 4> value() {
-        return Vector<T, 4>(0, 0, 0, std::is_integral<T>::value
-                                         ? std::numeric_limits<T>::max()
-                                         : T(1));
+        return Vector<T, 4>(
+            0, 0, 0,
+            std::is_integral<T>::value ? std::numeric_limits<T>::max() : T(1));
     }
 };
 
@@ -338,11 +338,12 @@ struct YUVIter<
 };
 
 template <typename T, PPixelFormat format>
-struct YUVIter<T, format, std::enable_if_t<format == PPixelFormat::NV21 ||
-                                           format == PPixelFormat::NV12 ||
-                                           format == PPixelFormat::NV21_BT709 ||
-                                           format == PPixelFormat::NV12_BT709 ||
-                                           format == PPixelFormat::P010>> {
+struct YUVIter<
+    T, format,
+    std::enable_if_t<
+        format == PPixelFormat::NV21 || format == PPixelFormat::NV12 ||
+        format == PPixelFormat::NV21_BT709 ||
+        format == PPixelFormat::NV12_BT709 || format == PPixelFormat::P010>> {
     const static int wshift = 1;
     const static int hshift = 1;
 
@@ -426,10 +427,11 @@ struct YUVIter<T, format, std::enable_if_t<format == PPixelFormat::NV21 ||
             HMP_CHANNEL_FORMAT_DISPATCH_CASE(kNCHW, __VA_ARGS__)               \
             HMP_CHANNEL_FORMAT_DISPATCH_CASE(kNHWC, __VA_ARGS__)               \
         default:                                                               \
-            HMP_REQUIRE(false, "Unsupported image channel format {} in {}, "   \
-                               "expect NCHW, NHWC",                            \
+            HMP_REQUIRE(false,                                                 \
+                        "Unsupported image channel format {} in {}, "          \
+                        "expect NCHW, NHWC",                                   \
                         format, #name);                                        \
         }                                                                      \
     }()
-}
-} // hmp::kernel
+} // namespace kernel
+} // namespace hmp

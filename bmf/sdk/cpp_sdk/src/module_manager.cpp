@@ -389,8 +389,9 @@ bool ModuleManager::resolve_from_meta(const std::string &module_name,
         std::vector<std::string> entry_path;
         string_split(entry_path, info.module_entry, ".:");
         if (entry_path.size() < 2) {
-            BMF_Error_(BMF_StsBadArg, "module_entry: ",
-                       info.module_entry.c_str(), "is not satisfy");
+            BMF_Error_(BMF_StsBadArg,
+                       "module_entry: ", info.module_entry.c_str(),
+                       "is not satisfy");
         }
         if (auto entry_module_class = entry_path[entry_path.size() - 1];
             meta_module_class == "") {

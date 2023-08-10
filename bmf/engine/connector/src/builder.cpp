@@ -444,7 +444,7 @@ Packet RealGraph::Generate() {
         graphInstance_->poll_output_stream_packet(generatorStreamName, true);
     return pkt;
 }
-}
+} // namespace internal
 
 std::string GetVersion() { return BMF_VERSION; }
 
@@ -600,9 +600,7 @@ Node Stream::ConnectNewModule(
 Node::Node(std::shared_ptr<internal::RealNode> baseP)
     : baseP_(std::move(baseP)) {}
 
-class Stream Node::operator[](int index) {
-    return Stream(index);
-}
+class Stream Node::operator[](int index) { return Stream(index); }
 
 class Stream Node::operator[](std::string const &notifyOrAlias) {
     return Stream(notifyOrAlias);
@@ -1062,4 +1060,4 @@ void SyncModule::SendEOF() {
 void SyncModule::Init() { moduleInstance->init(); }
 
 void SyncModule::Close() { moduleInstance->close(); }
-}
+} // namespace bmf::builder

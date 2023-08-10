@@ -69,9 +69,10 @@ void engine_bind(py::module &m) {
         .value("START", bmf_sdk::TracePhase::START)
         .value("END", bmf_sdk::TracePhase::END);
 
-    m.def_nogil("trace", (void (*)(bmf_sdk::TraceType, const char *,
-                                   bmf_sdk::TracePhase, const char *)) &
-                             bmf_sdk::BMF_TRACE,
+    m.def_nogil("trace",
+                (void (*)(bmf_sdk::TraceType, const char *, bmf_sdk::TracePhase,
+                          const char *)) &
+                    bmf_sdk::BMF_TRACE,
                 py::arg("category"), py::arg("name"),
                 py::arg("phase") = bmf_sdk::TracePhase::NONE,
                 py::arg("str") = __builtin_FUNCTION());

@@ -34,7 +34,7 @@ video = graph.decode({
 **C++**
 ```cpp
 nlohmann::json decode_para = {
-    {"input_path", "../files/img.mp4"},
+    {"input_path", "../../files/img.mp4"},
     {"start_time", 2}
 };
 auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));

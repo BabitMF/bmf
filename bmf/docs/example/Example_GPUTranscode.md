@@ -82,12 +82,12 @@ Before you use TensorRT, you should build an engine from a trained model. There'
 
 For face detection example:
 ```
-trtexec --onnx=version-RFB-640.engine --buildOnly --saveEngine=version-RFB-640.engine
+trtexec --onnx=../../models/version-RFB-640.engine --buildOnly --saveEngine=../../models/version-RFB-640.engine
 ```
 
 For super resolution example:
 ```
-trtexec --onnx=v1.onnx --minShapes=input:0:1x360x640x21 --optShapes=input:0:1x360x640x21 --maxShapes=input:0:1x360x640x21 --buildOnly --fp16 --saveEngine=v1.engine
+trtexec --onnx=../../models/v1.onnx --minShapes=input:0:1x360x640x21 --optShapes=input:0:1x360x640x21 --maxShapes=input:0:1x360x640x21 --buildOnly --fp16 --saveEngine=../../models/v1.engine
 ```
 
 ### Write a TensorRT module

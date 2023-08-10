@@ -1,16 +1,4 @@
 {
-    "ffmpeg_decoder": {
-        "type": "c++",
-        "class": "CFFDecoder"
-    },
-    "ffmpeg_encoder": {
-        "type": "c++",
-        "class": "CFFEncoder"
-    },
-    "ffmpeg_filter": {
-        "type": "c++",
-        "class": "CFFFilter"
-    },
     "c_ffmpeg_decoder": {
         "type": "c++",
         "class": "CFFDecoder"

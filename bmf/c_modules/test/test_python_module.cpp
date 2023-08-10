@@ -61,7 +61,7 @@ TEST(python_module, ffmpeg_module) {
            1);
     Py_Initialize();
     JsonParam graph_config;
-    graph_config.load("../files/graph.json");
+    graph_config.load("../../files/graph.json");
     std::vector<JsonParam> node_jsons;
     graph_config.get_object_list("nodes", node_jsons);
     std::shared_ptr<PythonModule> python_module;
@@ -93,7 +93,7 @@ void thread_decode(std::shared_ptr<PythonModule> decoder_module2) {
     std::string encoder_name;
     std::string encoder_option;
     JsonParam graph_config;
-    graph_config.load("../files/graph.json");
+    graph_config.load("../../files/graph.json");
     std::vector<JsonParam> node_jsons;
     graph_config.get_object_list("nodes", node_jsons);
     std::shared_ptr<PythonModule> decoder_module;
@@ -158,7 +158,7 @@ TEST(python_module, decode) {
     std::string encoder_name;
     std::string encoder_option;
     JsonParam graph_config;
-    graph_config.load("../files/decode_graph.json");
+    graph_config.load("../../files/decode_graph.json");
     std::vector<JsonParam> node_jsons;
     graph_config.get_object_list("nodes", node_jsons);
     std::shared_ptr<PythonModule> decoder_module;
@@ -209,7 +209,7 @@ TEST(python_module, decode_encode) {
     std::string encoder_name;
     std::string encoder_option;
     JsonParam graph_config;
-    graph_config.load("../files/graph.json");
+    graph_config.load("../../files/graph.json");
     std::vector<JsonParam> node_jsons;
     graph_config.get_object_list("nodes", node_jsons);
     std::shared_ptr<PythonModule> decoder_module;
@@ -289,7 +289,7 @@ TEST(python_module, decode_filter_encoder) {
     std::string encoder_name;
     std::string encoder_option;
     JsonParam graph_config;
-    graph_config.load("../files/filter_opt_graph.json");
+    graph_config.load("../../files/filter_opt_graph.json");
     std::vector<JsonParam> node_jsons;
     graph_config.get_object_list("nodes", node_jsons);
     std::shared_ptr<PythonModule> decoder_module;

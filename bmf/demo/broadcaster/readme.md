@@ -13,9 +13,9 @@ This demo uses BMF framework to construct a simple broadcast service. The servic
 - wall clock module
      Wallclock is used to generate audio and video timestamps. For example, if the broadcaster demo is configured to 25 fps, 44100 dual-channel lc-aac output, wallclock generates the timestamp of each frame of audio and video, and sends it to the streamhub module as the background audio and video timestamp input. At the same time, it serves as a stable source to drive the entire graph, so that the broadcaster app can continuously output streams.
 
-- ffmpeg_decoder module
+- c_ffmpeg_decoder module
 
-     The input source of the demo, which can generate audio and video streams. This demo uses the built-in ffmpeg_decoder module of bmf. The demo supports rtmp input stream, and the audio is 44100 dual-channel lc-aac source. This module connects to the streamhub module.
+     The input source of the demo, which can generate audio and video streams. This demo uses the built-in c_ffmpeg_decoder module of bmf. The demo supports rtmp input stream, and the audio is 44100 dual-channel lc-aac source. This module connects to the streamhub module.
     
 - streamhub module
 
@@ -29,7 +29,7 @@ This demo uses BMF framework to construct a simple broadcast service. The servic
 
      The videolayout module blends the framelist output by streamhub and can be configured with various parameters to control the display coordinates of multiple streams. 
 
-- ffmpeg_encoder module
+- c_ffmpeg_encoder module
 
      As a broadcaster output module, it interfaces with videolayout and audiomix, encodes and outputs rtmp streams.
 

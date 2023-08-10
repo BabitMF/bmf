@@ -136,7 +136,7 @@ class BMFAesmod(SyncModule):
         output_path = option.get("output_path", 0)
         model_version = option.get("model_version", "v1.0")
         model_path = option.get("model_path",
-                                "models/aes_transonnx_update3.onnx")
+                                "../../models/aes_transonnx_update3.onnx")
         self._nrp = Aesmod(model_path, model_version, output_path)
         SyncModule.__init__(self,
                             node,

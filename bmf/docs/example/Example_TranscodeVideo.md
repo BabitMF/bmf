@@ -49,28 +49,28 @@ logo_2 = (
 **C++**
 ```cpp
 nlohmann::json decode_tail_para = {
-    {"input_path", "../files/header.mp4"}
+    {"input_path", "../../files/header.mp4"}
 };
 auto tail = graph.Decode(bmf_sdk::JsonParam(decode_tail_para));
 
 nlohmann::json decode_header_para = {
-    {"input_path", "../files/header.mp4"}
+    {"input_path", "../../files/header.mp4"}
 };
 auto header = graph.Decode(bmf_sdk::JsonParam(decode_header_para));
 
 nlohmann::json decode_main_para = {
-    {"input_path", "../files/img.mp4"}
+    {"input_path", "../../files/img.mp4"}
 };
 auto video = graph.Decode(bmf_sdk::JsonParam(decode_main_para));
 
 nlohmann::json decode_logo1_para = {
-    {"input_path", "../files/xigua_prefix_logo_x.mov"}
+    {"input_path", "../../files/xigua_prefix_logo_x.mov"}
 };
 auto logo_1 = graph.Decode(bmf_sdk::JsonParam(decode_logo1_para))["video"]
     .Scale("320:144");
 
 nlohmann::json decode_logo2_para = {
-    {"input_path", "../files/xigua_loop_logo2_x.mov"}
+    {"input_path", "../../files/xigua_loop_logo2_x.mov"}
 };
 auto logo_2 = graph.Decode(bmf_sdk::JsonParam(decode_logo2_para))["video"]
     .Scale("320:144")

@@ -6,7 +6,7 @@
 
 ```python
 onnx_face_detect = bmf.create_module('onnx_face_detect', {
-    "model_path": "version-RFB-640.onnx",
+    "model_path": "../../models/version-RFB-640.onnx",
     "label_to_frame": 1
 })
 ```

@@ -7,14 +7,14 @@ import bmf
 
 # import timeout_decorator
 
-sys.path.append("../")
+sys.path.append("../../test/")
 from base_test.base_test_case import BaseTestCase
 
 
 class TestClockSyncModule(BaseTestCase):
 
     def test_video(self):
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         output_path = "./output.mp4"
         expect_result = '../c_module/output.mp4|1080|1920|7.615000|MOV,MP4,M4A,3GP,3G2,MJ2|4483410|4267646|h264|' \
                         '{"fps": "30.0662251656"}'

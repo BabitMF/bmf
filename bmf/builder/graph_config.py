@@ -328,7 +328,7 @@ class StreamConfig:
 class ModuleConfig:
     """
         {
-            "name": "ffmpeg_encoder",
+            "name": "c_ffmpeg_encoder",
             "type": "python",
             "path": "",
             "entry": ""

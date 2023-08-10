@@ -7,7 +7,7 @@ sys.path.append("../../c_module_sdk/build/bin/lib")
 import bmf
 import timeout_decorator
 
-sys.path.append("../")
+sys.path.append("../../test/")
 from base_test.base_test_case import BaseTestCase
 from base_test.media_info import MediaInfo
 
@@ -16,7 +16,7 @@ class TestCustomizeModule(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_customize_module(self):
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         output_path = "./output.mp4"
         expect_result = '|1080|1920|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|1783292|2229115|h264|' \
                         '{"fps": "30.0662251656"}'

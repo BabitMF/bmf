@@ -81,10 +81,11 @@ int AudioResampler::resample(AVFrame *insamples, AVFrame *&outsamples) {
 
             // translate pts to timestamps which is in 1/(in_sample_rate *
             // out_sample_rate) units.
-            int64_t inpts = av_rescale(
-                insamples->pts, input_time_base_.num * output_sample_rate_ *
-                                    insamples->sample_rate,
-                input_time_base_.den);
+            int64_t inpts =
+                av_rescale(insamples->pts,
+                           input_time_base_.num * output_sample_rate_ *
+                               insamples->sample_rate,
+                           input_time_base_.den);
             // get outpts whose timestamps is 1/(in_sample_rate *
             // out_sample_rate)
             int64_t outpts = swr_next_pts(swr_ctx_, inpts);

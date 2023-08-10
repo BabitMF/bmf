@@ -116,6 +116,6 @@ HMP_DEVICE_DISPATCH(kCPU, sub_scalar_stub2, &sub_scalar2_cpu)
 HMP_DEVICE_DISPATCH(kCPU, div_stub, &div_cpu)
 HMP_DEVICE_DISPATCH(kCPU, div_scalar_stub, &div_scalar_cpu)
 HMP_DEVICE_DISPATCH(kCPU, div_scalar_stub2, &div_scalar2_cpu)
-}
-}
-} //
+} // namespace
+} // namespace kernel
+} // namespace hmp

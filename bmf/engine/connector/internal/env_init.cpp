@@ -37,4 +37,4 @@ void EnvInit::ChangeDmpPath(std::string path) {
     handler->set_minidump_descriptor(descriptor);
 #endif
 }
-}
+} // namespace bmf::internal

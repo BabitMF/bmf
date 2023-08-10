@@ -134,5 +134,5 @@ Tensor &hstack(Tensor &out, const TensorList &tensors) {
 }
 
 Tensor hstack(const TensorList &tensors) { return kernel::concat(tensors, -1); }
-}
-} // namespace
+} // namespace kernel
+} // namespace hmp

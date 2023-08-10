@@ -43,24 +43,24 @@ bool MediaInfo::MediaCompareEquals(std::string expected) {
             // Check video stream
             if (mediaJson["streams"][i]["height"].get<float>() !=
                 std::stof(expected_comps[1])) {
-                std::cout << "Invalid height: " << mediaJson["streams"][i]
-                                                            ["height"]
+                std::cout << "Invalid height: "
+                          << mediaJson["streams"][i]["height"]
                           << " != " << expected_comps[1] << std::endl;
                 return false;
             }
 
             if (mediaJson["streams"][i]["width"].get<float>() !=
                 std::stof(expected_comps[2])) {
-                std::cout << "Invalid width: " << mediaJson["streams"][i]
-                                                           ["width"]
+                std::cout << "Invalid width: "
+                          << mediaJson["streams"][i]["width"]
                           << " != " << expected_comps[2] << std::endl;
                 return false;
             }
 
             if (mediaJson["streams"][i]["codec_name"].get<std::string>() !=
                 expected_comps[7]) {
-                std::cout << "Invalid encoding: " << mediaJson["streams"][i]
-                                                              ["codec_name"]
+                std::cout << "Invalid encoding: "
+                          << mediaJson["streams"][i]["codec_name"]
                           << " != " << expected_comps[7] << std::endl;
                 return false;
             }
@@ -96,8 +96,8 @@ bool MediaInfo::MediaCompareEquals(std::string expected) {
                 float expected_diff_fps = expected_fps * 0.1;
                 float actual_diff_fps = std::abs(fps_f - expected_fps);
                 if (actual_diff_fps > expected_diff_fps) {
-                    std::cout << "Invalid FPS: " << mediaJson["streams"][i]
-                                                             ["avg_frame_rate"]
+                    std::cout << "Invalid FPS: "
+                              << mediaJson["streams"][i]["avg_frame_rate"]
                               << " != " << expected_comps[8] << std::endl;
                     return false;
                 }

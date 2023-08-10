@@ -66,5 +66,5 @@ inline void parallel_for(int64_t begin, int64_t end, int64_t step, const F &f) {
     f(begin, end);
 #endif
 }
-}
-} // hmp::kernel
+} // namespace kernel
+} // namespace hmp

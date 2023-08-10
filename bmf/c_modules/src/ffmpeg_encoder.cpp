@@ -322,8 +322,8 @@ int CFFEncoder::init() {
         input_option_.get_string("loglevel", log_level);
         if (!LogBuffer::avlog_cb_set()) {
             av_log_set_level(LogBuffer::infer_level(log_level));
-            BMFLOG_NODE(BMF_INFO, node_id_) << "encode setting log level to: "
-                                            << log_level;
+            BMFLOG_NODE(BMF_INFO, node_id_)
+                << "encode setting log level to: " << log_level;
         }
     }
 
@@ -475,7 +475,7 @@ int CFFEncoder::handle_output(AVPacket *hpkt, int idx) {
     if ((st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO &&
          vsync_method_ == VSYNC_DROP)) // ||
         //(st->codecpar->codec_type == AVMEDIA_TYPE_AUDIO && audio_sync_method <
-        //0))
+        // 0))
         pkt->pts = pkt->dts = AV_NOPTS_VALUE;
 
     // if (st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
@@ -524,11 +524,10 @@ int CFFEncoder::handle_output(AVPacket *hpkt, int idx) {
             int64_t max =
                 ost->last_mux_dts + !(s->oformat->flags & AVFMT_TS_NONSTRICT);
             if (pkt->dts < max) {
-                int loglevel =
-                    max - pkt->dts > 2 ||
-                            st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO
-                        ? AV_LOG_WARNING
-                        : AV_LOG_DEBUG;
+                int loglevel = max - pkt->dts > 2 || st->codecpar->codec_type ==
+                                                         AVMEDIA_TYPE_VIDEO
+                                   ? AV_LOG_WARNING
+                                   : AV_LOG_DEBUG;
                 av_log(s, loglevel,
                        "Non-monotonous DTS in output stream "
                        "%d:%d; previous: %" PRId64 ", current: %" PRId64 "; ",
@@ -606,9 +605,9 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx,
             last_orig_pts_time_ = std::stod(stime);
         } else {
             if (recorded_pts_ >= 0)
-                estimated_time_ = last_orig_pts_time_ +
-                                  (frame->pts - recorded_pts_) *
-                                      av_q2d(enc_ctxs_[idx]->time_base);
+                estimated_time_ =
+                    last_orig_pts_time_ + (frame->pts - recorded_pts_) *
+                                              av_q2d(enc_ctxs_[idx]->time_base);
             else
                 estimated_time_ += 0.001;
 

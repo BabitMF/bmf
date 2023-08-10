@@ -109,10 +109,10 @@ class Fraction {
     Fraction &operator*=(Fraction const &rhs) {
         neg_ = (neg_ != rhs.neg_);
         /*
-       * a1/b1 * a2/b2
-       * a1 gcd b1 == 1 && a2 gcd b2 == 1
-       * (a1*a2) gcd (b1*b2) == (a1 gcd b2)*(a2 gcd b1)
-       */
+         * a1/b1 * a2/b2
+         * a1 gcd b1 == 1 && a2 gcd b2 == 1
+         * (a1*a2) gcd (b1*b2) == (a1 gcd b2)*(a2 gcd b1)
+         */
         auto den_gcd = gcd(rhs.den_, base_);
         auto base_gcd = gcd(rhs.base_, den_);
         den_ = (den_ / base_gcd) * (rhs.den_ / den_gcd);
@@ -355,6 +355,6 @@ class Fraction {
         return x;
     }
 };
-}
+} // namespace Fraction
 
 #endif // CLOCK_MODULE_FRACTION_HPP

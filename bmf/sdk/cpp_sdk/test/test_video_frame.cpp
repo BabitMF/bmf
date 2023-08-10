@@ -74,24 +74,24 @@ TEST(video_frame, frame_constructors) {
     EXPECT_NO_THROW(vf0.frame());
     EXPECT_EQ(vf0.frame().format(), hmp::PF_YUV420P);
 
-// With dtype specified, not support
+    // With dtype specified, not support
 
 #ifdef HMP_ENABLE_CUDA
     // with device specifed
     auto vf2 = VideoFrame::make(1920, 1080, H420,
                                 "cuda:0" // cuda device
-                                );
+    );
     EXPECT_TRUE(vf2.device() == Device(kCUDA, 0));
     EXPECT_TRUE(vf2.dtype() == kUInt8);
 
     auto vf3 =
         VideoFrame::make(1920, 1080, H420, Device(kCUDA, 0) // cuda device
-                         );
+        );
     EXPECT_TRUE(vf3.device() == Device(kCUDA, 0));
 
     auto vf4 = VideoFrame::make(1920, 1080, H420,
                                 kCUDA // cuda device
-                                );
+    );
     EXPECT_TRUE(vf4.device() == Device(kCUDA, 0));
 
 #endif

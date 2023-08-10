@@ -285,5 +285,5 @@ void VideoWriter::write(const std::vector<Frame> &images) {
                     self->avpkt.get());
     }
 }
-}
-} // namespace hmp::ffmpeg
+} // namespace ffmpeg
+} // namespace hmp

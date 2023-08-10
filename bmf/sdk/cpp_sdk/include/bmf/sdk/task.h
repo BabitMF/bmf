@@ -26,7 +26,7 @@ BEGIN_BMF_SDK_NS
 typedef std::map<int, std::shared_ptr<std::queue<Packet>>> PacketQueueMap;
 
 /** @ingroup CppMdSDK
-    */
+ */
 class BMF_API Task {
   public:
     /*!

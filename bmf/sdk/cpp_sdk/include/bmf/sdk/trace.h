@@ -299,7 +299,7 @@ class BMF_API TraceLogger {
     TraceLogger(
         int queue_size,       // size of vectors to initialize
         bool loop_mode = true // enable starting of logging thread immediately
-        );
+    );
 
     // Get the instance of TraceLogger
     static TraceLogger *instance() {

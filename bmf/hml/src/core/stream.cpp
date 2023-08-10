@@ -141,4 +141,4 @@ StreamGuard::~StreamGuard() {
     }
 }
 
-} // namespace
+} // namespace hmp

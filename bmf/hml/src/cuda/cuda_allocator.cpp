@@ -149,8 +149,9 @@ class CUDAAllocator : public Allocator {
                                        // current stream
         block->allocated = true;
         alloced_[block->ptr] = block;
-        auto dptr = DataPtr(block->ptr, [=](void *ptr) { this->free(ptr); },
-                            Device(device_type_, device_index_));
+        auto dptr = DataPtr(
+            block->ptr, [=](void *ptr) { this->free(ptr); },
+            Device(device_type_, device_index_));
 
         update_stat(stats_.active, block->size);
         update_stat(stats_.segment, 1);
@@ -434,5 +435,5 @@ int d2d_memcpy(void *dst, size_t dpitch, const void *src, size_t spitch,
                  cudaMemcpyDeviceToDevice);
     return 0;
 }
-}
-} // namespace
+} // namespace cuda
+} // namespace hmp

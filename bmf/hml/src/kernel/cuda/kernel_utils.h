@@ -66,8 +66,8 @@ inline void invoke_gen_kernel(const Func &f, OffCalc &offCalc, int64_t N,
     dim3 grid(divup<int64_t>(N, NThread * Batch));
     auto stream = cuda::getCurrentCUDAStream();
 
-    elementwise_kernel<Batch, Index><<<grid, block, 0, stream>>>(
-        N, [=] HMP_HOST_DEVICE(Index idx) {
+    elementwise_kernel<Batch, Index>
+        <<<grid, block, 0, stream>>>(N, [=] HMP_HOST_DEVICE(Index idx) {
             auto offs = offCalc.get(idx);
             optr[offs[0]] = f(int64_t(idx));
         });
@@ -123,8 +123,8 @@ inline void invoke_uop_kernel(const Func &f, const OffCalc &offCalc, int64_t N,
     dim3 grid(divup<int64_t>(N, NThread * Batch));
     auto stream = cuda::getCurrentCUDAStream();
 
-    elementwise_kernel<Batch, Index><<<grid, block, 0, stream>>>(
-        N, [=] HMP_HOST_DEVICE(Index idx) {
+    elementwise_kernel<Batch, Index>
+        <<<grid, block, 0, stream>>>(N, [=] HMP_HOST_DEVICE(Index idx) {
             auto offs = offCalc.get(idx);
             optr[offs[0]] = f(iptr[offs[1]]);
         });
@@ -168,8 +168,8 @@ inline void invoke_bop_kernel(const Func &f, int64_t N, OT *optr,
     dim3 grid(divup<int64_t>(N, NThread * Batch));
     auto stream = cuda::getCurrentCUDAStream();
 
-    elementwise_kernel<Batch, Index><<<grid, block, 0, stream>>>(
-        N, [=] HMP_HOST_DEVICE(Index idx) {
+    elementwise_kernel<Batch, Index>
+        <<<grid, block, 0, stream>>>(N, [=] HMP_HOST_DEVICE(Index idx) {
             optr[idx] = f(iptr0[idx], iptr1[idx]);
         });
     HMP_CUDA_CHECK(cudaGetLastError());
@@ -185,8 +185,8 @@ inline void invoke_bop_kernel(const Func &f, const OffCalc &offCalc, int64_t N,
     dim3 grid(divup<int64_t>(N, NThread * Batch));
     auto stream = cuda::getCurrentCUDAStream();
 
-    elementwise_kernel<Batch, Index><<<grid, block, 0, stream>>>(
-        N, [=] HMP_HOST_DEVICE(Index idx) {
+    elementwise_kernel<Batch, Index>
+        <<<grid, block, 0, stream>>>(N, [=] HMP_HOST_DEVICE(Index idx) {
             auto offs = offCalc.get(idx);
             optr[offs[0]] = f(iptr0[offs[1]], iptr1[offs[2]]);
         });
@@ -251,6 +251,6 @@ inline void invoke_img_elementwise_kernel(Func f, Index batch, Index width,
 
     HMP_CUDA_CHECK(cudaGetLastError());
 }
-}
-}
-} // namespace
+} // namespace cuda
+} // namespace kernel
+} // namespace hmp

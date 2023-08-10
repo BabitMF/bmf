@@ -270,9 +270,11 @@ void GraphConfig::init(nlohmann::json &graph_config) {
             return identifier;
         };
 
-        auto validation_insert_output_stream = [&unwrap_identifier](
-            std::string const &module, std::string const &stream,
-            std::unordered_map<std::string, std::string> &stream_set) -> void {
+        auto validation_insert_output_stream =
+            [&unwrap_identifier](
+                std::string const &module, std::string const &stream,
+                std::unordered_map<std::string, std::string> &stream_set)
+            -> void {
             auto s = unwrap_identifier(stream);
             if (stream_set.count(s))
                 throw std::logic_error("Duplicated input_stream in graph!");
@@ -289,8 +291,9 @@ void GraphConfig::init(nlohmann::json &graph_config) {
             }
         };
 
-        auto validation_insert_edge = [&unwrap_identifier, &edges](
-            std::string const &in_s, std::string const &out_s) -> void {
+        auto validation_insert_edge =
+            [&unwrap_identifier, &edges](std::string const &in_s,
+                                         std::string const &out_s) -> void {
             auto s1 = unwrap_identifier(in_s), s2 = unwrap_identifier(out_s);
             if (!edges.count(s1))
                 edges[s1] = std::unordered_set<std::string>();

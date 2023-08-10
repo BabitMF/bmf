@@ -126,4 +126,4 @@ class HMP_API Buffer {
     inline void *unsafe_data() const { return self_->unsafe_data(); }
 };
 
-} //
+} // namespace hmp

@@ -15,7 +15,7 @@
  */
 
 #include <bmf/sdk/module_registry.h>
-//#include <bmf/sdk/../../../c_modules/include/c_module.h>
+// #include <bmf/sdk/../../../c_modules/include/c_module.h>
 #include <gtest/gtest.h>
 
 USE_BMF_SDK_NS

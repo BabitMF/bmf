@@ -227,5 +227,5 @@ inline void checkShape(const TensorList &tensors, const SizeArray &shape,
                     func, shape, i, tensors.at(i).shape());
     }
 }
-}
-} // hmp::kernel
+} // namespace kernel
+} // namespace hmp

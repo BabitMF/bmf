@@ -117,6 +117,6 @@ inline void invoke_img_elementwise_kernel(Func f, Index batch, Index width,
         }
     });
 }
-}
-}
-} // hmp::kernel::cpu
+} // namespace cpu
+} // namespace kernel
+} // namespace hmp

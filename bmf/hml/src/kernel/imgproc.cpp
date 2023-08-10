@@ -59,18 +59,20 @@ namespace {
 static inline void img_common_check(const Tensor &tensor, ChannelFormat cformat,
                                     int64_t idx, const std::string &name) {
     if (cformat == ChannelFormat::NHWC) {
-        HMP_REQUIRE(tensor.stride(-1) == 1, "{}: expect {}th image tensor's "
-                                            "channel stride is contiguous(0), "
-                                            "got {}",
+        HMP_REQUIRE(tensor.stride(-1) == 1,
+                    "{}: expect {}th image tensor's "
+                    "channel stride is contiguous(0), "
+                    "got {}",
                     name, idx, tensor.stride(-1));
         HMP_REQUIRE(tensor.stride(-2) == tensor.size(-1),
                     "{}: expect {}th image tensor's width stride is "
                     "contiguous({}), got {}",
                     name, idx, tensor.size(-1), tensor.stride(-2));
     } else {
-        HMP_REQUIRE(tensor.stride(-1) == 1, "{}: expect {}th image tensor's "
-                                            "width stride is contiguous(1), "
-                                            "got {}",
+        HMP_REQUIRE(tensor.stride(-1) == 1,
+                    "{}: expect {}th image tensor's "
+                    "width stride is contiguous(1), "
+                    "got {}",
                     name, idx, tensor.stride(-1));
     }
 }
@@ -411,9 +413,10 @@ Tensor &img_bilateral_filter(Tensor &dst, const Tensor &src, int d,
     auto dtmp = img::image_format(dst, cformat);
 
     img_common_check(dtmp, stmp, cformat, "img_bilateral_filter");
-    HMP_REQUIRE(stmp.shape() == dtmp.shape(), "img_bilateral_filter: expect "
-                                              "src and dst have same shape, "
-                                              "got src={}, dst={}",
+    HMP_REQUIRE(stmp.shape() == dtmp.shape(),
+                "img_bilateral_filter: expect "
+                "src and dst have same shape, "
+                "got src={}, dst={}",
                 stmp.shape(), dtmp.shape());
     img_bilateral_filter_stub(stmp.device_type(), dtmp, stmp, d, sigma_color,
                               sigma_space, cformat);
@@ -428,9 +431,10 @@ Tensor &img_gaussian_blur(Tensor &dst, const Tensor &src, int kx, int ky,
     auto dtmp = img::image_format(dst, cformat);
 
     img_common_check(dtmp, stmp, cformat, "img_gaussian_blur");
-    HMP_REQUIRE(stmp.shape() == dtmp.shape(), "img_gaussian_blur: expect src "
-                                              "and dst have same shape, got "
-                                              "src={}, dst={}",
+    HMP_REQUIRE(stmp.shape() == dtmp.shape(),
+                "img_gaussian_blur: expect src "
+                "and dst have same shape, got "
+                "src={}, dst={}",
                 stmp.shape(), dtmp.shape());
     img_gaussian_blur_stub(stmp.device_type(), dtmp, stmp, kx, ky, sigma_x,
                            sigma_y, cformat);
@@ -472,5 +476,5 @@ Tensor &img_overlay(Tensor &dst, const Tensor &src0, const Tensor &src1,
 
     return dst;
 }
-}
-} // namespace
+} // namespace kernel
+} // namespace hmp

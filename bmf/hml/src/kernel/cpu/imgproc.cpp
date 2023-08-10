@@ -221,7 +221,6 @@ Tensor &img_mirror_cpu(Tensor &dst, const Tensor &src, ImageAxis axis,
                     },
                     dst_iter.batch(), dst_iter.width(), dst_iter.height());
             });
-
         });
 
     return dst;
@@ -269,7 +268,6 @@ Tensor &img_rotate_cpu(Tensor &dst, const Tensor &src, ImageRotationMode mode,
                             y = h;
                         }
                         dst_iter.set(batch, w, h, src_iter.get(batch, x, y));
-
                     },
                     dst_iter.batch(), dst_iter.width(), dst_iter.height());
             });
@@ -351,6 +349,6 @@ HMP_DEVICE_DISPATCH(kCPU, img_resize_stub, &img_resize_cpu)
 HMP_DEVICE_DISPATCH(kCPU, img_rotate_stub, &img_rotate_cpu)
 HMP_DEVICE_DISPATCH(kCPU, img_mirror_stub, &img_mirror_cpu)
 HMP_DEVICE_DISPATCH(kCPU, img_normalize_stub, &img_normalize_cpu)
-}
-}
-} // namespace hmp::kernel
+} // namespace
+} // namespace kernel
+} // namespace hmp

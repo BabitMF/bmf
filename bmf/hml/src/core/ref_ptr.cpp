@@ -27,4 +27,4 @@ RefObject::~RefObject() {
     }
 }
 
-} // namespace
+} // namespace hmp

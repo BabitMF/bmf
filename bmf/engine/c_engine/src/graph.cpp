@@ -95,8 +95,8 @@ void Graph::init(
                 BMFLOG(BMF_INFO)
                     << "got exception not from any node, close directly";
             } else
-                BMFLOG(BMF_INFO) << "node " << node_id
-                                 << " got exception, close directly";
+                BMFLOG(BMF_INFO)
+                    << "node " << node_id << " got exception, close directly";
 
             if (this->output_streams_.size() > 0) {
                 for (auto &outputs : this->output_streams_) {
@@ -213,14 +213,14 @@ int Graph::init_nodes() {
 
         if (node_config.get_scheduler() < scheduler_count_) {
             node->set_scheduler_queue_id((node_config.get_scheduler()));
-            BMFLOG(BMF_INFO) << "node:" << node->get_type() << " "
-                             << node->get_id() << " scheduler "
-                             << node_config.get_scheduler();
+            BMFLOG(BMF_INFO)
+                << "node:" << node->get_type() << " " << node->get_id()
+                << " scheduler " << node_config.get_scheduler();
         } else {
             node->set_scheduler_queue_id(0);
-            BMFLOG(BMF_WARNING) << "Node[" << node->get_id() << "]("
-                                << node->get_type()
-                                << ") scheduler exceed limit, will set to 0.";
+            BMFLOG(BMF_WARNING)
+                << "Node[" << node->get_id() << "](" << node->get_type()
+                << ") scheduler exceed limit, will set to 0.";
             BMFLOG(BMF_INFO) << "node:" << node->get_type() << " "
                              << node->get_id() << " scheduler " << 0;
         }
@@ -436,9 +436,9 @@ int Graph::update(GraphConfig update_config) {
 
             if (node_config.get_scheduler() < scheduler_count_) {
                 node->set_scheduler_queue_id((node_config.get_scheduler()));
-                BMFLOG(BMF_INFO) << "node:" << node->get_type() << " "
-                                 << node->get_id() << " scheduler "
-                                 << node_config.get_scheduler();
+                BMFLOG(BMF_INFO)
+                    << "node:" << node->get_type() << " " << node->get_id()
+                    << " scheduler " << node_config.get_scheduler();
             } else {
                 node->set_scheduler_queue_id(0);
                 BMFLOG(BMF_INFO) << "node:" << node->get_type() << " "
@@ -865,7 +865,9 @@ int Graph::add_input_stream_packet(std::string const &stream_name,
 
             while (input_streams_[stream_name]
                        ->manager_->any_of_downstream_full()) {
-                { usleep(1000); }
+                {
+                    usleep(1000);
+                }
             }
         }
         input_streams_[stream_name]->add_packet(packet);

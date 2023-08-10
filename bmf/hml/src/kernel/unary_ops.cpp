@@ -46,5 +46,5 @@ Tensor &clip(Tensor &out, const Tensor &input, const Scalar &min,
 
     return clip_stub(input.device_type(), out, input, min, max);
 }
-}
-} // namespace hmp::kernel
+} // namespace kernel
+} // namespace hmp

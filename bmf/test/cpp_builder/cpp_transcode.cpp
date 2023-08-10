@@ -446,10 +446,14 @@ TEST(cpp_transcode, transcode_map_param) {
                                      bmf_sdk::JsonParam(graph_para));
 
     nlohmann::json decode_para = {
-        {"input_path", input_file}, {"map_v", 0}, {"map_a", 2},
+        {"input_path", input_file},
+        {"map_v", 0},
+        {"map_a", 2},
     };
     nlohmann::json decode_para_2 = {
-        {"input_path", input_file}, {"map_v", 1}, {"map_a", 3},
+        {"input_path", input_file},
+        {"map_v", 1},
+        {"map_a", 3},
     };
     nlohmann::json encode_para_1 = {
         {"output_path", output_file_1},
@@ -483,7 +487,9 @@ TEST(cpp_transcode, transcode_rgb_2_video) {
                                      bmf_sdk::JsonParam(graph_para));
 
     nlohmann::json decode_para = {
-        {"input_path", input_file}, {"s", "806:654"}, {"pix_fmt", "rgba"},
+        {"input_path", input_file},
+        {"s", "806:654"},
+        {"pix_fmt", "rgba"},
     };
     nlohmann::json encode_para = {
         {"output_path", output_file},

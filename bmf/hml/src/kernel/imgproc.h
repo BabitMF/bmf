@@ -169,5 +169,5 @@ Tensor &img_gaussian_blur(Tensor &dst, const Tensor &src, int kx, int ky,
 Tensor &img_warp_perspective(Tensor &dst, const Tensor &src, const Tensor &M,
                              ImageFilterMode mode = kBicubic,
                              ChannelFormat cformat = kNCHW);
-}
-} //
+} // namespace kernel
+} // namespace hmp

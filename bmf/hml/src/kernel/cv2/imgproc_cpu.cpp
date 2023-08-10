@@ -156,6 +156,6 @@ HMP_DEVICE_DISPATCH(kCPU, img_filter2d_stub, &img_filter2d_cpu);
 HMP_DEVICE_DISPATCH(kCPU, img_gaussian_blur_stub, &img_gaussian_blur_cpu);
 HMP_DEVICE_DISPATCH(kCPU, img_bilateral_filter_stub, &img_bilateral_filter_cpu);
 HMP_DEVICE_DISPATCH(kCPU, img_warp_perspective_stub, &img_warp_perspective_cpu);
-}
-}
-} // namespace hmp::kernel
+} // namespace
+} // namespace kernel
+} // namespace hmp

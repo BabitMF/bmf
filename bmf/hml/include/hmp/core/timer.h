@@ -71,4 +71,4 @@ HMP_API void registerTimerManager(DeviceType dtype, TimerManager *tm);
                                            dtype, tm);                         \
     }
 } // namespace impl
-};
+}; // namespace hmp

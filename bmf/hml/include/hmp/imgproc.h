@@ -155,5 +155,5 @@ HMP_API Tensor overlay(const Tensor &src0, const Tensor &src1,
 
 HMP_API Tensor transfer(const Tensor &src, const ChannelFormat &src_format,
                         const ChannelFormat &dst_format);
-}
-} // namespace hmp::img
+} // namespace img
+} // namespace hmp

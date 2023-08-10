@@ -28,10 +28,10 @@
 - (instancetype)init:(HmpTensor *)data:(HmpChannelFormat)format;
 
 - (instancetype)init:(int)
-               width:(int)
-              height:(int)
-           nchannels:(HmpChannelFormat)
-              format:(HmpScalarType)dtype;
+               width:(int)height
+                    :(int)nchannels
+                    :(HmpChannelFormat)format
+                    :(HmpScalarType)dtype;
 
 - (instancetype)initFromPtr:(void *)ptr:(bool)own;
 
@@ -87,9 +87,9 @@
 
 - (instancetype)init:(int)width:(int)height:(HmpPixelInfo *)pix_info;
 - (instancetype)initFromData:(NSMutableArray *)
-                        data:(int)
-                       width:(int)
-                      height:(HmpPixelInfo *)pix_info;
+                        data:(int)width
+                            :(int)height
+                            :(HmpPixelInfo *)pix_info;
 // Frame must locked before use if it is init from pixelbuffer
 - (instancetype)initFromPixelBuffer:(CVPixelBufferRef)pix_buffer;
 

@@ -38,7 +38,7 @@ std::ostream &operator<<(std::ostream &os, const ModuleTag &tag) {
         {ModuleTag::BMF_TAG_UTILS, "BMF_TAG_UTILS"},
     };
     std::string str;
-    for (const auto & [ k, v ] : m) {
+    for (const auto &[k, v] : m) {
         if (static_cast<module_tag_type>(tag) &
             static_cast<module_tag_type>(k)) {
             str += (str.size() == 0 ? "" : "|");

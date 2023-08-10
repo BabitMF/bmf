@@ -112,8 +112,8 @@ int VideoSync::process_video_frame(AVFrame *frame,
             if (delta0 < -0.6) {
                 BMFLOG(BMF_INFO) << "Past duration" << -delta0 << " too large";
             } else
-                BMFLOG(BMF_DEBUG) << "Clipping frame in rate conversion by "
-                                  << -delta0;
+                BMFLOG(BMF_DEBUG)
+                    << "Clipping frame in rate conversion by " << -delta0;
             float_pts = sync_opts_;
             duration += delta0;
             delta0 = 0;
@@ -179,8 +179,8 @@ int VideoSync::process_video_frame(AVFrame *frame,
                           (nb_frames > nb0_frames);
         BMFLOG(BMF_INFO) << "*** " << nb_frames - 1 << " dup!";
         if (nb_frames_dup_ > dup_warning_) {
-            BMFLOG(BMF_WARNING) << "More than " << dup_warning_
-                                << " frames duplicated";
+            BMFLOG(BMF_WARNING)
+                << "More than " << dup_warning_ << " frames duplicated";
             dup_warning_ *= 10;
         }
     }

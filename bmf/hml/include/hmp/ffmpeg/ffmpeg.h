@@ -305,9 +305,9 @@ static TensorList from_audio_frame(const AVFrame *avf) {
         int nplane = avf->channels;
         for (int i = 0; i < nplane; ++i) {
             AVFrame *my_avf = av_frame_clone(avf);
-            DataPtr data(my_avf->extended_data[i],
-                         [=](void *p) { av_frame_free((AVFrame **)&my_avf); },
-                         kCPU);
+            DataPtr data(
+                my_avf->extended_data[i],
+                [=](void *p) { av_frame_free((AVFrame **)&my_avf); }, kCPU);
             auto plane =
                 from_buffer(std::move(data), dtype, {my_avf->nb_samples});
             HMP_REQUIRE(plane.nbytes() <= my_avf->linesize[0],
@@ -316,9 +316,9 @@ static TensorList from_audio_frame(const AVFrame *avf) {
         }
     } else {
         AVFrame *my_avf = av_frame_clone(avf);
-        DataPtr data(my_avf->extended_data[0],
-                     [=](void *p) { av_frame_free((AVFrame **)&my_avf); },
-                     kCPU);
+        DataPtr data(
+            my_avf->extended_data[0],
+            [=](void *p) { av_frame_free((AVFrame **)&my_avf); }, kCPU);
         auto plane = from_buffer(std::move(data), dtype,
                                  {my_avf->nb_samples, my_avf->channels});
         HMP_REQUIRE(plane.nbytes() <= my_avf->linesize[0],
@@ -366,9 +366,10 @@ static AVFrame *to_audio_frame(const TensorList &planes, const AVFrame *avf_ref,
     ScalarType dtype;
     bool planer;
     std::tie(planer, dtype) = from_sample_format((AVSampleFormat)avf->format);
-    HMP_REQUIRE(dtype == planes[0].dtype(), "to_audio_frame: dtype is not "
-                                            "match with ref AVFrame, expect "
-                                            "{}, got {}",
+    HMP_REQUIRE(dtype == planes[0].dtype(),
+                "to_audio_frame: dtype is not "
+                "match with ref AVFrame, expect "
+                "{}, got {}",
                 planes[0].dtype(), dtype);
 
     // Note: channels get from channel layout is not reliable,
@@ -476,8 +477,9 @@ static Tensor get_video_plane(const AVFrame *avf, int plane,
 
     // don't use av_buffer_ref, as avf->data[plane] != avf->buf[plane]
     AVFrame *myframe = av_frame_clone(avf);
-    DataPtr data(myframe->data[plane],
-                 [=](void *p) { av_frame_free((AVFrame **)&myframe); }, device);
+    DataPtr data(
+        myframe->data[plane],
+        [=](void *p) { av_frame_free((AVFrame **)&myframe); }, device);
 
     return from_buffer(std::move(data), dtype, shape, strides);
 }
@@ -661,5 +663,5 @@ static AVFrame *to_video_frame(const Frame &frame,
 
     return avf;
 }
-}
-} // namespace hmp::ffmpeg
+} // namespace ffmpeg
+} // namespace hmp

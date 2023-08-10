@@ -43,5 +43,5 @@ HMP_API DeviceMemoryStats host_memory_stats();
 
 HMP_API int d2d_memcpy(void *dst, size_t dpitch, const void *src, size_t spitch,
                        size_t width, size_t height);
-}
-} //
+} // namespace cuda
+} // namespace hmp

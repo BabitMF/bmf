@@ -54,4 +54,4 @@ int BMFAVPacket::get_whence() const { return whence_; }
 
 void BMFAVPacket::set_whence(int whence) { whence_ = whence; }
 
-} // namespace
+} // namespace bmf_sdk

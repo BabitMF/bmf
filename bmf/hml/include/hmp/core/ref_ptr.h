@@ -163,7 +163,7 @@ template <typename T> class RefPtr final {
         }
     }
 
-    template <typename... Args> static RefPtr make(Args &&... args) {
+    template <typename... Args> static RefPtr make(Args &&...args) {
         auto result = RefPtr(new T(std::forward<Args>(args)...));
         ++result.self_->refcount_;
         return result;
@@ -171,7 +171,7 @@ template <typename T> class RefPtr final {
 };
 
 template <typename T, typename... Args>
-inline RefPtr<T> makeRefPtr(Args &&... args) {
+inline RefPtr<T> makeRefPtr(Args &&...args) {
     return RefPtr<T>::make(std::forward<Args>(args)...);
 }
 
@@ -179,4 +179,4 @@ template <typename T> T *inc_ref(T *obj) { return RefPtr<T>::inc_ref(obj); }
 
 template <typename T> void dec_ref(T *obj) { RefPtr<T>::dec_ref(obj); }
 
-} // namespace
+} // namespace hmp

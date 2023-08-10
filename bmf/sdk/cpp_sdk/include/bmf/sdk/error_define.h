@@ -20,7 +20,7 @@
 typedef int BMFStatus;
 #include <stdio.h>
 /** @ingroup CppMdSDK
-    */
+ */
 /** @see BMF::Error::Code */
 enum {
     BMF_StsOk = 0,             /**< everything is ok                */

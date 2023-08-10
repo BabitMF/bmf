@@ -62,6 +62,6 @@ template <typename T> class InstanceMapping {
 };
 
 template <typename T> InstanceMapping<T>::InstanceMapping() : counting_(0) {}
-}
+} // namespace bmf::internal
 
 #endif // CONNECTOR_INSTANCE_MAPPING_HPP

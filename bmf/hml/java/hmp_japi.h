@@ -108,8 +108,7 @@ jstring toJString(JNIEnv *env, const std::string &str) {
 }
 
 // ptr helpers
-template <typename T, typename... Args>
-static int64_t makePtr(Args &&... args) {
+template <typename T, typename... Args> static int64_t makePtr(Args &&...args) {
     return reinterpret_cast<int64_t>(new T(std::forward<Args>(args)...));
 }
 
@@ -127,4 +126,4 @@ template <typename T> static T *ptr(int64_t p, bool check = true) {
     return reinterpret_cast<T *>(p);
 }
 
-} // namespace
+} // namespace jni

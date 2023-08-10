@@ -63,4 +63,4 @@ bool TensorInfo::is_contiguous() const {
     return true;
 }
 
-} // namespace
+} // namespace hmp

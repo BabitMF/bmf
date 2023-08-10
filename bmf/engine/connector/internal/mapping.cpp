@@ -35,4 +35,4 @@ ConnectorMapping::ModuleCallbackInstanceMapping() {
         new InstanceMapping<std::function<bmf_sdk::CBytes(bmf_sdk::CBytes)>>();
     return *module_callback_instance_mapping;
 }
-}
+} // namespace bmf::internal

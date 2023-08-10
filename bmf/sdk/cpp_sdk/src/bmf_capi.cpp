@@ -447,26 +447,28 @@ int bmf_task_fill_output_packet(bmf_Task task, int stream_id,
 }
 
 bmf_Packet bmf_task_pop_packet_from_out_queue(bmf_Task task, int stream_id) {
-    BMF_PROTECT(Packet pkt; if (task->pop_packet_from_out_queue(stream_id,
-                                                                pkt)) {
-        return new Packet(pkt);
-    } else {
-        throw std::runtime_error(fmt::format(
-            "stream id out of range or no packet to pop from output stream {}",
-            stream_id));
-    })
+    BMF_PROTECT(
+        Packet pkt; if (task->pop_packet_from_out_queue(stream_id, pkt)) {
+            return new Packet(pkt);
+        } else {
+            throw std::runtime_error(
+                fmt::format("stream id out of range or no packet to pop from "
+                            "output stream {}",
+                            stream_id));
+        })
     return nullptr;
 }
 
 bmf_Packet bmf_task_pop_packet_from_input_queue(bmf_Task task, int stream_id) {
-    BMF_PROTECT(Packet pkt; if (task->pop_packet_from_input_queue(stream_id,
-                                                                  pkt)) {
-        return new Packet(pkt);
-    } else {
-        throw std::runtime_error(fmt::format(
-            "stream id out of range or no packet to pop from input stream {}",
-            stream_id));
-    })
+    BMF_PROTECT(
+        Packet pkt; if (task->pop_packet_from_input_queue(stream_id, pkt)) {
+            return new Packet(pkt);
+        } else {
+            throw std::runtime_error(
+                fmt::format("stream id out of range or no packet to pop from "
+                            "input stream {}",
+                            stream_id));
+        })
     return nullptr;
 }
 
@@ -547,74 +549,75 @@ void bmf_module_functor_free(bmf_ModuleFunctor mf) {
 bmf_Packet *bmf_module_functor_call(bmf_ModuleFunctor mf,
                                     const bmf_Packet *inputs, int ninputs,
                                     int *noutputs, bool *is_done) {
-    BMF_PROTECT(std::vector<Packet> ipkts; for (int i = 0; i < ninputs; ++i) {
-        if (inputs[i]) {
-            ipkts.push_back(*inputs[i]);
-        } else {
-            ipkts.push_back(Packet());
+    BMF_PROTECT(
+        std::vector<Packet> ipkts; for (int i = 0; i < ninputs; ++i) {
+            if (inputs[i]) {
+                ipkts.push_back(*inputs[i]);
+            } else {
+                ipkts.push_back(Packet());
+            }
         }
-    }
 
-                std::vector<Packet>
-                    opkts;
-                try { opkts = (*mf)(ipkts); } catch (ProcessDone &e) {
-                    s_bmf_last_error = e.what();
-                    *is_done = true;
-                    return nullptr;
-                }
+        std::vector<Packet>
+            opkts;
+        try { opkts = (*mf)(ipkts); } catch (ProcessDone &e) {
+            s_bmf_last_error = e.what();
+            *is_done = true;
+            return nullptr;
+        }
 
-                auto buf =
-                    (bmf_Packet *)malloc(opkts.size() * sizeof(bmf_Packet));
-                for (size_t i = 0; i < opkts.size(); ++i) {
-                    if (opkts[i]) {
-                        buf[i] = new Packet(opkts[i]);
-                    } else {
-                        buf[i] = nullptr;
-                    }
-                }
+        auto buf = (bmf_Packet *)malloc(opkts.size() * sizeof(bmf_Packet));
+        for (size_t i = 0; i < opkts.size(); ++i) {
+            if (opkts[i]) {
+                buf[i] = new Packet(opkts[i]);
+            } else {
+                buf[i] = nullptr;
+            }
+        }
 
-                if (noutputs) { *noutputs = opkts.size(); } return buf;)
+        if (noutputs) { *noutputs = opkts.size(); } return buf;)
 
     return nullptr;
 }
 
 int bmf_module_functor_execute(bmf_ModuleFunctor mf, const bmf_Packet *inputs,
                                int ninputs, bool cleanup, bool *is_done) {
-    BMF_PROTECT(std::vector<Packet> ipkts; for (int i = 0; i < ninputs; ++i) {
-        if (inputs[i]) {
-            ipkts.push_back(*inputs[i]);
-        } else {
-            ipkts.push_back(Packet());
+    BMF_PROTECT(
+        std::vector<Packet> ipkts; for (int i = 0; i < ninputs; ++i) {
+            if (inputs[i]) {
+                ipkts.push_back(*inputs[i]);
+            } else {
+                ipkts.push_back(Packet());
+            }
         }
-    }
 
-                try {
-                    mf->execute(ipkts, cleanup);
-                    return 0;
-                } catch (ProcessDone &e) {
-                    s_bmf_last_error = e.what();
-                    *is_done = true;
-                    return -1;
-                })
+        try {
+            mf->execute(ipkts, cleanup);
+            return 0;
+        } catch (ProcessDone &e) {
+            s_bmf_last_error = e.what();
+            *is_done = true;
+            return -1;
+        })
 
     return -1;
 }
 
 bmf_Packet *bmf_module_functor_fetch(bmf_ModuleFunctor mf, int index,
                                      int *noutputs, bool *is_done) {
-    BMF_PROTECT(auto opkts = mf->fetch(index);
+    BMF_PROTECT(
+        auto opkts = mf->fetch(index);
 
-                auto buf =
-                    (bmf_Packet *)malloc(opkts.size() * sizeof(bmf_Packet));
-                for (size_t i = 0; i < opkts.size(); ++i) {
-                    if (opkts[i]) {
-                        buf[i] = new Packet(opkts[i]);
-                    } else {
-                        buf[i] = nullptr;
-                    }
-                }
+        auto buf = (bmf_Packet *)malloc(opkts.size() * sizeof(bmf_Packet));
+        for (size_t i = 0; i < opkts.size(); ++i) {
+            if (opkts[i]) {
+                buf[i] = new Packet(opkts[i]);
+            } else {
+                buf[i] = nullptr;
+            }
+        }
 
-                if (noutputs) { *noutputs = opkts.size(); } return buf;)
+        if (noutputs) { *noutputs = opkts.size(); } return buf;)
 
     return nullptr;
 }

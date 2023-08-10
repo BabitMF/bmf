@@ -115,5 +115,5 @@ float Event::elapsed(const Event &other) {
                              reinterpret_cast<cudaEvent_t>(other.event_)));
     return ms;
 }
-}
-} // namespace
+} // namespace cuda
+} // namespace hmp

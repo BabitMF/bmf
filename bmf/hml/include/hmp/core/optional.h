@@ -20,7 +20,7 @@
 namespace hmp {
 
 // NOTE: don't use martinmoene/optional-lite, as it may have issues for nvcc
-using std::experimental::optional;
 using std::experimental::nullopt;
+using std::experimental::optional;
 
-} //
+} // namespace hmp

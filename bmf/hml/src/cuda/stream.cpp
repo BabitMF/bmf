@@ -154,5 +154,5 @@ class CUDAStreamManager : public impl::StreamManager {
 static CUDAStreamManager sCUDAStreamManager;
 
 HMP_REGISTER_STREAM_MANAGER(kCUDA, &sCUDAStreamManager);
-}
-} // namesapce
+} // namespace cuda
+} // namespace hmp

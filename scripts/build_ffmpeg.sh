@@ -44,6 +44,27 @@ function install_dependencies_macos() {
     brew install automake git libtool wget
 }
 
+function build_nasm_unix() {
+    cd $1
+    curl -O -L https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.bz2
+    tar xjvf nasm-2.15.05.tar.bz2
+    cd nasm-2.15.05
+    ./autogen.sh
+    ./configure --enable-shared
+    make -j $2
+    make install
+}
+
+function build_yasm_unix() {
+    cd $1
+    curl -O -L https://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz
+    tar xzvf yasm-1.3.0.tar.gz
+    cd yasm-1.3.0
+    ./configure
+    make -j $2
+    make install
+}
+
 function build_x264_unix() {
     cd $1
     git clone --branch stable --depth 1 https://code.videolan.org/videolan/x264.git

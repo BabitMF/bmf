@@ -351,16 +351,19 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
      * @{
      * @arg dec_params: set the decode codec parameters, such as "threads": 1
      * @} */
-    AVDictionary *opts = dec_opts_;
+    AVDictionary *opts = NULL;
     if (option.has_key("dec_params")) {
         option.get_object("dec_params", dec_params_);
         std::vector<std::pair<std::string, std::string>> params;
         dec_params_.get_iterated(params);
+        // save dec_opts
         for (int i = 0; i < params.size(); i++) {
-            av_dict_set(&opts, params[i].first.c_str(),
+            av_dict_set(&dec_opts_, params[i].first.c_str(),
                         params[i].second.c_str(), 0);
         }
+        av_dict_copy(&opts, dec_opts_, 0);
     }
+
     if (option.has_key("decryption_key")) {
         std::string decryption_key;
         option.get_string("decryption_key", decryption_key);
@@ -568,7 +571,8 @@ int CFFDecoder::codec_context(int *stream_idx, AVCodecContext **dec_ctx,
     int ret, stream_index;
     AVStream *st;
     const AVCodec *dec = NULL;
-    AVDictionary *opts = dec_opts_;
+    AVDictionary *opts = NULL;
+    av_dict_copy(&opts, dec_opts_, 0);
     int stream_id = -1;
 
     ret = av_find_best_stream(fmt_ctx, type, *stream_idx, -1, NULL, 0);
@@ -652,6 +656,7 @@ int CFFDecoder::codec_context(int *stream_idx, AVCodecContext **dec_ctx,
                 << " codec";
             return ret;
         }
+        av_dict_free(&opts);
         *stream_idx = stream_index;
     }
 
@@ -792,6 +797,7 @@ int CFFDecoder::init_input(AVDictionary *options) {
             BMF_Error(BMF_TranscodeError, msg.c_str());
         }
     }
+
     if ((ret = avformat_find_stream_info(input_fmt_ctx_, NULL)) < 0) {
         if (ret < 0) {
             std::string msg =
@@ -1053,8 +1059,8 @@ int CFFDecoder::extract_frames(AVFrame *frame,
         if (video_sync_ == NULL) {
             video_sync_ = std::make_shared<VideoSync>(
                 video_stream_->time_base, temp_time_base, frame_rate,
-                video_frame_rate, video_stream_->start_time,
-                ist_[0].first_dts, VSYNC_VFR, 0);
+                video_frame_rate, video_stream_->start_time, ist_[0].first_dts,
+                VSYNC_VFR, 0);
         }
         video_sync_->process_video_frame(frame, output_frames,
                                          ist_[0].frame_number);
@@ -1539,16 +1545,15 @@ int CFFDecoder::decode_send_packet(Task &task, AVPacket *pkt, int *got_frame) {
         pkt_ts(pkt, index);
 
     if (!ist->saw_first_ts) {
-        ist->first_dts = 
-        ist->dts = (stream && stream->avg_frame_rate.num)
-                       ? -dec_ctx->has_b_frames * AV_TIME_BASE /
-                             av_q2d(stream->avg_frame_rate)
-                       : 0;
+        ist->first_dts = ist->dts = (stream && stream->avg_frame_rate.num)
+                                        ? -dec_ctx->has_b_frames *
+                                              AV_TIME_BASE /
+                                              av_q2d(stream->avg_frame_rate)
+                                        : 0;
         ist->pts = 0;
         if (stream && pkt && pkt->pts != AV_NOPTS_VALUE &&
             !ist->decoding_needed) {
-            ist->first_dts =
-            ist->dts +=
+            ist->first_dts = ist->dts +=
                 av_rescale_q(pkt->pts, stream->time_base, AV_TIME_BASE_Q);
             ist->pts = ist->dts; // unused but better to set it to a value thats
                                  // not totally wrong
@@ -1967,14 +1972,15 @@ int read_packet_(void *opaque, uint8_t *buf, int buf_size) {
 }
 
 int CFFDecoder::init_av_codec() {
-    // AVDictionary *opts = NULL;
     input_fmt_ctx_ = NULL;
     video_time_base_string_ = "";
     video_end_ = false;
     audio_end_ = false;
     video_stream_index_ = -1;
     audio_stream_index_ = -1;
-    init_input(dec_opts_);
+    AVDictionary *opts = NULL;
+    av_dict_copy(&opts, dec_opts_, 0);
+    init_input(opts);
     return 0;
 }
 
@@ -2035,7 +2041,6 @@ int CFFDecoder::init_packet_av_codec() {
     video_time_base_string_ = "";
     AVDictionary *opts = NULL;
     init_input(opts);
-
     return 0;
 }
 
@@ -2226,18 +2231,22 @@ int CFFDecoder::process_raw_stream_packet(Task &task, BMFAVPacket &bmf_pkt,
     int got_frame;
     if (!video_codec_name_.empty() && !video_decode_ctx_) {
         video_stream_index_ = 0;
-        const AVCodec *dec = avcodec_find_decoder_by_name(video_codec_name_.c_str());
+        const AVCodec *dec =
+            avcodec_find_decoder_by_name(video_codec_name_.c_str());
         if (!dec)
             BMFLOG_NODE(BMF_ERROR, node_id_) << "Codec not found";
         video_decode_ctx_ = avcodec_alloc_context3(dec);
         if (!video_decode_ctx_)
             BMFLOG_NODE(BMF_ERROR, node_id_) << "Context not found";
         video_decode_ctx_->codec_type = AVMEDIA_TYPE_VIDEO;
-        AVDictionary *opts = dec_opts_;
+        AVDictionary *opts = NULL;
+        av_dict_copy(&opts, dec_opts_, 0);
         av_dict_set(&opts, "refcounted_frames", "1", 0);
         av_dict_set(&opts, "threads", "auto", 0);
         if (avcodec_open2(video_decode_ctx_, dec, &opts) < 0)
             BMFLOG_NODE(BMF_ERROR, node_id_) << "Could not open codec";
+
+        av_dict_free(&opts);
 
         // Parse time base
         std::vector<int> time_base_comps;
@@ -2253,7 +2262,8 @@ int CFFDecoder::process_raw_stream_packet(Task &task, BMFAVPacket &bmf_pkt,
         video_time_base_ = av_make_q(time_base_comps[0], time_base_comps[1]);
     } else if (!audio_codec_name_.empty() && !audio_decode_ctx_) {
         audio_stream_index_ = 0;
-        const AVCodec *dec = avcodec_find_decoder_by_name(audio_codec_name_.c_str());
+        const AVCodec *dec =
+            avcodec_find_decoder_by_name(audio_codec_name_.c_str());
         if (!dec)
             BMFLOG_NODE(BMF_ERROR, node_id_) << "Codec not found";
         audio_decode_ctx_ = avcodec_alloc_context3(dec);

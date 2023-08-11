@@ -50,7 +50,7 @@
 
 // We had probably better just make some assumptions about nvcc's
 // target rather than take the host-related flags from here:
-//#include <bits/c++config.h>
+// #include <bits/c++config.h>
 #include <hmp/core/half.h>
 
 //
@@ -158,7 +158,7 @@ namespace hmp {
  *  @brief Describes the rounding style for floating-point types.
  *
  *  This is used in the std::numeric_limits class.
-*/
+ */
 enum float_round_style {
     round_indeterminate = -1,     /// Intermediate.
     round_toward_zero = 0,        /// To zero.
@@ -172,7 +172,7 @@ enum float_round_style {
  *
  *  These values represent the presence or absence of a variable number
  *  of exponent bits.  This type is used in the std::numeric_limits class.
-*/
+ */
 enum float_denorm_style {
     /// Indeterminate at compile time whether denormalized values are allowed.
     denorm_indeterminate = -1,
@@ -191,7 +191,7 @@ enum float_denorm_style {
  *  @note This is a separate class for purposes of efficiency; you
  *        should only access these members as part of an instantiation
  *        of the std::numeric_limits class.
-*/
+ */
 struct __numeric_limits_base {
     /** This will be true for all fundamental types (which have
         specializations), and false for everything else.  */
@@ -299,7 +299,7 @@ struct __numeric_limits_base {
  *
  *  _GLIBCXX_RESOLVE_LIB_DEFECTS:  DRs 201 and 184 (hi Gaby!) are
  *  noted, but not incorporated in this documented (yet).
-*/
+ */
 template <typename _Tp> struct numeric_limits : public __numeric_limits_base {
     /** The minimum finite value, or for floating types with
         denormalization, the minimum positive normalized value.  */

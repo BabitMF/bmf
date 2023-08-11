@@ -16,29 +16,29 @@ using hmp::ScalarType;
 HMP_FORALL_SCALAR_TYPES(DEFINE_KSCALAR)
 #undef DEFINE_KSCALAR
 
-using hmp::DeviceGuard;
 using hmp::Device;
+using hmp::DeviceGuard;
 using hmp::kCPU;
 using hmp::kCUDA;
 
 using hmp::DataPtr;
+using hmp::DeviceType;
+using hmp::SizeArray;
 using hmp::Tensor;
 using hmp::TensorList;
-using hmp::DeviceType;
 using hmp::TensorOptions;
-using hmp::SizeArray;
 
+using hmp::makeRefPtr;
 using hmp::RefObject;
 using hmp::RefPtr;
-using hmp::makeRefPtr;
 
-using hmp::PixelFormat;
+using hmp::ChannelFormat;
+using hmp::ColorPrimaries;
 using hmp::ColorRange;
 using hmp::ColorSpace;
-using hmp::ColorPrimaries;
 using hmp::ColorTransferCharacteristic;
+using hmp::PixelFormat;
 using hmp::PixelInfo;
-using hmp::ChannelFormat;
 
 using hmp::Frame;
 

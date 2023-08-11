@@ -87,9 +87,10 @@ int SchedulerQueue::exec_loop() {
             if (queue_.empty() and state_ != State::TERMINATING) {
                 wait_cnt_++;
                 int64_t startts;
-                BMF_TRACE(SCHEDULE, ("THREAD_" + std::to_string(id_) + "_WAIT" +
-                                     "_" + std::to_string(wait_cnt_))
-                                        .c_str(),
+                BMF_TRACE(SCHEDULE,
+                          ("THREAD_" + std::to_string(id_) + "_WAIT" + "_" +
+                           std::to_string(wait_cnt_))
+                              .c_str(),
                           START);
                 startts = clock();
                 con_var_.wait(lk, [this] {
@@ -97,9 +98,10 @@ int SchedulerQueue::exec_loop() {
                            !this->queue_.empty();
                 });
                 wait_duration_ += (clock() - startts);
-                BMF_TRACE(SCHEDULE, ("THREAD_" + std::to_string(id_) + "_WAIT" +
-                                     "_" + std::to_string(wait_cnt_))
-                                        .c_str(),
+                BMF_TRACE(SCHEDULE,
+                          ("THREAD_" + std::to_string(id_) + "_WAIT" + "_" +
+                           std::to_string(wait_cnt_))
+                              .c_str(),
                           END);
             }
         }

@@ -501,4 +501,4 @@ void tofile(const Tensor &data, const std::string &fn) {
                 tmp.nitems());
 }
 
-} // namespace
+} // namespace hmp

@@ -26,7 +26,7 @@ class GoModule : public Module {
     bool (*is_infinity_func_)(int32_t);
 
     template <typename F, typename... Args>
-    void check_result(F &f, Args &&... args) {
+    void check_result(F &f, Args &&...args) {
         auto cstr = f(std::forward<Args>(args)...);
         if (cstr != nullptr) {
             auto str = std::string(cstr);
@@ -147,8 +147,8 @@ class GoModuleFactory : public ModuleFactoryI {
         return module_info_func(cls_.c_str(), &info);
     }
 }; //
-}
-} // bmf_sdk
+} // namespace
+} // namespace bmf_sdk
 
 // TODO: make it as a plugin
 extern "C" bmf_sdk::ModuleFactoryI *

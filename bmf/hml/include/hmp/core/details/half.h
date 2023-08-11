@@ -344,5 +344,5 @@ inline uint16_t fp16_ieee_from_fp32_value(float f) {
         (sign >> 16) |
         (shl1_w > UINT32_C(0xFF000000) ? UINT16_C(0x7E00) : nonsign));
 }
-}
-} //
+} // namespace detail
+} // namespace hmp

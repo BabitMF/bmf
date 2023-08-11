@@ -27,10 +27,10 @@ namespace hmp {
 namespace kernel {
 namespace ocv {
 
-using hmp::ocv::to_cv_mat;
 using hmp::ocv::from_cv_mat;
-using hmp::ocv::to_cv_type;
 using hmp::ocv::from_cv_type;
+using hmp::ocv::to_cv_mat;
+using hmp::ocv::to_cv_type;
 
 inline int to_cv_filter_mode(ImageFilterMode mode) {
     switch (mode) {
@@ -47,7 +47,7 @@ inline int to_cv_filter_mode(ImageFilterMode mode) {
 
 template <typename Func, typename... Args>
 void foreach_image(const Func &f, ChannelFormat cformat, Tensor &dst,
-                   Args &&... args) {
+                   Args &&...args) {
     auto batch = dst.size(0);
     for (int64_t i = 0; i < batch; ++i) {
         if (cformat == ChannelFormat::NCHW) {
@@ -75,6 +75,6 @@ static inline void morph(cv::MorphTypes algo, const cv::Mat &src, cv::Mat &dst,
         HMP_REQUIRE(false, "MorphType {} not implemeted", algo);
     }
 }
-}
-}
-} // namespace hmp::kernel::ocv
+} // namespace ocv
+} // namespace kernel
+} // namespace hmp

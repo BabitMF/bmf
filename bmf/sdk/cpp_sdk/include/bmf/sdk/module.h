@@ -29,7 +29,7 @@
 
 namespace bmf_sdk {
 /** @ingroup CppMdSDK
-    */
+ */
 class BMF_API Module {
   public:
     /** @brief
@@ -122,20 +122,20 @@ class BMF_API Module {
 
     /** @brief set the graph callback of module
      * @param callback_endpoint callback that defined in graph
-       */
+     */
     virtual void
     set_callback(std::function<CBytes(int64_t, CBytes)> callback_endpoint){};
 
     /** @brief check the module is subgraph
      * @return true if the module is subgraph, else is false
-       */
+     */
     virtual bool is_subgraph() { return false; };
 
     /** @brief if the module is subgraph get the graph config
      * @param json_param return value of config
      * @return true if the module is subgraph and has the graph config, else is
      * false
-       */
+     */
     virtual bool get_graph_config(JsonParam &json_param) { return false; }
 
     /**

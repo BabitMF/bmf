@@ -84,10 +84,10 @@ class FilterGraph {
         }
 
         /** @addtogroup FiltM
-        * @{
-        * @env BMF_FILTERGRAPH_THREADS: set nb_threads of ffmpeg filter_graph,
-        * for example, BMF_FILTERGRAPH_THREADS=1
-        * @} */
+         * @{
+         * @env BMF_FILTERGRAPH_THREADS: set nb_threads of ffmpeg filter_graph,
+         * for example, BMF_FILTERGRAPH_THREADS=1
+         * @} */
         char *threads_env = getenv("BMF_FILTERGRAPH_THREADS");
         if (threads_env) {
             std::string threads_str = threads_env;
@@ -208,8 +208,8 @@ class FilterGraph {
             int end_pos = stream_str.find("_");
             int st = std::stoi(stream_str.substr(start_pos + 1, end_pos));
             if (st < 0 || st >= config.size())
-                BMFLOG(BMF_WARNING) << "Graph config missed for filter index "
-                                    << st;
+                BMFLOG(BMF_WARNING)
+                    << "Graph config missed for filter index " << st;
 
             enum AVMediaType type = avfilter_pad_get_type(
                 curr->filter_ctx->input_pads, curr->pad_idx);
@@ -271,9 +271,10 @@ class FilterGraph {
                                 input_config.channels);
                 }
 
-                av_bprintf(&args, "time_base=%d/"
-                                  "%d:sample_rate=%d:sample_fmt=%s:channel_"
-                                  "layout=0x%" PRIx64,
+                av_bprintf(&args,
+                           "time_base=%d/"
+                           "%d:sample_rate=%d:sample_fmt=%s:channel_"
+                           "layout=0x%" PRIx64,
                            input_config.tb.num, input_config.tb.den,
                            input_config.sample_rate,
                            av_get_sample_fmt_name(
@@ -338,8 +339,9 @@ class FilterGraph {
                         av_bprint_init(&out_args, 0, AV_BPRINT_SIZE_AUTOMATIC);
                         format = avfilter_get_by_name("aformat");
                         av_bprintf(
-                            &out_args, "sample_rates=%d:sample_fmts=%s:channel_"
-                                       "layouts=0x%" PRIx64,
+                            &out_args,
+                            "sample_rates=%d:sample_fmts=%s:channel_"
+                            "layouts=0x%" PRIx64,
                             output_config.sample_rate,
                             av_get_sample_fmt_name(
                                 (enum AVSampleFormat)output_config.format),
@@ -431,8 +433,8 @@ class FilterGraph {
             return -1;
         }
         if (buffer_sink_ctx_.find(out_idx) == buffer_sink_ctx_.end()) {
-            BMFLOG(BMF_ERROR) << "Buffer out" << out_idx
-                              << " cann not be found";
+            BMFLOG(BMF_ERROR)
+                << "Buffer out" << out_idx << " cann not be found";
             return -1;
         }
 
@@ -459,9 +461,10 @@ class FilterGraph {
                                                 AV_BUFFERSINK_FLAG_NO_REQUEST);
             if (ret < 0) {
                 /* if no more frames for output - returns AVERROR(EAGAIN)
-                * if flushed and no more frames for output - returns AVERROR_EOF
-                * rewrite retcode to 0 to show it as normal procedure completion
-                */
+                 * if flushed and no more frames for output - returns
+                 * AVERROR_EOF rewrite retcode to 0 to show it as normal
+                 * procedure completion
+                 */
                 if (ret == AVERROR(EAGAIN))
                     ret = 0;
                 av_frame_free(&filt_frame);

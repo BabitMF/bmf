@@ -44,5 +44,5 @@ Tensor &sub(Tensor &out, const Scalar &ina, const Tensor &inb);
 Tensor &div(Tensor &out, const Tensor &ina, const Tensor &inb);
 Tensor &div(Tensor &out, const Tensor &ina, const Scalar &inb);
 Tensor &div(Tensor &out, const Scalar &ina, const Tensor &inb);
-}
-} // namespace
+} // namespace kernel
+} // namespace hmp

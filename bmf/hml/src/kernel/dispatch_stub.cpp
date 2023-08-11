@@ -15,4 +15,4 @@
  */
 #include <kernel/dispatch_stub.h>
 
-namespace hmp {} // namespace
+namespace hmp {} // namespace hmp

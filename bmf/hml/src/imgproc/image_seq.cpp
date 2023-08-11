@@ -264,4 +264,4 @@ std::string stringfy(const FrameSeq &frames) {
                        frames.width());
 }
 
-} //
+} // namespace hmp

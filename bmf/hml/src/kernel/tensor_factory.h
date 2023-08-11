@@ -27,5 +27,5 @@ HMP_DECLARE_DISPATCH_STUB(arange_stub,
 
 Tensor empty(const SizeArray &shape, const TensorOptions &options);
 Tensor &copy(Tensor &self, const Tensor &other);
-}
-} // namespace
+} // namespace kernel
+} // namespace hmp

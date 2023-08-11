@@ -77,4 +77,4 @@ TEST(RefPtr, multi_thread_ops) {
     EXPECT_EQ(nthreads * nops, obj->count);
 }
 
-} // namespace
+} // namespace hmp

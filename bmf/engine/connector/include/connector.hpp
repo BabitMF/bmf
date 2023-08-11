@@ -214,6 +214,6 @@ class BMFCallback {
 };
 
 void ChangeDmpPath(std::string path);
-}
+} // namespace bmf
 
 #endif // CONNECTOR_CONNECTOR_HPP

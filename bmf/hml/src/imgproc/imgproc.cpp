@@ -82,8 +82,9 @@ Tensor image_format(const Tensor &image, ChannelFormat cformat,
             return image.unsqueeze(0).unsqueeze(3);
         }
     } else {
-        HMP_REQUIRE(false, "Image data need at least 2 dims and less than or "
-                           "equal to 4 dims, got {}",
+        HMP_REQUIRE(false,
+                    "Image data need at least 2 dims and less than or "
+                    "equal to 4 dims, got {}",
                     image.dim());
     }
 }
@@ -525,5 +526,5 @@ Tensor transfer(const Tensor &src, const ChannelFormat &src_format,
 }
 
 #endif // HMP_ENABLE_MOBILE
-}
-} // namespace hmp::img
+} // namespace img
+} // namespace hmp

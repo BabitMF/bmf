@@ -56,8 +56,9 @@ void create_python_module_from_string(
 
 TEST(python_module, ffmpeg_module) {
 
-    setenv("PYTHONPATH", "../../../3rd_party/pyav/:.:../../python_modules:../"
-                         "../python_module_sdk",
+    setenv("PYTHONPATH",
+           "../../../3rd_party/pyav/:.:../../python_modules:../"
+           "../python_module_sdk",
            1);
     Py_Initialize();
     JsonParam graph_config;
@@ -148,8 +149,9 @@ TEST(python_module, decode) {
     //    google::SetStderrLogging(google::INFO);
     //    google::InstallFailureSignalHandler();
     //    google::InstallFailureWriter(&SignalHandle);
-    setenv("PYTHONPATH", "../../../3rd_party/pyav/:.:../../python_modules:../"
-                         "../python_module_sdk",
+    setenv("PYTHONPATH",
+           "../../../3rd_party/pyav/:.:../../python_modules:../"
+           "../python_module_sdk",
            1);
     time_t time1 = clock();
     Py_Initialize();
@@ -200,8 +202,9 @@ TEST(python_module, decode_encode) {
     //    google::SetStderrLogging(google::INFO);
     //    google::InstallFailureSignalHandler();
     //    google::InstallFailureWriter(&SignalHandle);
-    setenv("PYTHONPATH", "../../../3rd_party/pyav/:.:../../python_modules:../"
-                         "../python_module_sdk",
+    setenv("PYTHONPATH",
+           "../../../3rd_party/pyav/:.:../../python_modules:../"
+           "../python_module_sdk",
            1);
     Py_Initialize();
     std::string decoder_name;
@@ -261,8 +264,9 @@ TEST(python_module, decode_encode) {
 }
 
 TEST(python_module, gil) {
-    setenv("PYTHONPATH", "../../../3rd_party/pyav/:.:../../python_modules:../"
-                         "../python_module_sdk",
+    setenv("PYTHONPATH",
+           "../../../3rd_party/pyav/:.:../../python_modules:../"
+           "../python_module_sdk",
            1);
     Py_Initialize();
     PyEval_InitThreads();
@@ -278,8 +282,9 @@ TEST(python_module, gil) {
 }
 
 TEST(python_module, decode_filter_encoder) {
-    setenv("PYTHONPATH", "../../../3rd_party/pyav/:.:../../python_modules:../"
-                         "../python_module_sdk",
+    setenv("PYTHONPATH",
+           "../../../3rd_party/pyav/:.:../../python_modules:../"
+           "../python_module_sdk",
            1);
     Py_Initialize();
     std::string decoder_name;

@@ -55,7 +55,7 @@ static cv::cuda::GpuMat to_cv_gpu_mat(const Tensor &tensor,
 
 template <typename Func, typename... Args>
 void foreach_gpu_image(const Func &f, ChannelFormat cformat, Tensor &dst,
-                       Args &&... args) {
+                       Args &&...args) {
     auto batch = dst.size(0);
     for (int64_t i = 0; i < batch; ++i) {
         if (cformat == ChannelFormat::NCHW) {
@@ -103,6 +103,6 @@ static void morph_cuda(cv::MorphTypes algo, const cv::cuda::GpuMat &src,
 
     morph->apply(src, dst, stream);
 }
-}
-}
-} // namespace hmp::kernel::ocv
+} // namespace ocv
+} // namespace kernel
+} // namespace hmp

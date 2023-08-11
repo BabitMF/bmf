@@ -117,4 +117,4 @@ class BMF_API ModuleManager {
     std::unique_ptr<Private> self;
 };
 
-} // namespace
+} // namespace bmf_sdk

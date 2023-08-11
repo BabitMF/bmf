@@ -44,7 +44,7 @@ class BMF_API BMFAVPacket : public OpaqueDataSet, public SequenceData {
      * @return BMFAVPacket
      */
     template <typename... Options>
-    static BMFAVPacket make(int size, Options &&... opts) {
+    static BMFAVPacket make(int size, Options &&...opts) {
         return BMFAVPacket(size, TensorOptions(kUInt8).options(
                                      std::forward<Options>(opts)...));
     }

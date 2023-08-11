@@ -89,5 +89,5 @@ int64_t DeviceProp::texture_pitch_alignment() {
     auto &prop = get_device_prop(device);
     return prop.texturePitchAlignment;
 }
-}
-} // namespace
+} // namespace cuda
+} // namespace hmp

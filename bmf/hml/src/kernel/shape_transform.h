@@ -30,5 +30,5 @@ Tensor vstack(const TensorList &tensors);
 
 Tensor &hstack(Tensor &out, const TensorList &tensors);
 Tensor hstack(const TensorList &tensors);
-}
-} // namespace
+} // namespace kernel
+} // namespace hmp

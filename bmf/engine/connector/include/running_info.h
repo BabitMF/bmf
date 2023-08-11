@@ -276,5 +276,5 @@ typedef struct GraphRunningInfo {
         return JsonParam(ret);
     }
 } GraphRunningInfo;
-}
+} // namespace bmf
 #endif // BMF_ENGINE_RUNNING_INFO_H

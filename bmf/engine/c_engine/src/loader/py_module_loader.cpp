@@ -21,7 +21,7 @@ class PyModule : public Module {
     py::object self; // python module implementation
   public:
     template <typename... Args>
-    py::object call_func(const char *name, Args &&... args) {
+    py::object call_func(const char *name, Args &&...args) {
         if (!py::hasattr(self, name)) {
             throw std::runtime_error(
                 fmt::format("{} is not implemented", name));
@@ -167,13 +167,13 @@ class PyModuleFactory : public ModuleFactoryI {
 
     std::shared_ptr<Module> make(int32_t node_id,
                                  const JsonParam &json_param) override {
-        auto[module_cls, _] = factory_();
+        auto [module_cls, _] = factory_();
         return std::make_shared<bmf_sdk::PyModule>(module_cls, node_id,
                                                    json_param);
     }
 
     const bool module_info(ModuleInfo &info) const override {
-        auto[_, module_register] = factory_();
+        auto [_, module_register] = factory_();
         if (module_register.is_none())
             return false;
 
@@ -189,7 +189,7 @@ class PyModuleFactory : public ModuleFactoryI {
     FactoryFunc factory_;
 }; //
 
-} //
+} // namespace bmf_sdk
 
 // TODO: make it as a plugin
 extern "C" bmf_sdk::ModuleFactoryI *

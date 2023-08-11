@@ -274,5 +274,5 @@ void nppiMirror<float>(Tensor &dst, const Tensor &src, ImageAxis axis,
     HMP_REQUIRE(status >= NPP_SUCCESS,
                 "nppiMirror_32f_C1R_Ctx failed with status={}", status);
 }
-}
-} // namespace
+} // namespace kernel
+} // namespace hmp

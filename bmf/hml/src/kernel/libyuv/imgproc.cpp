@@ -238,6 +238,6 @@ Tensor &img_mirror_cpu(Tensor &dst, const Tensor &src, ImageAxis axis,
 // HMP_DEVICE_DISPATCH(kCPU, img_resize_stub, &img_resize_cpu)
 // HMP_DEVICE_DISPATCH(kCPU, img_rotate_stub, &img_rotate_cpu)
 // HMP_DEVICE_DISPATCH(kCPU, img_mirror_stub, &img_mirror_cpu)
-}
-}
-} // namespace hmp::kernel
+} // namespace
+} // namespace kernel
+} // namespace hmp

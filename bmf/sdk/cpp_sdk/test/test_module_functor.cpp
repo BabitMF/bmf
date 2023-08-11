@@ -135,7 +135,10 @@ TEST(module_functor, irregular_outputs) {
     // irregular outputs
     {
         std::vector<std::tuple<int, int>> configs{
-            {0, 0}, {0, 2}, {2, 0}, {2, 2},
+            {0, 0},
+            {0, 2},
+            {2, 0},
+            {2, 2},
         };
 
         for (auto &config : configs) {

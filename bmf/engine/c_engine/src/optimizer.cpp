@@ -490,6 +490,6 @@ void dump_graph(GraphConfig graph_config, bool merged) {
         fout.close();
     }
 }
-}
+} // namespace Optimizer
 
 END_BMF_ENGINE_NS

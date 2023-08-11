@@ -70,4 +70,4 @@ class HMP_API Scalar {
     } data_;
 };
 
-} // namespace
+} // namespace hmp

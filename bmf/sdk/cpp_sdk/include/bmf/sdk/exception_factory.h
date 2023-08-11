@@ -44,7 +44,7 @@ BEGIN_BMF_SDK_NS
 BMF_API std::string format(const char *fmt, ...);
 
 /** @ingroup CppMdSDK
-    */
+ */
 /*! @brief Class passed to an error.
 
 This class encapsulates all or almost all necessary

@@ -41,5 +41,5 @@ class HMP_API Event {
 
     float elapsed(const Event &other);
 };
-}
-}; // namespace hmp::cuda
+} // namespace cuda
+}; // namespace hmp

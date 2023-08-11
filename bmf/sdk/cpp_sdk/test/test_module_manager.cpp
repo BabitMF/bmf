@@ -14,7 +14,7 @@ class InAppModuleDemo : public Module {
 };
 
 REGISTER_MODULE_CLASS(InAppModuleDemo)
-};
+}; // namespace
 
 TEST(module_manager, test_compat_path) {
     auto p0 = fs::path("/home/foo");

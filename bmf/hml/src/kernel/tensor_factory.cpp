@@ -59,5 +59,5 @@ Tensor &copy(Tensor &self, const Tensor &other) {
         self.device_type() == kCPU ? other.device_type() : self.device_type();
     return copy_stub(device_type, self, other);
 }
-}
-} //
+} // namespace kernel
+} // namespace hmp

@@ -138,18 +138,20 @@ inline ShapeStridePair inferExpandGeometry(const SizeArray &tensor_sizes,
                              : result.shape[i + 1] * result.strides[i + 1];
         int64_t targetSize = sizes[i];
         if (targetSize == -1) {
-            HMP_REQUIRE(dim >= 0, "The expanded size of the tensor ({}) isn't "
-                                  "allowed in a leading, non-existing "
-                                  "dimension {}",
+            HMP_REQUIRE(dim >= 0,
+                        "The expanded size of the tensor ({}) isn't "
+                        "allowed in a leading, non-existing "
+                        "dimension {}",
                         targetSize, i)
             targetSize = size;
         }
 
         if (size != targetSize) {
-            HMP_REQUIRE(size == 1, "The expanded size of the tensor {} must "
-                                   "match the existing size {} at "
-                                   "non-singleton dimension {}."
-                                   " Target sizes: {}, Tensor sizes: {}",
+            HMP_REQUIRE(size == 1,
+                        "The expanded size of the tensor {} must "
+                        "match the existing size {} at "
+                        "non-singleton dimension {}."
+                        " Target sizes: {}, Tensor sizes: {}",
                         targetSize, size, i, sizes, tensor_sizes);
 
             size = targetSize;
@@ -207,4 +209,4 @@ void checkSizeArray(const SizeArray &sizes, const char *ctx) {
     }
 }
 
-} // namespace
+} // namespace hmp

@@ -20,6 +20,6 @@ class EnvInit {
 };
 
 inline EnvInit env_init;
-}
+} // namespace bmf::internal
 
 #endif // BMF_ENGINE_ENV_INIT_H

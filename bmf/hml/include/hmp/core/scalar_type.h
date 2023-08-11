@@ -63,7 +63,9 @@ namespace impl {
 template <ScalarType S> struct ScalarTypeToCPPType;
 
 #define DEFINE_SCALAR_TYPE_TO_TYPE(T, S)                                       \
-    template <> struct ScalarTypeToCPPType<ScalarType::S> { using type = T; };
+    template <> struct ScalarTypeToCPPType<ScalarType::S> {                    \
+        using type = T;                                                        \
+    };
 HMP_FORALL_SCALAR_TYPES(DEFINE_SCALAR_TYPE_TO_TYPE)
 #undef DEFINE_SCALAR_TYPE_TO_TYPE
 

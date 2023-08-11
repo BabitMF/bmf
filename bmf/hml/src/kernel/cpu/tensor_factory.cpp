@@ -66,6 +66,6 @@ Tensor &copy_cpu_impl(Tensor &self, const Tensor &other) {
 HMP_DEVICE_DISPATCH(kCPU, fill_stub, &fill_cpu_impl)
 HMP_DEVICE_DISPATCH(kCPU, copy_stub, &copy_cpu_impl)
 HMP_DEVICE_DISPATCH(kCPU, arange_stub, &arange_cpu_impl)
-}
-}
-} //
+} // namespace
+} // namespace kernel
+} // namespace hmp

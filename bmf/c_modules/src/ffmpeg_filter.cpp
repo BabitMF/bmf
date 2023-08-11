@@ -76,8 +76,8 @@ int CFFFilter::parse_filter(std::vector<JsonParam> &f_param, int idx,
 
     //"stream" means the id of input/output stream
     //"pin" mainly used for the sequence number of the pin of the filter which
-    //the input stream connected to, and for output of the filter, the pin
-    //should always be zero now.
+    // the input stream connected to, and for output of the filter, the pin
+    // should always be zero now.
 
     for (int i = 0; i < in_param.size();
          i++) { // [i0_0] [i1_0] [i2_0] [i3_0] ... [inputStream_Pin]

@@ -72,5 +72,5 @@ template <typename T> struct type_caster<hmp::optional<T>> {
         }
     }
 };
-}
-}; // namespace pybind11::detail
+} // namespace detail
+}; // namespace pybind11

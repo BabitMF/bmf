@@ -102,7 +102,7 @@ class BMF_API AudioFrame : public OpaqueDataSet, public SequenceData {
 
     template <typename... Options>
     static AudioFrame make(int samples, uint64_t layout, bool planer,
-                           Options &&... opts) {
+                           Options &&...opts) {
         return AudioFrame(
             samples, layout, planer,
             TensorOptions(kUInt8).options(std::forward<Options>(opts)...));

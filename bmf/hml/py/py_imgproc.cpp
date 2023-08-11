@@ -171,11 +171,13 @@ void imageBind(py::module &m) {
              py::arg("plane") = 0)
         .def("infer_height", &PixelFormatDesc::infer_height, py::arg("height"),
              py::arg("plane") = 0)
-        .def("infer_nitems", (int (PixelFormatDesc::*)(int, int) const) &
-                                 PixelFormatDesc::infer_nitems,
+        .def("infer_nitems",
+             (int(PixelFormatDesc::*)(int, int) const) &
+                 PixelFormatDesc::infer_nitems,
              py::arg("width"), py::arg("height"))
-        .def("infer_nitems", (int (PixelFormatDesc::*)(int, int, int) const) &
-                                 PixelFormatDesc::infer_nitems,
+        .def("infer_nitems",
+             (int(PixelFormatDesc::*)(int, int, int) const) &
+                 PixelFormatDesc::infer_nitems,
              py::arg("width"), py::arg("height"), py::arg("plane"))
         .def_property_readonly("nplanes", &PixelFormatDesc::nplanes)
         .def_property_readonly("dtype", &PixelFormatDesc::dtype)
@@ -206,13 +208,15 @@ void imageBind(py::module &m) {
         .def("plane", (Tensor & (Frame::*)(int64_t)) & Frame::plane)
         .def("nplanes", &Frame::nplanes)
         .def("data", (TensorList & (Frame::*)()) & Frame::data)
-        .def("to", (Frame (Frame::*)(const Device &, bool) const) & Frame::to,
+        .def("to", (Frame(Frame::*)(const Device &, bool) const) & Frame::to,
              py::arg("device"), py::arg("non_blocking") = false)
-        .def("to", (Frame (Frame::*)(DeviceType, bool) const) & Frame::to,
+        .def("to", (Frame(Frame::*)(DeviceType, bool) const) & Frame::to,
              py::arg("device"), py::arg("non_blocking") = false)
-        .def("to", [](const Frame &self, const std::string &device,
-                      bool non_blocking) { return self.to(device); },
-             py::arg("device"), py::arg("non_blocking") = false)
+        .def(
+            "to",
+            [](const Frame &self, const std::string &device,
+               bool non_blocking) { return self.to(device); },
+            py::arg("device"), py::arg("non_blocking") = false)
         .def("copy_", &Frame::copy_)
         .def("clone", &Frame::clone)
         .def("crop", &Frame::crop, py::arg("left"), py::arg("top"),
@@ -240,15 +244,17 @@ void imageBind(py::module &m) {
         .def("data", &FrameSeq::data)
         .def("dtype", &FrameSeq::dtype)
         .def("device", &FrameSeq::device)
-        .def("to", (FrameSeq (FrameSeq::*)(const Device &, bool) const) &
-                       FrameSeq::to,
+        .def("to",
+             (FrameSeq(FrameSeq::*)(const Device &, bool) const) & FrameSeq::to,
              py::arg("device"), py::arg("non_blocking") = false)
         .def("to",
-             (FrameSeq (FrameSeq::*)(DeviceType, bool) const) & FrameSeq::to,
+             (FrameSeq(FrameSeq::*)(DeviceType, bool) const) & FrameSeq::to,
              py::arg("device"), py::arg("non_blocking") = false)
-        .def("to", [](const FrameSeq &self, const std::string &device,
-                      bool non_blocking) { return self.to(device); },
-             py::arg("device"), py::arg("non_blocking") = false)
+        .def(
+            "to",
+            [](const FrameSeq &self, const std::string &device,
+               bool non_blocking) { return self.to(device); },
+            py::arg("device"), py::arg("non_blocking") = false)
         .def("__getitem__",
              [](FrameSeq &self, int64_t index) { return self[index]; })
         .def("slice", &FrameSeq::slice, py::arg("start"),
@@ -268,9 +274,10 @@ void imageBind(py::module &m) {
 
     //
     auto img = m.def_submodule("img");
-    img.def("yuv_to_rgb", (Tensor & (*)(Tensor &, const TensorList &,
-                                        const PixelInfo &, ChannelFormat)) &
-                              img::yuv_to_rgb,
+    img.def("yuv_to_rgb",
+            (Tensor & (*)(Tensor &, const TensorList &, const PixelInfo &,
+                          ChannelFormat)) &
+                img::yuv_to_rgb,
             py::arg("dst"), py::arg("src"), py::arg("pix_info"),
             py::arg("cformat") = kNCHW);
     img.def("yuv_to_rgb",
@@ -278,9 +285,10 @@ void imageBind(py::module &m) {
                 img::yuv_to_rgb,
             py::arg("src"), py::arg("pix_info"), py::arg("cformat") = kNCHW);
 
-    img.def("rgb_to_yuv", (TensorList & (*)(TensorList &, const Tensor &,
-                                            const PixelInfo &, ChannelFormat)) &
-                              img::rgb_to_yuv,
+    img.def("rgb_to_yuv",
+            (TensorList & (*)(TensorList &, const Tensor &, const PixelInfo &,
+                              ChannelFormat)) &
+                img::rgb_to_yuv,
             py::arg("dst"), py::arg("src"), py::arg("pix_info"),
             py::arg("cformat") = kNCHW);
     img.def("rgb_to_yuv",
@@ -294,18 +302,20 @@ void imageBind(py::module &m) {
                 img::yuv_to_yuv,
             py::arg("dst"), py::arg("src"), py::arg("dst_pix_info"),
             py::arg("src_pix_info"));
-    img.def("yuv_to_yuv", (TensorList(*)(const TensorList &, const PixelInfo &,
-                                         const PixelInfo &)) &
-                              img::yuv_to_yuv,
+    img.def("yuv_to_yuv",
+            (TensorList(*)(const TensorList &, const PixelInfo &,
+                           const PixelInfo &)) &
+                img::yuv_to_yuv,
             py::arg("src"), py::arg("dst_pix_info"), py::arg("src_pix_info"));
 
     img.def("yuv_resize", &img::yuv_resize);
     img.def("yuv_rotate", &img::yuv_rotate);
     img.def("yuv_mirror", &img::yuv_mirror);
 
-    img.def("resize", (Tensor & (*)(Tensor &, const Tensor &, ImageFilterMode,
-                                    ChannelFormat)) &
-                          img::resize,
+    img.def("resize",
+            (Tensor &
+             (*)(Tensor &, const Tensor &, ImageFilterMode, ChannelFormat)) &
+                img::resize,
             py::arg("dst"), py::arg("src"),
             py::arg("mode") = ImageFilterMode::Bilinear,
             py::arg("format") = kNCHW);
@@ -316,9 +326,10 @@ void imageBind(py::module &m) {
         py::arg("src"), py::arg("width"), py::arg("height"),
         py::arg("mode") = ImageFilterMode::Bilinear, py::arg("format") = kNCHW);
 
-    img.def("rotate", (Tensor & (*)(Tensor &, const Tensor &, ImageRotationMode,
-                                    ChannelFormat)) &
-                          img::rotate,
+    img.def("rotate",
+            (Tensor &
+             (*)(Tensor &, const Tensor &, ImageRotationMode, ChannelFormat)) &
+                img::rotate,
             py::arg("dst"), py::arg("src"),
             py::arg("mode") = ImageRotationMode::Rotate90,
             py::arg("format") = kNCHW);
@@ -338,38 +349,44 @@ void imageBind(py::module &m) {
             py::arg("src"), py::arg("axis") = ImageAxis::Vertical,
             py::arg("format") = kNCHW);
 
-    img.def("normalize", (Tensor & (*)(Tensor &, const Tensor &, const Tensor &,
-                                       const Tensor &, ChannelFormat)) &
-                             img::normalize,
+    img.def("normalize",
+            (Tensor & (*)(Tensor &, const Tensor &, const Tensor &,
+                          const Tensor &, ChannelFormat)) &
+                img::normalize,
             py::arg("dst"), py::arg("src"), py::arg("mean"), py::arg("std"),
             py::arg("format") = kNCHW);
-    img.def("normalize", (Tensor(*)(const Tensor &, const Tensor &,
-                                    const Tensor &, ChannelFormat)) &
-                             img::normalize,
+    img.def("normalize",
+            (Tensor(*)(const Tensor &, const Tensor &, const Tensor &,
+                       ChannelFormat)) &
+                img::normalize,
             py::arg("src"), py::arg("mean"), py::arg("std"),
             py::arg("format") = kNCHW);
 
-    img.def("erode", (Tensor & (*)(Tensor &, const Tensor &,
-                                   const optional<Tensor> &, ChannelFormat)) &
-                         img::erode,
+    img.def("erode",
+            (Tensor & (*)(Tensor &, const Tensor &, const optional<Tensor> &,
+                          ChannelFormat)) &
+                img::erode,
             py::arg("dst"), py::arg("src"), py::arg("kernel") = py::none(),
             py::arg("format") = kNCHW);
-    img.def("erode", (Tensor(*)(const Tensor &, const optional<Tensor> &,
-                                ChannelFormat)) &
-                         img::erode,
-            py::arg("src"), py::arg("kernel") = py::none(),
-            py::arg("format") = kNCHW);
+    img.def(
+        "erode",
+        (Tensor(*)(const Tensor &, const optional<Tensor> &, ChannelFormat)) &
+            img::erode,
+        py::arg("src"), py::arg("kernel") = py::none(),
+        py::arg("format") = kNCHW);
 
-    img.def("dilate", (Tensor & (*)(Tensor &, const Tensor &,
-                                    const optional<Tensor> &, ChannelFormat)) &
-                          img::dilate,
+    img.def("dilate",
+            (Tensor & (*)(Tensor &, const Tensor &, const optional<Tensor> &,
+                          ChannelFormat)) &
+                img::dilate,
             py::arg("dst"), py::arg("src"), py::arg("kernel") = py::none(),
             py::arg("format") = kNCHW);
-    img.def("dilate", (Tensor(*)(const Tensor &, const optional<Tensor> &,
-                                 ChannelFormat)) &
-                          img::dilate,
-            py::arg("src"), py::arg("kernel") = py::none(),
-            py::arg("format") = kNCHW);
+    img.def(
+        "dilate",
+        (Tensor(*)(const Tensor &, const optional<Tensor> &, ChannelFormat)) &
+            img::dilate,
+        py::arg("src"), py::arg("kernel") = py::none(),
+        py::arg("format") = kNCHW);
 
     img.def("sobel",
             (Tensor & (*)(Tensor &, const Tensor &, int64_t, int64_t, int64_t,
@@ -378,12 +395,13 @@ void imageBind(py::module &m) {
             py::arg("dst"), py::arg("src"), py::arg("dx"), py::arg("dy"),
             py::arg("ksize") = 3, py::arg("scale") = 1, py::arg("delta") = 0,
             py::arg("format") = kNCHW);
-    img.def(
-        "sobel", (Tensor(*)(const Tensor &, int64_t, int64_t, int64_t,
-                            const Scalar &, const Scalar &, ChannelFormat)) &
-                     img::sobel,
-        py::arg("src"), py::arg("dx"), py::arg("dy"), py::arg("ksize") = 3,
-        py::arg("scale") = 1, py::arg("delta") = 0, py::arg("format") = kNCHW);
+    img.def("sobel",
+            (Tensor(*)(const Tensor &, int64_t, int64_t, int64_t,
+                       const Scalar &, const Scalar &, ChannelFormat)) &
+                img::sobel,
+            py::arg("src"), py::arg("dx"), py::arg("dy"), py::arg("ksize") = 3,
+            py::arg("scale") = 1, py::arg("delta") = 0,
+            py::arg("format") = kNCHW);
 
     img.def("canny",
             (Tensor & (*)(Tensor &, const Tensor &, const Scalar &,
@@ -392,21 +410,24 @@ void imageBind(py::module &m) {
             py::arg("dst"), py::arg("src"), py::arg("low_thresh"),
             py::arg("high_thresh"), py::arg("aperture") = 3,
             py::arg("l2_gradient") = false, py::arg("format") = kNCHW);
-    img.def("canny", (Tensor(*)(const Tensor &, const Scalar &, const Scalar &,
-                                int64_t, bool, ChannelFormat)) &
-                         img::canny,
+    img.def("canny",
+            (Tensor(*)(const Tensor &, const Scalar &, const Scalar &, int64_t,
+                       bool, ChannelFormat)) &
+                img::canny,
             py::arg("src"), py::arg("low_thresh"), py::arg("high_thresh"),
             py::arg("aperture") = 3, py::arg("l2_gradient") = false,
             py::arg("format") = kNCHW);
 
-    img.def("filter2d", (Tensor & (*)(Tensor &, const Tensor &, const Tensor &,
-                                      const Scalar &, ChannelFormat)) &
-                            img::filter2d,
+    img.def("filter2d",
+            (Tensor & (*)(Tensor &, const Tensor &, const Tensor &,
+                          const Scalar &, ChannelFormat)) &
+                img::filter2d,
             py::arg("dst"), py::arg("src"), py::arg("kernel"),
             py::arg("delta") = 0, py::arg("format") = kNCHW);
-    img.def("filter2d", (Tensor(*)(const Tensor &, const Tensor &,
-                                   const Scalar &, ChannelFormat)) &
-                            img::filter2d,
+    img.def("filter2d",
+            (Tensor(*)(const Tensor &, const Tensor &, const Scalar &,
+                       ChannelFormat)) &
+                img::filter2d,
             py::arg("src"), py::arg("kernel"), py::arg("delta") = 0,
             py::arg("format") = kNCHW);
 
@@ -430,9 +451,10 @@ void imageBind(py::module &m) {
             py::arg("dst"), py::arg("src"), py::arg("d"),
             py::arg("sigma_color"), py::arg("sigma_space"),
             py::arg("format") = kNCHW);
-    img.def("bilateral_filter", (Tensor(*)(const Tensor &, int, const Scalar &,
-                                           const Scalar &, ChannelFormat)) &
-                                    img::bilateral_filter,
+    img.def("bilateral_filter",
+            (Tensor(*)(const Tensor &, int, const Scalar &, const Scalar &,
+                       ChannelFormat)) &
+                img::bilateral_filter,
             py::arg("src"), py::arg("d"), py::arg("sigma_color"),
             py::arg("sigma_space"), py::arg("format") = kNCHW);
 
@@ -450,17 +472,19 @@ void imageBind(py::module &m) {
             py::arg("src"), py::arg("kx"), py::arg("ky"), py::arg("sigma_x"),
             py::arg("sigma_y") = 0, py::arg("format") = kNCHW);
 
-    img.def("overlay", (Tensor & (*)(Tensor &, const Tensor &, const Tensor &,
-                                     const Tensor &)) &
-                           img::overlay,
+    img.def("overlay",
+            (Tensor &
+             (*)(Tensor &, const Tensor &, const Tensor &, const Tensor &)) &
+                img::overlay,
             py::arg("dst"), py::arg("src0"), py::arg("src1"), py::arg("alpha"));
     img.def("overlay",
             (Tensor(*)(const Tensor &, const Tensor &, const Tensor &)) &
                 img::overlay,
             py::arg("src0"), py::arg("src1"), py::arg("alpha"));
 
-    img.def("transfer", (Tensor(*)(const Tensor &, const ChannelFormat &,
-                                   const ChannelFormat &)) &
-                            img::transfer,
+    img.def("transfer",
+            (Tensor(*)(const Tensor &, const ChannelFormat &,
+                       const ChannelFormat &)) &
+                img::transfer,
             py::arg("src"), py::arg("src_format"), py::arg("dst_format"));
 }

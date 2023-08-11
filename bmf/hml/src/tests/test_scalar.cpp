@@ -37,4 +37,4 @@ TEST(TestScalar, precision_test) {
 #undef DISPATCH
 }
 
-} // namespace
+} // namespace hmp

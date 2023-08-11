@@ -9,7 +9,7 @@ using namespace bmf_engine;
 using namespace bmf_sdk;
 
 TEST(go_module, module_loader) {
-    std::string module_name = "test_go_module";
+    std::string module_name = "go_copy_module";
 
     int node_id = 42;
     JsonParam option;

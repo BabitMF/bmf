@@ -84,32 +84,32 @@ TEST(module_manager, resolve_module_info) {
 
     // resolve module info from sys repo(c++)
     {
-        auto info = M.resolve_module_info("test_cpp_module");
+        auto info = M.resolve_module_info("cpp_copy_module");
         ASSERT_TRUE(info != nullptr);
         EXPECT_EQ(info->module_type, "c++");
-        EXPECT_EQ(info->module_name, "test_cpp_module");
+        EXPECT_EQ(info->module_name, "cpp_copy_module");
         EXPECT_TRUE(fs::exists(info->module_path));
         EXPECT_EQ(info->module_entry, "libcopy_module.CopyModule");
     }
 
     // resolve module info from sys repo(python)
     {
-        auto info = M.resolve_module_info("test_python_module");
+        auto info = M.resolve_module_info("python_copy_module");
         ASSERT_TRUE(info != nullptr);
         EXPECT_EQ(info->module_type, "python");
-        EXPECT_EQ(info->module_name, "test_python_module");
+        EXPECT_EQ(info->module_name, "python_copy_module");
         EXPECT_TRUE(fs::exists(info->module_path));
         EXPECT_EQ(info->module_entry, "my_module.my_module");
     }
 
     // resolve module info from sys repo(go)
     {
-        auto info = M.resolve_module_info("test_go_module");
+        auto info = M.resolve_module_info("go_copy_module");
         ASSERT_TRUE(info != nullptr);
         EXPECT_EQ(info->module_type, "go");
-        EXPECT_EQ(info->module_name, "test_go_module");
+        EXPECT_EQ(info->module_name, "go_copy_module");
         EXPECT_TRUE(fs::exists(info->module_path));
-        EXPECT_EQ(info->module_entry, "test_go_module.PassThrough");
+        EXPECT_EQ(info->module_entry, "go_copy_module.PassThrough");
     }
 }
 
@@ -142,7 +142,7 @@ TEST(module_manager, load_module) {
 
     //load sys repo module(c++)
     {
-        auto facotry = M.load_module("test_cpp_module");
+        auto facotry = M.load_module("cpp_copy_module");
         ASSERT_TRUE(facotry != nullptr);
         auto module = facotry->make(1);
         EXPECT_TRUE(module != nullptr);
@@ -150,7 +150,7 @@ TEST(module_manager, load_module) {
 
     //load sys repo module(python)
     {
-        auto facotry = M.load_module("test_python_module");
+        auto facotry = M.load_module("python_copy_module");
         ASSERT_TRUE(facotry != nullptr);
         auto module = facotry->make(1);
         EXPECT_TRUE(module != nullptr);
@@ -158,7 +158,7 @@ TEST(module_manager, load_module) {
 
     //load sys repo module(go)
     {
-        auto facotry = M.load_module("test_go_module");
+        auto facotry = M.load_module("go_copy_module");
         ASSERT_TRUE(facotry != nullptr);
         auto module = facotry->make(1);
         EXPECT_TRUE(module != nullptr);

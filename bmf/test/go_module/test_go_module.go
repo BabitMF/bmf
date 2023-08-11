@@ -97,7 +97,7 @@ func RegisterPassThroughInfo(info bmf.ModuleInfo) {
 
 //export ConstructorRegister
 func ConstructorRegister() {
-        bmf.RegisterModuleConstructor("test_go_module", NewPassThroughModule, RegisterPassThroughInfo)
+        bmf.RegisterModuleConstructor("go_copy_module", NewPassThroughModule, RegisterPassThroughInfo)
 }
 
 func main() {}

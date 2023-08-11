@@ -18,7 +18,7 @@ TEST(cpp_modules, module_python) {
     nlohmann::json encode_para = {{"output_path", output_file}};
 
     graph
-        .Module({video["video"]}, "test_python_module", bmf::builder::Python,
+        .Module({video["video"]}, "python_copy_module", bmf::builder::Python,
                 bmf_sdk::JsonParam())
         .EncodeAsVideo(video["audio"], bmf_sdk::JsonParam(encode_para));
 
@@ -75,7 +75,7 @@ TEST(cpp_modules, audio_python_module) {
     nlohmann::json encode_para = {{"output_path", output_file}};
 
     auto audio_output = graph.Module(
-        {audio}, "test_python_module", bmf::builder::Python,
+        {audio}, "python_copy_module", bmf::builder::Python,
         bmf_sdk::JsonParam());
     graph.Encode(graph.NewPlaceholderStream(), audio_output,
                  bmf_sdk::JsonParam(encode_para));

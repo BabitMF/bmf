@@ -26,7 +26,7 @@ class TestVideoCModule(BaseTestCase):
         # decode
         video = bmf.graph().decode({'input_path': input_video_path})
         # c module processing
-        video_2 = (video['video'].c_module("test_cpp_module"))
+        video_2 = (video['video'].c_module("cpp_copy_module"))
 
         # encode
         (bmf.encode(
@@ -51,7 +51,7 @@ class TestVideoCModule(BaseTestCase):
         expect_result = 'output.jpg|240|320|0.040000|IMAGE2|975400|4877|mjpeg|{"fps": "25.0"}'
         self.remove_result_data(output_path)
         (bmf.graph().decode({'input_path': input_video_path})['video'].scale(
-            320, 240).c_module("test_cpp_module").encode(
+            320, 240).c_module("cpp_copy_module").encode(
                                    None, {
                                        "output_path": output_path,
                                        "format": "mjpeg",

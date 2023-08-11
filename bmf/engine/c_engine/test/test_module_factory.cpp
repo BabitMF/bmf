@@ -28,7 +28,7 @@ namespace fs = std::filesystem;
 USE_BMF_ENGINE_NS
 USE_BMF_SDK_NS
 TEST(module_factory, cpp_module) {
-    std::string module_name = "test_cpp_module";
+    std::string module_name = "cpp_copy_module";
     int node_id = 1;
     JsonParam option;
     std::string module_type;
@@ -42,7 +42,7 @@ TEST(module_factory, cpp_module) {
 }
 
 TEST(module_factory, python_module) {
-    std::string module_name = "test_python_module";
+    std::string module_name = "python_copy_module";
     int node_id = 0;
     JsonParam option;
     std::string option_str = "{\"hello\":1}";

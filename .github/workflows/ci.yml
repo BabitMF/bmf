@@ -49,10 +49,10 @@ jobs:
       id: test
       run: |
         # install test modules for c++/python/go
-        sudo $(pwd)/output/bmf/bin/module_manager install test_python_module python my_module:my_module $(pwd)/output/test/customize_module v0.0.1
-        sudo $(pwd)/output/bmf/bin/module_manager install test_cpp_module c++ libcopy_module:CopyModule $(pwd)/output/test/c_module/lib v0.0.1
-        (cd $(pwd)/output/test/go_module && go build -buildmode c-shared -o lib/test_go_module.so test_go_module.go)
-        sudo $(pwd)/output/bmf/bin/module_manager install test_go_module go test_go_module:PassThrough $(pwd)/output/test/go_module/lib v0.0.1
+        sudo $(pwd)/output/bmf/bin/module_manager install python_copy_module python my_module:my_module $(pwd)/output/test/customize_module v0.0.1
+        sudo $(pwd)/output/bmf/bin/module_manager install cpp_copy_module c++ libcopy_module:CopyModule $(pwd)/output/test/c_module/lib v0.0.1
+        (cd $(pwd)/output/test/go_module && go build -buildmode c-shared -o lib/go_copy_module.so test_go_module.go)
+        sudo $(pwd)/output/bmf/bin/module_manager install go_copy_module go go_copy_module:PassThrough $(pwd)/output/test/go_module/lib v0.0.1
         # download files
         (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz && tar xvf files.tar.gz && rm -rf files.tar.gz)
         (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/models.tar.gz && tar xvf models.tar.gz && rm -rf models.tar.gz)

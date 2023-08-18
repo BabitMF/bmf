@@ -150,3 +150,6 @@ We welcome contributions. Please follow these
 
 We use GitHub issues to track and resolve bugs. If you have any questions, please feel free to join the discussion and work with us to find a solution.
 
+## Acknowledgement
+
+The implementation of the BMF framework draws on the ideas of [ffmpeg-python](https://github.com/kkroening/ffmpeg-python) and [mediapipe](https://github.com/google/mediapipe), express our thanks here.

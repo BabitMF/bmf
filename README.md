@@ -1,14 +1,24 @@
-# Babit Multimedia Framework
+# BMF - Cross-platform, customizable video processing framework with strong GPU acceleration
 
-***BMF(Babit Multimedia Framework, BabitMF)** is a universal multimedia processing framework launched by [**ByteDance**](https://www.bytedance.com/en) that provides a concise and easy-to-use cross-language interface, flexible scheduling and scalability. It dynamically expands, manages and reuses the atomic capabilities of video processing in a modular way, and builds high-performance multimedia processing links in a graph/pipeline manner or implements engineering integration by directly invoking individual processing capabilities*
+**BMF (Babit Multimedia Framework)** is a cross-platform, customizable multimedia processing framework developed by [**ByteDance**](https://www.bytedance.com/en).
+With over 4 years of testing and improvements, BMF has been tailored to adeptly tackle challenges in our real-world production environments. Now it's widely used in ByteDance's video streaming, live transcoding, cloud editing and mobile pre/post processing scenarios. More than 2 bilion videos are processed by the framework everyday.
 
-*Our collaborative contributor includes [**NVIDIA**](https://www.nvidia.com/), and we have our own official website, welcome to browse and put forward your valuable opinions: https://babitmf.github.io/*
+Here are some key features:
 
-## About BMF
-BMF helps multimedia users easily and efficiently implement projects in production environments. the cases used BMF cover video transcoding, video frame extraction, video enhancement, video analysis, video interpolation, video editing, video conferencing, VR, and etc. Currently, hundreds of millions of videos are processed using BMF daily. During the implementation of these business scenarios, BMF's functional diversity, ease of use, compatibility, stability and performance have been fully polished.
+- Cross-Platform Support: Native compatibility with Linux, Windows, and Mac OS, as well as optimization for both x86 and ARM CPUs.
+
+- Easy to use: BMF provides Python, Go, and C++ APIs, allowing developers the flexibility to code in their favourite languages.
+
+- Customizability: Developers can enhance the framework's features by adding their own modules, thanks to its decoupled architecture.
+
+- High performance: BMF has a powerful scheduler and strong support for heterogeneous acceleration hardware. Moreover, [**NVIDIA**](https://www.nvidia.com/) has been cooperating with us to develop a highly optimized GPU pipeline for video transcoding and AI inference.
+
+- Efficient data conversion: BMF offers seamless data format conversions across popular frameworks (PyTorch/OpenCV/TensorRT) and between hardware devices (CPU/GPU).
+
+Dive deeper into BMF's capabilities on [our website](https://babitmf.github.io/) for more details.
 
 ## Quick Experience
-In this section, we will directly showcase the capabilities of the BMF framework around five dimensions: **Transcode**, **Edit**, **Meeting/Broadcaster**, **CPU+GPU acceleration**, and **AI**. For all the demos provided below, corresponding implementations and documentation are available on Google Colab, allowing you to experience them intuitively.
+In this section, we will directly showcase the capabilities of the BMF framework around five dimensions: **Transcode**, **Edit**, **Meeting/Broadcaster**, **GPU acceleration**, and **AI Inference**. For all the demos provided below, corresponding implementations and documentation are available on Google Colab, allowing you to experience them intuitively.
 
 ### Transcode
 This demo describes step-by-step how to use BMF to develop a transcoding program, including video transcoding, audio transcoding, and image transcoding. In it, you can familiarize yourself with how to use BMF and how to use FFmpeg-compatible options to achieve the capabilities you need.
@@ -28,9 +38,9 @@ Below is a screen recording demonstrating the operation of broadcaster:
 ![](bmf/demo/broadcaster/broadcaster.gif)
 
 
-### CPU+GPU acceleration
+### GPU acceleration
 
-#### Video Frame Extraction
+#### GPU Video Frame Extraction
 The video frame extraction acceleration demo shows:
 1. BMF flexible capability of:
 
@@ -45,7 +55,7 @@ The video frame extraction acceleration demo shows:
 
 If you want to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/video_frame_extraction/video_frame_extraction_acceleration.ipynb)
 
-#### GPU Video Processing
+#### GPU Video Transcoding and Filtering
 
 The GPU transcoding and filter module demo shows:
 1. Common video/image filters in BMF accelerated by GPU
@@ -58,7 +68,7 @@ decode->scale->flip->rotate->crop->blur->encode
 If you want to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/gpu_module/gpu_module_demo_colab.ipynb)
 
 
-### AI
+### AI inference
 
 #### Deoldify
 
@@ -68,7 +78,7 @@ If you want to have a quick experiment, you can try it on [![Open In Colab](http
 
 ![](bmf/demo/colorization_python/deoldify.gif)
  
-#### Supper Resolution
+#### Super Resolution
 This demo implements the super-resolution inference process of [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN) as a BMF module, showcasing a BMF pipeline that combines decoding, super-resolution inference and encoding.
 
 If you want to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/video_enhance/bmf-enhance-demo.ipynb)
@@ -89,7 +99,6 @@ If you want to have a quick experiment, you can try it on [![Open In Colab](http
 
 
 
-
 ## Table of Contents
 
 - [About BMF](https://babitmf.github.io/about/)
@@ -98,16 +107,16 @@ If you want to have a quick experiment, you can try it on [![Open In Colab](http
   - [Transcode](#transcode)
   - [Edit](#edit)
   - [Meeting/Broadcaster](#meetingbroadcaster)
-  - [CPU+GPU acceleration](#cpugpu-acceleration)
-    - [Video Frame Extraction](#video-frame-extraction)
-    - [GPU Video Processing](#gpu-video-processing)
-  - [AI](#ai)
+  - [GPU acceleration](#gpu-acceleration)
+    - [GPU Video Frame Extraction](#gpu-video-frame-extraction)
+    - [GPU Video Transcoding and Filtering](#gpu-video-transcoding-and-filtering)
+  - [AI Inference](#ai-inference)
     - [Deoldify](#deoldify)
-    - [Supper Resolution](#supper-resolution)
+    - [Super Resolution](#super-resolution)
     - [Video Quality Score](#video-quality-score)
     - [Face Detect With TensorRT](#face-detect-with-tensorrt)
 
-- [Getting Started Yourself](https://babitmf.github.io/docs/bmf/getting_started_yourself/)
+- [Getting Started](https://babitmf.github.io/docs/bmf/getting_started_yourself/)
   - [Install](https://babitmf.github.io/docs/bmf/getting_started_yourself/install/)
   - [Create a Graph](https://babitmf.github.io/docs/bmf/getting_started_yourself/create_a_graph/)
     - one of transcode example with 3 languages
@@ -134,19 +143,27 @@ If you want to have a quick experiment, you can try it on [![Open In Colab](http
   - [GPU Hardware Acceleration](https://babitmf.github.io/docs/bmf/multiple_features/gpu_hardware_acc/)
   - [BMF Tools](https://babitmf.github.io/docs/bmf/multiple_features/tools/)
 
-- [API in Python](https://babitmf.github.io/docs/bmf/api/api_in_python/)
-- [API in Cpp](https://babitmf.github.io/docs/bmf/api/api_in_cpp/)
-- [API in Go](https://babitmf.github.io/docs/bmf/api/api_in_go/)
+- APIs
+  - [API in Python](https://babitmf.github.io/docs/bmf/api/api_in_python/)
+  - [API in Cpp](https://babitmf.github.io/docs/bmf/api/api_in_cpp/)
+  - [API in Go](https://babitmf.github.io/docs/bmf/api/api_in_go/)
+
 - [License](#license)
 - [Contributing](#contributing)
 
 ## License
-This project is licensed under the Apache License 2.0 - see the [LICENSE](https://github.com/BabitMF/bmf/blob/master/LICENSE) file for details.
+The project has an [Apache 2.0 License](https://github.com/BabitMF/bmf/blob/master/LICENSE).
 
 ## Contributing
 
-We welcome contributions. Please follow these
+Contributions are welcomed. Please follow the
 [guidelines](https://github.com/BabitMF/bmf/blob/master/CONTRIBUTING.md).
 
-We use GitHub issues to track and resolve bugs. If you have any questions, please feel free to join the discussion and work with us to find a solution.
+We use GitHub issues to track and resolve problems. If you have any questions, please feel free to join the discussion and work with us to find a solution.
 
+## Acknowledgment
+The decoder, encoder and filter reference [ffmpeg cmdline tool](http://ffmpeg.org/), and are wrapped as BMF's built-in modules under a LGPL license.
+
+The project also draws inspiration from other popular frameworks, such as [ffmpeg-python](https://github.com/kkroening/ffmpeg-python) and [mediapipe](https://github.com/google/mediapipe). Our [website](https://babitmf.github.io/) is using the project from [docsy](https://github.com/google/docsy) based on [hugo](https://github.com/gohugoio/hugo).
+
+Here, we'd like to express our sincerest thanks to the developers of the above projects!

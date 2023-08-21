@@ -1,20 +1,21 @@
 # BMF - Cross-platform, customizable video processing framework with strong GPU acceleration
 
-**BMF(Babit Multimedia Framework)** is a cross-platform, customizable multimedia processing framework developed by [**ByteDance**](https://www.bytedance.com/en). It has been improved and well tested to address the challenges in our real production environments for more 4 years. Now it's widely used in ByteDance's video streaming, live transcoding, cloud editing and mobile pre/post processing scenarios. More than 2 bilion videos are processed by the framework everyday.
+**BMF (Babit Multimedia Framework)** is a cross-platform, customizable multimedia processing framework developed by [**ByteDance**](https://www.bytedance.com/en).
+With over 4 years of testing and improvements, BMF has been tailored to adeptly tackle challenges in our real-world production environments. Now it's widely used in ByteDance's video streaming, live transcoding, cloud editing and mobile pre/post processing scenarios. More than 2 bilion videos are processed by the framework everyday.
 
-Here are some high-level features:
+Here are some key features:
 
-- Cross platform - Native support for Linux/Windows/Mac operating systems and x86/ARM CPUs.
+- Cross-Platform Support: Native compatibility with Linux, Windows, and Mac OS, as well as optimization for both x86 and ARM CPUs.
 
-- Easy to use - BMF offers Python/Go/C++ APIs, allowing users to code in their preferred programming language.
+- Easy to use: BMF provides Python, Go, and C++ APIs, allowing developers the flexibility to code in their favourite languages.
 
-- Customizable - Developers can further extend the feature of the framework by developing their own modules in a loosely decoupled manner.
+- Customizability: Developers can enhance the framework's features by adding their own modules, thanks to its decoupled architecture.
 
-- High performance - BMF features a powerful scheduling engine and has strong supports for heterogeneous acceleration hardware. Moreover, [**NVIDIA**](https://www.nvidia.com/) has been cooperating with us to develop a highly optimized GPU pipeline for video transcoding and AI inference.
+- High performance: BMF has a powerful scheduler and strong support for heterogeneous acceleration hardware. Moreover, [**NVIDIA**](https://www.nvidia.com/) has been cooperating with us to develop a highly optimized GPU pipeline for video transcoding and AI inference.
 
-- Seamless data coversion backend - Versatile data format conversion support across widely used frameworks（PyTorch、OpenCV）and hardware devices (CPU/GPU).
+- Efficient data conversion: BMF offers seamless data format conversions across popular frameworks (PyTorch/OpenCV/TensorRT) and between hardware devices (CPU/GPU).
 
-Please visit our website [https://babitmf.github.io/](https://babitmf.github.io/) for more details.
+Dive deeper into BMF's capabilities on [our website](https://babitmf.github.io/) for more details.
 
 ## Quick Experience
 In this section, we will directly showcase the capabilities of the BMF framework around five dimensions: **Transcode**, **Edit**, **Meeting/Broadcaster**, **GPU acceleration**, and **AI Inference**. For all the demos provided below, corresponding implementations and documentation are available on Google Colab, allowing you to experience them intuitively.
@@ -39,7 +40,7 @@ Below is a screen recording demonstrating the operation of broadcaster:
 
 ### GPU acceleration
 
-#### Video Frame Extraction
+#### GPU Video Frame Extraction
 The video frame extraction acceleration demo shows:
 1. BMF flexible capability of:
 
@@ -54,7 +55,7 @@ The video frame extraction acceleration demo shows:
 
 If you want to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/video_frame_extraction/video_frame_extraction_acceleration.ipynb)
 
-#### Video Processing and Transcoding
+#### GPU Video Transcoding and Filtering
 
 The GPU transcoding and filter module demo shows:
 1. Common video/image filters in BMF accelerated by GPU
@@ -107,8 +108,8 @@ If you want to have a quick experiment, you can try it on [![Open In Colab](http
   - [Edit](#edit)
   - [Meeting/Broadcaster](#meetingbroadcaster)
   - [GPU acceleration](#gpu-acceleration)
-    - [Video Frame Extraction](#video-frame-extraction)
-    - [GPU Video Processing](#gpu-video-processing)
+    - [GPU Video Frame Extraction](#gpu-video-frame-extraction)
+    - [GPU Video Transcoding and Filtering](#gpu-video-transcoding-and-filtering)
   - [AI Inference](#ai-inference)
     - [Deoldify](#deoldify)
     - [Super Resolution](#super-resolution)

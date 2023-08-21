@@ -315,7 +315,7 @@ then
     disable_asm="--disable-x86asm"
     ffmpeg_opts="--enable-gpl --enable-nonfree"
     mkdir -p ffmpeg_source
-    trap "cd $(pwd) && rm -rf ffmpeg_source && pip cache purge && dpkg -r cuda-repo-ubuntu2004-11-8-local" EXIT
+    trap "cd $(pwd) && rm -rf ffmpeg_source && pip cache purge" EXIT
 
     if [ ${OS} == "Linux" ]
     then

@@ -64,7 +64,7 @@ Frame::Frame(int width, int height, const PixelInfo &pix_info,
         nitems += TensorInfo::calcNumel(shape);
     }
 
-    storage_tensor_ = empty_tensor_buffer(nitems, options);
+    storage_tensor_ = empty({1, nitems}, options);
 
     for (int i = 0; i < pix_desc_.nplanes(); ++i) {
         SizeArray shape{pix_desc_.infer_height(height, i),

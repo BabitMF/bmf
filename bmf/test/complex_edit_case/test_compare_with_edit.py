@@ -107,12 +107,11 @@ class TestCompareWithEdit(BaseTestCase):
         v3 = bmf.module([v3], 'video_norm')
 
         # do concat1
-        concat_streams = (bmf.module([v1, v2], 'video_concat2', concat_option,
-            "../../demo/edit/", "video_concat2.video_concat2"))
+        concat_streams = (bmf.module([v1, v2], 'video_concat2', concat_option))
 
         # do concat2
         concat_streams = (bmf.module([concat_streams[0], v3], 'video_concat2',
-                                     concat_option2, "../../demo/edit/", "video_concat2.video_concat2"))
+                                     concat_option2))
 
         # encode
         (bmf.encode(

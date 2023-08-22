@@ -23,7 +23,7 @@ PLAT_TO_CMAKE = {
 }
 
 package_name="BabitMF"
-package_version="0.0.7"
+package_version="0.0.8"
 
 if "DEVICE" in os.environ and os.environ["DEVICE"] == "gpu":
     package_name="BabitMF_GPU"
@@ -178,7 +178,7 @@ setup(
     author_email="",
     python_requires='>= 3.6',
     description="Babit Multimedia Framework",
-    long_description=open('README.md').read(),
+    readme='README.md',
     url="https://github.com/BabitMF/bmf",
     install_requires=[
         "numpy >= 1.19.5"

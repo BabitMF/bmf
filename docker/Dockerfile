@@ -1,6 +1,6 @@
 FROM ubuntu:20.04
 LABEL org.opencontainers.image.source=https://github.com/babitmf/bmf
-ARG DEVICE=gpu
+ARG DEVICE=gpu_all
 ARG GITHUB_ACTIONS
 
 ENV GITHUB_ACTIONS=${GITHUB_ACTIONS}

@@ -135,7 +135,7 @@ function build_ffmpeg_unix() {
     tar xjvf ffmpeg-4.4.tar.bz2
     cd ffmpeg-4.4
 
-    if [ ${OS} == "Linux" ] && [ ${DEVICE} == "gpu" ] && [ $(uname -m) == "x86_64" ]
+    if [ ${OS} == "Linux" ] && [[ ${DEVICE} =~ "gpu" ]] && [ $(uname -m) == "x86_64" ]
     then
         sed -i 's/-gencode arch=compute_30,code=sm_30 -O2/-arch=sm_52 -gencode=arch=compute_52,code=sm_52 -gencode=arch=compute_60,code=sm_60 -gencode=arch=compute_61,code=sm_61 -gencode=arch=compute_70,code=sm_70 -gencode=arch=compute_75,code=sm_75 -gencode=arch=compute_80,code=sm_80 -gencode=arch=compute_86,code=sm_86 -gencode=arch=compute_86,code=compute_86/g' configure
         sed -i 's/ -ptx//g' configure
@@ -231,7 +231,9 @@ function install_cuda_linux() {
     cd -
 }
 
-function install_cvcuda() {
+#XXX: only ubuntu
+function install_cvcuda_linux() {
+    cd $1
     mkdir -p cvcuda_source
     cd cvcuda_source
     wget https://github.com/CVCUDA/CV-CUDA/releases/download/v0.3.0-beta/nvcv_python-0.3.x_beta-cp38-cp38-linux_x86_64.whl
@@ -242,9 +244,13 @@ function install_cvcuda() {
     export PYTHONPATH=/usr/local/lib/python3.8/dist-packages/nvcv_python
     cd -
     rm -rf cvcuda_source
+
+    cd $1
+    cd ..
 }
 
-function install_trt() {
+function install_trt_linux() {
+    cd $1
     mkdir -p trt
     cd trt
     wget https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/secure/8.6.1/tars/TensorRT-8.6.1.6.Linux.x86_64-gnu.cuda-11.8.tar.gz
@@ -276,6 +282,9 @@ function install_trt() {
     rm -rf trt
     export LD_LIBRARY_PATH=/usr/local/TensorRT-${version}/lib
     export PATH=$PATH:/usr/local/TensorRT-${version}/bin
+
+    cd $1
+    cd ..
 }
 
 function build_ffnvcodec_linux() {
@@ -286,11 +295,31 @@ function build_ffnvcodec_linux() {
     make install
 }
 
-function install_cudnn() {
+function install_cudnn_linux() {
+    cd $1
     mkdir cudnn
     cd cudnn
-    wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2204/x86_64/libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
-    dpkg -i libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
+    if [[ ${NAME} =~ "CentOS" ]] && [[ ${VERSION_ID} == "7" ]]
+    then
+        wget https://developer.download.nvidia.cn/compute/cuda/repos/rhel7/x86_64/libcudnn8-8.9.2.26-1.cuda11.8.x86_64.rpm
+        rpm -i libcudnn8-8.9.2.26-1.cuda11.8.x86_64.rpm
+    elif [[ ${NAME} == "Ubuntu" ]] && [[ ${VERSION_ID} == "18.04" ]]
+    then
+        wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu1804/x86_64/libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
+        dpkg -i libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
+    elif [[ ${NAME} == "Ubuntu" ]] && [[ ${VERSION_ID} == "20.04" ]]
+    then
+        wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
+        dpkg -i libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
+    elif [[ ${NAME} == "Ubuntu" ]] && [[ ${VERSION_ID} == "22.04" ]]
+    then
+        wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2204/x86_64/libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
+        dpkg -i libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
+    elif [[ ${NAME} =~ "Debian" ]] && [[ ${VERSION_ID} == "11" ]]
+    then
+        wget https://developer.download.nvidia.cn/compute/cuda/repos/debian11/x86_64/libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
+        dpkg -i libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
+    fi
     cd -
     rm -rf cudnn
 }
@@ -336,17 +365,21 @@ then
     disable_asm="--disable-x86asm"
     ffmpeg_opts="--enable-gpl --enable-nonfree"
     mkdir -p ffmpeg_source
-    trap "cd $(pwd) && rm -rf ffmpeg_source && pip cache purge && dpkg -r cuda-repo-ubuntu2004-11-8-local" EXIT
+    trap "cd $(pwd) && rm -rf ffmpeg_source" EXIT
 
     if [ ${OS} == "Linux" ]
     then
         (install_dependencies_linux)
-        if [ ${DEVICE} == "gpu" ] && [ $(uname -m) == "x86_64" ]
+        if [[ ${DEVICE} =~ "gpu" ]] && [ $(uname -m) == "x86_64" ]
         then
             install_cuda_linux $(pwd)/ffmpeg_source
-            install_cudnn
-            install_trt
-            install_cvcuda
+            if [ ${DEVICE} == "gpu_all" ]
+            then
+                (install_cudnn_linux $(pwd)/ffmpeg_source)
+                install_trt_linux $(pwd)/ffmpeg_source
+                install_cvcuda_linux $(pwd)/ffmpeg_source
+            fi
+
             (build_ffnvcodec_linux $(pwd)/ffmpeg_source)
             ffmpeg_opts="${ffmpeg_opts} --enable-cuda-nvcc --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64"
         fi

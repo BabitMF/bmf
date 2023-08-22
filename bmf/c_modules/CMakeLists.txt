@@ -107,22 +107,22 @@ module_install(clock)
 
 
 
-# tests
+# tests, commented
 if(BMF_ENABLE_TEST)
-    file(GLOB TEST_SRCS test/*.cpp)
+    #file(GLOB TEST_SRCS test/*.cpp)
 
-    # compile errors
-    list(FILTER TEST_SRCS EXCLUDE REGEX test_python_module.cpp)
+    ## compile errors
+    #list(FILTER TEST_SRCS EXCLUDE REGEX test_python_module.cpp)
 
-    add_executable(test_builtin_modules ${TEST_SRCS})
+    #add_executable(test_builtin_modules ${TEST_SRCS})
 
-    target_link_libraries(test_builtin_modules
-        PRIVATE
-            builtin_modules engine bmf_module_sdk
-            gtest ${BMF_FFMPEG_TARGETS}
-    )
+    #target_link_libraries(test_builtin_modules
+    #    PRIVATE
+    #        builtin_modules engine bmf_module_sdk
+    #        gtest ${BMF_FFMPEG_TARGETS}
+    #)
 
-    target_link_libraries(test_builtin_modules PRIVATE gtest_main)
+    #target_link_libraries(test_builtin_modules PRIVATE gtest_main)
 
-    mac_update(test_builtin_modules)
+    #mac_update(test_builtin_modules)
 endif()

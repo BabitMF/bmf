@@ -178,7 +178,7 @@ setup(
     author_email="",
     python_requires='>= 3.6',
     description="Babit Multimedia Framework",
-    long_description=open('README.md').read(),
+    readme='README.md',
     url="https://github.com/BabitMF/bmf",
     install_requires=[
         "numpy >= 1.19.5"

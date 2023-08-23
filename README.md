@@ -1,7 +1,7 @@
 # BMF - Cross-platform, customizable video processing framework with strong GPU acceleration
 
 **BMF (Babit Multimedia Framework)** is a cross-platform, customizable multimedia processing framework developed by [**ByteDance**](https://www.bytedance.com/en).
-With over 4 years of testing and improvements, BMF has been tailored to adeptly tackle challenges in our real-world production environments. Now it's widely used in ByteDance's video streaming, live transcoding, cloud editing and mobile pre/post processing scenarios. More than 2 bilion videos are processed by the framework everyday.
+With over 4 years of testing and improvements, BMF has been tailored to adeptly tackle challenges in our real-world production environments. Now it's widely used in ByteDance's video streaming, live transcoding, cloud editing and mobile pre/post processing scenarios. More than 2 billion videos are processed by the framework everyday.
 
 Here are some key features:
 

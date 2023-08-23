@@ -21,7 +21,7 @@ extern "C" {
 #include <libavutil/timestamp.h>
 #include <libavutil/opt.h>
 }
-#include <hmp/ffmpeg/ffmpeg.h>
+#include <hmp/ffmpeg/ff_helper.h>
 
 namespace hmp {
 namespace ffmpeg {

@@ -24,7 +24,7 @@
 #include <bmf/sdk/simple_filter_graph.h>
 #include <bmf/sdk/error_define.h>
 #include <bmf/sdk/exception_factory.h>
-#include <hmp/ffmpeg/ffmpeg.h>
+#include <hmp/ffmpeg/ff_helper.h>
 extern "C" {
 #include <libswscale/swscale.h>
 #include <libavutil/pixdesc.h>

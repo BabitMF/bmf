@@ -18,7 +18,7 @@
 #include <pybind11/pybind11.h>
 
 #ifdef HMP_ENABLE_FFMPEG
-#include <hmp/ffmpeg/ffmpeg.h>
+#include <hmp/ffmpeg/ff_helper.h>
 #endif
 
 #include <py_type_cast.h>

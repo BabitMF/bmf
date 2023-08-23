@@ -45,7 +45,7 @@ A quick experience to try in colab [![Open In Colab](https://colab.research.goog
 To install a GPU supported version of BMF:
 
 ```bash
-pip install -i https://test.pypi.org/simple/ BabitMF-GPU==0.0.2
+pip install BabitMF-GPU
 ```
 
 ### 1-2 verify the FFmpeg libraries is installed and version is correct

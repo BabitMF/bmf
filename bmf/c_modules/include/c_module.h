@@ -16,6 +16,7 @@
 #define BMF_C_MODULE_H
 
 #include <cstdlib>
+#include <cinttypes>
 #include <sstream>
 #include <bmf/sdk/log.h>
 #include <bmf/sdk/module.h>

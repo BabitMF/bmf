@@ -56,9 +56,9 @@ endif()
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if ($ENV{SCRIPT_EXEC_MODE} MATCHES "x86")
         # runpath for bmf libs
-        set(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations -Wl,-z,defs,-rpath,'$ORIGIN',--enable-new-dtags ${CMAKE_COVERAGE_FLAGS}") # For python dist
+        set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations -Wl,-z,defs,-rpath,'$ORIGIN',--enable-new-dtags ${CMAKE_COVERAGE_FLAGS} ${CMAKE_CXX_FLAGS}") # For python dist
     else()
-        set(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations -Wl,-z,defs ${CMAKE_COVERAGE_FLAGS}") #report unresolved symbols
+        set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations -Wl,-z,defs ${CMAKE_COVERAGE_FLAGS} ${CMAKE_CXX_FLAGS}") #report unresolved symbols
     endif()
 endif()
 

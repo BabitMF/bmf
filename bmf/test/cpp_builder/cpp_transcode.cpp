@@ -32,7 +32,7 @@ TEST(cpp_transcode, transcode_simple) {
                                      bmf_sdk::JsonParam(graph_para));
 
     nlohmann::json decode_para = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}};
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}};
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
 
     nlohmann::json encode_para = {{"output_path", output_file},
@@ -68,24 +68,24 @@ TEST(cpp_transcode, transcode_video) {
     auto graph = bmf::builder::Graph(bmf::builder::NormalMode,
                                      bmf_sdk::JsonParam(graph_para));
 
-    nlohmann::json decode_tail_para = {{"input_path", "../files/header.mp4"}};
+    nlohmann::json decode_tail_para = {{"input_path", "../../files/header.mp4"}};
     auto tail = graph.Decode(bmf_sdk::JsonParam(decode_tail_para));
 
-    nlohmann::json decode_header_para = {{"input_path", "../files/header.mp4"}};
+    nlohmann::json decode_header_para = {{"input_path", "../../files/header.mp4"}};
     auto header = graph.Decode(bmf_sdk::JsonParam(decode_header_para));
 
     nlohmann::json decode_main_para = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}};
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}};
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_main_para));
 
     nlohmann::json decode_logo1_para = {
-        {"input_path", "../files/xigua_prefix_logo_x.mov"}};
+        {"input_path", "../../files/xigua_prefix_logo_x.mov"}};
     auto logo_1 =
         graph.Decode(bmf_sdk::JsonParam(decode_logo1_para))["video"].Scale(
             "320:144");
 
     nlohmann::json decode_logo2_para = {
-        {"input_path", "../files/xigua_loop_logo2_x.mov"}};
+        {"input_path", "../../files/xigua_loop_logo2_x.mov"}};
     auto logo_2 = graph.Decode(bmf_sdk::JsonParam(decode_logo2_para))["video"]
                       .Scale("320:144")
                       .Loop("loop=-1:size=991")
@@ -145,7 +145,7 @@ TEST(cpp_transcode, transcode_image) {
     auto graph = bmf::builder::Graph(bmf::builder::NormalMode,
                                      bmf_sdk::JsonParam(graph_para));
 
-    nlohmann::json decode_para = {{"input_path", "../files/overlay.png"}};
+    nlohmann::json decode_para = {{"input_path", "../../files/overlay.png"}};
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
 
     nlohmann::json encode_para = {
@@ -172,7 +172,7 @@ TEST(cpp_transcode, transcode_option) {
                                      bmf_sdk::JsonParam(graph_para));
 
     nlohmann::json decode_para = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}, {"start_time", 2}};
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}, {"start_time", 2}};
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
 
     nlohmann::json encode_para = {
@@ -214,7 +214,7 @@ TEST(cpp_transcode, transcode_audio) {
                                      bmf_sdk::JsonParam(graph_para));
 
     nlohmann::json decode_para = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"},
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"},
     };
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
 
@@ -244,7 +244,7 @@ TEST(cpp_transcode, transcode_with_input_only_audio) {
                                      bmf_sdk::JsonParam(graph_para));
 
     nlohmann::json decode_para = {
-        {"input_path", "../files/big_bunny_10s_only_audio.mp4"},
+        {"input_path", "../../files/big_bunny_10s_only_audio.mp4"},
     };
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
 
@@ -268,7 +268,7 @@ TEST(cpp_transcode,
                                      bmf_sdk::JsonParam(graph_para));
 
     nlohmann::json decode_para = {
-        {"input_path", "../files/big_bunny_10s_30fps_only_video.mp4"},
+        {"input_path", "../../files/big_bunny_10s_30fps_only_video.mp4"},
     };
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
 
@@ -289,7 +289,7 @@ TEST(cpp_transcode, transcode_with_null_audio) {
                                      bmf_sdk::JsonParam(graph_para));
 
     nlohmann::json decode_para = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"},
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"},
     };
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
     auto audio_stream = graph.NewPlaceholderStream();
@@ -326,7 +326,7 @@ TEST(cpp_transcode, transcode_with_null_audio) {
 //     bmf_sdk::JsonParam(graph_para));
 
 //     nlohmann::json decode_para = {
-//         {"input_path", "../files/big_bunny_10s_30fps.mp4"},
+//         {"input_path", "../../files/big_bunny_10s_30fps.mp4"},
 //     };
 //     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
 //     nlohmann::json encode_para = {
@@ -372,7 +372,7 @@ TEST(cpp_transcode, transcode_hls) {
                                      bmf_sdk::JsonParam(graph_para));
 
     nlohmann::json decode_para = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"},
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"},
     };
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
     nlohmann::json encode_para = {
@@ -402,7 +402,7 @@ TEST(cpp_transcode, transcode_crypt) {
                                      bmf_sdk::JsonParam(graph_para));
 
     nlohmann::json decode_para = {
-        {"input_path", "../files/encrypt.mp4"},
+        {"input_path", "../../files/encrypt.mp4"},
         {"decryption_key", "b23e92e4d603468c9ec7be7570b16229"}};
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
     nlohmann::json encode_para = {
@@ -424,8 +424,8 @@ TEST(cpp_transcode, transcode_crypt) {
 
 TEST(cpp_transcode, transcode_short_video_concat) {
     std::string output_file = "./simple.mp4";
-    std::string input_file_1 = "../files/big_bunny_10s_30fps.mp4";
-    std::string input_file_2 = "../files/single_frame.mp4";
+    std::string input_file_1 = "../../files/big_bunny_10s_30fps.mp4";
+    std::string input_file_2 = "../../files/single_frame.mp4";
     nlohmann::json graph_para = {{"dump_graph", 1}};
     auto graph = bmf::builder::Graph(bmf::builder::NormalMode,
                                      bmf_sdk::JsonParam(graph_para));
@@ -451,7 +451,7 @@ TEST(cpp_transcode, transcode_short_video_concat) {
 }
 
 TEST(cpp_transcode, transcode_map_param) {
-    std::string input_file = "../files/big_bunny_multi_stream.mp4";
+    std::string input_file = "../../files/big_bunny_multi_stream.mp4";
     std::string output_file_1 = "./output_1.mp4";
     std::string output_file_2 = "./output_2.mp4";
     nlohmann::json graph_para = {{"dump_graph", 1}};
@@ -494,7 +494,7 @@ TEST(cpp_transcode, transcode_map_param) {
 }
 
 TEST(cpp_transcode, transcode_rgb_2_video) {
-    std::string input_file = "../files/test_rgba_806x654.rgb";
+    std::string input_file = "../../files/test_rgba_806x654.rgb";
     std::string output_file = "./rgb2video.mp4";
     nlohmann::json graph_para = {{"dump_graph", 1}};
     BMF_CPP_FILE_REMOVE(output_file);
@@ -521,7 +521,7 @@ TEST(cpp_transcode, transcode_rgb_2_video) {
 }
 
 TEST(cpp_transcode, transcode_stream_copy) {
-    std::string input_file = "../files/big_bunny_10s_30fps_mpeg.mp4";
+    std::string input_file = "../../files/big_bunny_10s_30fps_mpeg.mp4";
     std::string output_file = "./stream_copy.mp4";
     nlohmann::json graph_para = {{"dump_graph", 1}};
     BMF_CPP_FILE_REMOVE(output_file);
@@ -544,7 +544,7 @@ TEST(cpp_transcode, transcode_stream_copy) {
 }
 
 TEST(cpp_transcode, transcode_stream_audio_copy) {
-    std::string input_file = "../files/big_bunny_10s_only_audio.flv";
+    std::string input_file = "../../files/big_bunny_10s_only_audio.flv";
     std::string output_file = "./audio_copy.mp4";
     nlohmann::json graph_para = {{"dump_graph", 1}};
     BMF_CPP_FILE_REMOVE(output_file);
@@ -568,7 +568,7 @@ TEST(cpp_transcode, transcode_stream_audio_copy) {
 }
 
 TEST(cpp_transcode, transcode_extract_frames) {
-    std::string input_file = "../files/big_bunny_10s_30fps.mp4";
+    std::string input_file = "../../files/big_bunny_10s_30fps.mp4";
     std::string output_file = "./audio_copy.mp4";
     nlohmann::json graph_para = {{"dump_graph", 1}};
     BMF_CPP_FILE_REMOVE(output_file);
@@ -600,7 +600,7 @@ TEST(cpp_transcode, transcode_extract_frames) {
 }
 
 TEST(cpp_transcode, transcode_incorrect_stream_notify) {
-    std::string input_file = "../files/big_bunny_10s_30fps.mp4";
+    std::string input_file = "../../files/big_bunny_10s_30fps.mp4";
     std::string output_file = "./incorrect_stream_notify.mp4";
     nlohmann::json graph_para = {{"dump_graph", 1}};
     BMF_CPP_FILE_REMOVE(output_file);
@@ -622,7 +622,7 @@ TEST(cpp_transcode, transcode_incorrect_stream_notify) {
 }
 
 TEST(cpp_transcode, transcode_incorrect_encoder_param) {
-    std::string input_file = "../files/big_bunny_10s_30fps.mp4";
+    std::string input_file = "../../files/big_bunny_10s_30fps.mp4";
     std::string output_file = "./incorrect_encoder_param.mp4";
     nlohmann::json graph_para = {{"dump_graph", 1}};
     BMF_CPP_FILE_REMOVE(output_file);
@@ -658,7 +658,7 @@ TEST(cpp_transcode, transcode_incorrect_encoder_param) {
 }
 
 TEST(cpp_transcode, transcode_duration) {
-    std::string input_file = "../files/big_bunny_10s_30fps.mp4";
+    std::string input_file = "../../files/big_bunny_10s_30fps.mp4";
     std::string output_file = "./durations.mp4";
     nlohmann::json graph_para = {{"dump_graph", 1}};
     BMF_CPP_FILE_REMOVE(output_file);
@@ -689,7 +689,7 @@ TEST(cpp_transcode, transcode_duration) {
 }
 
 TEST(cpp_transcode, transcode_output_raw_video) {
-    std::string input_file = "../files/big_bunny_10s_30fps.mp4";
+    std::string input_file = "../../files/big_bunny_10s_30fps.mp4";
     std::string output_file = "./out.yuv";
     nlohmann::json graph_para = {{"dump_graph", 1}};
     BMF_CPP_FILE_REMOVE(output_file);
@@ -712,7 +712,7 @@ TEST(cpp_transcode, transcode_output_raw_video) {
 }
 
 TEST(cpp_transcode, transcode_output_null) {
-    std::string input_file = "../files/big_bunny_10s_30fps.mp4";
+    std::string input_file = "../../files/big_bunny_10s_30fps.mp4";
     nlohmann::json graph_para = {{"dump_graph", 1}};
     auto graph = bmf::builder::Graph(bmf::builder::NormalMode,
                                      bmf_sdk::JsonParam(graph_para));
@@ -726,7 +726,7 @@ TEST(cpp_transcode, transcode_output_null) {
 }
 
 TEST(cpp_transcode, transcode_vframes) {
-    std::string input_file = "../files/big_bunny_10s_30fps.mp4";
+    std::string input_file = "../../files/big_bunny_10s_30fps.mp4";
     std::string output_file = "./simple.mp4";
     nlohmann::json graph_para = {{"dump_graph", 1}};
     BMF_CPP_FILE_REMOVE(output_file);
@@ -756,7 +756,7 @@ TEST(cpp_transcode, transcode_vframes) {
 }
 
 TEST(cpp_transcode, transcode_segment_trans) {
-    std::string input_file = "../files/big_bunny_10s_30fps_mpeg.mp4";
+    std::string input_file = "../../files/big_bunny_10s_30fps_mpeg.mp4";
     std::string output_file = "./simple_%05d.mp4";
     nlohmann::json graph_para = {{"dump_graph", 1}};
     BMF_CPP_FILE_REMOVE(output_file);
@@ -787,7 +787,7 @@ TEST(cpp_transcode, transcode_segment_trans) {
 }
 
 TEST(cpp_transcode, test_encoder_push_output_mp4) {
-    std::string input_file = "../files/big_bunny_10s_30fps.mp4";
+    std::string input_file = "../../files/big_bunny_10s_30fps.mp4";
     std::string output_file = "./simple_vframe_python.mp4";
     nlohmann::json graph_para = {{"dump_graph", 1}};
     BMF_CPP_FILE_REMOVE(output_file);
@@ -838,7 +838,7 @@ TEST(cpp_transcode, test_encoder_push_output_mp4) {
 }
 
 TEST(cpp_transcode, test_encoder_push_output_image2pipe) {
-    std::string input_file = "../files/big_bunny_10s_30fps.mp4";
+    std::string input_file = "../../files/big_bunny_10s_30fps.mp4";
     nlohmann::json graph_para = {{"dump_graph", 1}};
     auto graph = bmf::builder::Graph(bmf::builder::GeneratorMode,
                                      bmf_sdk::JsonParam(graph_para));
@@ -891,7 +891,7 @@ TEST(cpp_transcode, test_encoder_push_output_image2pipe) {
 }
 
 TEST(cpp_transcode, test_encoder_push_output_audio_pcm_s16le) {
-    std::string input_file = "../files/big_bunny_10s_30fps.mp4";
+    std::string input_file = "../../files/big_bunny_10s_30fps.mp4";
     std::string output_file = "./test_audio_simple_pcm_s16le.wav";
     nlohmann::json graph_para = {{"dump_graph", 1}};
     BMF_CPP_FILE_REMOVE(output_file);
@@ -939,7 +939,7 @@ TEST(cpp_transcode, test_encoder_push_output_audio_pcm_s16le) {
 }
 
 TEST(cpp_transcode, test_generator) {
-    std::string input_file = "../files/big_bunny_10s_30fps.mp4";
+    std::string input_file = "../../files/big_bunny_10s_30fps.mp4";
     nlohmann::json graph_para = {{"dump_graph", 1}};
     auto graph = bmf::builder::Graph(bmf::builder::GeneratorMode,
                                      bmf_sdk::JsonParam(graph_para));
@@ -965,7 +965,7 @@ TEST(cpp_transcode, test_generator) {
 }
 
 /* TEST(cpp_transcode, transcode_encoder_push_unmuxed_output_mp4) { */
-/*     std::string input_file = "../files/big_bunny_10s_30fps.mp4"; */
+/*     std::string input_file = "../../files/big_bunny_10s_30fps.mp4"; */
 /*     std::string output_file = "./unmuxed_output.mp4"; */
 /*     nlohmann::json graph_para = { */
 /*         {"dump_graph", 1} */
@@ -1011,7 +1011,7 @@ TEST(cpp_transcode, test_generator) {
 /* } */
 
 /* TEST(cpp_transcode, transcode_push_pkt_into_decoder) { */
-/*     std::string input_file = "../files/big_bunny_10s_30fps.mp4"; */
+/*     std::string input_file = "../../files/big_bunny_10s_30fps.mp4"; */
 /*     std::string output_file = "./aac.mp4"; */
 /*     nlohmann::json graph_para = { */
 /*         {"dump_graph", 1} */

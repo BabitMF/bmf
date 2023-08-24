@@ -14,7 +14,7 @@ import bmf
 
 def test_gpu_decode():
     print("Testing gpu decoding......")
-    input_video_path = "../files/lark_stream0.flv"
+    input_video_path = "../../files/lark_stream0.flv"
     output_path = "./gpu_decode_result.yuv"
 
     (bmf.graph().decode({
@@ -53,7 +53,7 @@ def decode_task(proc_idx, input_video_path, frames_dict):
 
 def test_gpu_decode_multi_thread_perf():
     print("Testing gpu decoding using multiple threads.....")
-    input_video_path = "../files/lark_stream0.flv"
+    input_video_path = "../../files/lark_stream0.flv"
     num_threads = 2
     threads = []
     frames_dict = dict()
@@ -86,7 +86,7 @@ def test_gpu_decode_multi_thread_perf():
 
 def test_gpu_encode():
     print("Testing gpu encoding......")
-    input_video_path = "../files/lark_stream0.flv"
+    input_video_path = "../../files/lark_stream0.flv"
     yuv_path = "./gpu_decode_result.yuv"
     output_path = "gpu_encode_result.h264"
 
@@ -171,7 +171,7 @@ def test_gpu_encode_multi_thread_perf():
 
 def test_gpu_transcode():
     print("Testing gpu transcoding......")
-    input_video_path = "../files/lark_stream0.flv"
+    input_video_path = "../../files/lark_stream0.flv"
     output_video_path = "./gpu_transcoded_result.mp4"
 
     graph = bmf.graph()
@@ -196,7 +196,7 @@ def test_gpu_transcode():
 
 def test_gpu_transcode_1_to_n():
     print("Testing gpu 1-n transcoding......")
-    input_video_path = "../files/lark_stream0.flv"
+    input_video_path = "../../files/lark_stream0.flv"
     output_video_path_1 = "./gpu_transcoded_result_1.mp4"
     output_video_path_2 = "./gpu_transcoded_result_2.mp4"
 
@@ -234,7 +234,7 @@ def test_gpu_transcode_1_to_n():
 
 
 def transcode_task():
-    input_video_path = "../files/lark_stream0.flv"
+    input_video_path = "../../files/lark_stream0.flv"
     graph = bmf.graph()
 
     video = graph.decode({
@@ -274,7 +274,7 @@ def get_total_frames(input_video_path):
 
 def test_gpu_transcode_multi_thread_perf():
     print("Testing gpu transcoding using multiple threads......")
-    input_video_path = "../files/lark_stream0.flv"
+    input_video_path = "../../files/lark_stream0.flv"
     num_threads = 2
     threads = []
 
@@ -304,7 +304,7 @@ def test_gpu_transcode_multi_thread_perf():
 
 def test_gpu_transcode_with_scale_cuda():
     print("Testing gpu transcoding with scale cuda filter......")
-    input_video_path = "../files/lark_stream0.flv"
+    input_video_path = "../../files/lark_stream0.flv"
     output_video_path = "./gpu_trans_scale_cuda.mp4"
 
     graph = bmf.graph()
@@ -329,7 +329,7 @@ def test_gpu_transcode_with_scale_cuda():
 
 def test_gpu_transcode_with_hwupload():
     print("Testing gpu transcoding with hwupload filter......")
-    input_video_path = "../files/lark_stream0.flv"
+    input_video_path = "../../files/lark_stream0.flv"
     output_video_path = "./gpu_trans_hwupload.mp4"
 
     graph = bmf.graph()
@@ -351,7 +351,7 @@ def test_gpu_transcode_with_hwupload():
 
 def test_gpu_transcode_with_scale_npp():
     print("Testing gpu transcoding with scale npp filter......")
-    input_video_path = "../files/lark_stream0.flv"
+    input_video_path = "../../files/lark_stream0.flv"
     output_video_path = "./gpu_trans_scale_npp.mp4"
 
     graph = bmf.graph()
@@ -375,7 +375,7 @@ def test_gpu_transcode_with_scale_npp():
 
 def test_gpu_transcode_with_yadif_cuda():
     print("Testing gpu transcoding with yadif filter......")
-    input_video_path = "../files/lark_stream0.flv"
+    input_video_path = "../../files/lark_stream0.flv"
     output_video_path = "./gpu_trans_yadif_cuda.mp4"
 
     graph = bmf.graph()
@@ -401,8 +401,8 @@ def test_gpu_transcode_with_yadif_cuda():
 
 def test_gpu_transcode_with_overlay_cuda():
     print("Testing gpu transcoding with overlay filter......")
-    input_video_path_1 = "../files/lark_stream0.flv"
-    input_video_path_2 = "../files/nvidia-logo.png"
+    input_video_path_1 = "../../files/lark_stream0.flv"
+    input_video_path_2 = "../../files/nvidia-logo.png"
     output_video_path = "./gpu_trans_with_overlay.mp4"
 
     graph = bmf.graph()

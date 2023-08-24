@@ -12,8 +12,8 @@ from base_test.base_test_case import BaseTestCase
 class TestEditModule(BaseTestCase):
 
     def test_video_overlays(self):
-        input_video_path = "../files/img.mp4"
-        logo_path = "../files/xigua_prefix_logo_x.mov"
+        input_video_path = "../../files/img.mp4"
+        logo_path = "../../files/xigua_prefix_logo_x.mov"
         output_path = "./overlays.mp4"
         dump_graph = 0
         # create graph
@@ -61,7 +61,7 @@ class TestEditModule(BaseTestCase):
             }).run())
 
     def test_audio_mix(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
         output_path = "./audio_mix.mp4"
 
         # create graph
@@ -96,7 +96,7 @@ class TestEditModule(BaseTestCase):
             }).run())
 
     def test_video_concat(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
         output_path = "./video_concat.mp4"
         # create graph
         my_graph = bmf.graph({"dump_graph": 0})
@@ -143,8 +143,8 @@ class TestEditModule(BaseTestCase):
             }).run())
 
     def test_complex_edit(self):
-        input_video_path = "../files/img.mp4"
-        logo_path = "../files/xigua_prefix_logo_x.mov"
+        input_video_path = "../../files/img.mp4"
+        logo_path = "../../files/xigua_prefix_logo_x.mov"
         output_path = "./complex_edit.mp4"
         dump_graph = 0
 

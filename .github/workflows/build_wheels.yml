@@ -89,7 +89,7 @@ jobs:
         CIBW_REPAIR_WHEEL_COMMAND_LINUX:
           tmp_dir=$(mktemp -d) &&
           unzip -d ${tmp_dir} {wheel} &&
-          auditwheel -v repair $(ldd ${tmp_dir}/bmf/lib/* | awk '{if(NF>1){print $1}}' | grep "avdevice\|avfilter\|avformat\|avcodec\|postproc\|swresample\|swscale\|avutil\|cuda\|libnpp\|bmf_module_sdk\|engine\|hmp" | sort | uniq | awk '{printf(" --exclude %s", $1);}') -w {dest_dir} {wheel} &&
+          auditwheel -v repair $(ldd ${tmp_dir}/bmf/lib/* | awk '{if(NF>1){print $1}}' | grep "avdevice\|avfilter\|avformat\|avcodec\|postproc\|swresample\|swscale\|avutil\|cuda\|libnpp\|libxcb\|libXau\|libbz2\|bmf_module_sdk\|engine\|hmp" | sort | uniq | awk '{printf(" --exclude %s", $1);}') -w {dest_dir} {wheel} &&
           rm -rf ${tmp_dir}
 
     - uses: actions/upload-artifact@v3

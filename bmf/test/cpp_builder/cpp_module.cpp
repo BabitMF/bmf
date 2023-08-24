@@ -27,15 +27,14 @@ TEST(cpp_modules, module_python) {
                                      bmf_sdk::JsonParam(graph_para));
 
     nlohmann::json decode_para = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}};
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}};
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
 
     nlohmann::json encode_para = {{"output_path", output_file}};
 
     graph
-        .Module({video["video"]}, "my_module", bmf::builder::Python,
-                bmf_sdk::JsonParam(), "MyModule",
-                "../../example/customize_module", "my_module:my_module")
+        .Module({video["video"]}, "python_copy_module", bmf::builder::Python,
+                bmf_sdk::JsonParam())
         .EncodeAsVideo(video["audio"], bmf_sdk::JsonParam(encode_para));
 
     graph.Run();
@@ -54,7 +53,7 @@ TEST(cpp_modules, module_cpp) {
                                      bmf_sdk::JsonParam(graph_para));
 
     nlohmann::json decode_para = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}};
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}};
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
 
     auto video_2 =
@@ -85,14 +84,14 @@ TEST(cpp_modules, audio_python_module) {
                                      bmf_sdk::JsonParam(graph_para));
 
     nlohmann::json decode_para = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}};
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}};
     auto audio = graph.Decode(bmf_sdk::JsonParam(decode_para))["audio"];
 
     nlohmann::json encode_para = {{"output_path", output_file}};
 
     auto audio_output = graph.Module(
-        {audio}, "my_module", bmf::builder::Python, bmf_sdk::JsonParam(),
-        "MyModule", "../../example/customize_module", "my_module:my_module");
+        {audio}, "python_copy_module", bmf::builder::Python,
+        bmf_sdk::JsonParam());
     graph.Encode(graph.NewPlaceholderStream(), audio_output,
                  bmf_sdk::JsonParam(encode_para));
     graph.Run();
@@ -110,7 +109,7 @@ TEST(cpp_modules, test_exception_in_python_module) {
                                      bmf_sdk::JsonParam(graph_para));
 
     nlohmann::json decode_para = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}};
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}};
     auto audio = graph.Decode(bmf_sdk::JsonParam(decode_para))["audio"];
 
     nlohmann::json encode_para = {{"output_path", output_file}};

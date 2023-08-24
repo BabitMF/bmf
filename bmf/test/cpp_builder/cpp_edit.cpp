@@ -27,7 +27,7 @@ TEST(cpp_edit, edit_concat) {
                                      bmf_sdk::JsonParam(graph_para));
 
     nlohmann::json decode_para = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}};
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}};
 
     std::vector<bmf::builder::Stream> video_concat_streams;
     std::vector<bmf::builder::Stream> video_transit_streams;
@@ -101,11 +101,11 @@ TEST(cpp_edit, edit_overlay) {
                                      bmf_sdk::JsonParam(graph_para));
 
     nlohmann::json decode_para = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}};
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}};
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
 
     nlohmann::json logoPara = {
-        {"input_path", "../files/xigua_prefix_logo_x.mov"}};
+        {"input_path", "../../files/xigua_prefix_logo_x.mov"}};
     auto logo = graph.Decode(bmf_sdk::JsonParam(logoPara));
 
     auto output_stream = video["video"]
@@ -146,7 +146,7 @@ TEST(cpp_edit, edit_overlay) {
  * bmf_sdk::JsonParam(graph_para)); */
 
 /*     nlohmann::json decode_para = { */
-/*         {"input_path", "../files/big_bunny_10s_30fps.mp4"} */
+/*         {"input_path", "../../files/big_bunny_10s_30fps.mp4"} */
 /*     }; */
 /*     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para)); */
 /*     auto video2 = graph.Decode(bmf_sdk::JsonParam(decode_para)); */

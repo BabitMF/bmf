@@ -23,7 +23,7 @@ TEST(builder, decode_encode) {
     BMFLOG_SET_LEVEL(BMF_INFO);
 
     nlohmann::json decoder_para;
-    decoder_para["input_path"] = "../files/img.mp4";
+    decoder_para["input_path"] = "../../files/big_bunny_10s_30fps.mp4";
 
     nlohmann::json video_para, audio_para;
     video_para["codec"] = "h264";
@@ -55,7 +55,7 @@ TEST(builder, decode_passthrough_encode) {
     BMFLOG_SET_LEVEL(BMF_INFO);
 
     nlohmann::json decoder_para;
-    decoder_para["input_path"] = "../files/img.mp4";
+    decoder_para["input_path"] = "../../files/big_bunny_10s_30fps.mp4";
 
     nlohmann::json video_para, audio_para;
     video_para["codec"] = "h264";
@@ -87,7 +87,7 @@ TEST(builder, decode_passthrough_encode) {
 TEST(builder, decode_filter_encode) {
     BMFLOG_SET_LEVEL(BMF_INFO);
     nlohmann::json decoder_para;
-    decoder_para["input_path"] = "../files/img.mp4";
+    decoder_para["input_path"] = "../../files/big_bunny_10s_30fps.mp4";
 
     nlohmann::json video_para, audio_para;
     video_para["codec"] = "h264";
@@ -121,7 +121,7 @@ TEST(builder, custom_module) {
     google::InitGoogleLogging("main");
     google::SetStderrLogging(google::INFO);
     nlohmann::json decoder_para;
-    decoder_para["input_path"] = "../files/img.mp4";
+    decoder_para["input_path"] = "../../files/big_bunny_10s_30fps.mp4";
 
     nlohmann::json video_para, audio_para;
     video_para["codec"] = "h264";

@@ -67,78 +67,118 @@ TEST(module_manager, test_compat_path) {
 TEST(module_manager, resolve_module_info) {
     auto &M = ModuleManager::instance();
 
-    // resolve module info from builtin(C++)
+    // resolve module info from builtin(ffmpeg-based)
     {
-        auto info = M.resolve_module_info("ffmpeg_decoder");
+        auto info = M.resolve_module_info("c_ffmpeg_decoder");
         ASSERT_TRUE(info != nullptr);
-        EXPECT_EQ(info->module_name, "ffmpeg_decoder");
+        EXPECT_EQ(info->module_name, "c_ffmpeg_decoder");
         EXPECT_TRUE(fs::exists(info->module_path));
         EXPECT_EQ(info->module_entry, "libbuiltin_modules.CFFDecoder");
         EXPECT_EQ(info->module_type, "c++");
     }
 
+    // resolve module info from builtin(c++)
+    {
+        auto info = M.resolve_module_info("pass_through");
+        ASSERT_TRUE(info != nullptr);
+        EXPECT_EQ(info->module_name, "pass_through");
+        EXPECT_TRUE(fs::exists(info->module_path));
+        EXPECT_EQ(info->module_entry, "libpass_through.PassThroughModule");
+        EXPECT_EQ(info->module_type, "c++");
+    }
+
     // resolve module info from builtin(python)
     {
-        auto info = M.resolve_module_info("upload");
+        auto info = M.resolve_module_info("cpu_gpu_trans_module");
         ASSERT_TRUE(info != nullptr);
-        EXPECT_EQ(info->module_name, "upload");
+        EXPECT_EQ(info->module_name, "cpu_gpu_trans_module");
         EXPECT_TRUE(fs::exists(info->module_path));
-        EXPECT_EQ(info->module_entry, "upload.upload");
+        EXPECT_EQ(info->module_entry, "cpu_gpu_trans_module.cpu_gpu_trans_module");
         EXPECT_EQ(info->module_type, "python");
     }
 
-    // resolve module info from sys repo(meta)
+    // resolve module info from sys repo(c++)
     {
-        std::string dst_dir = "/opt/tiger/bmf_mods/Module_online_module";
-        if (!fs::exists(dst_dir))
-            std::filesystem::create_directories(dst_dir);
-        if (!fs::exists(dst_dir + "/meta.info"))
-            std::filesystem::copy_file("../files/meta.info",
-                                       dst_dir + "/meta.info");
-        auto info = M.resolve_module_info("online_module");
+        auto info = M.resolve_module_info("cpp_copy_module");
+        ASSERT_TRUE(info != nullptr);
+        EXPECT_EQ(info->module_type, "c++");
+        EXPECT_EQ(info->module_name, "cpp_copy_module");
+        EXPECT_TRUE(fs::exists(info->module_path));
+        EXPECT_EQ(info->module_entry, "libcopy_module.CopyModule");
+    }
+
+    // resolve module info from sys repo(python)
+    {
+        auto info = M.resolve_module_info("python_copy_module");
         ASSERT_TRUE(info != nullptr);
         EXPECT_EQ(info->module_type, "python");
-        EXPECT_EQ(info->module_name, "online_module");
-        EXPECT_EQ(info->module_path, dst_dir);
-        EXPECT_EQ(info->module_entry, "vfi_module.VFIModule");
+        EXPECT_EQ(info->module_name, "python_copy_module");
+        EXPECT_TRUE(fs::exists(info->module_path));
+        EXPECT_EQ(info->module_entry, "my_module.my_module");
+    }
+
+    // resolve module info from sys repo(go)
+    {
+        auto info = M.resolve_module_info("go_copy_module");
+        ASSERT_TRUE(info != nullptr);
+        EXPECT_EQ(info->module_type, "go");
+        EXPECT_EQ(info->module_name, "go_copy_module");
+        EXPECT_TRUE(fs::exists(info->module_path));
+        EXPECT_EQ(info->module_entry, "go_copy_module.PassThrough");
     }
 }
 
 TEST(module_manager, load_module) {
     auto &M = ModuleManager::instance();
 
-    // load builtin module(C++)
+    // load builtin module(ffmpeg-based)
     {
-        auto facotry = M.load_module("ffmpeg_decoder");
+        auto facotry = M.load_module("c_ffmpeg_decoder");
         ASSERT_TRUE(facotry != nullptr);
         auto module = facotry->make(1);
         EXPECT_TRUE(module != nullptr);
     }
 
-    // load builtin module(python)
+    // load builtin module(c++)
     {
-        auto facotry = M.load_module("upload");
+        auto facotry = M.load_module("pass_through");
         ASSERT_TRUE(facotry != nullptr);
         auto module = facotry->make(1);
         EXPECT_TRUE(module != nullptr);
     }
-}
 
-TEST(module_manager, load_go_module) {
-    auto &M = ModuleManager::instance();
-
-    // load local module(go)
+    //load builtin module(python)
     {
-        auto module_path = "../lib/go_pass_through.so";
-        if (!fs::exists(module_path)) {
-            GTEST_SKIP();
-        }
-        auto facotry = M.load_module("PassThrough", "go", module_path,
-                                     "go_pass_through.PassThrough");
+        auto facotry = M.load_module("cpu_gpu_trans_module");
         ASSERT_TRUE(facotry != nullptr);
         auto module = facotry->make(1);
         EXPECT_TRUE(module != nullptr);
     }
+
+    //load sys repo module(c++)
+    {
+        auto facotry = M.load_module("cpp_copy_module");
+        ASSERT_TRUE(facotry != nullptr);
+        auto module = facotry->make(1);
+        EXPECT_TRUE(module != nullptr);
+    }
+
+    //load sys repo module(python)
+    {
+        auto facotry = M.load_module("python_copy_module");
+        ASSERT_TRUE(facotry != nullptr);
+        auto module = facotry->make(1);
+        EXPECT_TRUE(module != nullptr);
+    }
+
+    //load sys repo module(go)
+    {
+        auto facotry = M.load_module("go_copy_module");
+        ASSERT_TRUE(facotry != nullptr);
+        auto module = facotry->make(1);
+        EXPECT_TRUE(module != nullptr);
+    }
+
 }
 
 #endif // BMF_ENABLE_MOBILE

@@ -45,6 +45,7 @@ if(BMF_ENABLE_FFMPEG)
     set(SRCS src/ffmpeg_decoder.cpp
              src/ffmpeg_encoder.cpp
              src/ffmpeg_filter.cpp
+             src/ffmpeg_func_registry.cpp
              src/video_sync.cpp
              src/audio_fifo.cpp
              src/audio_resampler.cpp
@@ -96,7 +97,7 @@ mac_update(pass_through)
 module_install(pass_through)
 
 # clock module
-set(CLOCK_MODULE_HDRS include/clock_module.h)
+set(CLOCK_MODULE_HDRS include/clock_module.h include/fraction.hpp)
 set(CLOCK_MODULE_SRCS src/clock_module.cpp)
 add_library(clock SHARED ${CLOCK_MODULE_HDRS} ${CLOCK_MODULE_SRCS})
 target_include_directories(clock PUBLIC include)
@@ -105,7 +106,25 @@ set_soname(clock)
 mac_update(clock)
 module_install(clock)
 
+# MockDecoder
+set(MOCK_DECODER_MODULE_HDRS include/mock_decoder.h)
+set(MOCK_DECODER_MODULE_SRCS src/mock_decoder.cpp)
+add_library(MockDecoder SHARED ${MOCK_DECODER_MODULE_HDRS} ${MOCK_DECODER_MODULE_SRCS})
+target_include_directories(MockDecoder PUBLIC include)
+target_link_libraries(MockDecoder PRIVATE bmf_module_sdk)
+set_soname(MockDecoder)
+mac_update(MockDecoder)
+module_install(MockDecoder)
 
+# GoMockDecoder
+set(GOMOCK_DECODER_MODULE_HDRS include/go_mock_decoder.h)
+set(GOMOCK_DECODER_MODULE_SRCS src/go_mock_decoder.cpp)
+add_library(GoMockDecoder SHARED ${GOMOCK_DECODER_MODULE_HDRS} ${GOMOCK_DECODER_MODULE_SRCS})
+target_include_directories(GoMockDecoder PUBLIC include)
+target_link_libraries(GoMockDecoder PRIVATE bmf_module_sdk)
+set_soname(GoMockDecoder)
+mac_update(GoMockDecoder)
+module_install(GoMockDecoder)
 
 # tests, commented
 if(BMF_ENABLE_TEST)

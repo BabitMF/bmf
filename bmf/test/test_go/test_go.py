@@ -4,7 +4,7 @@ import os
 
 import timeout_decorator
 
-sys.path.append("../")
+sys.path.append("../../test/")
 from base_test.base_test_case import BaseTestCase
 from base_test.media_info import MediaInfo
 

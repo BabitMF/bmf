@@ -61,7 +61,7 @@ if __name__ == "__main__":
     option["output_path"] = outp_path
 
     # check model path
-    model_path = "models/aes_transonnx_update3.onnx"
+    model_path = "../../models/aes_transonnx_update3.onnx"
     if not os.path.exists(model_path):
         print(
             "please download model first, use 'wget https://github.com/BabitMF/bmf/releases/download/files/models.tar.gz && tar zxvf models.tar.gz' "

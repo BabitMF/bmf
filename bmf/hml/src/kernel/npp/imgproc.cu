@@ -31,7 +31,7 @@ Tensor &yuv_to_rgb_cuda(Tensor &dst, const TensorList &src, PPixelFormat pformat
             
             //[NOTE] batch call need copy NppiImageDescriptor to device
             auto func = nppiYCbCr420ToRGB_8u_P3C3R_Ctx;
-            if(pformat == PixelFormat::I420){
+            if(pformat == PPixelFormat::I420){
                 func = nppiYUV420ToRGB_8u_P3C3R_Ctx;
             }
 
@@ -52,12 +52,12 @@ Tensor &yuv_to_rgb_cuda(Tensor &dst, const TensorList &src, PPixelFormat pformat
 }
 
 
-TensorList &rgb_to_yuv_cuda(TensorList &dst, const Tensor &src, PixelFormat pformat, ChannelFormat cformat)
+TensorList &rgb_to_yuv_cuda(TensorList &dst, const Tensor &src, PPixelFormat pformat, ChannelFormat cformat)
 {
     int width = src.size(2);
     int height = src.size(1);
 
-    if(pformat == PixelFormat::H420 || pformat == PixelFormat::I420){
+    if(pformat == PPixelFormat::H420 || pformat == PPixelFormat::I420){
         HMP_REQUIRE(dst.size() == 3, "rgbx_to_yuv_cuda: expect 3 planes, got {}", dst.size());
         auto streamCtx = makeNppStreamContext();
         auto batch = src.size(0);
@@ -74,7 +74,7 @@ TensorList &rgb_to_yuv_cuda(TensorList &dst, const Tensor &src, PixelFormat pfor
             
             //[NOTE] batch call need copy NppiImageDescriptor to device
             auto func = nppiRGBToYCbCr420_8u_C3P3R_Ctx;
-            if(pformat == PixelFormat::I420){
+            if(pformat == PPixelFormat::I420){
                 func = nppiRGBToYUV420_8u_C3P3R_Ctx;
             }
 
@@ -93,7 +93,7 @@ TensorList &rgb_to_yuv_cuda(TensorList &dst, const Tensor &src, PixelFormat pfor
 
 
 TensorList &yuv_resize_cuda(TensorList &dst, const TensorList &src,
-                          PixelFormat format, ImageFilterMode mode)
+                          PPixelFormat format, ImageFilterMode mode)
 {
     auto streamCtx = makeNppStreamContext();
     auto batch = dst[0].size(0);
@@ -114,7 +114,7 @@ TensorList &yuv_resize_cuda(TensorList &dst, const TensorList &src,
 
 
 TensorList &yuv_rotate_cuda(TensorList &dst, const TensorList &src,
-                           PixelFormat format, ImageRotationMode rotate)
+                           PPixelFormat format, ImageRotationMode rotate)
 {
     auto streamCtx = makeNppStreamContext();
     auto batch = dst[0].size(0);
@@ -133,7 +133,7 @@ TensorList &yuv_rotate_cuda(TensorList &dst, const TensorList &src,
 }
     
 TensorList &yuv_mirror_cuda(TensorList &dst, const TensorList &src,
-                           PixelFormat format, ImageAxis axis)
+                           PPixelFormat format, ImageAxis axis)
 {
     auto streamCtx = makeNppStreamContext();
     auto batch = dst[0].size(0);

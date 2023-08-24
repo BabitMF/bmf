@@ -22,7 +22,7 @@ using namespace hmp;
 
 #ifdef HMP_ENABLE_FFMPEG
 
-#include <hmp/ffmpeg/ffmpeg.h>
+#include <hmp/ffmpeg/ff_helper.h>
 
 class ImageTest : public testing::Test {
   public:

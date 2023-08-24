@@ -8,6 +8,7 @@
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
+#include <stdexcept>
 
 namespace bmf::internal {
 template <typename T> class InstanceMapping {

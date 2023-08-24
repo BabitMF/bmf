@@ -31,7 +31,7 @@ Before installing BMF, please make sure that you have installed Python and pip. 
 To install a GPU supported version of BMF:
 
 ```Bash
-pip3 install -i https://test.pypi.org/simple/ BabitMF-GPU
+pip3 install BabitMF-GPU
 %env LIBRARY_PATH=$LIBRARY_PATH:/usr/local/lib/python3.10/dist-packages/bmf/lib
 ```
 

@@ -566,7 +566,7 @@ void module_sdk_bind(py::module &m) {
     py::class_<LogBuffer, std::unique_ptr<LogBuffer>>(m, "LogBuffer")
         .def(py::init([](py::list buffer, const std::string &level) {
             return std::make_unique<LogBuffer>(
-                [=](const std::string &log) {
+                [buffer](const std::string &log) mutable {
                     py::gil_scoped_acquire gil;
                     buffer.append(py::cast(log));
                 },

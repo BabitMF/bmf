@@ -13,7 +13,7 @@ Here are some key features:
 
 - High performance: BMF has a powerful scheduler and strong support for heterogeneous acceleration hardware. Moreover, [**NVIDIA**](https://www.nvidia.com/) has been cooperating with us to develop a highly optimized GPU pipeline for video transcoding and AI inference.
 
-- Efficient data conversion: BMF offers seamless data format conversions across popular frameworks (PyTorch/OpenCV/TensorRT) and between hardware devices (CPU/GPU).
+- Efficient data conversion: BMF offers seamless data format conversions across popular frameworks (FFmpeg/Numpy/PyTorch/OpenCV/TensorRT), conversion between hardware devices (CPU/GPU), and color space and pixel format conversion.
 
 Dive deeper into BMF's capabilities on [our website](https://babitmf.github.io/) for more details.
 

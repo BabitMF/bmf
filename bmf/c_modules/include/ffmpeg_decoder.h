@@ -15,9 +15,9 @@
 #ifndef BMF_FF_DECODER_H
 #define BMF_FF_DECODER_H
 
-#include "c_module.h"
 #include <bmf/sdk/bmf_av_packet.h>
 #include <bmf/sdk/filter_graph.h>
+#include "c_module.h"
 #include "video_sync.h"
 #include <condition_variable>
 #include <thread>

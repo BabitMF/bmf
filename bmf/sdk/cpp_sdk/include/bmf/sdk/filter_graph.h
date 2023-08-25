@@ -17,7 +17,6 @@
 #ifndef C_MODULES_FILTER_GRAPH_H
 #define C_MODULES_FILTER_GRAPH_H
 
-#include <cinttypes>
 #include <bmf/sdk/log.h>
 #include <string>
 #include <vector>

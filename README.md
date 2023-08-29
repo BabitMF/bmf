@@ -152,7 +152,7 @@ If you want to have a quick experiment, you can try it on [![Open In Colab](http
 - [Contributing](#contributing)
 
 ## License
-The project has an [Apache 2.0 License](https://github.com/BabitMF/bmf/blob/master/LICENSE).
+The project has an [Apache 2.0 License](https://github.com/BabitMF/bmf/blob/master/LICENSE). Third party components and dependencies remain under their own licenses.
 
 ## Contributing
 

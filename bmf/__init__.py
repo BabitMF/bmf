@@ -9,12 +9,9 @@ if platform.system().lower() != 'windows':
 # import hmp types
 import bmf.hml.hmp as mp
 # import bmf_sdk types
-if platform.system().lower() == 'windows':
-    from bmf.bin._bmf.sdk import VideoFrame, AudioFrame, Packet, BMFAVPacket
-    from bmf.bin._bmf.sdk import Task
-else:
-    from bmf.lib._bmf.sdk import VideoFrame, AudioFrame, Packet, BMFAVPacket
-    from bmf.lib._bmf.sdk import Task
+
+from bmf.lib._bmf.sdk import VideoFrame, AudioFrame, Packet, BMFAVPacket
+from bmf.lib._bmf.sdk import Task
 
 #
 from .ffmpeg_engine import FFmpegEngine

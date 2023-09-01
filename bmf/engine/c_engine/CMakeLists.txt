@@ -12,6 +12,13 @@ endif()
 
 add_library(engine ${SRCS} ${HDRS})
 
+if(WIN32)
+    set_target_properties(engine PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/lib
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BMF_ASSEMBLE_ROOT}/bmf/lib
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BMF_ASSEMBLE_ROOT}/bmf/lib
+    )
+endif()
 
 target_include_directories(engine
     PUBLIC
@@ -78,6 +85,13 @@ if(BMF_ENABLE_PYTHON)
     target_link_libraries(bmf_py_loader
         PRIVATE
         pybind11::pybind11 bmf_module_sdk Python::Python)
+    if(WIN32)
+        set_target_properties(bmf_py_loader PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/lib
+            RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BMF_ASSEMBLE_ROOT}/bmf/lib
+            RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BMF_ASSEMBLE_ROOT}/bmf/lib
+        )
+    endif()
 endif()
 
 add_library(bmf_go_loader SHARED src/loader/go_module_loader.cpp)
@@ -85,6 +99,13 @@ target_link_libraries(bmf_go_loader
     PRIVATE
     bmf_module_sdk)
 
+if(WIN32)
+    set_target_properties(bmf_go_loader PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/lib
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BMF_ASSEMBLE_ROOT}/bmf/lib
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BMF_ASSEMBLE_ROOT}/bmf/lib
+    )
+endif()
 
 install(TARGETS engine
     RUNTIME DESTINATION bin

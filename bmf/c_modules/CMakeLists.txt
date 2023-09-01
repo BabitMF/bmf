@@ -32,6 +32,14 @@ function(module_install)
     )
 endfunction()
 
+if(WIN32)
+    set_target_properties(builtin_modules PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/lib
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BMF_ASSEMBLE_ROOT}/bmf/lib
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BMF_ASSEMBLE_ROOT}/bmf/lib
+    )
+endif()
+
 if(BMF_ENABLE_FFMPEG)
     set(HDRS include/ffmpeg_decoder.h
              include/ffmpeg_encoder.h

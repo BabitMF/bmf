@@ -22,10 +22,6 @@
 #include <hmp/tensor.h>
 #include <py_type_cast.h>
 
-#ifdef _WIN32
-typedef int ssize_t;
-#endif
-
 namespace pybind11{
 namespace detail{
 

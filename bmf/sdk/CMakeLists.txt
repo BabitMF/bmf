@@ -23,6 +23,13 @@ add_library(bmf_module_sdk
 )
 endif()
 
+if(WIN32)
+    set_target_properties(bmf_module_sdk PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/lib
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BMF_ASSEMBLE_ROOT}/bmf/lib
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BMF_ASSEMBLE_ROOT}/bmf/lib
+    )
+endif()
 
 target_include_directories(bmf_module_sdk
     PUBLIC

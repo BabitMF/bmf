@@ -72,6 +72,14 @@ else()
     add_library(hmp ${HMP_SRCS} ${HMP_HDRS})
 endif()
 
+if(WIN32)
+    set_target_properties(hmp PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/lib
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BMF_ASSEMBLE_ROOT}/bmf/lib
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BMF_ASSEMBLE_ROOT}/bmf/lib
+    )
+endif()
+
 target_include_directories(hmp 
     PUBLIC
         $<BUILD_INTERFACE:${INC_DIR}>

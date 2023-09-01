@@ -27,3 +27,11 @@ endif()
 target_include_directories(_bmf PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}
     )
+
+if(WIN32)
+    set_target_properties(_bmf PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/lib
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BMF_ASSEMBLE_ROOT}/bmf/lib
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BMF_ASSEMBLE_ROOT}/bmf/lib
+    )
+endif()

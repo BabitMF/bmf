@@ -1,11 +1,5 @@
-import platform
-
-if platform.system().lower() == 'windows':
-    import bmf.bin._hmp
-    from bmf.bin._bmf import sdk
-else:
-    import bmf.lib._hmp
-    from bmf.lib._bmf import sdk
+import bmf.lib._hmp
+from bmf.lib._bmf import sdk
 
 ProcessDone = sdk.ProcessDone
 

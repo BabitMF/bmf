@@ -1,4 +1,3 @@
-import platform
 import threading
 from .bmf_stream import BmfStream
 import json
@@ -192,10 +191,7 @@ class BmfNode:
         self.graph_.run()
 
     def add_user_callback(self, key, cb):
-        if platform.system().lower() == 'windows':
-            from bmf.bin._bmf import engine
-        else:
-            from bmf.lib._bmf import engine
+        from bmf.lib._bmf import engine
         callback = engine.Callback(cb)
         self.user_callbacks[key] = (callback.uid(), callback)
 
@@ -206,10 +202,7 @@ class BmfNode:
         print('no output stream')
 
     def create_sync_module(self):
-        if platform.system().lower() == 'windows':
-            from bmf.bin._bmf import engine
-        else:
-            from bmf.lib._bmf import engine
+        from bmf.lib._bmf import engine
         node_option = json.dumps(self.option_)
 
         # convert node option for filter

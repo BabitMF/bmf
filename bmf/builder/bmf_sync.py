@@ -1,11 +1,7 @@
-import platform
 import json
 import bmf
 from bmf import Task, Packet
-if platform.system().lower() == 'windows':
-    from bmf.bin._bmf import engine
-else:
-    from bmf.lib._bmf import engine
+from bmf.lib._bmf import engine
 
 ## @ingroup pyAPI
 ## @defgroup syncMd SyncModule

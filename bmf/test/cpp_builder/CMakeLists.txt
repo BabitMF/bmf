@@ -10,6 +10,7 @@ target_link_libraries(test_cpp_builder
 )
 
 if(WIN32)
+    target_link_directories(test_cpp_builder PRIVATE $ENV{WIN_XCOMPILE_ROOT}/$ENV{WIN_XCOMPILE_ARCH}/usr/lib)
     target_link_libraries(test_cpp_builder
         PRIVATE
         libcrypto libssl

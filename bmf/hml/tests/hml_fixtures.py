@@ -1,10 +1,6 @@
 #from typing_extensions import Required
-import platform
 import pytest
-if platform.system().lower() == 'windows':
-    import bmf.bin._hmp as mp
-else:
-    import bmf.lib._hmp as mp
+import bmf.lib._hmp as mp
 import numpy as np
 import os
 

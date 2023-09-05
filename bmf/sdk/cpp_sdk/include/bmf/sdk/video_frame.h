@@ -189,6 +189,14 @@ class BMF_API VideoFrame : public OpaqueDataSet,
      */
     VideoFrame &copy_props(const VideoFrame &from, bool copy_private = false);
 
+    /**
+     * @brief frame with multiple planes are stored in contiguous memory
+     *
+     * @param
+     * @return VideoFrame
+     */
+    VideoFrame as_contiguous_storage();
+
   protected:
     VideoFrame(const std::shared_ptr<Private> &other);
 

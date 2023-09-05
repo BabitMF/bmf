@@ -29,11 +29,12 @@ class copy_frame(Module):
             frame = pkt.get(VideoFrame)
             width = frame.width
             height = frame.height
-            video_frame = VideoFrame(width,
-                                     height,
-                                     mp.PixelInfo(mp.kPF_NV12),
-                                     device="cuda")
-            video_frame.copy_(frame)
+            #video_frame = VideoFrame(width,
+            #                         height,
+            #                         mp.PixelInfo(mp.kPF_NV12),
+            #                         device="cuda")
+            #video_frame.copy_(frame)
+            video_frame = frame.as_contiguous_storage()
             video_frame.time_base = frame.time_base
             video_frame.pts = frame.pts
             pkt = Packet(video_frame)

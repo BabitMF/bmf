@@ -107,4 +107,12 @@ VideoFrame VideoFrame::reformat(const PixelInfo &pix_info) {
     return VideoFrame(frame);
 }
 
+VideoFrame VideoFrame::as_contiguous_storage() {
+    VideoFrame vf;
+    auto frame = self->frame.as_contiguous_storage();
+    vf = VideoFrame(frame);
+    vf.SequenceData::copy_props(*this);
+    return vf;
+}
+
 } // namespace bmf_sdk

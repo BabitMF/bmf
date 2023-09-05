@@ -180,6 +180,14 @@ class HMP_API Frame {
     Frame reformat(const PixelInfo &pix_info);
     const Tensor &storage() const { return storage_tensor_; }
 
+    /**
+     * @brief frame with multiple planes are stored in contiguous memory
+     *
+     * @param
+     * @return Frame
+     */
+    Frame as_contiguous_storage();
+
   private:
     int width_, height_;
     PixelFormatDesc pix_desc_;

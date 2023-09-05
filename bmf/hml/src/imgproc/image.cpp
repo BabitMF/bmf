@@ -210,6 +210,15 @@ TensorList from_storage_tensor(const Tensor &storage_tensor,
     return out;
 }
 
+Frame Frame::as_contiguous_storage() {
+    if (storage_tensor_.defined()) {
+        return *this;
+    }
+    Frame frame(width_, height_, pix_info_, device());
+    frame.copy_(*this);
+    return frame;
+}
+
 std::string stringfy(const Frame &frame) {
     return fmt::format("Frame({}, {}, {}, ({}, {}, {}))", frame.device(),
                        frame.dtype(), frame.format(), frame.nplanes(),

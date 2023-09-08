@@ -971,7 +971,7 @@ Packet CFFDecoder::generate_audio_packet(AVFrame *frame) {
         out_tb =
             av_buffersink_get_time_base(filter_graph_[1]->buffer_sink_ctx_[0]);
     else
-        out_tb = (AVRational){1, audio_decode_ctx_->sample_rate};
+        out_tb = av_make_q(1, audio_decode_ctx_->sample_rate);
     std::string s_tb =
         std::to_string(out_tb.num) + "," + std::to_string(out_tb.den);
     av_dict_set(&frame->metadata, "time_base", s_tb.c_str(), 0);
@@ -1198,10 +1198,10 @@ int CFFDecoder::handle_output_data(Task &task, int index, AVPacket *pkt,
                 if (decoded_frm_->pts != AV_NOPTS_VALUE)
                     decoded_frm_->pts = av_rescale_delta(
                         decoded_frame_tb, decoded_frm_->pts,
-                        (AVRational){1, audio_decode_ctx_->sample_rate},
+                        av_make_q(1, audio_decode_ctx_->sample_rate),
                         decoded_frm_->nb_samples,
                         &ist->filter_in_rescale_delta_last,
-                        (AVRational){1, audio_decode_ctx_->sample_rate});
+                        av_make_q(1, audio_decode_ctx_->sample_rate));
             } else
                 return 0;
         }
@@ -1282,7 +1282,7 @@ int CFFDecoder::handle_output_data(Task &task, int index, AVPacket *pkt,
                 !push_raw_stream_) { // Special case: for server mode, the frame
                                      // in different file will be continued
                 if (frame->pts == AV_NOPTS_VALUE || frame->pts == last_pts_) {
-                    AVRational default_tb = (AVRational){1, fps_};
+                    AVRational default_tb = av_make_q(1, fps_);
                     last_pts_ = frame->pts;
                     frame->pts =
                         curr_pts_ +
@@ -2248,7 +2248,7 @@ int CFFDecoder::process_raw_stream_packet(Task &task, BMFAVPacket &bmf_pkt,
         if (time_base_comps.size() != 2)
             throw std::runtime_error(
                 "Invalid video time base provided to decoder");
-        video_time_base_ = (AVRational){time_base_comps[0], time_base_comps[1]};
+        video_time_base_ = av_make_q(time_base_comps[0], time_base_comps[1]);
     } else if (!audio_codec_name_.empty() && !audio_decode_ctx_) {
         audio_stream_index_ = 0;
         AVCodec *dec = avcodec_find_decoder_by_name(audio_codec_name_.c_str());

@@ -50,7 +50,6 @@ TEST(audio_frame, constructors) {
     EXPECT_TRUE(af3);
     EXPECT_TRUE(af3.planer());
     EXPECT_EQ(af3.nplanes(), 16);
-
     TensorList ad0;
     EXPECT_THROW(
         AudioFrame::make(ad0, AudioChannelLayout::kLAYOUT_STEREO, true),

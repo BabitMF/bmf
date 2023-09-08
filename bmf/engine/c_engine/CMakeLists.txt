@@ -6,6 +6,13 @@ file(GLOB SRCS src/*.cpp
 )
 file(GLOB HDRS include/*.h ../connector/include/*.h)
 
+if($ENV{SCRIPT_EXEC_MODE} MATCHES "win")
+    file(GLOB DLSRCS
+        $ENV{WIN_XCOMPILE_ROOT}/$ENV{WIN_XCOMPILE_ARCH}/usr/src/dlfcn.c
+        $ENV{WIN_XCOMPILE_ROOT}/$ENV{WIN_XCOMPILE_ARCH}/usr/include/dlfcn.h
+    )
+endif()
+
 if(BMF_ENABLE_MOBILE)
     list(FILTER SRCS EXCLUDE REGEX connector_capi)
 endif()

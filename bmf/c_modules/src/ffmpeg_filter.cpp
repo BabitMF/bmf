@@ -189,8 +189,8 @@ int CFFFilter::init_filtergraph() {
         config_[it->first].channel_layout = frm->channel_layout;
 
         config_[it->first].tb = (frm->width && frm->height)
-                                    ? (AVRational){1, 25}
-                                    : (AVRational){1, frm->sample_rate};
+                                    ? av_make_q(1, 25)
+                                    : av_make_q(1, frm->sample_rate);
 
         if (frm->metadata) {
             AVDictionaryEntry *tag = NULL;

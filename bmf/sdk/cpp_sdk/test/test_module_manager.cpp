@@ -34,7 +34,6 @@ REGISTER_MODULE_CLASS(InAppModuleDemo)
 TEST(module_manager, test_compat_path) {
     auto p0 = fs::path("/home/foo");
     ASSERT_EQ(p0.string(), "/home/foo");
-    ASSERT_EQ(std::string(p0), "/home/foo");
 
     auto p1 = p0 / std::string("a.out");
     p0 /= std::string("a.out");

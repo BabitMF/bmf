@@ -96,8 +96,19 @@ class CPPModuleFactory : public ModuleFactoryI {
     }
 };
 
+ModuleManager::ModuleManager() {
+    if (false == inited) {
+        init();
+    }
+}
 
-ModuleManager::ModuleManager(){}
+bool ModuleManager::set_repo_root(const std::string& path) {
+    std::lock_guard<std::mutex> guard(m_mutex);
+    if (fs::exists(path)) {
+        self->repo_roots.push_back(path);
+    }
+    return true;
+}
 
 std::function<ModuleFactoryI *(const ModuleInfo &)>
 ModuleManager::get_loader(const std::string module_type) {
@@ -164,7 +175,7 @@ ModuleManager::load_module(const std::string &module_name,
         module_info.module_type =
             module_type.empty() ? infer_module_type(module_path) : module_type;
         if (module_info.module_type == "python") {
-            module_info.module_path = fs::current_path();
+            module_info.module_path = fs::current_path().string();
         }
     } else {
         module_info = *tmp_module_info;
@@ -397,11 +408,11 @@ bool ModuleManager::resolve_from_meta(const std::string &module_name,
             info.module_path.empty()) { // builtin modules
             if (info.module_type == "c++" || info.module_type == "go") {
                 info.module_path =
-                    entry_module_path.parent_path() /
+                    (entry_module_path.parent_path() /
                     entry_module_path.filename().replace_extension(
-                        SharedLibrary::default_extension());
+                        SharedLibrary::default_extension())).string();
             } else if (info.module_type == "python") {
-                info.module_path = entry_module_path.parent_path();
+                info.module_path = entry_module_path.parent_path().string();
             }
         }
 
@@ -463,7 +474,7 @@ bool ModuleManager::initialize_loader(const std::string &module_type) {
             fs::path(SharedLibrary::this_line_location()).parent_path() /
             lib_name;
         auto lib = std::make_shared<SharedLibrary>(
-            loader_path, SharedLibrary::LAZY | SharedLibrary::GLOBAL);
+            loader_path.string(), SharedLibrary::LAZY | SharedLibrary::GLOBAL);
 
         self->loaders["go"] = [=](const ModuleInfo &info) -> ModuleFactoryI * {
             auto import_func =
@@ -567,18 +578,18 @@ void ModuleManager::init() {
         inited = true;
         // initialize cpp/py/go loader lazily
     }
-    set_repo_root(fs::path(SharedLibrary::this_line_location())
+    set_repo_root((fs::path(SharedLibrary::this_line_location())
                       .parent_path()
                       .parent_path() /
-                  "cpp_modules");
-    set_repo_root(fs::path(SharedLibrary::this_line_location())
+                  "cpp_modules").string());
+    set_repo_root((fs::path(SharedLibrary::this_line_location())
                       .parent_path()
                       .parent_path() /
-                  "python_modules");
-    set_repo_root(fs::path(SharedLibrary::this_line_location())
+                  "python_modules").string());
+    set_repo_root((fs::path(SharedLibrary::this_line_location())
                       .parent_path()
                       .parent_path() /
-                  "go_modules");
+                  "go_modules").string());
     set_repo_root(s_bmf_repo_root.string());
     set_repo_root(fs::current_path().string());
 }

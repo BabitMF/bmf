@@ -946,9 +946,8 @@ TEST(cpp_transcode, test_generator) {
 
     nlohmann::json decode_para = {{"input_path", input_file}};
 
-    graph.Decode(bmf_sdk::JsonParam(decode_para))["video"]
-        .Scale("299:299")
-        .Start();
+    auto stream = graph.Decode(bmf_sdk::JsonParam(decode_para))["video"].Scale("299:299");
+    stream.Start();
     int frame_num = 0;
     while (true) {
         Packet pkt = graph.Generate(stream[0].GetName());

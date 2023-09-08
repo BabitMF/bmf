@@ -34,11 +34,17 @@ TEST(cpp_set_option, set_option) {
         {"input_path", "../../files/big_bunny_10s_30fps.mp4"}};
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
 
-    auto video_2 =
-        graph.Module({video["video"]}, "copy_module", bmf::builder::CPP,
-                     bmf_sdk::JsonParam(), "CopyModule",
-                     "../lib/libcopy_module.so", "copy_module:CopyModule");
-
+    #ifdef WIN32
+        auto video_2 =
+            graph.Module({video["video"]}, "copy_module", bmf::builder::CPP,
+                        bmf_sdk::JsonParam(), "CopyModule",
+                        "../lib/copy_module.dll", "copy_module:CopyModule");
+    #else
+        auto video_2 =
+            graph.Module({video["video"]}, "copy_module", bmf::builder::CPP,
+                        bmf_sdk::JsonParam(), "CopyModule",
+                        "../lib/libcopy_module.so", "copy_module:CopyModule");
+    #endif
     nlohmann::json encode_para = {
         {"output_path", output_file},
         {"video_params", {{"vsync", "vfr"}, {"max_fr", 60}}},

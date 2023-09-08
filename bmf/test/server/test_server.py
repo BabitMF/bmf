@@ -8,7 +8,15 @@ from bmf import ServerGateway, module
 from bmf import GraphMode, Module, Log, LogLevel, InputType, ProcessResult, Packet, Timestamp, scale_av_pts, \
     av_time_base, BmfCallBackType, VideoFrame, AudioFrame
 import threading
-import timeout_decorator
+import os
+if os.name == 'nt':
+    # We redefine timeout_decorator on windows
+    class timeout_decorator:
+        @staticmethod
+        def timeout(*args, **kwargs):
+            return lambda f: f # return a no-op decorator
+else:
+    import timeout_decorator
 
 sys.path.append("../../test/")
 from base_test.base_test_case import BaseTestCase

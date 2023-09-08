@@ -140,17 +140,25 @@ add_custom_command(TARGET bmf_assem
 
 ## copy symbol link of hmp and _jhmp
 if(NOT APPLE AND NOT ANDROID)
-    add_custom_command(TARGET bmf_assem
-        POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy
-            $<TARGET_FILE_DIR:hmp>/${CMAKE_SHARED_LIBRARY_PREFIX}hmp${CMAKE_SHARED_LIBRARY_SUFFIX} ${BMF_ASSEMBLE_ROOT}/bmf/lib
-    )
+    if(WIN32)
+        add_custom_command(TARGET bmf_assem
+            POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                $<TARGET_FILE_DIR:hmp>/${CMAKE_SHARED_LIBRARY_PREFIX}hmp${CMAKE_SHARED_LIBRARY_SUFFIX} ${BMF_ASSEMBLE_ROOT}/bmf/lib
+        )
+    else()
+        add_custom_command(TARGET bmf_assem
+            POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                $<TARGET_FILE_DIR:hmp>/${CMAKE_SHARED_LIBRARY_PREFIX}hmp${CMAKE_SHARED_LIBRARY_SUFFIX}* ${BMF_ASSEMBLE_ROOT}/bmf/lib
+        )
+    endif()
 
     if(BMF_ENABLE_JNI)
         add_custom_command(TARGET bmf_assem
             POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy
-                $<TARGET_FILE_DIR:_jhmp>/${CMAKE_SHARED_LIBRARY_PREFIX}_jhmp${CMAKE_SHARED_LIBRARY_SUFFIX} ${BMF_ASSEMBLE_ROOT}/bmf/lib
+                $<TARGET_FILE_DIR:_jhmp>/${CMAKE_SHARED_LIBRARY_PREFIX}_jhmp${CMAKE_SHARED_LIBRARY_SUFFIX}* ${BMF_ASSEMBLE_ROOT}/bmf/lib
         )
     endif()
 endif()

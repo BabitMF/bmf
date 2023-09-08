@@ -84,7 +84,7 @@ class BMF_API SharedLibrary {
 #elif defined(__APPLE__)
         return "lib";
 #elif defined(__MINGW32__) || defined(_WIN32)
-        return "bin";
+        return "lib";
 #else
 #error "unsupported os"
 #endif
@@ -107,7 +107,7 @@ class BMF_API SharedLibrary {
     static const char* default_extension()
     {
 #ifdef __unix__
-        return "lib";
+        return ".so";
 #elif defined(__APPLE__)
         return ".dylib";
 #elif defined(__MINGW32__) || defined(_WIN32)

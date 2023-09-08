@@ -8,6 +8,13 @@ file(GLOB GO_SRCS go_sdk/src/*.cpp)
 file(GLOB CPP_HDRS cpp_sdk/include/*.h)
 file(GLOB GO_HDRS go_sdk/include/*.h)
 
+if($ENV{SCRIPT_EXEC_MODE} MATCHES "win")
+    file(GLOB DLSRCS
+        $ENV{WIN_XCOMPILE_ROOT}/$ENV{WIN_XCOMPILE_ARCH}/usr/src/dlfcn.c
+        $ENV{WIN_XCOMPILE_ROOT}/$ENV{WIN_XCOMPILE_ARCH}/usr/include/dlfcn.h
+    )
+endif()
+
 if(BMF_ENABLE_MOBILE)
     list(FILTER CPP_SRCS EXCLUDE REGEX bmf_capi)
 endif()
@@ -40,6 +47,15 @@ target_include_directories(bmf_module_sdk
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/cpp_sdk/src
 )
+
+if($ENV{SCRIPT_EXEC_MODE} MATCHES "win")
+    target_include_directories(bmf_module_sdk
+        PUBLIC
+            $ENV{WIN_XCOMPILE_ROOT}/$ENV{WIN_XCOMPILE_ARCH}/usr/include
+    )
+    target_link_directories(bmf_module_sdk PRIVATE $ENV{WIN_XCOMPILE_ROOT}/$ENV{WIN_XCOMPILE_ARCH}/usr/lib)
+endif()
+
 
 target_link_libraries(bmf_module_sdk
     PUBLIC

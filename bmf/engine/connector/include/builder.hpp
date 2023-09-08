@@ -365,7 +365,7 @@ class Stream {
     BMF_FUNC_VIS Node Loop(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node (T para, std::string const &alias = "");
+    BMF_FUNC_VIS Node Split(T para, std::string const &alias = "");
 
     template <typename T>
     BMF_FUNC_VIS Node Adelay(T para, std::string const &alias = "");

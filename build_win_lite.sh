@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 set -eux
 
 #git submodule update --init --recursive
@@ -20,9 +21,6 @@ export USE_BMF_FFMPEG=0
 [ $# -gt 0 ] && {
     for arg in "$@"; do
     case $arg in
-        debug)
-        BUILD_TYPE="Debug"
-        ;;
         clean)
         rm -rf ${BUILD_DIR}
         exit
@@ -34,7 +32,7 @@ export USE_BMF_FFMPEG=0
         preset=${arg#--preset=}
         ;;
         bmf_ffmpeg)
-        USE_BMF_FFMPEG=1
+        USE_BMF_FFMPEG="ON"
         ;;
         *)
         printf "arg:%s is not supported.\n" "${arg}"
@@ -52,6 +50,10 @@ fi
 if [ -z "$preset" ]; then
     printf "Please specify the MSVC arch preset using --preset=[x86-Debug,x86-Release,x64-Debug,x64-Release].\n"
     exit 1
+fi
+
+if [ "$preset" = "x64-Debug" ] || [ "$preset" = "x86-Debug" ]; then
+    BUILD_TYPE="Debug"
 fi
 
 case $MSVC_VERSION in
@@ -76,20 +78,6 @@ case $MSVC_VERSION in
         ;;
 esac
 
-if [ "$USE_BMF_FFMPEG" = "1" ] && [ ! -d "3rd_party/ffmpeg_bin/win/build" ]
-then
-    git config --global http.sslVerify false
-    git submodule init "3rd_party/ffmpeg_bin"
-    git submodule update
-    
-    echo "Extracting BMF's FFMPEG"
-    cd 3rd_party/ffmpeg_bin/win/
-    tar xvf ffmpeg5.0.tar.gz
-    cd ../../..
-else
-	echo "Skip extracting ffmpeg"
-fi
-
 source ./version.sh
 
 [ -d ${OUTPUT_DIR} ] && rm -rf ${OUTPUT_DIR}/* || mkdir -p ${OUTPUT_DIR}
@@ -99,22 +87,8 @@ cd ${BUILD_DIR}
 #x86-Debug x64-Debug x86-Release x64-Release
 if [[ ${HOST} =~ mingw ]]
 then
-    echo "Building ${preset}"
-    if [ "$USE_BMF_FFMPEG" = "1" ] && [ ! -d "3rd_party/ffmpeg_bin/win/build" ]
-    then
-        if [ $(echo ${preset} | awk -F'-' '{print $1}') == "x86" ]
-        then
-            dir=x86
-        else
-            dir=x86_64
-        fi
+    echo "Building ${preset} ${BUILD_TYPE}"
 
-        cp -r ../3rd_party/ffmpeg_bin/win/build/${dir}/lib/. /usr/local/lib/
-        cp -r ../3rd_party/ffmpeg_bin/win/build/${dir}/include/. /usr/local/include/
-        cp -r ../3rd_party/ffmpeg_bin/win/build/${dir}/bin/. /usr/local/bin/
-    fi
-
-    #need to add '-DRUN_HAVE_STD_REGEX=0 -DRUN_HAVE_POSIX_REGEX=0' to cmake, see https://github.com/google/benchmark/issues/773
     [ -d ${preset} ] && rm -rf ${preset}/* || mkdir -p ${preset}
 
 (
@@ -127,7 +101,7 @@ then
         -DBMF_ENABLE_PYTHON=ON \
         -DBMF_ENABLE_GLOG=OFF \
         -DBMF_ENABLE_MOBILE=OFF \
-        -DBMF_ENABLE_FFMPEG=OFF \
+        -DBMF_ENABLE_FFMPEG=${USE_BMF_FFMPEG} \
         -DBMF_ENABLE_CUDA=OFF \
         -DRUN_HAVE_STD_REGEX=0 \
         -DRUN_HAVE_POSIX_REGEX=0 \
@@ -155,7 +129,7 @@ else
         -DBMF_ENABLE_PYTHON=ON \
         -DBMF_ENABLE_GLOG=OFF \
         -DBMF_ENABLE_MOBILE=OFF \
-        -DBMF_ENABLE_FFMPEG=OFF \
+        -DBMF_ENABLE_FFMPEG=${USE_BMF_FFMPEG} \
         -DBMF_ENABLE_CUDA=OFF \
         -DRUN_HAVE_STD_REGEX=0 \
         -DRUN_HAVE_POSIX_REGEX=0 \

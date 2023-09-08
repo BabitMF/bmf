@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include <memory>
 #include <gtest/gtest.h>
 #include <bmf/sdk/bmf_type_info.h>
@@ -25,35 +24,39 @@ using namespace bmf_sdk;
 
 namespace {
 
-struct A {};
+    struct A {
+    };
 
-struct B {};
+    struct B {
+    };
 
-namespace test {
+    namespace test {
 
-struct C { // copyable, moveable
-    int value = 0;
-};
+        struct C { //copyable, moveable
+            int value = 0;
+        };
 
-struct D : public C { // moveable only
-    D(D &&) = default;
+        struct D : public C { //moveable only
+            D(D&&) = default;
+        #ifdef _WIN32
+            D(int&& val) :C{ std::move(val) }{}
+        #endif // _WIN32
+            std::unique_ptr<int> v_ptr;
 
-    std::unique_ptr<int> v_ptr;
+            int* u_ptr = nullptr;
+            ~D()
+            {
+                if (u_ptr) {
+                    *u_ptr = 0x42;
+                }
+            }
+        };
 
-    int *u_ptr = nullptr;
+    } //namespace test
 
-    ~D() {
-        if (u_ptr) {
-            *u_ptr = 0x42;
-        }
-    }
-};
+} //namespace
 
-} // namespace test
-
-} // namespace
-
-// register in global namespace
+//register in global namespace
 BMF_DEFINE_TYPE(test::C)
 BMF_DEFINE_TYPE(test::D)
 
@@ -67,8 +70,8 @@ TEST(type_info, type_info)
     EXPECT_TRUE(bmf_sdk::type_info<A>() != bmf_sdk::type_info<B>());
 
     //register by BMF_DEFINE_TYPE
-    auto &c_info = bmf_sdk::type_info<test::C>();
-    auto &d_info = bmf_sdk::type_info<test::D>();
+    auto& c_info = bmf_sdk::type_info<test::C>();
+    auto& d_info = bmf_sdk::type_info<test::D>();
     EXPECT_TRUE(bmf_sdk::type_info<A>() != c_info);
     EXPECT_TRUE(bmf_sdk::type_info<test::D>() != c_info);
     EXPECT_EQ(c_info.name, std::string("test::C"));
@@ -81,19 +84,23 @@ TEST(type_info, type_info)
     EXPECT_EQ(bmf_sdk::type_info<AudioFrame>().name, std::string("bmf_sdk::AudioFrame"));
 }
 
-TEST(packet, constructors) {
+
+
+
+TEST(packet, constructors)
+{
     Packet pkt0;
     EXPECT_FALSE(pkt0);
 
-    test::C c{1};
-    test::D d{2};
+    test::C c{ 1 };
+    test::D d{ 2 };
 
     int d_destroy_flag = 0x0;
     {
-        // type cast
-        auto pkt_c = Packet(c); // copy c
+        //type cast
+        auto pkt_c = Packet(c); //copy c
         Packet pkt_cc = pkt_c;
-        // auto pkt_d = Packet(d);  //compile error, as d is not copyable
+        //auto pkt_d = Packet(d);  //compile error, as d is not copyable
         auto pkt_d = Packet(std::move(d));
 
         ASSERT_EQ(pkt_c.unsafe_self(), pkt_cc.unsafe_self());
@@ -112,7 +119,7 @@ TEST(packet, constructors) {
         EXPECT_TRUE(pkt_d.is<test::D>());
         EXPECT_FALSE(pkt_d.is<test::C>());
 
-        // timestamp
+        //timestamp
         EXPECT_EQ(pkt_c.timestamp(), UNSET);
         pkt_c.set_timestamp(111);
         EXPECT_EQ(pkt_c.timestamp(), 111);
@@ -120,7 +127,7 @@ TEST(packet, constructors) {
         pkt_d.get<test::D>().u_ptr = &d_destroy_flag;
         EXPECT_EQ(d_destroy_flag, 0);
     }
-    EXPECT_EQ(d_destroy_flag, 0x42); // check if d is destroyed
+    EXPECT_EQ(d_destroy_flag, 0x42); //check if d is destroyed
 
     auto pkt_eos = Packet::generate_eos_packet();
     EXPECT_EQ(pkt_eos.timestamp(), EOS);
@@ -131,4 +138,5 @@ TEST(packet, constructors) {
     //
     auto rgb = hmp::PixelInfo(hmp::PF_RGB24);
     EXPECT_NO_THROW(Packet(VideoFrame::make(720, 1280, rgb)));
+
 }

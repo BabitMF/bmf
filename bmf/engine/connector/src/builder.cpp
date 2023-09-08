@@ -29,10 +29,16 @@
 
 namespace bmf::builder {
 namespace internal {
-RealStream::RealStream(const std::shared_ptr<RealNode> &node, std::string name,
-                       std::string notify, std::string alias)
-    : node_(node), graph_(node->graph_), name_(std::move(name)), notify_(std::move(notify)),
-      alias_(std::move(alias)) {}
+    RealStream::RealStream(const std::shared_ptr<RealNode> &node, std::string name, std::string notify,
+                                std::string alias)
+                    : node_(node), graph_(node->graph_), name_(std::move(name)), notify_(std::move(notify)), alias_(std::move(alias)) {}
+
+    RealStream::RealStream(const std::shared_ptr<RealGraph> &graph, std::string name, std::string notify,
+                                std::string alias)
+                    : graph_(graph), name_(std::move(name)), notify_(std::move(notify)), alias_(std::move(alias)) {
+        std::shared_ptr<RealNode> nil;
+        node_ = nil;
+    }
 
 void RealStream::SetNotify(std::string const &notify) {
     auto node = node_.lock();
@@ -792,8 +798,6 @@ void Graph::Start(std::vector<Stream>& generateStreams, bool dumpGraph, bool nee
 Packet Graph::Generate(std::string streamName, bool block) {
     return graph_->Generate(streamName, block);
 }
-
-Packet Graph::Generate() { return graph_->Generate(); }
 
 void Graph::SetTotalThreadNum(int num) {
     graph_->graphOption_.json_value_["scheduler_count"] = num;

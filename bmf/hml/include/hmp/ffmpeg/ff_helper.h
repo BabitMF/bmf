@@ -184,6 +184,9 @@ static AVBufferRef *av_hw_frames_ctx_from_device(const Device &device,
         HMP_REQUIRE(rc == 0, "create cuda hwdevice failed with rc={}", rc);
 
         AVBufferRef *hw_frame_ctx = av_hwframe_ctx_alloc(hw_device_ctx);
+
+        av_buffer_unref(&hw_device_ctx);
+
         AVHWFramesContext *av_hw_frames_ctx =
             (AVHWFramesContext *)hw_frame_ctx->data;
         av_hw_frames_ctx->format = AV_PIX_FMT_CUDA;
@@ -192,7 +195,6 @@ static AVBufferRef *av_hw_frames_ctx_from_device(const Device &device,
         av_hw_frames_ctx->height = height;
         rc = av_hwframe_ctx_init(hw_frame_ctx);
         if (rc < 0) {
-            av_buffer_unref(&hw_device_ctx);
             HMP_REQUIRE(false, "av_hwframe_ctx_init failed with rc={}", rc);
         }
 
@@ -215,14 +217,12 @@ static AVFrame *hw_avframe_from_device(const Device &device, int width,
     avfrm->width = width;
     avfrm->height = height;
     assign_pixel_info(*avfrm, pix_info);
-    auto ret = av_frame_get_buffer(avfrm, 32); // pix_info.alignment());
-    HMP_REQUIRE(ret == 0, "get frame buffer failed={}", ret);
     auto hw_frames_ctx = av_hw_frames_ctx_from_device(
         kCUDA, width, height, (AVPixelFormat)pix_info.format());
-    ret = av_hwframe_get_buffer(hw_frames_ctx, avfrm, 0);
+    auto ret = av_hwframe_get_buffer(hw_frames_ctx, avfrm, 0);
     HMP_REQUIRE(ret == 0, "get hwframe buffer failed={}", ret);
     avfrm->format = ((AVHWFramesContext *)(hw_frames_ctx->data))->format;
-    avfrm->hw_frames_ctx = av_buffer_ref(hw_frames_ctx);
+    av_buffer_unref(&hw_frames_ctx);
     return avfrm;
 }
 

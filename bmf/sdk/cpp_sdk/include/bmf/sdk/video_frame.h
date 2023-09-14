@@ -187,7 +187,7 @@ class BMF_API VideoFrame : public OpaqueDataSet,
      * @param from
      * @return VideoFrame&
      */
-    VideoFrame &copy_props(const VideoFrame &from);
+    VideoFrame &copy_props(const VideoFrame &from, bool copy_private = false);
 
   protected:
     VideoFrame(const std::shared_ptr<Private> &other);

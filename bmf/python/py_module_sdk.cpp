@@ -380,7 +380,8 @@ void module_sdk_bind(py::module &m) {
              (VideoFrame(VideoFrame::*)(const Device &, bool) const) &
                  VideoFrame::to,
              py::arg("device"), py::arg("non_blocking") = false)
-        .def("copy_props", &VideoFrame::copy_props, py::arg("from"))
+        .def("copy_props", &VideoFrame::copy_props, py::arg("from"),
+             py::arg("copy_private") = false)
         .def("reformat", &VideoFrame::reformat, py::arg("pix_info"));
     PACKET_REGISTER_BMF_SDK_TYPE(VideoFrame)
 

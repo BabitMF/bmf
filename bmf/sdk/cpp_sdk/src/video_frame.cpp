@@ -93,7 +93,7 @@ VideoFrame VideoFrame::to(const Device &device, bool non_blocking) const {
 }
 
 VideoFrame &VideoFrame::copy_props(const VideoFrame &from) {
-    OpaqueDataSet::copy_props(from);
+    //OpaqueDataSet::copy_props(from);
     SequenceData::copy_props(from);
     Future::copy_props(from);
     return *this;

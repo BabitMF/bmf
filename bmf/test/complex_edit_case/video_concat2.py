@@ -20,10 +20,8 @@ class video_concat2(SubGraph):
             # create a input stream
             stream_name = 'video_' + str(i)
             self.inputs.append(stream_name)
-            video_stream = (
-                self.graph.input_stream(stream_name)
-                    .scale(option['width'], option['height']).setsar(r="1/1")
-            )
+            video_stream = (self.graph.input_stream(stream_name).scale(
+                option['width'], option['height']).setsar(r="1/1"))
 
             if i < video_stream_cnt - 1:
                 split_stream = video_stream.split()
@@ -35,28 +33,29 @@ class video_concat2(SubGraph):
             # prepare concat stream
             info = option['video_list'][i]
             trim_time = info['duration'] - info['transition_time']
-            concat_stream = (
-                video_stream.trim(start=info['start'], duration=info['duration'])
-                    .setpts('PTS-STARTPTS')
-            )
+            concat_stream = (video_stream.trim(
+                start=info['start'],
+                duration=info['duration']).setpts('PTS-STARTPTS'))
 
             # do transition, here use overlay instead
             if prev_transition_stream is not None:
-                concat_stream = concat_stream.overlay(prev_transition_stream, repeatlast=0)
+                concat_stream = concat_stream.overlay(prev_transition_stream,
+                                                      repeatlast=0)
 
             # add to concat stream
             concat_video_streams.append(concat_stream)
 
             # prepare transition stream for next stream
             if transition_stream is not None:
-                prev_transition_stream = (
-                    transition_stream.trim(start=trim_time, duration=info['transition_time'])
-                        .setpts('PTS-STARTPTS')
-                        .scale(200, 200)
-                )
+                prev_transition_stream = (transition_stream.trim(
+                    start=trim_time, duration=info['transition_time']).setpts(
+                        'PTS-STARTPTS').scale(200, 200))
 
         # concat videos
-        concat_video_stream = bmf.concat(*concat_video_streams, n=video_stream_cnt, v=1, a=0)
+        concat_video_stream = bmf.concat(*concat_video_streams,
+                                         n=video_stream_cnt,
+                                         v=1,
+                                         a=0)
 
         # process audio
         # actually, we can use another sub-graph module to process audio, we combine it
@@ -72,19 +71,22 @@ class video_concat2(SubGraph):
                 # pre-processing for audio stream
                 info = option['video_list'][i]
                 trim_time = info['duration'] - info['transition_time']
-                audio_stream = (
-                    self.graph.input_stream(stream_name)
-                        .atrim(start=info['start'], duration=trim_time)
-                        .asetpts('PTS-STARTPTS')
-                        .afade(t='in', st=0, d=2)
-                        .afade(t='out', st=info['duration'] - 2, d=2)
-                )
+                audio_stream = (self.graph.input_stream(stream_name).atrim(
+                    start=info['start'],
+                    duration=trim_time).asetpts('PTS-STARTPTS').afade(
+                        t='in', st=0, d=2).afade(t='out',
+                                                 st=info['duration'] - 2,
+                                                 d=2))
 
                 # add to concat stream
                 concat_audio_streams.append(audio_stream)
 
             # concat audio
-            concat_audio_stream = bmf.concat(*concat_audio_streams, n=audio_stream_cnt, v=0, a=1)
+            concat_audio_stream = bmf.concat(*concat_audio_streams,
+                                             n=audio_stream_cnt,
+                                             v=0,
+                                             a=1)
 
         # finish creating graph
-        self.output_streams = self.finish_create_graph([concat_video_stream, concat_audio_stream])
+        self.output_streams = self.finish_create_graph(
+            [concat_video_stream, concat_audio_stream])

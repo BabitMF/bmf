@@ -223,7 +223,7 @@ bmf_import_py_module(const char *module_path, const char *module,
     }
 
     // try to use top most path as module path, which can fix import ambiguity
-    // when module have same module.cls  
+    // when module have same module.cls
     std::string temp_module_path = fs::absolute(module_path).string();
     std::string temp_module_name = module;
     // if module_path last charector is '/' or '.', remove it

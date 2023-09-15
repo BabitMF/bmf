@@ -136,6 +136,7 @@ class flip_gpu(Module):
 
         return ProcessResult.OK
 
+
 def register_flip_gpu_info(info):
     info.module_description = "Builtin module for flip using GPU"
     info.module_tag = ModuleTag.TAG_DEVICE_HWACCEL

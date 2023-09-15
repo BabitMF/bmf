@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 #ifdef _WIN32
-//pybind11's bug, see:https://github.com/microsoft/onnxruntime/issues/9735
+// pybind11's bug, see:https://github.com/microsoft/onnxruntime/issues/9735
 #include <corecrt.h>
 #endif
 #include <pybind11/numpy.h>

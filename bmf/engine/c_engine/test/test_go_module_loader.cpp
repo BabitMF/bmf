@@ -32,7 +32,8 @@ TEST(go_module, module_loader) {
     std::string module_path;
     std::string module_entry;
     std::shared_ptr<Module> module;
-    ModuleFactory::create_module(module_name, node_id, option, module_type, module_path, module_entry, module);
+    ModuleFactory::create_module(module_name, node_id, option, module_type,
+                                 module_path, module_entry, module);
     EXPECT_EQ(module == nullptr, 0);
 
     // get module info

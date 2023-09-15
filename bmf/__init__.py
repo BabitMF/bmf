@@ -23,6 +23,5 @@ from .builder import BmfGraph, graph, BmfCallBackType, module, py_module, c_modu
     GraphConfig, get_module_file_dependencies, ff_filter
 from .server import ServerGateway, ServerGatewayNew
 
-
 if platform.system().lower() != 'windows':
     sys.setdlopenflags(flags)

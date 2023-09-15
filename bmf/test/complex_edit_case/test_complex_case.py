@@ -9,9 +9,10 @@ import os
 if os.name == 'nt':
     # We redefine timeout_decorator on windows
     class timeout_decorator:
+
         @staticmethod
         def timeout(*args, **kwargs):
-            return lambda f: f # return a no-op decorator
+            return lambda f: f  # return a no-op decorator
 else:
     import timeout_decorator
 
@@ -194,7 +195,8 @@ class TestComplexCase(BaseTestCase):
 
         # concat video and audio streams with 'video_concat' module
         concat_streams = (bmf.module(stream, 'video_concat', option,
-            "../../demo/edit/", "video_concat.video_concat"))
+                                     "../../demo/edit/",
+                                     "video_concat.video_concat"))
 
         # encode
         (bmf.encode(
@@ -289,19 +291,23 @@ class TestComplexCase(BaseTestCase):
         overlay_streams = list()
         overlay_streams.append(
             bmf.module([video1['video'], logo_1], 'video_overlay',
-                       overlay_option, "../../demo/edit/", "video_overlay.video_overlay")[0])
+                       overlay_option, "../../demo/edit/",
+                       "video_overlay.video_overlay")[0])
         overlay_streams.append(
             bmf.module([video2['video'], logo_2], 'video_overlay',
-                       overlay_option, "../../demo/edit/", "video_overlay.video_overlay")[0])
+                       overlay_option, "../../demo/edit/",
+                       "video_overlay.video_overlay")[0])
         overlay_streams.append(
             bmf.module([video3['video'], logo_3], 'video_overlay',
-                       overlay_option, "../../demo/edit/", "video_overlay.video_overlay")[0])
+                       overlay_option, "../../demo/edit/",
+                       "video_overlay.video_overlay")[0])
 
         # do concat
         concat_streams = (bmf.module([
             overlay_streams[0], overlay_streams[1], overlay_streams[2],
             video1['audio'], video2['audio'], video3['audio']
-        ], 'video_concat', concat_option, "../../demo/edit/", "video_concat.video_concat"))
+        ], 'video_concat', concat_option, "../../demo/edit/",
+                                     "video_concat.video_concat"))
 
         # encode
         (bmf.encode(

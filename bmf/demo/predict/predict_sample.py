@@ -8,7 +8,8 @@ if __name__ == '__main__':
     Log.set_log_level(LogLevel.ERROR)
 
     # create sr module once
-    sr_mod = bmf.create_module('onnx_sr', {"model_path": "../../models/v1.onnx"})
+    sr_mod = bmf.create_module('onnx_sr',
+                               {"model_path": "../../models/v1.onnx"})
 
     # execute two tasks w/o loading model repeatedly
     for i in range(2):

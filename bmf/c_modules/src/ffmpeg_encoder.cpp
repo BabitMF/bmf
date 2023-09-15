@@ -1719,7 +1719,7 @@ int CFFEncoder::streamcopy(AVPacket *ipkt, AVPacket *opkt, int idx) {
             duration = cpar->frame_size;
         opkt->dts = opkt->pts =
             av_rescale_delta(enc_ctxs_[idx]->time_base, ipkt->dts,
-                av_make_q(1, cpar->sample_rate), duration,
+                             av_make_q(1, cpar->sample_rate), duration,
                              &ost_[idx].filter_in_rescale_delta_last,
                              output_stream_[idx]->time_base);
     }

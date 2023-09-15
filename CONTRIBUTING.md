@@ -54,6 +54,6 @@ After clang-format installed(version 16.0.6, can be installed by: pip install cl
     ```
 - Python source code, here use:
     ```bash
-    pip install yapf
+    pip install yapf==0.40.1
     yapf --in-place --recursive --style="{indent_width: 4}"
     ```

@@ -35,7 +35,9 @@
     @param code one of Error::Code
     @param msg error message
     */
-#define BMF_Error_(code, ...) bmf_sdk::error( code, bmf_sdk::format(__VA_ARGS__).c_str(), __FUNCTION__, __FILE__, __LINE__ )
+#define BMF_Error_(code, ...)                                                  \
+    bmf_sdk::error(code, bmf_sdk::format(__VA_ARGS__).c_str(), __FUNCTION__,   \
+                   __FILE__, __LINE__)
 
 BEGIN_BMF_SDK_NS
 

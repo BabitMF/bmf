@@ -41,7 +41,7 @@
 #else // BMF_BUILD_SHARED
 #define BMF_API __declspec(dllimport)
 #endif
-#else //GNUC
+#else // GNUC
 #ifdef BMF_BUILD_SHARED
 #define BMF_API __attribute__((__visibility__("default")))
 #else // BMF_BUILD_SHARED

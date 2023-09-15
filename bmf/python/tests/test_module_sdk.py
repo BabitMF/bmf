@@ -6,6 +6,7 @@ from bmf.lib._bmf.sdk import VideoFrame, AudioFrame, BMFAVPacket
 from bmf.lib._bmf.sdk import Packet
 from bmf.lib._bmf import sdk
 
+
 class TestVideoFrame(object):
 
     def test_image(self):

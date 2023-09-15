@@ -44,7 +44,7 @@ class BMF_API Task {
 
     Task &operator=(Task rhs);
 
-    friend BMF_API void swap(Task& target, Task& source);
+    friend BMF_API void swap(Task &target, Task &source);
 
     /* @} */
     /*!

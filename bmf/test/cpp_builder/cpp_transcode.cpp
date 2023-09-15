@@ -68,10 +68,12 @@ TEST(cpp_transcode, transcode_video) {
     auto graph = bmf::builder::Graph(bmf::builder::NormalMode,
                                      bmf_sdk::JsonParam(graph_para));
 
-    nlohmann::json decode_tail_para = {{"input_path", "../../files/header.mp4"}};
+    nlohmann::json decode_tail_para = {
+        {"input_path", "../../files/header.mp4"}};
     auto tail = graph.Decode(bmf_sdk::JsonParam(decode_tail_para));
 
-    nlohmann::json decode_header_para = {{"input_path", "../../files/header.mp4"}};
+    nlohmann::json decode_header_para = {
+        {"input_path", "../../files/header.mp4"}};
     auto header = graph.Decode(bmf_sdk::JsonParam(decode_header_para));
 
     nlohmann::json decode_main_para = {
@@ -172,7 +174,8 @@ TEST(cpp_transcode, transcode_option) {
                                      bmf_sdk::JsonParam(graph_para));
 
     nlohmann::json decode_para = {
-        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}, {"start_time", 2}};
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"},
+        {"start_time", 2}};
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
 
     nlohmann::json encode_para = {
@@ -648,7 +651,7 @@ TEST(cpp_transcode, transcode_incorrect_encoder_param) {
              {wrong_k_2, wrong_v_2},
          }},
         {"audio_params", {{wrong_k_1, wrong_v_1}, {wrong_k_2, wrong_v_2}}},
-        {"mux_params", {{wrong_k_1 , wrong_v_1}, {wrong_k_2 , wrong_v_2}}}};
+        {"mux_params", {{wrong_k_1, wrong_v_1}, {wrong_k_2, wrong_v_2}}}};
     try {
         graph.Encode(v, a, bmf_sdk::JsonParam(encode_para));
         graph.Run();
@@ -946,7 +949,8 @@ TEST(cpp_transcode, test_generator) {
 
     nlohmann::json decode_para = {{"input_path", input_file}};
 
-    auto stream = graph.Decode(bmf_sdk::JsonParam(decode_para))["video"].Scale("299:299");
+    auto stream =
+        graph.Decode(bmf_sdk::JsonParam(decode_para))["video"].Scale("299:299");
     stream.Start();
     int frame_num = 0;
     while (true) {

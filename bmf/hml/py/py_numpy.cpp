@@ -22,8 +22,8 @@
 #include <hmp/tensor.h>
 #include <py_type_cast.h>
 
-namespace pybind11{
-namespace detail{
+namespace pybind11 {
+namespace detail {
 
 const static int NPY_HALF_ = 23;
 

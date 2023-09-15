@@ -35,8 +35,9 @@ class HMP_API Timer {
     Timer(RefPtr<TimerInterface> self) : self_(self) {}
 
     friend HMP_API Timer create_timer(DeviceType device_type);
-public:
-    Timer(const Timer&) = default;
+
+  public:
+    Timer(const Timer &) = default;
     Timer(Timer &&) = default;
 
     Timer &start() {
@@ -69,5 +70,5 @@ HMP_API void registerTimerManager(DeviceType dtype, TimerManager *tm);
         HMP_UNIQUE_NAME(s##timer##Manager)(::hmp::impl::registerTimerManager,  \
                                            dtype, tm);                         \
     }
-} //namespace impl
-};
+} // namespace impl
+}; // namespace hmp

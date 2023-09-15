@@ -6,10 +6,12 @@ import os
 if os.name == 'nt':
     # We redefine timeout_decorator on windows
     command = "main "
+
     class timeout_decorator:
+
         @staticmethod
         def timeout(*args, **kwargs):
-            return lambda f: f # return a no-op decorator
+            return lambda f: f  # return a no-op decorator
 else:
     import timeout_decorator
     command = "./main "
@@ -21,7 +23,9 @@ from base_test.media_info import MediaInfo
 # expect_result = '../transcode/audio.mp4|0|0|7.617000|MOV,MP4,M4A,3GP,3G2,MJ2|136092|129577||{}'
 # BaseTestCase.check_video_diff("","","")
 
+
 class TestGO(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_normal_mode(self):
         output_path = "./output_normal_mode.mp4"
@@ -42,12 +46,12 @@ class TestGO(BaseTestCase):
 
     def test_with_input_only_audio(self):
         output_path = "./output.mp4"
-        expect_result = '|0|0|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|132840|166183||{}'        
+        expect_result = '|0|0|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|132840|166183||{}'
         self.remove_result_data(output_path)
         task = command + "testWithInputOnlyAudio"
         os.system(task)
         self.check_video_diff(output_path, expect_result)
-        
+
     @timeout_decorator.timeout(seconds=120)
     def test_with_encode_with_audio_stream_but_no_audio_frame(self):
         output_path = "./output.mp4"
@@ -154,7 +158,7 @@ class TestGO(BaseTestCase):
         self.remove_result_data(output_path_1)
         self.remove_result_data(output_path_2)
         task = command + "testMapParam"
-        os.system(task)       
+        os.system(task)
         self.check_video_diff(output_path_1, expect_result_1)
         self.check_video_diff(output_path_2, expect_result_2)
 
@@ -165,7 +169,7 @@ class TestGO(BaseTestCase):
                         '{"fps": "25.0"}'
         self.remove_result_data(output_path)
         task = command + "testRGB2Video"
-        os.system(task)  
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -175,22 +179,22 @@ class TestGO(BaseTestCase):
                         '{"fps": "29.97"}'
         self.remove_result_data(output_path)
         task = command + "testStreamCopy"
-        os.system(task)  
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
     def test_stream_audio_copy(self):
         output_path = "./audio_copy.mp4"
-        expect_result = './transcode/audio_copy.mp4|0|0|10.031|MOV,MP4,M4A,3GP,3G2,MJ2|129999|163003||{"accurate": "b"}' # accurate could be "b" bitrate accurate check, "d" duration accurate check and "f" fps accurate check
+        expect_result = './transcode/audio_copy.mp4|0|0|10.031|MOV,MP4,M4A,3GP,3G2,MJ2|129999|163003||{"accurate": "b"}'  # accurate could be "b" bitrate accurate check, "d" duration accurate check and "f" fps accurate check
         self.remove_result_data(output_path)
         task = command + "testStreamAudioCopy"
-        os.system(task)  
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
     def test_extract_frames(self):
         task = command + "testExtractFrames"
-        os.system(task)  
+        os.system(task)
 
     @timeout_decorator.timeout(seconds=120)
     def test_incorrect_stream_notify(self):

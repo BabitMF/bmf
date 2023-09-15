@@ -10,9 +10,10 @@ import os
 if os.name == 'nt':
     # We redefine timeout_decorator on windows
     class timeout_decorator:
+
         @staticmethod
         def timeout(*args, **kwargs):
-            return lambda f: f # return a no-op decorator
+            return lambda f: f  # return a no-op decorator
 else:
     import timeout_decorator
 

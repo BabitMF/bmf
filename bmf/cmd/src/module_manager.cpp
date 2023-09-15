@@ -111,9 +111,11 @@ int install_module(const bmf_sdk::ModuleInfo &info, bool force) {
         if (info.module_type == "c++" || info.module_type == "go") {
             module_file =
                 (fs::path(info.module_path) /
-                (module_file + bmf_sdk::SharedLibrary::default_extension())).string();
+                 (module_file + bmf_sdk::SharedLibrary::default_extension()))
+                    .string();
         } else {
-            module_file = (fs::path(info.module_path) / (module_file + ".py")).string();
+            module_file =
+                (fs::path(info.module_path) / (module_file + ".py")).string();
         }
         if (!fs::exists(module_file)) {
             BMFLOG(BMF_ERROR)

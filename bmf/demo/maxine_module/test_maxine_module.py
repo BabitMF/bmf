@@ -105,7 +105,7 @@ def test_effect_perf(effect_options, input_video_path, output_file, num_threads)
         .format(total_frames, duration, total_frames / duration))
 
 def main():
-    model_dir = "/home/scratch.jief_sw/mllibs/VideoFX/lib/models"
+    model_dir = sys.argv[1]
     """
     Resolution Support for input videos
     Input Resolution Change        Output resolution range

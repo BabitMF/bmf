@@ -77,7 +77,12 @@ case $MSVC_VERSION in
         exit 1
         ;;
 esac
+git submodule update --init --recursive
 
+if [ ! -d "3rd_party/win_rootfs" ]
+then
+    (cd 3rd_party/ && wget https://github.com/BabitMF/bmf/releases/download/files/win_rootfs.tar.gz && tar zvxf win_rootfs.tar.gz)
+fi
 source ./version.sh
 
 [ -d ${OUTPUT_DIR} ] && rm -rf ${OUTPUT_DIR}/* || mkdir -p ${OUTPUT_DIR}
@@ -99,7 +104,6 @@ then
         -DBUILD_SHARED_LIBS=TRUE \
         -DCMAKE_TOOLCHAIN_FILE=../../cmake/win-toolchain.cmake \
         -DBMF_ENABLE_PYTHON=ON \
-        -DBMF_ENABLE_GLOG=OFF \
         -DBMF_ENABLE_MOBILE=OFF \
         -DBMF_ENABLE_FFMPEG=${USE_BMF_FFMPEG} \
         -DBMF_ENABLE_CUDA=OFF \
@@ -127,7 +131,6 @@ else
         -DBUILD_SHARED_LIBS=TRUE \
         -DCMAKE_TOOLCHAIN_FILE=../cmake/win-toolchain.cmake \
         -DBMF_ENABLE_PYTHON=ON \
-        -DBMF_ENABLE_GLOG=OFF \
         -DBMF_ENABLE_MOBILE=OFF \
         -DBMF_ENABLE_FFMPEG=${USE_BMF_FFMPEG} \
         -DBMF_ENABLE_CUDA=OFF \

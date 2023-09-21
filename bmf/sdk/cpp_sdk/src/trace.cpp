@@ -308,11 +308,7 @@ void TraceLogger::format_logs(bool include_info) {
 
     for (const auto &entry : std::filesystem::directory_iterator(".")) {
 // Proceed if is a log file
-#ifdef _WIN32
         std::string filename = entry.path().filename().string();
-#else
-        std::string filename = entry.path().filename().u8string();
-#endif
         if (filename.size() > 7 && filename.find("log") == 0 &&
             filename.compare(filename.size() - 4, 4, ".txt") == 0) {
             FILE *fp = fopen(filename.c_str(), "r");

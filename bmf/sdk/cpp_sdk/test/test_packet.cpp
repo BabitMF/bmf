@@ -36,9 +36,7 @@ struct C { // copyable, moveable
 
 struct D : public C { // moveable only
     D(D &&) = default;
-#ifdef _WIN32
     D(int &&val) : C{std::move(val)} {}
-#endif // _WIN32
     std::unique_ptr<int> v_ptr;
 
     int *u_ptr = nullptr;

@@ -6,7 +6,7 @@ import bmf
 sys.path.pop()
 
 def test():
-    input_video_path = "./test1.png"
+    input_video_path = "../files/blue.png"
     output_path = "./output.mp4"
 
     graph = bmf.graph()

@@ -1126,8 +1126,9 @@ int32_t SyncModule::SendEOF() {
 int32_t SyncModule::Init() { return moduleInstance->init(); }
 
 int32_t SyncModule::Close() { return moduleInstance->close(); }
-} // namespace bmf::builder
 
 void SyncModule::DynamicReset(const bmf_sdk::JsonParam& opt_reset) {
     moduleInstance->dynamic_reset(opt_reset);
 }
+} // namespace bmf::builder
+

@@ -252,6 +252,7 @@ BMF_SDK_API int bmf_module_functor_execute(bmf_ModuleFunctor mf,
 BMF_SDK_API bmf_Packet *bmf_module_functor_fetch(bmf_ModuleFunctor mf,
                                                  int index, int *noutputs,
                                                  bool *is_done);
+BMF_SDK_API int bmf_module_functor_dynamic_reset(bmf_ModuleFunctor mf, const char* option);
 
 #ifdef __cplusplus
 } // extern "C"

@@ -641,3 +641,15 @@ bmf_Packet *bmf_module_functor_fetch(bmf_ModuleFunctor mf, int index,
 
     return nullptr;
 }
+
+int bmf_module_functor_dynamic_reset(bmf_ModuleFunctor mf, const char* option) 
+{
+    BMF_PROTECT(
+        Module& md = mf->module();
+        JsonParam json_option;
+        json_option.parse(option);
+        return md.dynamic_reset(json_option);
+    )
+    return 0;
+
+}

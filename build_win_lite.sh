@@ -12,7 +12,7 @@ OUTPUT_DIR=output
 COMPILE_ARCH=""
 preset=""
 export SCRIPT_EXEC_MODE=win
-export WIN_XCOMPILE_ARCH=x86_64
+
 export WIN_XCOMPILE_ROOT=$(pwd)/3rd_party/win_rootfs
 export PLATFORM_NAME=x64
 export USE_BMF_FFMPEG=0
@@ -56,6 +56,14 @@ if [ "$preset" = "x64-Debug" ] || [ "$preset" = "x86-Debug" ]; then
     BUILD_TYPE="Debug"
 fi
 
+if [ "$preset" = "x86-Debug" ] || [ "$preset" = "x86-Release" ]; then
+    export WIN_XCOMPILE_ARCH=x86
+fi
+
+if [ "$preset" = "x64-Debug" ] || [ "$preset" = "x64-Release" ]; then
+    export WIN_XCOMPILE_ARCH=x64
+fi
+
 case $MSVC_VERSION in
     2013)
         CMAKE_GENERATOR="Visual Studio 12 2013"
@@ -90,8 +98,7 @@ source ./version.sh
 cd ${BUILD_DIR}
 
 #x86-Debug x64-Debug x86-Release x64-Release
-if [[ ${HOST} =~ mingw ]]
-then
+if [[ ${HOST} =~ msys_nt || ${HOST} =~ mingw ]]; then
     echo "Building ${preset} ${BUILD_TYPE}"
 
     [ -d ${preset} ] && rm -rf ${preset}/* || mkdir -p ${preset}

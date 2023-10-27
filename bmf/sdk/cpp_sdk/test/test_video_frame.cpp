@@ -507,7 +507,7 @@ TEST(video_frame, check_continue) {
     int height = 1080;
     auto H420 = PixelInfo(hmp::PF_YUV420P, hmp::CS_BT709);
     auto vf = VideoFrame::make(width, height, H420, Device(kCUDA, 0)); //
-    EXPECT_EQ(hmp::ffmpeg::check_cuda_frame_need_copy_for_ffmpeg(vf.frame()),
+    EXPECT_EQ(hmp::ffmpeg::check_frame_memory_is_contiguous(vf.frame()),
               false);
 }
 
@@ -524,7 +524,7 @@ TEST(video_frame, copy_frame_test) {
     {
         for (int i = 0; i < count; ++i) {
             auto cudaframe = vf[i].cuda();
-            EXPECT_EQ(hmp::ffmpeg::check_cuda_frame_need_copy_for_ffmpeg(
+            EXPECT_EQ(hmp::ffmpeg::check_frame_memory_is_contiguous(
                           cudaframe.frame()),
                       false);
         }

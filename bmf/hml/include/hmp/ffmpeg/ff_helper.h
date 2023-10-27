@@ -534,7 +534,7 @@ static Frame from_video_frame(const AVFrame *avf) {
 }
 
 // ffmpeg nv12 require
-static bool check_cuda_frame_need_copy_for_ffmpeg(const Frame &frame) {
+static bool check_frame_memory_is_contiguous(const Frame &frame) {
     if (!frame.storage().defined()) {
         return true;
     }
@@ -581,7 +581,7 @@ static AVFrame *to_video_frame(const Frame &frame,
 #ifdef HMP_ENABLE_CUDA
     if (frame.device().type() == kCUDA &&
         (!avf_ref || (avf_ref && !avf_ref->hw_frames_ctx)) &&
-        check_cuda_frame_need_copy_for_ffmpeg(frame)) {
+        check_frame_memory_is_contiguous(frame)) {
         HMP_REQUIRE(frame.pix_info().format() == hmp::PF_NV12,
                     "cuda hardware encode need NV12 frame");
         auto nv12 = bmf_sdk::PixelInfo(hmp::PF_NV12, hmp::CS_BT709);

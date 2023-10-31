@@ -55,10 +55,10 @@ namespace kernel {
 
 HMP_DECLARE_DISPATCH_STUB(yuv_to_rgb_stub,
                           Tensor &(*)(Tensor &, const TensorList &,
-                                      PPixelFormat, ChannelFormat));
+                                      PPixelFormat, ChannelFormat, PixelFormat));
 HMP_DECLARE_DISPATCH_STUB(rgb_to_yuv_stub,
                           TensorList &(*)(TensorList &, const Tensor &,
-                                          PPixelFormat, ChannelFormat));
+                                          PPixelFormat, ChannelFormat, PixelFormat));
 HMP_DECLARE_DISPATCH_STUB(yuv_to_yuv_stub,
                           TensorList &(*)(TensorList &, const TensorList &,
                                           PPixelFormat, PPixelFormat));
@@ -114,9 +114,9 @@ HMP_DECLARE_DISPATCH_STUB(img_warp_perspective_stub,
                                       ImageFilterMode, ChannelFormat));
 
 Tensor &yuv_to_rgb(Tensor &dst, const TensorList &src, PPixelFormat pformat,
-                   ChannelFormat cformat);
+                   ChannelFormat cformat, PixelFormat rgbformat);
 TensorList &rgb_to_yuv(TensorList &dst, const Tensor &src, PPixelFormat pformat,
-                       ChannelFormat cformat);
+                       ChannelFormat cformat, PixelFormat rgbformat);
 TensorList &yuv_to_yuv(TensorList &dst, const TensorList &src,
                        PPixelFormat sformat, PPixelFormat dformat);
 

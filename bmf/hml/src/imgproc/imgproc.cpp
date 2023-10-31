@@ -173,7 +173,7 @@ static PPixelFormat infer_ppixel_format(const PixelInfo &info) {
 Tensor &yuv_to_rgb(Tensor &dst, const TensorList &src,
                    const PixelInfo &pix_info, ChannelFormat cformat) {
     auto pformat = infer_ppixel_format(pix_info);
-    return kernel::yuv_to_rgb(dst, src, pformat, cformat);
+    return kernel::yuv_to_rgb(dst, src, pformat, cformat, PF_RGB24);
 }
 
 Tensor yuv_to_rgb(const TensorList &src, const PixelInfo &pix_info,
@@ -199,10 +199,39 @@ Tensor yuv_to_rgb(const TensorList &src, const PixelInfo &pix_info,
     return dst;
 }
 
+Tensor &yuv_to_bgr(Tensor &dst, const TensorList &src,
+                   const PixelInfo &pix_info, ChannelFormat cformat) {
+    auto pformat = infer_ppixel_format(pix_info);
+    return kernel::yuv_to_rgb(dst, src, pformat, cformat, PF_BGR24);
+}
+
+Tensor yuv_to_bgr(const TensorList &src,
+                   const PixelInfo &pix_info, ChannelFormat cformat) {
+    auto has_batch_dim = src[0].dim() == 4;
+    auto stmp = frame_format(src, pix_info.format(), has_batch_dim);
+
+    auto dshape = SizeArray(4, 0);
+    auto batch = has_batch_dim ? stmp[0].size(0) : int64_t(1);
+    auto width = has_batch_dim ? stmp[0].size(2) : stmp[0].size(1);
+    auto height = has_batch_dim ? stmp[0].size(1) : stmp[0].size(0);
+    if (cformat == ChannelFormat::NCHW) {
+        dshape = {batch, int64_t(3), height, width};
+    } else {
+        dshape = {batch, height, width, int64_t(3)};
+    }
+    auto dst = empty(dshape, stmp[0].options());
+    dst = yuv_to_bgr(dst, src, pix_info, cformat);
+
+    if (!has_batch_dim) {
+        dst.squeeze_(0);
+    }
+    return dst;
+}
+
 TensorList &rgb_to_yuv(TensorList &dst, const Tensor &src,
                        const PixelInfo &pix_info, ChannelFormat cformat) {
     auto pformat = infer_ppixel_format(pix_info);
-    return kernel::rgb_to_yuv(dst, src, pformat, cformat);
+    return kernel::rgb_to_yuv(dst, src, pformat, cformat, PF_RGB24);
 }
 
 TensorList rgb_to_yuv(const Tensor &src, const PixelInfo &pix_info,
@@ -226,6 +255,35 @@ TensorList rgb_to_yuv(const Tensor &src, const PixelInfo &pix_info,
     }
 
     return rgb_to_yuv(dst, src, pix_info, cformat);
+}
+
+TensorList &bgr_to_yuv(TensorList &dst, const Tensor &src,
+                       const PixelInfo &pix_info, ChannelFormat cformat) {
+    auto pformat = infer_ppixel_format(pix_info);
+    return kernel::rgb_to_yuv(dst, src, pformat, cformat, PF_BGR24);
+}
+
+TensorList bgr_to_yuv(const Tensor &src,
+                      const PixelInfo &pix_info, ChannelFormat cformat) {
+    auto wdim = infer_wdim(src, cformat);
+    auto hdim = wdim - 1;
+    auto pix_desc = PixelFormatDesc(pix_info.format());
+
+    TensorList dst;
+    auto has_batch_dim = src.dim() == 4;
+    for (int i = 0; i < pix_desc.nplanes(); ++i) {
+        auto width = pix_desc.infer_width(src.size(wdim), i);
+        auto height = pix_desc.infer_height(src.size(hdim), i);
+        auto channels = pix_desc.channels(i);
+        if (has_batch_dim) {
+            dst.push_back(
+                empty({src.size(0), height, width, channels}, src.options()));
+        } else {
+            dst.push_back(empty({height, width, channels}, src.options()));
+        }
+    }
+
+    return bgr_to_yuv(dst, src, pix_info, cformat);
 }
 
 TensorList &yuv_to_yuv(TensorList &dst, const TensorList &src,

@@ -111,6 +111,7 @@ enum PixelFormat {
     PF_YUVA420P = 33,
     PF_RGB48 = 35,
     PF_YA8 = 58,
+    PF_BGR48 = 61,
     PF_RGBA64 = 107,
 
     PF_P010LE = 161,
@@ -291,5 +292,13 @@ class HMP_API PixelFormatDesc {
     int pix_format_ = PF_NONE;
     const Private *meta_ = nullptr;
 };
+
+enum class RGBFormat : uint8_t  {
+    RGB,
+    BGR,
+};
+
+const static RGBFormat kRGB = RGBFormat::RGB;
+const static RGBFormat kBGR = RGBFormat::BGR;
 
 } // namespace hmp

@@ -176,7 +176,6 @@ else
     # Transfer to output directory
     cd ..
     cp -a -r build/output/. output
-    rm -rf output/test
     rm -rf output/bmf/files
     rm -rf output/example/files
 

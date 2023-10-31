@@ -1,7 +1,7 @@
-
 import numpy as np
 
-def NMS(bounding_boxes, confidence_score, threshold = 0.5):
+
+def NMS(bounding_boxes, confidence_score, threshold=0.5):
     if len(bounding_boxes) == 0:
         return [], []
 
@@ -36,7 +36,8 @@ def NMS(bounding_boxes, confidence_score, threshold = 0.5):
         h = np.maximum(0.0, y2 - y1 + 1)
         intersection = w * h
 
-        ratio = intersection / (areas[index] + areas[order[:-1]] - intersection)
+        ratio = intersection / (areas[index] + areas[order[:-1]] -
+                                intersection)
 
         left = np.where(ratio < threshold)
         order = order[left]

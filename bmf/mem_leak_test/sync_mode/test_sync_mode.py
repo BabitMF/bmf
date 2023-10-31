@@ -4,7 +4,16 @@ import unittest
 sys.path.append("../../..")
 import bmf
 from bmf import bmf_sync, Packet
-import timeout_decorator
+import os
+if os.name == 'nt':
+    # We redefine timeout_decorator on windows
+    class timeout_decorator:
+
+        @staticmethod
+        def timeout(*args, **kwargs):
+            return lambda f: f  # return a no-op decorator
+else:
+    import timeout_decorator
 
 sys.path.append("../")
 from base_test.base_test_case import BaseTestCase
@@ -13,7 +22,7 @@ from base_test.base_test_case import BaseTestCase
 class TestSyncMode(BaseTestCase):
 
     def test_videoframe(self):
-        input_video_path = "../files/overlay.png"
+        input_video_path = "../../files/overlay.png"
         output_path = "./videoframe.jpg"
 
         # create decoder
@@ -50,7 +59,7 @@ class TestSyncMode(BaseTestCase):
         bmf_sync.send_eof(encoder)
 
     def test_videoframe_by_graph(self):
-        input_video_path = "../files/overlay.png"
+        input_video_path = "../../files/overlay.png"
         output_path = "./videoframe_by_graph.jpg"
 
         graph = bmf.graph()
@@ -89,7 +98,7 @@ class TestSyncMode(BaseTestCase):
         bmf_sync.send_eof(encoder)
 
     def test_audioframe(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
         output_path = "./audioframe.mp4"
 
         # create decoder
@@ -121,7 +130,7 @@ class TestSyncMode(BaseTestCase):
         bmf_sync.send_eof(encoder)
 
     def test_audioframe_by_graph(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
         output_path = "./audioframe_by_graph.mp4"
 
         graph = bmf.graph()
@@ -155,7 +164,7 @@ class TestSyncMode(BaseTestCase):
         bmf_sync.send_eof(encoder)
 
     def test_video(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
         output_path = "./video.mp4"
 
         # create sync modules
@@ -193,7 +202,7 @@ class TestSyncMode(BaseTestCase):
                 bmf_sync.process(encoder, {1: frames[0]})
 
     def test_video_by_graph(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
         output_path = "./video_by_graph.mp4"
 
         graph = bmf.graph()
@@ -233,7 +242,7 @@ class TestSyncMode(BaseTestCase):
                 bmf_sync.process(encoder, {1: frames[0]})
 
     def test_video_only_situation(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
         output_path = "./video_only_situation.mp4"
 
         graph = bmf.graph()
@@ -268,7 +277,7 @@ class TestSyncMode(BaseTestCase):
                 bmf_sync.process(encoder, {0: frames[0]})
 
     def test_audio(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
         output_path = "./audio.mp4"
 
         # create sync modules
@@ -294,7 +303,7 @@ class TestSyncMode(BaseTestCase):
                 bmf_sync.process(encoder, {1: frames[0]})
 
     def test_audio_by_graph(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
         output_path = "./audio_by_graph.mp4"
 
         graph = bmf.graph()

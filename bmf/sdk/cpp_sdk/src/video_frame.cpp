@@ -1,3 +1,18 @@
+/*
+ * Copyright 2023 Babit Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <hmp/core/logging.h>
 #include <bmf/sdk/video_frame.h>
 
@@ -77,8 +92,11 @@ VideoFrame VideoFrame::to(const Device &device, bool non_blocking) const {
     return vf;
 }
 
-VideoFrame &VideoFrame::copy_props(const VideoFrame &from) {
-    OpaqueDataSet::copy_props(from);
+VideoFrame &VideoFrame::copy_props(const VideoFrame &from, bool copy_private) {
+    if (copy_private) {
+        OpaqueDataSet::copy_props(from);
+    }
+
     SequenceData::copy_props(from);
     Future::copy_props(from);
     return *this;
@@ -87,6 +105,14 @@ VideoFrame &VideoFrame::copy_props(const VideoFrame &from) {
 VideoFrame VideoFrame::reformat(const PixelInfo &pix_info) {
     auto frame = self->frame.reformat(pix_info);
     return VideoFrame(frame);
+}
+
+VideoFrame VideoFrame::as_contiguous_storage() {
+    VideoFrame vf;
+    auto frame = self->frame.as_contiguous_storage();
+    vf = VideoFrame(frame);
+    vf.SequenceData::copy_props(*this);
+    return vf;
 }
 
 } // namespace bmf_sdk

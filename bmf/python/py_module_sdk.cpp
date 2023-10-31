@@ -1,3 +1,18 @@
+/*
+ * Copyright 2023 Babit Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <bmf/sdk/config.h>
 #ifdef BMF_ENABLE_TORCH
 #include <bmf/sdk/torch_convertor.h>
@@ -6,6 +21,9 @@
 #include <torch/csrc/utils/pybind.h>
 #endif
 
+#ifdef _WIN32
+#include <corecrt.h>
+#endif
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
@@ -365,8 +383,10 @@ void module_sdk_bind(py::module &m) {
              (VideoFrame(VideoFrame::*)(const Device &, bool) const) &
                  VideoFrame::to,
              py::arg("device"), py::arg("non_blocking") = false)
-        .def("copy_props", &VideoFrame::copy_props, py::arg("from"))
-        .def("reformat", &VideoFrame::reformat, py::arg("pix_info"));
+        .def("copy_props", &VideoFrame::copy_props, py::arg("from"),
+             py::arg("copy_private") = false)
+        .def("reformat", &VideoFrame::reformat, py::arg("pix_info"))
+        .def("as_contiguous_storage", &VideoFrame::as_contiguous_storage);
     PACKET_REGISTER_BMF_SDK_TYPE(VideoFrame)
 
     // AudioFrame
@@ -551,7 +571,7 @@ void module_sdk_bind(py::module &m) {
     py::class_<LogBuffer, std::unique_ptr<LogBuffer>>(m, "LogBuffer")
         .def(py::init([](py::list buffer, const std::string &level) {
             return std::make_unique<LogBuffer>(
-                [=](const std::string &log) {
+                [buffer](const std::string &log) mutable {
                     py::gil_scoped_acquire gil;
                     buffer.append(py::cast(log));
                 },

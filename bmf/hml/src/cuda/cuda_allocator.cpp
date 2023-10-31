@@ -210,16 +210,17 @@ class CUDAAllocator : public Allocator {
             freed_.push_back(std::make_pair(event, it->second));
             it->second->event_count += 1;
         }
+        Block* b = it->second;
         alloced_.erase(it);
-        it->second->allocated = false;
-        it->second->streams.clear();
+        b->allocated = false;
+        b->streams.clear();
 
-        update_stat(stats_.active, -it->second->size);
+        update_stat(stats_.active, -b->size);
 
-        if (it->second->event_count == 0) {
-            free_block(it->second);
+        if (b->event_count == 0) {
+            free_block(b);
         } else {
-            update_stat(stats_.inactive, it->second->size);
+            update_stat(stats_.inactive, b->size);
         }
 
         process_events();

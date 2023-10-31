@@ -1,3 +1,18 @@
+/*
+ * Copyright 2023 Babit Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include "builder.hpp"
 #include "nlohmann/json.hpp"
 
@@ -10,7 +25,7 @@ TEST(cpp_sync_mode, sync_videoframe) {
     bmf::builder::Graph graph = bmf::builder::Graph(bmf::builder::NormalMode);
 
     // create decoder
-    nlohmann::json decoder_option = {{"input_path", "../files/overlay.png"}};
+    nlohmann::json decoder_option = {{"input_path", "../../files/overlay.png"}};
     auto decoder =
         graph.Sync(std::vector<int>{}, std::vector<int>{0},
                    bmf_sdk::JsonParam(decoder_option), "c_ffmpeg_decoder");
@@ -67,7 +82,7 @@ TEST(cpp_sync_mode, sync_audioframe) {
 
     // create decoder
     nlohmann::json decoder_option = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}};
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}};
     auto decoder = graph.Sync(std::vector<int>{}, std::vector<int>{1},
                               decoder_option, "c_ffmpeg_decoder");
 
@@ -111,7 +126,7 @@ TEST(cpp_sync_mode, sync_video_by_pkts) {
 
     // create sync modules
     nlohmann::json decoder_option = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}};
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}};
     auto decoder = graph.Sync(std::vector<int>{}, std::vector<int>{0, 1},
                               decoder_option, "c_ffmpeg_decoder");
 
@@ -185,7 +200,7 @@ TEST(cpp_sync_mode, sync_audio) {
 
     // create sync modules
     nlohmann::json decoder_option = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}};
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}};
     auto decoder = graph.Sync(std::vector<int>{}, std::vector<int>{1},
                               decoder_option, "c_ffmpeg_decoder");
 
@@ -227,7 +242,7 @@ TEST(cpp_sync_mode, sync_video) {
 
     // create sync modules
     nlohmann::json decoder_option = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}};
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}};
     auto decoder = graph.Sync(std::vector<int>{}, std::vector<int>{0, 1},
                               decoder_option, "c_ffmpeg_decoder");
 
@@ -302,7 +317,7 @@ TEST(cpp_sync_mode, sync_eof_flush_data) {
 
     // create decoder
     nlohmann::json decoder_option = {
-        {"input_path", "../files/big_bunny_10s_30fps.mp4"}};
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}};
     auto decoder =
         graph.Sync(std::vector<int>{}, std::vector<int>{0},
                    bmf_sdk::JsonParam(decoder_option), "c_ffmpeg_decoder");

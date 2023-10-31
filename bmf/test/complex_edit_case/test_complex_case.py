@@ -5,9 +5,18 @@ import unittest
 sys.path.append("../../")
 import bmf
 from bmf import Log, LogLevel
-import timeout_decorator
+import os
+if os.name == 'nt':
+    # We redefine timeout_decorator on windows
+    class timeout_decorator:
 
-sys.path.append("../../bmf/test/")
+        @staticmethod
+        def timeout(*args, **kwargs):
+            return lambda f: f  # return a no-op decorator
+else:
+    import timeout_decorator
+
+sys.path.append("../../test/")
 from base_test.base_test_case import BaseTestCase
 from base_test.media_info import MediaInfo
 
@@ -17,9 +26,9 @@ class TestComplexCase(BaseTestCase):
     @timeout_decorator.timeout(seconds=120)
     def test_concat_n_videos(self):
 
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         output_path = "./concat_n_videos.mp4"
-        expect_result = '../../../test/case/concat_n_videos.mp4|720|1280|50.036|MOV,MP4,M4A,3GP,3G2,MJ2|' \
+        expect_result = './concat_n_videos.mp4|720|1280|50.036|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                         '837866|5240430|h264|{"fps": "29.9867899604"}'
         self.remove_result_data(output_path)
 
@@ -66,10 +75,10 @@ class TestComplexCase(BaseTestCase):
     # @timeout_decorator.timeout(seconds=120)
     # def test_concat_only_video(self):
     #
-    #     input_video_path_1 = "../files/normal.mp4"
-    #     input_video_path_2 = "../files/only_video.mp4"
+    #     input_video_path_1 = "../../files/normal.mp4"
+    #     input_video_path_2 = "../../files/only_video.mp4"
     #     output_path = "./concat_only_video.mp4"
-    #     expect_result = '../../../test/case/edit_concat.mp4|720|1280|29.959000|MOV,MP4,M4A,3GP,3G2,MJ2|987564|' \
+    #     expect_result = './concat_only_video.mp4|720|1280|29.959000|MOV,MP4,M4A,3GP,3G2,MJ2|987564|' \
     #                     '3698307|h264|{"fps": "20.0278164117"}'
     #     self.remove_result_data(output_path)
     #
@@ -106,10 +115,10 @@ class TestComplexCase(BaseTestCase):
     # @timeout_decorator.timeout(seconds=120)
     # def test_concat_only_audio(self):
     #
-    #     input_video_path_1 = "../files/normal.mp4"
-    #     input_video_path_2 = "../files/only_audio.mp4"
+    #     input_video_path_1 = "../../files/normal.mp4"
+    #     input_video_path_2 = "../../files/only_audio.mp4"
     #     output_path = "./test_concat_only_audio.mp4"
-    #     expect_result = '../../../test/case/edit_concat.mp4|720|1280|29.959000|MOV,MP4,M4A,3GP,3G2,MJ2|987564|' \
+    #     expect_result = './test_concat_only_audio.mp4|720|1280|29.959000|MOV,MP4,M4A,3GP,3G2,MJ2|987564|' \
     #                     '3698307|h264|{"fps": "20.0278164117"}'
     #     self.remove_result_data(output_path)
     #
@@ -146,9 +155,9 @@ class TestComplexCase(BaseTestCase):
     @timeout_decorator.timeout(seconds=120)
     def test_trim_and_concat_n_videos(self):
 
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         output_path = "./trim_and_concat_n_videos.mp4"
-        expect_result = '../../../test/case/trim_and_concat_n_videos.mp4|720|1280|10.022000|MOV,MP4,M4A,3GP,3G2,MJ2|' \
+        expect_result = './trim_and_concat_n_videos.mp4|720|1280|10.022000|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                         '318221|397777|h264|{"fps": "30.0500834725"}'
         self.remove_result_data(output_path)
 
@@ -185,7 +194,9 @@ class TestComplexCase(BaseTestCase):
             stream.append(video_list[i]['audio'])
 
         # concat video and audio streams with 'video_concat' module
-        concat_streams = (bmf.module(stream, 'video_concat', option))
+        concat_streams = (bmf.module(stream, 'video_concat', option,
+                                     "../../demo/edit/",
+                                     "video_concat.video_concat"))
 
         # encode
         (bmf.encode(
@@ -201,10 +212,10 @@ class TestComplexCase(BaseTestCase):
     @timeout_decorator.timeout(seconds=120)
     def test_subgraph_serial(self):
 
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
-        logo_path = "../files/xigua_prefix_logo_x.mov"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
+        logo_path = "../../files/xigua_prefix_logo_x.mov"
         output_path = "./subgraph_serial.mp4"
-        expect_result = '../../../test/case/subgraph_serial.mp4|720|1280|6.022000|MOV,MP4,M4A,3GP,3G2,MJ2|' \
+        expect_result = './subgraph_serial.mp4|720|1280|6.022000|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                         '358204|268653|h264|{"fps": "30.0835654596"}'
         self.remove_result_data(output_path)
 
@@ -280,19 +291,23 @@ class TestComplexCase(BaseTestCase):
         overlay_streams = list()
         overlay_streams.append(
             bmf.module([video1['video'], logo_1], 'video_overlay',
-                       overlay_option)[0])
+                       overlay_option, "../../demo/edit/",
+                       "video_overlay.video_overlay")[0])
         overlay_streams.append(
             bmf.module([video2['video'], logo_2], 'video_overlay',
-                       overlay_option)[0])
+                       overlay_option, "../../demo/edit/",
+                       "video_overlay.video_overlay")[0])
         overlay_streams.append(
             bmf.module([video3['video'], logo_3], 'video_overlay',
-                       overlay_option)[0])
+                       overlay_option, "../../demo/edit/",
+                       "video_overlay.video_overlay")[0])
 
         # do concat
         concat_streams = (bmf.module([
             overlay_streams[0], overlay_streams[1], overlay_streams[2],
             video1['audio'], video2['audio'], video3['audio']
-        ], 'video_concat', concat_option))
+        ], 'video_concat', concat_option, "../../demo/edit/",
+                                     "video_concat.video_concat"))
 
         # encode
         (bmf.encode(
@@ -308,9 +323,9 @@ class TestComplexCase(BaseTestCase):
     @timeout_decorator.timeout(seconds=120)
     def test_subgraph_nested(self):
 
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         output_path = "./subgraph_nested.mp4"
-        expect_result = '../../../test/case/subgraph_nested.mp4|720|1280|10.021000|MOV,MP4,M4A,3GP,3G2,MJ2|845735|' \
+        expect_result = './subgraph_nested.mp4|720|1280|10.021000|MOV,MP4,M4A,3GP,3G2,MJ2|845735|' \
                         '1057169|h264|{"fps": "30.0"}'
         self.remove_result_data(output_path)
 
@@ -334,10 +349,10 @@ class TestComplexCase(BaseTestCase):
     # @timeout_decorator.timeout(seconds=120)
     # def test_undealed_output(self):
     #
-    #     input_video_path_1 = "../files/big_bunny_10s_30fps.mp4"
-    #     input_video_path_2 = "../files/3min.mp4"
+    #     input_video_path_1 = "../../files/big_bunny_10s_30fps.mp4"
+    #     input_video_path_2 = "../../files/3min.mp4"
     #     output_path = "./undealed_output.mp4"
-    #     expect_result = '../../../test/case/edit_concat.mp4|720|1280|29.959000|MOV,MP4,M4A,3GP,3G2,MJ2|987564|' \
+    #     expect_result = './undealed_output.mp4|720|1280|29.959000|MOV,MP4,M4A,3GP,3G2,MJ2|987564|' \
     #                     '3698307|h264|{"fps": "20.0278164117"}'
     #     self.remove_result_data(output_path)
     #

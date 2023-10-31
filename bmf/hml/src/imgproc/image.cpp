@@ -20,8 +20,9 @@
 namespace hmp {
 
 Frame::Frame(const TensorList &data, int width, int height,
-             const PixelInfo &pix_info)
-    : pix_info_(pix_info), width_(width), height_(height) {
+             const PixelInfo &pix_info, const Tensor &storage_tensor)
+    : pix_info_(pix_info), width_(width), height_(height),
+      storage_tensor_(storage_tensor) {
     pix_desc_ = PixelFormatDesc(pix_info_.format());
 
     // convert to HWC layout if pixel format is supported
@@ -32,11 +33,13 @@ Frame::Frame(const TensorList &data, int width, int height,
     }
 }
 
-Frame::Frame(const TensorList &data, const PixelInfo &pix_info)
-    : Frame(data, data[0].size(1), data[0].size(0), pix_info) {}
+Frame::Frame(const TensorList &data, const PixelInfo &pix_info,
+             const Tensor &storage_tensor)
+    : Frame(data, data[0].size(1), data[0].size(0), pix_info, storage_tensor) {}
 
-Frame::Frame(const Tensor &data, const PixelInfo &pix_info)
-    : Frame({data}, data.size(1), data.size(0), pix_info) {}
+Frame::Frame(const Tensor &data, const PixelInfo &pix_info,
+             const Tensor &storage_tensor)
+    : Frame({data}, data.size(1), data.size(0), pix_info, storage_tensor) {}
 
 Frame::Frame(int width, int height, const PixelInfo &pix_info,
              const Device &device)
@@ -47,15 +50,40 @@ Frame::Frame(int width, int height, const PixelInfo &pix_info,
                 pix_info_.format());
 
     auto options = TensorOptions(device).dtype(pix_desc_.dtype());
+    // calculate total size of frame
+
+    int64_t nitems = 0;
+
+    SizeArray offsetArray;
+
     for (int i = 0; i < pix_desc_.nplanes(); ++i) {
         SizeArray shape{pix_desc_.infer_height(height, i),
                         pix_desc_.infer_width(width, i), pix_desc_.channels(i)};
 
-        data_.push_back(empty(shape, options));
+        offsetArray.push_back(nitems);
+        nitems += TensorInfo::calcNumel(shape);
+    }
+
+    storage_tensor_ = empty({1, nitems}, options);
+
+    for (int i = 0; i < pix_desc_.nplanes(); ++i) {
+        SizeArray shape{pix_desc_.infer_height(height, i),
+                        pix_desc_.infer_width(width, i), pix_desc_.channels(i)};
+        auto strides = calcContiguousStrides(shape);
+        Tensor t = storage_tensor_.as_strided(shape, strides, offsetArray[i]);
+        data_.push_back(t);
     }
 }
 
 Frame Frame::to(const Device &device, bool non_blocking) const {
+    if (storage_tensor_.defined()) {
+        Tensor new_storage_tensor = storage_tensor_.to(device, non_blocking);
+        TensorList out =
+            from_storage_tensor(new_storage_tensor, data_); // change buffer
+        return Frame(out, width_, height_, pix_info_, new_storage_tensor);
+    }
+
+    //
     TensorList out;
     for (auto &d : data_) {
         out.push_back(d.to(device, non_blocking));
@@ -64,11 +92,7 @@ Frame Frame::to(const Device &device, bool non_blocking) const {
 }
 
 Frame Frame::to(DeviceType device, bool non_blocking) const {
-    TensorList out;
-    for (auto &d : data_) {
-        out.push_back(d.to(device, non_blocking));
-    }
-    return Frame(out, width_, height_, pix_info_);
+    return to(Device(device), non_blocking);
 }
 
 Frame &Frame::copy_(const Frame &from) {
@@ -82,6 +106,13 @@ Frame &Frame::copy_(const Frame &from) {
 }
 
 Frame Frame::clone() const {
+    if (storage_tensor_.defined()) {
+        Tensor new_storage_tensor = storage_tensor_.clone();
+        TensorList out =
+            from_storage_tensor(new_storage_tensor, data_); // change buffer
+        return Frame(out, width_, height_, pix_info_, new_storage_tensor);
+    }
+
     TensorList out;
     for (auto &d : data_) {
         out.push_back(d.clone());
@@ -125,7 +156,7 @@ Frame Frame::crop(int left, int top, int w, int h) const {
         out.push_back(d.slice(0, t, b).slice(1, l, r));
     }
 
-    return Frame(out, w, h, pix_info_);
+    return Frame(out, w, h, pix_info_, storage_tensor_);
 }
 
 PixelFormat format420_list[] = {PF_YUV420P, PF_NV12, PF_NV21, PF_P010LE,
@@ -140,10 +171,12 @@ static bool is_420(const PixelFormat &pix_fmt) {
 
 Frame Frame::reformat(const PixelInfo &pix_info) {
     if (pix_info_.format() == PF_RGB24 || pix_info_.format() == PF_RGB48) {
-        auto yuv = img::rgb_to_yuv(data_[0], pix_info, kNHWC);
+        Frame frame(width_, height_, pix_info, device());
+        auto yuv = img::rgb_to_yuv(frame.data(), data_[0], pix_info, kNHWC);
         return Frame(yuv, width_, height_, pix_info);
     } else if (pix_info_.format() == PF_BGR24 || pix_info_.format() == PF_BGR48) {
-        auto yuv = img::bgr_to_yuv(data_[0], pix_info, kNHWC);
+        Frame frame(width_, height_, pix_info, device());
+        auto yuv = img::bgr_to_yuv(frame.data(), data_[0], pix_info, kNHWC);
         return Frame(yuv, width_, height_, pix_info);
     } else if (pix_info.format() == PF_BGR24 || pix_info.format() == PF_BGR48) {
         auto rgb = img::yuv_to_bgr(data_, pix_info_, kNHWC);
@@ -151,13 +184,45 @@ Frame Frame::reformat(const PixelInfo &pix_info) {
     } else if (pix_info.format() == PF_RGB24 || pix_info.format() == PF_RGB48) {
         auto rgb = img::yuv_to_rgb(data_, pix_info_, kNHWC);
         return Frame({rgb}, width_, height_, pix_info);
+
     } else if (is_420(pix_info.format()) && is_420(pix_info_.format())) {
-        auto yuv = img::yuv_to_yuv(data_, pix_info, pix_info_);
-        return Frame(yuv, width_, height_, pix_info);
+        Frame frame(width_, height_, pix_info, device());
+        auto yuv = img::yuv_to_yuv(frame.data(), data_, pix_info, pix_info_);
+        return frame;
     }
 
     HMP_REQUIRE(false, "{} to {} not support", stringfy(pix_info_.format()),
                 stringfy(pix_info.format()));
+}
+
+TensorList from_storage_tensor(const Tensor &storage_tensor,
+                               const TensorList &mirror) {
+    TensorList out; // change buffer
+
+    if (!storage_tensor.defined()) {
+        return out;
+    }
+
+    Buffer b = storage_tensor.tensorInfo()->buffer();
+
+    for (auto &d : mirror) {
+        auto old_ti = d.tensorInfo();
+        auto ti = makeRefPtr<TensorInfo>(b, old_ti->shape(), old_ti->strides(),
+                                         old_ti->bufferOffset());
+        Tensor t(std::move(ti));
+        out.push_back(t);
+    }
+
+    return out;
+}
+
+Frame Frame::as_contiguous_storage() {
+    if (storage_tensor_.defined()) {
+        return *this;
+    }
+    Frame frame(width_, height_, pix_info_, device());
+    frame.copy_(*this);
+    return frame;
 }
 
 std::string stringfy(const Frame &frame) {

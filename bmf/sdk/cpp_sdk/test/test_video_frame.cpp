@@ -1,3 +1,18 @@
+/*
+ * Copyright 2023 Babit Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include <bmf/sdk/video_frame.h>
 #include <bmf/sdk/json_param.h>
@@ -321,7 +336,7 @@ TEST(video_frame, copy_props) {
 }
 
 TEST(video_frame, reformat) {
-    auto ori_vf = decode_one_frame("../files/big_bunny_10s_30fps.mp4");
+    auto ori_vf = decode_one_frame("../../files/big_bunny_10s_30fps.mp4");
     ASSERT_EQ(ori_vf.frame().format(), hmp::PF_YUV420P);
     EXPECT_EQ(ori_vf.height(), 1080);
     EXPECT_EQ(ori_vf.width(), 1920);
@@ -394,7 +409,7 @@ TEST(video_frame, reformat) {
 
 #ifdef BMF_ENABLE_FFMPEG
 TEST(video_frame, reformat_by_ffmpeg) {
-    auto ori_vf = decode_one_frame("../files/big_bunny_10s_30fps.mp4");
+    auto ori_vf = decode_one_frame("../../files/big_bunny_10s_30fps.mp4");
     ASSERT_EQ(ori_vf.frame().format(), hmp::PF_YUV420P);
     EXPECT_EQ(ori_vf.height(), 1080);
     EXPECT_EQ(ori_vf.width(), 1920);
@@ -485,4 +500,44 @@ TEST(video_frame, reformat_by_ffmpeg) {
         EXPECT_EQ(yuv_vf.frame().plane(2).stride(0), 1920 / 2);
     }
 }
+
+#ifdef HMP_ENABLE_CUDA
+TEST(video_frame, check_continue) {
+    int width = 1920;
+    int height = 1080;
+    auto H420 = PixelInfo(hmp::PF_YUV420P, hmp::CS_BT709);
+    auto vf = VideoFrame::make(width, height, H420, Device(kCUDA, 0)); //
+    EXPECT_EQ(hmp::ffmpeg::check_frame_memory_is_contiguous(vf.frame()),
+              false);
+}
+
+TEST(video_frame, copy_frame_test) {
+    static const int count = 100;
+    VideoFrame vf[count];
+    int width = 1920;
+    int height = 1080;
+    auto H420 = PixelInfo(hmp::PF_YUV420P, hmp::CS_BT709);
+    for (int i = 0; i < count; ++i) {
+        vf[i] = VideoFrame::make(width, height, H420); //
+    }
+
+    {
+        for (int i = 0; i < count; ++i) {
+            auto cudaframe = vf[i].cuda();
+            EXPECT_EQ(hmp::ffmpeg::check_frame_memory_is_contiguous(
+                          cudaframe.frame()),
+                      false);
+        }
+    }
+}
 #endif
+
+#endif
+
+TEST(video_frame, yuv_frame_storage) {
+    int width = 1920;
+    int height = 1080;
+    auto H420 = PixelInfo(hmp::PF_YUV420P, hmp::CS_BT709);
+    auto vf = VideoFrame::make(width, height, H420); //
+    ASSERT_TRUE(vf.frame().storage().defined());
+}

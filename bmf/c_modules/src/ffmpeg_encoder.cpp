@@ -18,7 +18,6 @@
 #include <iostream>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <dirent.h>
 #include <cstddef>
 #include <bmf/sdk/video_frame.h>
 #include <bmf/sdk/audio_frame.h>
@@ -72,7 +71,7 @@ CFFEncoder::CFFEncoder(int node_id, JsonParam option) {
         if (output_prefix_[output_prefix_.size() - 1] != '/')
             output_prefix_ += '/';
         if (!std::filesystem::is_directory(output_prefix_)) {
-            mkdir(output_prefix_.c_str(), S_IRWXU);
+            std::filesystem::create_directory(output_prefix_.c_str());
         }
     }
 
@@ -95,7 +94,7 @@ int CFFEncoder::init() {
     enc_ctxs_[1] = NULL;
     output_stream_[0] = NULL;
     output_stream_[1] = NULL;
-    in_stream_tbs_[0] = (AVRational){-1, -1};
+    in_stream_tbs_[0] = av_make_q(-1, -1);
     sws_ctx_ = NULL;
     swr_ctx_ = NULL;
     codec_names_[0] = "libx264";
@@ -148,7 +147,7 @@ int CFFEncoder::init() {
     if (input_option_.has_key("output_prefix")) {
         output_dir_ = output_prefix_ + std::to_string(srv_cnt_);
         if (!std::filesystem::is_directory(output_dir_)) {
-            mkdir(output_dir_.c_str(), S_IRWXU);
+            std::filesystem::create_directory(output_dir_.c_str());
         }
         output_path_ = output_dir_ + "/output." + oformat_;
     }
@@ -1047,7 +1046,7 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
             enc_ctxs_[idx]->height = frame->height;
         }
         enc_ctxs_[idx]->bit_rate = 0;
-        enc_ctxs_[idx]->time_base = (AVRational){1, 1000000};
+        enc_ctxs_[idx]->time_base = av_make_q(1, 1000000);
         if (frame && frame->metadata) {
             AVDictionaryEntry *tag = NULL;
             while ((tag = av_dict_get(frame->metadata, "", tag,
@@ -1281,7 +1280,7 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
         }
         enc_ctxs_[idx]->bit_rate = 0;
         enc_ctxs_[idx]->sample_rate = 44100;
-        enc_ctxs_[idx]->time_base = (AVRational){1, 44100};
+        enc_ctxs_[idx]->time_base = av_make_q(1, 44100);
         enc_ctxs_[idx]->channels = 2;
         enc_ctxs_[idx]->channel_layout =
             av_get_default_channel_layout(enc_ctxs_[idx]->channels);
@@ -1330,15 +1329,15 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
         if (audio_params_.has_key("sample_rate")) {
             audio_params_.get_int("sample_rate", enc_ctxs_[idx]->sample_rate);
             enc_ctxs_[idx]->time_base =
-                (AVRational){1, enc_ctxs_[idx]->sample_rate};
+                av_make_q(1, enc_ctxs_[idx]->sample_rate);
             audio_params_.erase("sample_rate");
         } else if (frame && frame->sample_rate) {
             enc_ctxs_[idx]->sample_rate = frame->sample_rate;
-            enc_ctxs_[idx]->time_base = (AVRational){1, frame->sample_rate};
+            enc_ctxs_[idx]->time_base = av_make_q(1, frame->sample_rate);
         }
 
         if (frame && frame->sample_rate) {
-            in_stream_tbs_[idx] = (AVRational){1, frame->sample_rate};
+            in_stream_tbs_[idx] = av_make_q(1, frame->sample_rate);
         }
         if (frame && frame->metadata) {
             AVDictionaryEntry *tag = NULL;
@@ -1720,7 +1719,7 @@ int CFFEncoder::streamcopy(AVPacket *ipkt, AVPacket *opkt, int idx) {
             duration = cpar->frame_size;
         opkt->dts = opkt->pts =
             av_rescale_delta(enc_ctxs_[idx]->time_base, ipkt->dts,
-                             (AVRational){1, cpar->sample_rate}, duration,
+                             av_make_q(1, cpar->sample_rate), duration,
                              &ost_[idx].filter_in_rescale_delta_last,
                              output_stream_[idx]->time_base);
     }

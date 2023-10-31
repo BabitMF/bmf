@@ -17,14 +17,14 @@ def process_thread(server_gateway, packet):
 def single_video():
     graph = bmf.graph({"dump_graph": 1})
 
-    video_stream = graph.module('ffmpeg_decoder')
+    video_stream = graph.module('c_ffmpeg_decoder')
     detect_stream = video_stream['video'].module('onnx_face_detect', {
-        "model_path": "version-RFB-640.onnx",
+        "model_path": "../../models/version-RFB-640.onnx",
         "label_to_frame": 1
     })
     detect_stream[0].encode(
         None, {
-            "output_prefix": "../files/output_video_dir",
+            "output_prefix": "../../files/output_video_dir",
             "video_params": {
                 "codec": "h264",
                 "width": 640,
@@ -41,7 +41,7 @@ def single_video():
     packet1 = Packet()
     packet1.set_timestamp(1)
     video_info_list1 = []
-    video_info_list1.append({'input_path': '../files/img.mp4'})
+    video_info_list1.append({'input_path': '../../files/img.mp4'})
     data = {'type': InputType.VIDEO, 'input_path': video_info_list1}
     packet1.set_data(data)
     thread_ = threading.Thread(target=process_thread,
@@ -53,7 +53,7 @@ def single_video():
     packet2 = Packet()
     packet2.set_timestamp(2)
     video_info_list2 = []
-    video_info2 = {'input_path': '../files/header.mp4'}
+    video_info2 = {'input_path': '../../files/header.mp4'}
     video_info_list2.append(video_info2)
     data = {'type': InputType.VIDEO, 'input_path': video_info_list2}
     packet2.set_data(data)

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2023 Babit Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <filesystem>
 #include "gtest/gtest.h"
 #include "module_factory.h"
@@ -9,15 +24,17 @@ using namespace bmf_engine;
 using namespace bmf_sdk;
 
 TEST(go_module, module_loader) {
-    auto module_path = "../lib/go_pass_through.so";
-    if (!std::filesystem::exists(module_path)) {
-        GTEST_SKIP();
-    }
+    std::string module_name = "go_copy_module";
 
-    std::shared_ptr<Module> module;
+    int node_id = 42;
     JsonParam option;
-    ModuleFactory::create_module("PassThrough", 42, option, "go", module_path,
-                                 "", module);
+    std::string module_type;
+    std::string module_path;
+    std::string module_entry;
+    std::shared_ptr<Module> module;
+    ModuleFactory::create_module(module_name, node_id, option, module_type,
+                                 module_path, module_entry, module);
+    EXPECT_EQ(module == nullptr, 0);
 
     // get module info
     JsonParam module_info;

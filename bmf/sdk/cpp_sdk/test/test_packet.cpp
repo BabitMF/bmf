@@ -1,4 +1,18 @@
-
+/*
+ * Copyright 2023 Babit Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <memory>
 #include <gtest/gtest.h>
 #include <bmf/sdk/bmf_type_info.h>
@@ -22,11 +36,10 @@ struct C { // copyable, moveable
 
 struct D : public C { // moveable only
     D(D &&) = default;
-
+    D(int &&val) : C{std::move(val)} {}
     std::unique_ptr<int> v_ptr;
 
     int *u_ptr = nullptr;
-
     ~D() {
         if (u_ptr) {
             *u_ptr = 0x42;
@@ -44,25 +57,28 @@ BMF_DEFINE_TYPE(test::D)
 
 TEST(type_info, type_info) {
     // default using type_id
-    EXPECT_TRUE(type_info<A>() == type_info<const A>());
-    EXPECT_TRUE(type_info<A>() == type_info<const A &>());
-    EXPECT_TRUE(type_info<A>() == type_info<const A &&>());
-    EXPECT_TRUE(type_info<A>() == type_info<A &&>());
-    EXPECT_TRUE(type_info<A>() != type_info<B>());
+    EXPECT_TRUE(bmf_sdk::type_info<A>() == bmf_sdk::type_info<const A>());
+    EXPECT_TRUE(bmf_sdk::type_info<A>() == bmf_sdk::type_info<const A &>());
+    EXPECT_TRUE(bmf_sdk::type_info<A>() == bmf_sdk::type_info<const A &&>());
+    EXPECT_TRUE(bmf_sdk::type_info<A>() == bmf_sdk::type_info<A &&>());
+    EXPECT_TRUE(bmf_sdk::type_info<A>() != bmf_sdk::type_info<B>());
 
     // register by BMF_DEFINE_TYPE
-    auto &c_info = type_info<test::C>();
-    auto &d_info = type_info<test::D>();
-    EXPECT_TRUE(type_info<A>() != c_info);
-    EXPECT_TRUE(type_info<test::D>() != c_info);
+    auto &c_info = bmf_sdk::type_info<test::C>();
+    auto &d_info = bmf_sdk::type_info<test::D>();
+    EXPECT_TRUE(bmf_sdk::type_info<A>() != c_info);
+    EXPECT_TRUE(bmf_sdk::type_info<test::D>() != c_info);
     EXPECT_EQ(c_info.name, std::string("test::C"));
     EXPECT_EQ(d_info.name, std::string("test::D"));
 
     // pre-define types
-    EXPECT_EQ(type_info<std::string>().name, std::string("std::string"));
-    EXPECT_EQ(type_info<Tensor>().name, std::string("hmp::Tensor"));
-    EXPECT_EQ(type_info<VideoFrame>().name, std::string("bmf_sdk::VideoFrame"));
-    EXPECT_EQ(type_info<AudioFrame>().name, std::string("bmf_sdk::AudioFrame"));
+    EXPECT_EQ(bmf_sdk::type_info<std::string>().name,
+              std::string("std::string"));
+    EXPECT_EQ(bmf_sdk::type_info<Tensor>().name, std::string("hmp::Tensor"));
+    EXPECT_EQ(bmf_sdk::type_info<VideoFrame>().name,
+              std::string("bmf_sdk::VideoFrame"));
+    EXPECT_EQ(bmf_sdk::type_info<AudioFrame>().name,
+              std::string("bmf_sdk::AudioFrame"));
 }
 
 TEST(packet, constructors) {

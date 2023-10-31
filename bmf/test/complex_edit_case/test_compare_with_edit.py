@@ -4,18 +4,27 @@ import unittest
 
 sys.path.append("../../")
 import bmf
-import timeout_decorator
+import os
+if os.name == 'nt':
+    # We redefine timeout_decorator on windows
+    class timeout_decorator:
+
+        @staticmethod
+        def timeout(*args, **kwargs):
+            return lambda f: f  # return a no-op decorator
+else:
+    import timeout_decorator
 import threading
 import os
 
-sys.path.append("../../bmf/test/")
+sys.path.append("../../test/")
 from base_test.base_test_case import BaseTestCase
 from base_test.media_info import MediaInfo
 
 
 def jobv(index):
-    input = "../files/edit" + str(index) + ".mp4"
-    output = "../files/vv_" + str(index) + ".mp4"
+    input = "../../files/edit" + str(index) + ".mp4"
+    output = "../../files/vv_" + str(index) + ".mp4"
     cmd = "ffmpeg -y -i " + input + " -t 10.0 -filter_complex " \
                                     "'[0:v]scale=-2:720,setsar=r=1/1[s],[s]pad=w=1280:h=720:x=(ow-iw)/2:y=(oh-ih)/2:color=black,setsar=r=1/1' " \
                                     "-c:v libx264 -crf 23 -preset veryfast -r 20.0 -an -y " + output
@@ -23,8 +32,8 @@ def jobv(index):
 
 
 def longvideo_jobv(index):
-    input = "../files/edit2.mp4"
-    output = "../files/vv_" + str(index) + ".mp4"
+    input = "../../files/edit2.mp4"
+    output = "../../files/vv_" + str(index) + ".mp4"
     cmd = "ffmpeg -y -i " + input + " -t 60.0 -filter_complex " \
                                     "'[0:v]scale=-2:720,setsar=r=1/1[s],[s]pad=w=1280:h=720:x=(ow-iw)/2:y=(oh-ih)/2:color=black,setsar=r=1/1' " \
                                     "-c:v libx264 -crf 23 -preset veryfast -r 20.0 -an -y " + output
@@ -36,9 +45,9 @@ class TestCompareWithEdit(BaseTestCase):
     @timeout_decorator.timeout(seconds=120)
     def test_edit_concat(self):
 
-        input_video_path_1 = "../files/edit1.mp4"
-        input_video_path_2 = "../files/edit2.mp4"
-        input_video_path_3 = "../files/edit3.mp4"
+        input_video_path_1 = "../../files/edit1.mp4"
+        input_video_path_2 = "../../files/edit2.mp4"
+        input_video_path_3 = "../../files/edit3.mp4"
         output_path = "./edit_concat.mp4"
         expect_result = '../../../test/case/edit_concat.mp4|720|1280|29.959000|MOV,MP4,M4A,3GP,3G2,MJ2|1243904|' \
                         '4664643|h264|{"fps": "20.0278164117"}'
@@ -127,9 +136,9 @@ class TestCompareWithEdit(BaseTestCase):
     @timeout_decorator.timeout(seconds=120)
     def test_edit_concat_ffmpeg(self):
 
-        input_video_path_1 = "../files/edit1.mp4"
-        input_video_path_2 = "../files/edit2.mp4"
-        input_video_path_3 = "../files/edit3.mp4"
+        input_video_path_1 = "../../files/edit1.mp4"
+        input_video_path_2 = "../../files/edit2.mp4"
+        input_video_path_3 = "../../files/edit3.mp4"
         output_path = "./edit_concat_ffmpeg.mp4"
         expect_result = '../../../test/case/edit_concat_ffmpeg.mp4|720|1280|30.000000|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                         '798864|2995741|h264|{"fps": "20.0"}'
@@ -146,7 +155,7 @@ class TestCompareWithEdit(BaseTestCase):
         for i in ts:
             i.join()
 
-        cmd4 = "ffmpeg -y -i ../files/vv_1.mp4 -i ../files/vv_2.mp4 -i ../files/vv_3.mp4 -filter_complex " \
+        cmd4 = "ffmpeg -y -i ../../files/vv_1.mp4 -i ../../files/vv_2.mp4 -i ../../files/vv_3.mp4 -filter_complex " \
                "'[0:v]scale=1280:720[v1];[v1]split[sp1][sp2];[sp1]trim=start=0:duration=10[v2];[v2]setpts=PTS-STARTPTS[v3];[sp2]trim=start=9:duration=1[v4];" \
                "[v4]setpts=PTS-STARTPTS[v5];[v5]scale=200:200[v6];[1:v]scale=1280:720[v7];[v7]split[sp3][sp4];[sp3]trim=start=0:duration=10[v8];" \
                "[v8]setpts=PTS-STARTPTS[v9];[v9][v6]overlay=repeatlast=0[v10];[sp4]trim=start=9:duration=1[v11];" \
@@ -161,9 +170,9 @@ class TestCompareWithEdit(BaseTestCase):
     @timeout_decorator.timeout(seconds=120)
     def test_longvideo_edit_concat(self):
 
-        input_video_path_1 = "../files/edit2.mp4"
-        input_video_path_2 = "../files/edit2.mp4"
-        input_video_path_3 = "../files/edit2.mp4"
+        input_video_path_1 = "../../files/edit2.mp4"
+        input_video_path_2 = "../../files/edit2.mp4"
+        input_video_path_3 = "../../files/edit2.mp4"
         output_path = "./longvideo_edit_concat.mp4"
         expect_result = '../../../test/case/longvideo_edit_concat.mp4|720|1280|30.0|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                         '1797288|7222707|h264|{"fps": "20.0046307016"}'
@@ -252,9 +261,9 @@ class TestCompareWithEdit(BaseTestCase):
     @timeout_decorator.timeout(seconds=120)
     def test_longvideo_edit_concat_ffmpeg(self):
 
-        input_video_path_1 = "../files/edit2.mp4"
-        input_video_path_2 = "../files/edit2.mp4"
-        input_video_path_3 = "../files/edit2.mp4"
+        input_video_path_1 = "../../files/edit2.mp4"
+        input_video_path_2 = "../../files/edit2.mp4"
+        input_video_path_3 = "../../files/edit2.mp4"
         output_path = "./longvideo_edit_concat_ffmpeg.mp4"
         expect_result = '../../../test/case/longvideo_edit_concat_ffmpeg.mp4|720|1280|30.3|' \
                         'MOV,MP4,M4A,3GP,3G2,MJ2|1436543|4697932|h264|{"fps": "20.0"}'
@@ -271,7 +280,7 @@ class TestCompareWithEdit(BaseTestCase):
         for i in ts:
             i.join()
 
-        cmd4 = "ffmpeg -y -i ../files/vv_1.mp4 -i ../files/vv_2.mp4 -i ../files/vv_3.mp4 -filter_complex " \
+        cmd4 = "ffmpeg -y -i ../../files/vv_1.mp4 -i ../../files/vv_2.mp4 -i ../../files/vv_3.mp4 -filter_complex " \
                "'[0:v]scale=1280:720[v1];[v1]split[sp1][sp2];[sp1]trim=start=0:duration=60[v2];[v2]setpts=PTS-STARTPTS[v3];[sp2]trim=start=55:duration=5[v4];" \
                "[v4]setpts=PTS-STARTPTS[v5];[v5]scale=200:200[v6];[1:v]scale=1280:720[v7];[v7]split[sp3][sp4];[sp3]trim=start=0:duration=60[v8];" \
                "[v8]setpts=PTS-STARTPTS[v9];[v9][v6]overlay=repeatlast=0[v10];[sp4]trim=start=55:duration=5[v11];" \

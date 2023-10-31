@@ -5,9 +5,18 @@ import unittest
 sys.path.append("../../..")
 import bmf
 import bmf.hml.hmp as mp
-import timeout_decorator
+import os
+if os.name == 'nt':
+    # We redefine timeout_decorator on windows
+    class timeout_decorator:
 
-sys.path.append("../")
+        @staticmethod
+        def timeout(*args, **kwargs):
+            return lambda f: f  # return a no-op decorator
+else:
+    import timeout_decorator
+
+sys.path.append("../../test/")
 from base_test.base_test_case import BaseTestCase
 from base_test.media_info import MediaInfo
 
@@ -18,7 +27,8 @@ class TestGenerator(BaseTestCase):
     def test_generator(self):
         pkts = (
             bmf.graph().decode({
-                'input_path': "../files/big_bunny_10s_30fps.mp4"
+                'input_path':
+                "../../files/big_bunny_10s_30fps.mp4"
             })['video'].ff_filter('scale', 299,
                                   299)  # or you can use '.scale(299, 299)'
             .start()  # this will return a packet generator
@@ -38,7 +48,8 @@ class TestGenerator(BaseTestCase):
     def test_generator_10_frame(self):
         pkts = (
             bmf.graph().decode({
-                'input_path': "../files/big_bunny_10s_30fps.mp4"
+                'input_path':
+                "../../files/big_bunny_10s_30fps.mp4"
             })['video'].ff_filter('scale', 299,
                                   299)  # or you can use '.scale(299, 299)'
             .start()  # this will return a packet generator

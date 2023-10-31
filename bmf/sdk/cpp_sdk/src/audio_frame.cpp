@@ -1,15 +1,31 @@
+/*
+ * Copyright 2023 Babit Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <bmf/sdk/audio_frame.h>
 #include <hmp/format.h>
 
 namespace bmf_sdk {
 
-// copy from ffmpeg
+// hacker popcount
 static int popcount_c(uint32_t x) {
     x -= (x >> 1) & 0x55555555;
     x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
     x = (x + (x >> 4)) & 0x0F0F0F0F;
     x += x >> 8;
-    return (x + (x >> 16)) & 0x3F;
+    x += (x >> 16);
+    return x & 0x0000003F;
 }
 
 static inline int popcount64_c(uint64_t x) {

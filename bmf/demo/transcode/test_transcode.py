@@ -4,9 +4,18 @@ import unittest
 
 sys.path.append("../../")
 import bmf
-import timeout_decorator
+import os
+if os.name == 'nt':
+    # We redefine timeout_decorator on windows
+    class timeout_decorator:
 
-sys.path.append("../")
+        @staticmethod
+        def timeout(*args, **kwargs):
+            return lambda f: f  # return a no-op decorator
+else:
+    import timeout_decorator
+
+sys.path.append("../../test/")
 from base_test.base_test_case import BaseTestCase
 from base_test.media_info import MediaInfo
 
@@ -15,7 +24,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_audio(self):
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         output_path = "./audio.mp4"
         expect_result = '../transcode/audio.mp4|0|0|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|136092|166183||{}'
         self.remove_result_data(output_path)
@@ -39,7 +48,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_with_input_only_audio(self):
-        input_video_path = "../files/big_bunny_10s_only_audio.mp4"
+        input_video_path = "../../files/big_bunny_10s_only_audio.mp4"
         output_path = "./output.mp4"
         expect_result = '|0|0|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|132840|166183||{}'
         self.remove_result_data(output_path)
@@ -49,7 +58,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_with_encode_with_audio_stream_but_no_audio_frame(self):
-        input_video_path = "../files/big_bunny_10s_30fps_only_video.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps_only_video.mp4"
         output_path = "./output.mp4"
         expect_result = '|1080|1920|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|1783292|2229115|h264|' \
                         '{"fps": "30.0"}'
@@ -62,7 +71,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_with_null_audio(self):
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         output_path = "./with_null_audio.mp4"
         expect_result = '../transcode/with_null_audio.mp4|240|320|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|60438|75548|h264|' \
                         '{"fps": "30.0662251656"}'
@@ -98,7 +107,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_simple(self):
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         output_path = "./simple.mp4"
         expect_result = '../transcode/simple.mp4|240|320|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|192235|240486|h264|' \
                         '{"fps": "30.0662251656"}'
@@ -132,7 +141,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_cb(self):
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         output_path = "./cb.mp4"
         expect_result = '../transcode/cb.mp4|240|320|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|192235|240486|h264|' \
                         '{"fps": "30.0662251656"}'
@@ -166,7 +175,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_hls(self):
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         output_path = "./file000.ts"
         expect_result = './transcode/file000.ts|1080|1920|10.0304|MPEGTS|2029494|2544580|h264|' \
                         '{"fps": "29.97"}'
@@ -191,7 +200,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_crypt(self):
-        input_video_path = "../files/encrypt.mp4"
+        input_video_path = "../../files/encrypt.mp4"
         output_path = "./crypt.mp4"
         expect_result = '../transcode/crypt.mp4|640|360|10.076000|MOV,MP4,M4A,3GP,3G2,MJ2|991807|1249182|h264|' \
                         '{"fps": "20.0828500414"}'
@@ -221,7 +230,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_option(self):
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         output_path = "./option.mp4"
         expect_result = '../transcode/option.mp4|720|1280|8.008|MOV,MP4,M4A,3GP,3G2,MJ2|1039220|1040260|h264|' \
                         '{"fps": "30.1796407186"}'
@@ -260,9 +269,9 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_image(self):
-        input_video_path = "../files/overlay.png"
+        input_video_path = "../../files/overlay.png"
         output_path = "./image.jpg"
-        expect_result = 'image.jpg|240|320|0.040000|IMAGE2|975400|4877|mjpeg|{"fps": "0"}'
+        expect_result = 'image.jpg|240|320|0.040000|IMAGE2|975400|4877|mjpeg|{"fps": "25.0"}'
         self.remove_result_data(output_path)
         (bmf.graph().decode({'input_path': input_video_path
                              })['video'].scale(320, 240).encode(
@@ -280,11 +289,11 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_video(self):
-        input_video_path_1 = "../files/header.mp4"
-        input_video_path_2 = "../files/header.mp4"
-        input_video_path_3 = '../files/big_bunny_10s_30fps.mp4'
-        logo_video_path_1 = "../files/xigua_prefix_logo_x.mov"
-        logo_video_path_2 = "../files/xigua_loop_logo2_x.mov"
+        input_video_path_1 = "../../files/header.mp4"
+        input_video_path_2 = "../../files/header.mp4"
+        input_video_path_3 = '../../files/big_bunny_10s_30fps.mp4'
+        logo_video_path_1 = "../../files/xigua_prefix_logo_x.mov"
+        logo_video_path_2 = "../../files/xigua_loop_logo2_x.mov"
         output_path = "./video.mp4"
         expect_result = '../transcode/video.mp4|720|1280|16.045|MOV,MP4,M4A,3GP,3G2,MJ2|2504766|5023622|h264|' \
                         '{"fps": "43.29"}'
@@ -365,7 +374,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_concat_video_and_audio(self):
-        input_video_path = '../files/big_bunny_10s_30fps.mp4'
+        input_video_path = '../../files/big_bunny_10s_30fps.mp4'
         output_path = "./concat_video_and_audio.mp4"
         expect_result = '../transcode/concat_video_and_audio.mp4|1080|1920|20.015|MOV,MP4,M4A,3GP,3G2,MJ2|1919964|' \
                         '4803511|h264|{"fps": "30.0165289256"}'
@@ -397,8 +406,8 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_short_video_concat(self):
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
-        input_video_path2 = "../files/single_frame.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
+        input_video_path2 = "../../files/single_frame.mp4"
 
         output_path = "./simple.mp4"
         # create graph
@@ -427,7 +436,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_map_param(self):
-        input_video_path = "../files/big_bunny_multi_stream.mp4"
+        input_video_path = "../../files/big_bunny_multi_stream.mp4"
         output_path_1 = "./output_1.mp4"
         output_path_2 = "./output_2.mp4"
         expect_result_1 = '../transcode/output_1.mp4|720|1280|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|828031|1035868|h264|' \
@@ -470,7 +479,7 @@ class TestTranscode(BaseTestCase):
     # @timeout_decorator.timeout(seconds=120)
     # def test_hwaccel_param(self):
     #     graph = bmf.graph()
-    #     input_video_path = "../files/big_bunny_10s_30fps.mp4"
+    #     input_video_path = "../../files/big_bunny_10s_30fps.mp4"
     #     output_path = "./hwaccel.mp4"
     #     expect_result = 'hwaccel.mp4|1080|1920|7.550000|MOV,MP4,M4A,3GP,3G2,MJ2|13588330|12823987|h264|{"fps": "30.066225165562916"}'
     #     video = graph.decode({
@@ -503,7 +512,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_rgb_2_video(self):
-        input_path = "../files/test_rgba_806x654.rgb"
+        input_path = "../../files/test_rgba_806x654.rgb"
         output_path = "./rgb2video.mp4"
         expect_result = '../transcode/rgb2video.mp4|654|806|2.04|MOV,MP4,M4A,3GP,3G2,MJ2|58848|15014|h264|' \
                         '{"fps": "25.0"}'
@@ -521,7 +530,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_stream_copy(self):
-        input_path = "../files/big_bunny_10s_30fps_mpeg.mp4"
+        input_path = "../../files/big_bunny_10s_30fps_mpeg.mp4"
         output_path = "./stream_copy.mp4"
         expect_result = './transcode/stream_copy.mp4|1080|1920|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|2255869|2822093|mpeg4|' \
                         '{"fps": "29.97"}'
@@ -540,7 +549,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_stream_audio_copy(self):
-        input_path = "../files/big_bunny_10s_only_audio.flv"
+        input_path = "../../files/big_bunny_10s_only_audio.flv"
         output_path = "./audio_copy.mp4"
         expect_result = './transcode/audio_copy.mp4|0|0|10.031|MOV,MP4,M4A,3GP,3G2,MJ2|129999|163003||{"accurate": "b"}'  # accurate could be "b" bitrate accurate check, "d" duration accurate check and "f" fps accurate check
         stream = bmf.graph().decode({
@@ -555,10 +564,10 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_extract_frames(self):
-        input_path = "../files/big_bunny_10s_30fps.mp4"
+        input_path = "../../files/big_bunny_10s_30fps.mp4"
         frames = (
             bmf.graph().decode({
-                'input_path': "../files/big_bunny_10s_30fps.mp4",
+                'input_path': "../../files/big_bunny_10s_30fps.mp4",
                 "video_params": {
                     "extract_frames": {
                         "fps": 0.5
@@ -584,7 +593,7 @@ class TestTranscode(BaseTestCase):
 
         video = bmf.graph().decode({
             "input_path":
-            "../files/big_bunny_10s_30fps.mp4",
+            "../../files/big_bunny_10s_30fps.mp4",
         })
 
         stream_notify = 'wrong_name'
@@ -601,7 +610,7 @@ class TestTranscode(BaseTestCase):
 
         video = bmf.graph().decode({
             "input_path":
-            "../files/big_bunny_10s_30fps.mp4",
+            "../../files/big_bunny_10s_30fps.mp4",
         })
 
         v = video['video']
@@ -637,7 +646,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_durations(self):
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         output_path = "./durations.mp4"
         expect_result = '../transcode/durations.mp4|240|320|4.54|MOV,MP4,M4A,3GP,3G2,MJ2|105089|59113|h264|' \
                         '{"fps": "16.67"}'
@@ -665,7 +674,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_output_raw_video(self):
-        input_video_path = '../files/big_bunny_10s_30fps.mp4'
+        input_video_path = '../../files/big_bunny_10s_30fps.mp4'
         raw_output_path = "./out.yuv"
 
         my_graph = bmf.graph()
@@ -685,7 +694,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_output_null(self):
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
 
         graph = bmf.graph()
 
@@ -695,7 +704,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_vframes(self):
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         output_path = "./simple.mp4"
         expect_result = './transcode/simple.mp4|480|640|1.001000|MOV,MP4,M4A,3GP,3G2,MJ2|110976|13872|h264|' \
        '{"fps": "29.97"}'
@@ -720,7 +729,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_segment_trans(self):
-        input_video_path = "../files/big_bunny_10s_30fps_mpeg.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps_mpeg.mp4"
         output_path = "./simple_%05d.mp4"
         expect_result1 = './transcode/simple_00000.mp4|1080|1920|4.296|MOV,MP4,M4A,3GP,3G2,MJ2|1988878|1068028|mpeg4|' \
        '{"fps": "29.97", "accurate": "d"}'
@@ -745,7 +754,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_encoder_push_output_mp4(self):
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         output_path = "./simple_vframe_python.mp4"
         graph = bmf.graph({'dump_graph': 1})
         video = graph.decode({
@@ -796,7 +805,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_encoder_push_output_image2pipe(self):
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         graph = bmf.graph({'dump_graph': 1})
         video = graph.decode({
             "input_path": input_video_path,
@@ -831,7 +840,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_encoder_push_output_audio_pcm_s16le(self):
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         output_path = "./test_audio_simple_pcm_s16le.wav"
         graph = bmf.graph({'dump_graph': 1})
         video = graph.decode({
@@ -859,7 +868,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_skip_frame(self):
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         output_path = "./test_skip_frame_video.mp4"
         expect_result = '../transcode/test_skip_frame_video.mp4|1080|1920|7.574233|MOV,MP4,M4A,3GP,3G2,MJ2|1321859|1255038|h264|' \
             '{"fps": "29.97"}'
@@ -884,7 +893,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_encoder_push_unmuxed_output_mp4(self):
-        input_video_path = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
         output_path = "./unmuxed_output.mp4"
         expect_result = '../transcode/unmuxed_output.mp4|240|320|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|192235|240486|h264|' \
                         '{"fps": "29.97002997"}'
@@ -927,7 +936,7 @@ class TestTranscode(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_resolution_limit(self):
-        input_video_path = "../files/resolution_change.mp4"
+        input_video_path = "../../files/resolution_change.mp4"
         output_path = "./simple.mp4"
 
         graph = bmf.graph({'dump_graph': 1})

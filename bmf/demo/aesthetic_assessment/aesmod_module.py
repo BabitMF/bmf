@@ -88,7 +88,8 @@ class Aesmod:
         pred_score = np.clip(
             np.sum([x * (i + 1) for i, x in enumerate(raw_scores)]), raw_min,
             raw_max)
-        pred_score = np.sqrt((pred_score - raw_min) / (raw_max - raw_min)) * 100
+        pred_score = np.sqrt(
+            (pred_score - raw_min) / (raw_max - raw_min)) * 100
         return float(np.clip(pred_score, 0, 100.0))
 
     def process(self, frames):
@@ -136,7 +137,7 @@ class BMFAesmod(SyncModule):
         output_path = option.get("output_path", 0)
         model_version = option.get("model_version", "v1.0")
         model_path = option.get("model_path",
-                                "models/aes_transonnx_update3.onnx")
+                                "../../models/aes_transonnx_update3.onnx")
         self._nrp = Aesmod(model_path, model_version, output_path)
         SyncModule.__init__(self,
                             node,

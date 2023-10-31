@@ -1,3 +1,18 @@
+/*
+ * Copyright 2023 Babit Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #undef BMF_BUILD_SHARED
 
 #include "module_factory.h"
@@ -95,10 +110,12 @@ int install_module(const bmf_sdk::ModuleInfo &info, bool force) {
         // check module file
         if (info.module_type == "c++" || info.module_type == "go") {
             module_file =
-                fs::path(info.module_path) /
-                (module_file + bmf_sdk::SharedLibrary::default_extension());
+                (fs::path(info.module_path) /
+                 (module_file + bmf_sdk::SharedLibrary::default_extension()))
+                    .string();
         } else {
-            module_file = fs::path(info.module_path) / (module_file + ".py");
+            module_file =
+                (fs::path(info.module_path) / (module_file + ".py")).string();
         }
         if (!fs::exists(module_file)) {
             BMFLOG(BMF_ERROR)
@@ -111,7 +128,7 @@ int install_module(const bmf_sdk::ModuleInfo &info, bool force) {
         return -1;
     }
 
-    if (!fs::exists(module_root_path) and
+    if (!fs::exists(module_root_path) &&
         !fs::create_directories(module_root_path)) {
         BMFLOG(BMF_ERROR) << "create module root directory failed."
                           << std::endl;
@@ -148,7 +165,7 @@ int install_module(const bmf_sdk::ModuleInfo &info, bool force) {
 
 int uninstall_module(std::string module_name) {
     auto module_path = module_root_path / ("Module_" + module_name);
-    if (!fs::exists(module_path) or !fs::is_directory(module_path)) {
+    if (!fs::exists(module_path) || !fs::is_directory(module_path)) {
         BMFLOG(BMF_WARNING)
             << "Module:" << module_name << " is not exist" << std::endl;
         return -1;

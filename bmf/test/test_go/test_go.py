@@ -2,22 +2,37 @@ import sys
 import unittest
 import os
 
-import timeout_decorator
+import os
+if os.name == 'nt':
+    # We redefine timeout_decorator on windows
+    command = "main "
 
-sys.path.append("../")
+    class timeout_decorator:
+
+        @staticmethod
+        def timeout(*args, **kwargs):
+            return lambda f: f  # return a no-op decorator
+else:
+    import timeout_decorator
+    command = "./main "
+
+sys.path.append("../../test/")
 from base_test.base_test_case import BaseTestCase
 from base_test.media_info import MediaInfo
 
 # expect_result = '../transcode/audio.mp4|0|0|7.617000|MOV,MP4,M4A,3GP,3G2,MJ2|136092|129577||{}'
 # BaseTestCase.check_video_diff("","","")
 
+
 class TestGO(BaseTestCase):
+
     @timeout_decorator.timeout(seconds=120)
     def test_normal_mode(self):
         output_path = "./output_normal_mode.mp4"
         expect_result = './output_normal_mode.mp4|1080|1920|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|1918874|2400512|h264|{"fps": "29.97"}'
         self.remove_result_data(output_path)
-        os.system("./main normalMode")
+        task = command + "normalMode"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -25,23 +40,26 @@ class TestGO(BaseTestCase):
         output_path = "./audio.mp4"
         expect_result = './audio.mp4|0|0|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|136092|166183||{}'
         self.remove_result_data(output_path)
-        os.system("./main testAudio")
+        task = command + "testAudio"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     def test_with_input_only_audio(self):
         output_path = "./output.mp4"
-        expect_result = '|0|0|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|132840|166183||{}'        
+        expect_result = '|0|0|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|132840|166183||{}'
         self.remove_result_data(output_path)
-        os.system("./main testWithInputOnlyAudio")
+        task = command + "testWithInputOnlyAudio"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
-        
+
     @timeout_decorator.timeout(seconds=120)
     def test_with_encode_with_audio_stream_but_no_audio_frame(self):
         output_path = "./output.mp4"
         expect_result = '|1080|1920|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|1783292|2229115|h264|' \
                         '{"fps": "30.0"}'
         self.remove_result_data(output_path)
-        os.system("./main testWithEncodeWithAudioStreamButNoAudioFrame")
+        task = command + "testWithEncodeWithAudioStreamButNoAudioFrame"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -50,7 +68,8 @@ class TestGO(BaseTestCase):
         expect_result = '../transcode/with_null_audio.mp4|240|320|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|60438|75548|h264|' \
                         '{"fps": "30.0662251656"}'
         self.remove_result_data(output_path)
-        os.system("./main testWithNullAudio")
+        task = command + "testWithNullAudio"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -59,7 +78,8 @@ class TestGO(BaseTestCase):
         expect_result = '../transcode/simple.mp4|240|320|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|192235|240486|h264|' \
                         '{"fps": "30.0662251656"}'
         self.remove_result_data(output_path)
-        os.system("./main testSimple")
+        task = command + "testSimple"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -68,7 +88,8 @@ class TestGO(BaseTestCase):
         expect_result = './transcode/file000.ts|1080|1920|10.0304|MPEGTS|2029494|2544580|h264|' \
                         '{"fps": "29.97"}'
         self.remove_result_data(output_path)
-        os.system("./main testhls")
+        task = command + "testhls"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -77,7 +98,8 @@ class TestGO(BaseTestCase):
         expect_result = '../transcode/crypt.mp4|640|360|10.076000|MOV,MP4,M4A,3GP,3G2,MJ2|991807|1249182|h264|' \
                         '{"fps": "20.0828500414"}'
         self.remove_result_data(output_path)
-        os.system("./main testCrypt")
+        task = command + "testCrypt"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -86,7 +108,8 @@ class TestGO(BaseTestCase):
         expect_result = '../transcode/option.mp4|720|1280|8.008|MOV,MP4,M4A,3GP,3G2,MJ2|762463|763226|h264|' \
                         '{"fps": "30.1796407186"}'
         self.remove_result_data(output_path)
-        os.system("./main testOption")
+        task = command + "testOption"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -94,7 +117,8 @@ class TestGO(BaseTestCase):
         output_path = "./image.jpg"
         expect_result = 'image.jpg|240|320|0.040000|IMAGE2|975400|4877|mjpeg|{"fps": "25.0"}'
         self.remove_result_data(output_path)
-        os.system("./main testImage")
+        task = command + "testImage"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -103,7 +127,8 @@ class TestGO(BaseTestCase):
         expect_result = '../transcode/video.mp4|720|1280|16.045|MOV,MP4,M4A,3GP,3G2,MJ2|2504766|5023622|h264|' \
                         '{"fps": "43.29"}'
         self.remove_result_data(output_path)
-        os.system("./main testVideo")
+        task = command + "testVideo"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -112,13 +137,15 @@ class TestGO(BaseTestCase):
         expect_result = '../transcode/concat_video_and_audio.mp4|1080|1920|20.015|MOV,MP4,M4A,3GP,3G2,MJ2|1919964|' \
                         '4803511|h264|{"fps": "30.0165289256"}'
         self.remove_result_data(output_path)
-        os.system("./main testConcatVideoAndAudio")
+        task = command + "testConcatVideoAndAudio"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
     def test_short_video_concat(self):
         output_path = "./concat_video_and_audio.mp4"
-        os.system("./main testShortVideoConcat")
+        task = command + "testShortVideoConcat"
+        os.system(task)
 
     @timeout_decorator.timeout(seconds=120)
     def test_map_param(self):
@@ -130,7 +157,8 @@ class TestGO(BaseTestCase):
                         '{"fps": "30.10"}'
         self.remove_result_data(output_path_1)
         self.remove_result_data(output_path_2)
-        os.system("./main testMapParam")
+        task = command + "testMapParam"
+        os.system(task)
         self.check_video_diff(output_path_1, expect_result_1)
         self.check_video_diff(output_path_2, expect_result_2)
 
@@ -140,7 +168,8 @@ class TestGO(BaseTestCase):
         expect_result = '../transcode/rgb2video.mp4|654|806|2.04|MOV,MP4,M4A,3GP,3G2,MJ2|58848|15014|h264|' \
                         '{"fps": "25.0"}'
         self.remove_result_data(output_path)
-        os.system("./main testRGB2Video")
+        task = command + "testRGB2Video"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -149,32 +178,37 @@ class TestGO(BaseTestCase):
         expect_result = './transcode/stream_copy.mp4|1080|1920|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|2255869|2822093|mpeg4|' \
                         '{"fps": "29.97"}'
         self.remove_result_data(output_path)
-        os.system("./main testStreamCopy")
+        task = command + "testStreamCopy"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
     def test_stream_audio_copy(self):
         output_path = "./audio_copy.mp4"
-        expect_result = './transcode/audio_copy.mp4|0|0|10.031|MOV,MP4,M4A,3GP,3G2,MJ2|129999|163003||{"accurate": "b"}' # accurate could be "b" bitrate accurate check, "d" duration accurate check and "f" fps accurate check
+        expect_result = './transcode/audio_copy.mp4|0|0|10.031|MOV,MP4,M4A,3GP,3G2,MJ2|129999|163003||{"accurate": "b"}'  # accurate could be "b" bitrate accurate check, "d" duration accurate check and "f" fps accurate check
         self.remove_result_data(output_path)
-        os.system("./main testStreamAudioCopy")
+        task = command + "testStreamAudioCopy"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
     def test_extract_frames(self):
-        os.system("./main testExtractFrames")
+        task = command + "testExtractFrames"
+        os.system(task)
 
     @timeout_decorator.timeout(seconds=120)
     def test_incorrect_stream_notify(self):
         try:
-            os.system("./main testIncorrectStreamNotify")
+            task = command + "testIncorrectStreamNotify"
+            os.system(task)
         except Exception as e:
             print(e)
 
     @timeout_decorator.timeout(seconds=120)
     def test_incorrect_encoder_param(self):
         try:
-            os.system("./main testIncorrectEncoderParam")
+            task = command + "testIncorrectEncoderParam"
+            os.system(task)
         except Exception as e:
             print(e)
 
@@ -184,18 +218,21 @@ class TestGO(BaseTestCase):
         expect_result = '../transcode/durations.mp4|240|320|4.54|MOV,MP4,M4A,3GP,3G2,MJ2|105089|59113|h264|' \
                         '{"fps": "16.67"}'
         self.remove_result_data(output_path)
-        os.system("./main testDurations")
+        task = command + "testDurations"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
     def test_output_raw_video(self):
         raw_output_path = "./out.yuv"
-        os.system("./main testOutputRawVideo")
+        task = command + "testOutputRawVideo"
+        os.system(task)
         self.check_md(raw_output_path, "992f929388f18c43c06c767d63eea15d")
 
     @timeout_decorator.timeout(seconds=120)
     def test_output_null(self):
-        os.system("./main testOutputNull")
+        task = command + "testOutputNull"
+        os.system(task)
 
     @timeout_decorator.timeout(seconds=120)
     def test_vframes(self):
@@ -203,7 +240,8 @@ class TestGO(BaseTestCase):
         expect_result = './transcode/simple.mp4|480|640|1.001000|MOV,MP4,M4A,3GP,3G2,MJ2|110976|13872|h264|' \
        '{"fps": "29.97"}'
         self.remove_result_data(output_path)
-        os.system("./main testVframes")
+        task = command + "testVframes"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -216,21 +254,25 @@ class TestGO(BaseTestCase):
        '{"fps": "29.97", "accurate": "d"}'
         self.remove_result_data(output_path_1)
         self.remove_result_data(output_path_2)
-        os.system("./main testSegmentTrans")
+        task = command + "testSegmentTrans"
+        os.system(task)
         self.check_video_diff(output_path_1, expect_result1)
         self.check_video_diff(output_path_2, expect_result2)
 
     @timeout_decorator.timeout(seconds=120)
     def test_encoder_push_output_mp4(self):
-        os.system("./main testEncoderPushOutputMp4")
+        task = command + "testEncoderPushOutputMp4"
+        os.system(task)
 
     @timeout_decorator.timeout(seconds=120)
     def test_encoder_push_output_image2pipe(self):
-        os.system("./main testEncoderPushOutputImage2Pipe")
+        task = command + "testEncoderPushOutputImage2Pipe"
+        os.system(task)
 
     @timeout_decorator.timeout(seconds=120)
     def test_encoder_push_output_audio_pcm_s16le(self):
-        os.system("./main testEncoderPushOutputAudioPcmS16le")
+        task = command + "testEncoderPushOutputAudioPcmS16le"
+        os.system(task)
 
     @timeout_decorator.timeout(seconds=120)
     def test_skip_frame(self):
@@ -238,7 +280,8 @@ class TestGO(BaseTestCase):
         expect_result = '../transcode/test_skip_frame_video.mp4|1080|1920|4.3|MOV,MP4,M4A,3GP,3G2,MJ2|22532|12111|h264|' \
             '{"fps": "29.97"}'
         self.remove_result_data(output_path)
-        os.system("./main testSkipFrame")
+        task = command + "testSkipFrame"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -246,14 +289,16 @@ class TestGO(BaseTestCase):
         output_path = "./audio_c_module.mp4"
         expect_result = 'audio_c_module.mp4|0|0|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|132840|166183||{}'
         self.remove_result_data(output_path)
-        os.system("./main testAudioModule")
+        task = command + "testAudioModule"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
     def test_exception_in_python_module(self):
         output_path = "./test_exception_in_python_module.mp4"
         try:
-            os.system("./main testExceptionInPythonModule")
+            task = command + "testExceptionInPythonModule"
+            os.system(task)
         except Exception as e:
             print(e)
 
@@ -263,7 +308,8 @@ class TestGO(BaseTestCase):
         expect_result = '../edit/overlays.mp4|480|640|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|230526|288389|h264|' \
                         '{"fps": "30.0715990453"}'
         self.remove_result_data(output_path)
-        os.system("./main testVideoOverlays")
+        task = command + "testVideoOverlays"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -272,7 +318,8 @@ class TestGO(BaseTestCase):
         expect_result = '../edit/video_concat.mp4|720|1280|15.022000|MOV,MP4,M4A,3GP,3G2,MJ2|385322|722480|h264|' \
                         '{"fps": "30.0166759311"}'
         self.remove_result_data(output_path)
-        os.system("./main testVideoConcat")
+        task = command + "testVideoConcat"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -280,7 +327,8 @@ class TestGO(BaseTestCase):
         output_path = "./output_pre_module.mp4"
         expect_result = './output_pre_module.mp4|1080|1920|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|1918874|2400512|h264|{"fps": "29.97"}'
         self.remove_result_data(output_path)
-        os.system("./main premoduleMode")
+        task = command + "premoduleMode"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -288,7 +336,8 @@ class TestGO(BaseTestCase):
         output_path = "./output_sync_mode.mp4"
         expect_result = './output_sync_mode.mp4|1080|1920|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|1783292|2229115|h264|{"fps": "29.97"}'
         self.remove_result_data(output_path)
-        os.system("./main syncMode")
+        task = command + "syncMode"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
     @timeout_decorator.timeout(seconds=120)
@@ -296,7 +345,8 @@ class TestGO(BaseTestCase):
         output_path = "./output_sync_mode_serial.mp4"
         expect_result = './output_sync_mode_serial.mp4|1080|1920|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|1783292|2229115|h264|{"fps": "29.97"}'
         self.remove_result_data(output_path)
-        os.system("./main syncModeSerial")
+        task = command + "syncModeSerial"
+        os.system(task)
         self.check_video_diff(output_path, expect_result)
 
 

@@ -22,6 +22,9 @@ if(HMP_ENABLE_PYTHON)
     add_subdirectory(third_party/pybind11)
 endif()
 
+##### fmt
+add_subdirectory(third_party/fmt)
+list(APPEND HMP_CORE_PUB_DEPS fmt)
 
 ##### Torch
 if(HMP_ENABLE_TORCH)
@@ -52,10 +55,6 @@ if(HMP_ENABLE_TORCH)
     endif()
 endif()
 
-
-##### fmt
-add_subdirectory(third_party/fmt)
-list(APPEND HMP_CORE_PRI_DEPS fmt)
 
 ##### optional(remove it when nvcc support c++17)
 add_library(optional INTERFACE)   
@@ -135,6 +134,9 @@ endif()
 
 
 ##### GTest
+if(WIN32)
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+endif()
 add_subdirectory(third_party/gtest)
 
 

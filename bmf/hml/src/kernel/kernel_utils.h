@@ -19,7 +19,8 @@
 #include <array>
 #include <hmp/core/macros.h>
 #include <hmp/core/logging.h>
-#include <hmp/core/limits.h>
+#include <limits>
+#include <hmp/core/half.h>
 #include <hmp/tensor.h>
 #include <hmp/format.h>
 #include <kernel/vector.h>
@@ -70,8 +71,8 @@ HMP_HOST_DEVICE inline T clamp(const T &v, const T &mn, const T &mx) {
 template <typename U, typename T> struct SaturateCast {
     HMP_HOST_DEVICE inline static U cast(const T &v) {
         using V = decltype(T() * U()); // fix Half comparasion issue
-        return clamp<V>(v, hmp::numeric_limits<U>::lowest(),
-                        hmp::numeric_limits<U>::max());
+        return clamp<V>(v, std::numeric_limits<U>::lowest(),
+                        std::numeric_limits<U>::max());
     }
 };
 

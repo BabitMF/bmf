@@ -3,9 +3,7 @@ cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 # Cross Compile
 # cmake -DCMAKE_TOOLCHAIN_FILE=cmake/aarch64-toolchain.cmake
 
-
 project(BMF CXX C)
-
 ### options
 if (NOT APPLE)
     set(BMF_PYENV 3.7 CACHE STRING "Python version, ie. 3.6, 3.7, 3.8")
@@ -43,7 +41,7 @@ list(GET VERSION_LIST 2 BMF_VERSION_PATCH)
 
 
 ### general settings
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -56,9 +54,9 @@ endif()
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if ($ENV{SCRIPT_EXEC_MODE} MATCHES "x86")
         # runpath for bmf libs
-        set(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations -Wl,-z,defs,-rpath,'$ORIGIN',--enable-new-dtags ${CMAKE_COVERAGE_FLAGS}") # For python dist
+        set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations -Wl,-z,defs,-rpath,'$ORIGIN',--enable-new-dtags ${CMAKE_COVERAGE_FLAGS} ${CMAKE_CXX_FLAGS}") # For python dist
     else()
-        set(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations -Wl,-z,defs ${CMAKE_COVERAGE_FLAGS}") #report unresolved symbols
+        set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations -Wl,-z,defs ${CMAKE_COVERAGE_FLAGS} ${CMAKE_CXX_FLAGS}") #report unresolved symbols
     endif()
 endif()
 
@@ -72,10 +70,24 @@ if(ANDROID)
 endif()
 
 
-#
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/bin)
+if(WIN32)
+    # archive
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/lib)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${BMF_ASSEMBLE_ROOT}/bmf/lib)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${BMF_ASSEMBLE_ROOT}/bmf/lib)
+    # library
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/lib)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${BMF_ASSEMBLE_ROOT}/bmf/lib)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${BMF_ASSEMBLE_ROOT}/bmf/lib)
+    # binary
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/bin)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BMF_ASSEMBLE_ROOT}/bmf/bin)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BMF_ASSEMBLE_ROOT}/bmf/bin)
+else()
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/lib)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/lib)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/bin)
+endif()
 
 
 ### dependencies

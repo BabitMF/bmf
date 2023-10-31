@@ -166,8 +166,24 @@ int SchedulerQueue::start() {
     std::string thread_name = "schedule_queue" + std::to_string(id_);
 #if __APPLE__
     pthread_setname_np(thread_name.c_str());
-#else
+#elif !defined(_WIN32)
     pthread_setname_np(handle, thread_name.c_str());
+#else // WIN32
+#include <cstdlib>
+    typedef HRESULT(WINAPI * SETTHREADDESCRIPTION)(HANDLE, PCWSTR);
+    auto SetThreadDescription =
+        reinterpret_cast<SETTHREADDESCRIPTION>(::GetProcAddress(
+            ::GetModuleHandle(TEXT("Kernel32.dll")), "SetThreadDescription"));
+    if (SetThreadDescription == nullptr)
+        return 0;
+    int wcs_len = std::mbstowcs(nullptr, thread_name.c_str(), 0) + 1;
+    wchar_t *wcs = new wchar_t[wcs_len];
+    if (std::mbstowcs(wcs, thread_name.c_str(), wcs_len) < 0) {
+        delete[] wcs;
+        throw std::runtime_error("convert thread name failed");
+    }
+    SetThreadDescription(handle, wcs);
+    delete[] wcs;
 #endif
     return 0;
 }

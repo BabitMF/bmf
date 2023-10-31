@@ -24,7 +24,6 @@ make -j8
 
 # Reduce output size
 rm -rf output/example
-rm -rf output/test
 
 # Output
 mv output ../

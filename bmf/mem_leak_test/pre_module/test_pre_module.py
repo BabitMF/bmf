@@ -4,7 +4,16 @@ import unittest
 
 sys.path.append("../..")
 import bmf
-import timeout_decorator
+import os
+if os.name == 'nt':
+    # We redefine timeout_decorator on windows
+    class timeout_decorator:
+
+        @staticmethod
+        def timeout(*args, **kwargs):
+            return lambda f: f  # return a no-op decorator
+else:
+    import timeout_decorator
 
 sys.path.append("../")
 from base_test.base_test_case import BaseTestCase
@@ -32,7 +41,7 @@ def create_node_test(module_name,
 class TestPreModule(BaseTestCase):
 
     def test_pre_module(self):
-        input_video_path = "../files/img.mp4"
+        input_video_path = "../../files/img.mp4"
         output_path = "./output.mp4"
 
         # pre_allocate a module

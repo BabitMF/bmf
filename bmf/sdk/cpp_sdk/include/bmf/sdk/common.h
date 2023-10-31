@@ -41,13 +41,13 @@
 #else // BMF_BUILD_SHARED
 #define BMF_API __declspec(dllimport)
 #endif
-#else //_WIN32
+#else // GNUC
 #ifdef BMF_BUILD_SHARED
 #define BMF_API __attribute__((__visibility__("default")))
 #else // BMF_BUILD_SHARED
 #define BMF_API
 #endif //
-#endif //_WIN32
+#endif
 
 #ifdef __cplusplus
 BEGIN_BMF_SDK_NS

@@ -22,7 +22,7 @@ def unicode_convert(input):
 
 
 def test_simple_decode():
-    config_file = "../files/graph.json"
+    config_file = "../../files/graph.json"
     with open(config_file, mode='r') as f:
         config = json.dumps(unicode_convert(json.loads(f.read())))
     print(config)

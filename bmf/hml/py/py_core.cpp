@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+#ifdef _WIN32
+#include <corecrt.h>
+#endif
 #include <pybind11/pybind11.h>
 #include <hmp/core/logging.h>
 #include <hmp/core/scalar_type.h>

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2023 Babit Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include <bmf/sdk/trace.h>
 
@@ -7,6 +22,8 @@
 BEGIN_BMF_SDK_NS
 
 #ifndef NO_TRACE
+
+inline TraceLogger *TraceLogger::traceLogger;
 
 TraceEvent::TraceEvent() {}
 
@@ -290,8 +307,8 @@ void TraceLogger::format_logs(bool include_info) {
     long long final_time = 0;
 
     for (const auto &entry : std::filesystem::directory_iterator(".")) {
-        // Proceed if is a log file
-        std::string filename = entry.path().filename().u8string();
+// Proceed if is a log file
+        std::string filename = entry.path().filename().string();
         if (filename.size() > 7 && filename.find("log") == 0 &&
             filename.compare(filename.size() - 4, 4, ".txt") == 0) {
             FILE *fp = fopen(filename.c_str(), "r");

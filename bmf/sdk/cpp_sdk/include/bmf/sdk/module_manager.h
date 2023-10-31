@@ -1,3 +1,18 @@
+/*
+ * Copyright 2023 Babit Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #pragma once
 
 #include <bmf/sdk/module.h>
@@ -67,7 +82,21 @@ class ModuleFactoryI {
 
 //
 class BMF_API ModuleManager {
-    struct Private;
+    struct Private {
+        nlohmann::json builtin_config;
+        std::string builtin_root;
+        std::vector<std::string> repo_roots;
+        // cached module info
+        std::map<std::string, ModuleInfo> known_modules;
+
+        // cached moudle factories
+        std::map<std::string, std::shared_ptr<ModuleFactoryI>> factories;
+
+        // supported module loaders
+        std::map<std::string,
+                 std::function<ModuleFactoryI *(const ModuleInfo &)>>
+            loaders;
+    };
 
   public:
     // find module info from builtin and sys repo(/opt/tiger/xxx)

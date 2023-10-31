@@ -23,6 +23,7 @@
 #include <mutex>
 #include <map>
 #include <vector>
+#include <string>
 
 BEGIN_BMF_SDK_NS
 

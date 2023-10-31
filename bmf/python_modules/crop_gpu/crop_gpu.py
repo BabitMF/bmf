@@ -151,6 +151,7 @@ class crop_gpu(Module):
 
         return ProcessResult.OK
 
+
 def register_crop_gpu_info(info):
     info.module_description = "Builtin module for crop using GPU"
     info.module_tag = ModuleTag.TAG_DEVICE_HWACCEL

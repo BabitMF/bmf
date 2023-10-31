@@ -7,7 +7,7 @@ import bmf
 
 
 def test_encode_and_raw_data():
-    input_video_path = '../files/img.mp4'
+    input_video_path = '../../files/img.mp4'
     raw_output_path = "./out.yuv"
     output_path = "./out.mp4"
 

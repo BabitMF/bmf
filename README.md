@@ -1,7 +1,7 @@
 # BMF - Cross-platform, customizable video processing framework with strong GPU acceleration
 
 **BMF (Babit Multimedia Framework)** is a cross-platform, customizable multimedia processing framework developed by [**ByteDance**](https://www.bytedance.com/en).
-With over 4 years of testing and improvements, BMF has been tailored to adeptly tackle challenges in our real-world production environments. Now it's widely used in ByteDance's video streaming, live transcoding, cloud editing and mobile pre/post processing scenarios. More than 2 bilion videos are processed by the framework everyday.
+With over 4 years of testing and improvements, BMF has been tailored to adeptly tackle challenges in our real-world production environments. Now it's widely used in ByteDance's video streaming, live transcoding, cloud editing and mobile pre/post processing scenarios. More than 2 billion videos are processed by the framework everyday.
 
 Here are some key features:
 
@@ -13,7 +13,7 @@ Here are some key features:
 
 - High performance: BMF has a powerful scheduler and strong support for heterogeneous acceleration hardware. Moreover, [**NVIDIA**](https://www.nvidia.com/) has been cooperating with us to develop a highly optimized GPU pipeline for video transcoding and AI inference.
 
-- Efficient data conversion: BMF offers seamless data format conversions across popular frameworks (PyTorch/OpenCV/TensorRT) and between hardware devices (CPU/GPU).
+- Efficient data conversion: BMF offers seamless data format conversions across popular frameworks (FFmpeg/Numpy/PyTorch/OpenCV/TensorRT), conversion between hardware devices (CPU/GPU), and color space and pixel format conversion.
 
 Dive deeper into BMF's capabilities on [our website](https://babitmf.github.io/) for more details.
 
@@ -152,7 +152,7 @@ If you want to have a quick experiment, you can try it on [![Open In Colab](http
 - [Contributing](#contributing)
 
 ## License
-The project has an [Apache 2.0 License](https://github.com/BabitMF/bmf/blob/master/LICENSE).
+The project has an [Apache 2.0 License](https://github.com/BabitMF/bmf/blob/master/LICENSE). Third party components and dependencies remain under their own licenses.
 
 ## Contributing
 

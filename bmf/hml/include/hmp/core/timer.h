@@ -34,7 +34,7 @@ class HMP_API Timer {
 
     Timer(RefPtr<TimerInterface> self) : self_(self) {}
 
-    friend Timer create_timer(DeviceType device_type);
+    friend HMP_API Timer create_timer(DeviceType device_type);
 
   public:
     Timer(const Timer &) = default;

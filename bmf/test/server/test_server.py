@@ -8,9 +8,18 @@ from bmf import ServerGateway, module
 from bmf import GraphMode, Module, Log, LogLevel, InputType, ProcessResult, Packet, Timestamp, scale_av_pts, \
     av_time_base, BmfCallBackType, VideoFrame, AudioFrame
 import threading
-import timeout_decorator
+import os
+if os.name == 'nt':
+    # We redefine timeout_decorator on windows
+    class timeout_decorator:
 
-sys.path.append("../")
+        @staticmethod
+        def timeout(*args, **kwargs):
+            return lambda f: f  # return a no-op decorator
+else:
+    import timeout_decorator
+
+sys.path.append("../../test/")
 from base_test.base_test_case import BaseTestCase
 from base_test.media_info import MediaInfo
 
@@ -25,12 +34,12 @@ class TestServer(BaseTestCase):
     @timeout_decorator.timeout(seconds=120)
     def test_single_video(self):
 
-        input_video_path_1 = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path_1 = "../../files/big_bunny_10s_30fps.mp4"
         output_path_1 = "./output_video_dir/1/output.mp4"
         expect_result_1 = '../server/output_video_dir/1/output.mp4|480|640|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                           '328621|411106|h264|{"fps": "30.0662251656"}'
 
-        input_video_path_2 = '../files/header.mp4'
+        input_video_path_2 = '../../files/header.mp4'
         output_path_2 = "./output_video_dir/2/output.mp4"
         expect_result_2 = '../server/output_video_dir/2/output.mp4|480|640|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                           '328621|411106|h264|{"fps": "30.0662251656"}'
@@ -40,7 +49,7 @@ class TestServer(BaseTestCase):
 
         graph = bmf.graph({"dump_graph": 1})
 
-        video_stream = graph.module('ffmpeg_decoder')
+        video_stream = graph.module('c_ffmpeg_decoder')
         video_stream['video'].pass_through().encode(
             video_stream['audio'], {
                 "output_prefix": "./output_video_dir",
@@ -85,12 +94,12 @@ class TestServer(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_multiple_pictures(self):
-        input_video_path_1 = "../files/blue.png"
+        input_video_path_1 = "../../files/blue.png"
         output_path_1 = "./output_multi_pic_dir/1/output.mp4"
         expect_result_1 = '../server/output_multi_pic_dir/1/output.mp4|240|320|4.000000|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                           '620066|310033|mjpeg|{"fps": "25.0"}'
 
-        input_video_path_2 = '../files/overlay.png'
+        input_video_path_2 = '../../files/overlay.png'
         output_path_2 = "./output_multi_pic_dir/2/output.mp4"
         expect_result_2 = '../server/output_multi_pic_dir/2/output.mp4|240|320|4.000000|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                           '582124|291062|mjpeg|{"fps": "25.0"}'
@@ -101,7 +110,7 @@ class TestServer(BaseTestCase):
         graph = bmf.graph({"dump_graph": 1})
 
         video_stream = graph.input_stream('graph_input_name').module(
-            'ffmpeg_decoder')
+            'c_ffmpeg_decoder')
         video_stream['video'].pass_through().encode(
             None, {
                 "output_prefix": "./output_multi_pic_dir",
@@ -116,7 +125,7 @@ class TestServer(BaseTestCase):
         server_gateway.init()
 
         pic_info_list = []
-        # pic_dir = '../files/'
+        # pic_dir = '../../files/'
         for i in range(50):
             pic_info = {'input_path': input_video_path_1}
             pic_info_list.append(pic_info)
@@ -152,12 +161,12 @@ class TestServer(BaseTestCase):
 
     # @timeout_decorator.timeout(seconds=120)
     # def test_multiple_video(self):
-    #     input_video_path_1 = "../files/header.mp4"
+    #     input_video_path_1 = "../../files/header.mp4"
     #     output_path_1 = "./output_video_dir/1/output.mp4"
     #     expect_result_1 = '../server/output_video_dir/1/output.mp4|480|640|7.615000|MOV,MP4,M4A,3GP,3G2,MJ2|' \
     #                       '1056397|1005558|h264|{"fps": "30.0662251656"}'
     #
-    #     input_video_path_2 = '../files/big_bunny_10s_30fps.mp4'
+    #     input_video_path_2 = '../../files/big_bunny_10s_30fps.mp4'
     #     output_path_2 = "./output_video_dir/2/output.mp4"
     #     expect_result_2 = '../server/output_video_dir/2/output.mp4|480|640|7.615000|MOV,MP4,M4A,3GP,3G2,MJ2|' \
     #                       '1056397|1005558|h264|{"fps": "30.0662251656"}'
@@ -167,7 +176,7 @@ class TestServer(BaseTestCase):
     #
     #     graph = bmf.graph({"dump_graph": 1})
     #
-    #     video_stream = graph.module('ffmpeg_decoder')
+    #     video_stream = graph.module('c_ffmpeg_decoder')
     #     video_stream['video'].pass_through().encode(
     #         video_stream['audio'],
     #         {
@@ -213,12 +222,12 @@ class TestServer(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_filter_condition(self):
-        input_video_path_1 = "../files/header.mp4"
+        input_video_path_1 = "../../files/header.mp4"
         output_path_1 = "./output_filter_condition_dir/1/output.mp4"
         expect_result_1 = '../server/output_filter_condition_dir/1/output.mp4|480|640|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                           '244133|305411|h264|{"fps": "30.102640722109747"}'
 
-        input_video_path_2 = '../files/big_bunny_10s_30fps.mp4'
+        input_video_path_2 = '../../files/big_bunny_10s_30fps.mp4'
         output_path_2 = "./output_filter_condition_dir/2/output.mp4"
         expect_result_2 = '../server/output_filter_condition_dir/2/output.mp4|480|640|3.042000|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                           '822840|312885|h264|{"fps": "120.33426183844011"}'
@@ -228,7 +237,7 @@ class TestServer(BaseTestCase):
 
         graph = bmf.graph({"dump_graph": 1})
 
-        video_stream = graph.module('ffmpeg_decoder')
+        video_stream = graph.module('c_ffmpeg_decoder')
         video_stream['video'].vflip().pass_through().scale(100, 200).encode(
             video_stream['audio'], {
                 "output_prefix": "./output_filter_condition_dir",
@@ -270,7 +279,7 @@ class TestServer(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_first_module_is_not_decoder(self):
-        input_file = "../files/blue.png"
+        input_file = "../../files/blue.png"
         output_path_1 = "./first_module_is_not_decoder/1/output.mjpeg"
         expect_result_1 = '../server/first_module_is_not_decoder/1/output.mjpeg|864|1438|0.000000|JPEG_PIPE|0|127312|' \
                           'mjpeg|{"fps": "25.0"}'
@@ -313,12 +322,12 @@ class TestServer(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_all_results_at_one_time(self):
-        input_video_path_1 = "../files/big_bunny_10s_30fps.mp4"
+        input_video_path_1 = "../../files/big_bunny_10s_30fps.mp4"
         expect_result_1 = '../server/output_video_dir/1/output.mp4|480|640|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                           '188188|235235|h264|{"fps": "30.10"}'
         expect_result_2 = '../server/output_video_dir/2/output.mp4|480|640|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                           '188188|235235|h264|{"fps": "30.10"}'
-        input_video_path_2 = '../files/header.mp4'
+        input_video_path_2 = '../../files/header.mp4'
         expect_result_3 = '../server/output_video_dir/3/output.mp4|480|640|2.992|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                           '1363975|510127|h264|{"fps": "120.33"}'
         expect_result_4 = '../server/output_video_dir/4/output.mp4|480|640|2.992|MOV,MP4,M4A,3GP,3G2,MJ2|' \
@@ -335,7 +344,7 @@ class TestServer(BaseTestCase):
 
         graph = bmf.graph({"dump_graph": 1})
 
-        video_stream = graph.module('ffmpeg_decoder')
+        video_stream = graph.module('c_ffmpeg_decoder')
         server_gateway = video_stream['video'].pass_through().vflip().encode(
             None, {
                 "output_prefix": "./output_video_dir",
@@ -377,11 +386,11 @@ class TestServer(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_specified_job_result_unblock(self):
-        input_video_path_1 = "../files/big_bunny_10s_30fps.mp4"
-        input_video_path_2 = '../files/header.mp4'
+        input_video_path_1 = "../../files/big_bunny_10s_30fps.mp4"
+        input_video_path_2 = '../../files/header.mp4'
 
         graph = bmf.graph({"dump_graph": 1})
-        video_stream = graph.module('ffmpeg_decoder')
+        video_stream = graph.module('c_ffmpeg_decoder')
         server_gateway = video_stream['video'].pass_through().vflip().encode(
             None, {
                 "output_prefix": "./output_video_dir",
@@ -421,15 +430,15 @@ class TestServer(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_specified_job_result_block(self):
-        input_video_path_1 = "../files/big_bunny_10s_30fps.mp4"
-        input_video_path_2 = '../files/header.mp4'
+        input_video_path_1 = "../../files/big_bunny_10s_30fps.mp4"
+        input_video_path_2 = '../../files/header.mp4'
         expect_result_1 = '../server/output_video_dir/1/output.mp4|480|640|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                           '188188|235235|h264|{"fps": "30.10"}'
         output_path_1 = "./output_video_dir/1/output.mp4"
         self.remove_result_data(output_path_1)
 
         graph = bmf.graph({"dump_graph": 1})
-        video_stream = graph.module('ffmpeg_decoder')
+        video_stream = graph.module('c_ffmpeg_decoder')
         server_gateway = video_stream['video'].pass_through().vflip().encode(
             None, {
                 "output_prefix": "./output_video_dir",
@@ -470,8 +479,8 @@ class TestServer(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)
     def test_pop_from_result_queue(self):
-        input_video_path_1 = "../files/big_bunny_10s_30fps.mp4"
-        input_video_path_2 = '../files/header.mp4'
+        input_video_path_1 = "../../files/big_bunny_10s_30fps.mp4"
+        input_video_path_2 = '../../files/header.mp4'
         expect_result_1 = '../server/output_video_dir/1/output.mp4|480|640|10.0|MOV,MP4,M4A,3GP,3G2,MJ2|' \
                           '188188|235235|h264|{"fps": "30.10"}'
         expect_result_2 = '../server/output_video_dir/3/output.mp4|480|640|2.992|MOV,MP4,M4A,3GP,3G2,MJ2|' \
@@ -482,7 +491,7 @@ class TestServer(BaseTestCase):
         self.remove_result_data(output_path_2)
 
         graph = bmf.graph({"dump_graph": 1})
-        video_stream = graph.module('ffmpeg_decoder')
+        video_stream = graph.module('c_ffmpeg_decoder')
         server_gateway = video_stream['video'].pass_through().vflip().encode(
             None, {
                 "output_prefix": "./output_video_dir",

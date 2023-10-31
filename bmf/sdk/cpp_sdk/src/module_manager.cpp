@@ -1,3 +1,18 @@
+/*
+ * Copyright 2023 Babit Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <fstream>
 
 #include <bmf/sdk/log.h>
@@ -81,22 +96,6 @@ class CPPModuleFactory : public ModuleFactoryI {
     }
 };
 
-struct ModuleManager::Private {
-    nlohmann::json builtin_config;
-    std::string builtin_root;
-    std::vector<std::string> repo_roots;
-
-    // cached module info
-    std::map<std::string, ModuleInfo> known_modules;
-
-    // cached moudle factories
-    std::map<std::string, std::shared_ptr<ModuleFactoryI>> factories;
-
-    // supported module loaders
-    std::map<std::string, std::function<ModuleFactoryI *(const ModuleInfo &)>>
-        loaders;
-};
-
 ModuleManager::ModuleManager() {
     if (false == inited) {
         init();
@@ -176,7 +175,7 @@ ModuleManager::load_module(const std::string &module_name,
         module_info.module_type =
             module_type.empty() ? infer_module_type(module_path) : module_type;
         if (module_info.module_type == "python") {
-            module_info.module_path = fs::current_path();
+            module_info.module_path = fs::current_path().string();
         }
     } else {
         module_info = *tmp_module_info;
@@ -288,7 +287,8 @@ bool ModuleManager::resolve_from_builtin(const std::string &module_name,
                           "builtin_modules";
         } else if (module_type == "python") {
             module_path =
-                fs::path(self->builtin_root) / std::string("python_builtins");
+                (fs::path(self->builtin_root) / std::string("python_builtins"))
+                    .string();
             if (!module_class.empty())
                 module_file = module_class;
             else
@@ -415,11 +415,12 @@ bool ModuleManager::resolve_from_meta(const std::string &module_name,
             info.module_path.empty()) { // builtin modules
             if (info.module_type == "c++" || info.module_type == "go") {
                 info.module_path =
-                    entry_module_path.parent_path() /
-                    entry_module_path.filename().replace_extension(
-                        SharedLibrary::default_extension());
+                    (entry_module_path.parent_path() /
+                     entry_module_path.filename().replace_extension(
+                         SharedLibrary::default_extension()))
+                        .string();
             } else if (info.module_type == "python") {
-                info.module_path = entry_module_path.parent_path();
+                info.module_path = entry_module_path.parent_path().string();
             }
         }
 
@@ -455,8 +456,7 @@ bool ModuleManager::initialize_loader(const std::string &module_type) {
             fs::path(SharedLibrary::this_line_location()).parent_path() /
             lib_name;
         auto lib = std::make_shared<SharedLibrary>(
-            loader_path, SharedLibrary::LAZY | SharedLibrary::GLOBAL);
-
+            loader_path.string(), SharedLibrary::LAZY | SharedLibrary::GLOBAL);
         self->loaders["python"] =
             [=](const ModuleInfo &info) -> ModuleFactoryI * {
             std::string module_file, class_name;
@@ -485,7 +485,32 @@ bool ModuleManager::initialize_loader(const std::string &module_type) {
             fs::path(SharedLibrary::this_line_location()).parent_path() /
             lib_name;
         auto lib = std::make_shared<SharedLibrary>(
-            loader_path, SharedLibrary::LAZY | SharedLibrary::GLOBAL);
+            loader_path.string(), SharedLibrary::LAZY | SharedLibrary::GLOBAL);
+
+        self->loaders["go"] = [=](const ModuleInfo &info) -> ModuleFactoryI * {
+            auto import_func =
+                lib->symbol<ModuleFactoryI *(*)(const char *, const char *,
+                                                char **)>(
+                    "bmf_import_go_module");
+            char *errstr = nullptr;
+            auto mptr = import_func(info.module_path.c_str(),
+                                    info.module_name.c_str(), &errstr);
+            if (errstr != nullptr) {
+                auto err = std::string(errstr);
+                free(errstr);
+                throw std::runtime_error(err);
+            }
+            return mptr;
+        };
+        return true;
+    } else if (module_type == "go") {
+        auto lib_name = std::string(SharedLibrary::default_prefix()) +
+                        "bmf_go_loader" + SharedLibrary::default_extension();
+        auto loader_path =
+            fs::path(SharedLibrary::this_line_location()).parent_path() /
+            lib_name;
+        auto lib = std::make_shared<SharedLibrary>(
+            loader_path.string(), SharedLibrary::LAZY | SharedLibrary::GLOBAL);
 
         self->loaders["go"] = [=](const ModuleInfo &info) -> ModuleFactoryI * {
             auto import_func =
@@ -569,18 +594,21 @@ void ModuleManager::init() {
         inited = true;
         // initialize cpp/py/go loader lazily
     }
-    set_repo_root(fs::path(SharedLibrary::this_line_location())
-                      .parent_path()
-                      .parent_path() /
-                  "cpp_modules");
-    set_repo_root(fs::path(SharedLibrary::this_line_location())
-                      .parent_path()
-                      .parent_path() /
-                  "python_modules");
-    set_repo_root(fs::path(SharedLibrary::this_line_location())
-                      .parent_path()
-                      .parent_path() /
-                  "go_modules");
+    set_repo_root((fs::path(SharedLibrary::this_line_location())
+                       .parent_path()
+                       .parent_path() /
+                   "cpp_modules")
+                      .string());
+    set_repo_root((fs::path(SharedLibrary::this_line_location())
+                       .parent_path()
+                       .parent_path() /
+                   "python_modules")
+                      .string());
+    set_repo_root((fs::path(SharedLibrary::this_line_location())
+                       .parent_path()
+                       .parent_path() /
+                   "go_modules")
+                      .string());
     set_repo_root(s_bmf_repo_root.string());
     set_repo_root(fs::current_path().string());
 }

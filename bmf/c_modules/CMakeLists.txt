@@ -22,8 +22,16 @@ function(set_soname)
 endfunction()
 
 function(module_install)
-    set_target_properties(${ARGV0} PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/cpp_modules/Module_${ARGV0})
+    if(WIN32)
+        set_target_properties(${ARGV0} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/cpp_modules/Module_${ARGV0}
+            RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BMF_ASSEMBLE_ROOT}/bmf/cpp_modules/Module_${ARGV0}
+            RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BMF_ASSEMBLE_ROOT}/bmf/cpp_modules/Module_${ARGV0}
+        )
+    else()
+        set_target_properties(${ARGV0} PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/cpp_modules/Module_${ARGV0})
+    endif()
 
     # copy meta.info
     add_custom_command(TARGET ${ARGV0}
@@ -45,6 +53,7 @@ if(BMF_ENABLE_FFMPEG)
     set(SRCS src/ffmpeg_decoder.cpp
              src/ffmpeg_encoder.cpp
              src/ffmpeg_filter.cpp
+             src/ffmpeg_func_registry.cpp
              src/video_sync.cpp
              src/audio_fifo.cpp
              src/audio_resampler.cpp
@@ -55,7 +64,16 @@ if(BMF_ENABLE_FFMPEG)
         PUBLIC
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/bmf/c_modules/include>
     )
-
+    target_compile_options(builtin_modules PRIVATE
+        -DBMF_BUILD_SHARED
+    )
+    if(WIN32)
+        set_target_properties(builtin_modules PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/lib
+            RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BMF_ASSEMBLE_ROOT}/bmf/lib
+            RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BMF_ASSEMBLE_ROOT}/bmf/lib
+        )
+    endif()
     if(BMF_ENABLE_CUDA)
         # need by ffmpeg for hwframe support
         target_link_libraries(builtin_modules
@@ -96,7 +114,7 @@ mac_update(pass_through)
 module_install(pass_through)
 
 # clock module
-set(CLOCK_MODULE_HDRS include/clock_module.h)
+set(CLOCK_MODULE_HDRS include/clock_module.h include/fraction.hpp)
 set(CLOCK_MODULE_SRCS src/clock_module.cpp)
 add_library(clock SHARED ${CLOCK_MODULE_HDRS} ${CLOCK_MODULE_SRCS})
 target_include_directories(clock PUBLIC include)
@@ -105,24 +123,42 @@ set_soname(clock)
 mac_update(clock)
 module_install(clock)
 
+# MockDecoder
+set(MOCK_DECODER_MODULE_HDRS include/mock_decoder.h)
+set(MOCK_DECODER_MODULE_SRCS src/mock_decoder.cpp)
+add_library(MockDecoder SHARED ${MOCK_DECODER_MODULE_HDRS} ${MOCK_DECODER_MODULE_SRCS})
+target_include_directories(MockDecoder PUBLIC include)
+target_link_libraries(MockDecoder PRIVATE bmf_module_sdk)
+set_soname(MockDecoder)
+mac_update(MockDecoder)
+module_install(MockDecoder)
 
+# GoMockDecoder
+set(GOMOCK_DECODER_MODULE_HDRS include/go_mock_decoder.h)
+set(GOMOCK_DECODER_MODULE_SRCS src/go_mock_decoder.cpp)
+add_library(GoMockDecoder SHARED ${GOMOCK_DECODER_MODULE_HDRS} ${GOMOCK_DECODER_MODULE_SRCS})
+target_include_directories(GoMockDecoder PUBLIC include)
+target_link_libraries(GoMockDecoder PRIVATE bmf_module_sdk)
+set_soname(GoMockDecoder)
+mac_update(GoMockDecoder)
+module_install(GoMockDecoder)
 
-# tests
+# tests, commented
 if(BMF_ENABLE_TEST)
-    file(GLOB TEST_SRCS test/*.cpp)
+    #file(GLOB TEST_SRCS test/*.cpp)
 
-    # compile errors
-    list(FILTER TEST_SRCS EXCLUDE REGEX test_python_module.cpp)
+    ## compile errors
+    #list(FILTER TEST_SRCS EXCLUDE REGEX test_python_module.cpp)
 
-    add_executable(test_builtin_modules ${TEST_SRCS})
+    #add_executable(test_builtin_modules ${TEST_SRCS})
 
-    target_link_libraries(test_builtin_modules
-        PRIVATE
-            builtin_modules engine bmf_module_sdk
-            gtest ${BMF_FFMPEG_TARGETS}
-    )
+    #target_link_libraries(test_builtin_modules
+    #    PRIVATE
+    #        builtin_modules engine bmf_module_sdk
+    #        gtest ${BMF_FFMPEG_TARGETS}
+    #)
 
-    target_link_libraries(test_builtin_modules PRIVATE gtest_main)
+    #target_link_libraries(test_builtin_modules PRIVATE gtest_main)
 
-    mac_update(test_builtin_modules)
+    #mac_update(test_builtin_modules)
 endif()

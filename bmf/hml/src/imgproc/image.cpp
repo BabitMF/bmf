@@ -142,7 +142,12 @@ Frame Frame::reformat(const PixelInfo &pix_info) {
     if (pix_info_.format() == PF_RGB24 || pix_info_.format() == PF_RGB48) {
         auto yuv = img::rgb_to_yuv(data_[0], pix_info, kNHWC);
         return Frame(yuv, width_, height_, pix_info);
-
+    } else if (pix_info_.format() == PF_BGR24 || pix_info_.format() == PF_BGR48) {
+        auto yuv = img::bgr_to_yuv(data_[0], pix_info, kNHWC);
+        return Frame(yuv, width_, height_, pix_info);
+    } else if (pix_info.format() == PF_BGR24 || pix_info.format() == PF_BGR48) {
+        auto rgb = img::yuv_to_bgr(data_, pix_info_, kNHWC);
+        return Frame({rgb}, width_, height_, pix_info);
     } else if (pix_info.format() == PF_RGB24 || pix_info.format() == PF_RGB48) {
         auto rgb = img::yuv_to_rgb(data_, pix_info_, kNHWC);
         return Frame({rgb}, width_, height_, pix_info);

@@ -111,7 +111,7 @@ static inline void yuv_common_check(const TensorList &dst,
 } // namespace
 
 Tensor &yuv_to_rgb(Tensor &dst, const TensorList &src, PPixelFormat pformat,
-                   ChannelFormat cformat) {
+                   ChannelFormat cformat, PixelFormat rformat) {
     auto stmp = img::image_format(src, kNHWC);
     auto dtmp = img::image_format(dst, cformat);
 
@@ -123,14 +123,14 @@ Tensor &yuv_to_rgb(Tensor &dst, const TensorList &src, PPixelFormat pformat,
                 dtmp.size(cdim));
 
     //
-    yuv_to_rgb_stub(dtmp.device_type(), dtmp, stmp, pformat, cformat);
+    yuv_to_rgb_stub(dtmp.device_type(), dtmp, stmp, pformat, cformat, rformat);
     //
 
     return dst;
 }
 
 TensorList &rgb_to_yuv(TensorList &dst, const Tensor &src, PPixelFormat pformat,
-                       ChannelFormat cformat) {
+                       ChannelFormat cformat, PixelFormat rformat) {
     auto stmp = img::image_format(src, cformat);
     auto dtmp = img::image_format(dst, kNHWC);
 
@@ -141,7 +141,7 @@ TensorList &rgb_to_yuv(TensorList &dst, const Tensor &src, PPixelFormat pformat,
                 "rgb_to_yuv: require 3 channels for dst, got {}",
                 stmp.size(cdim));
 
-    rgb_to_yuv_stub(stmp.device_type(), dtmp, stmp, pformat, cformat);
+    rgb_to_yuv_stub(stmp.device_type(), dtmp, stmp, pformat, cformat, rformat);
 
     return dst;
 }

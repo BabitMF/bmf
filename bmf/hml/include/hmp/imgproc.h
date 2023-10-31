@@ -40,11 +40,23 @@ HMP_API Tensor &yuv_to_rgb(Tensor &dst, const TensorList &src,
                            ChannelFormat cformat = kNCHW);
 HMP_API Tensor yuv_to_rgb(const TensorList &src, const PixelInfo &pix_info,
                           ChannelFormat cformat = kNCHW);
+HMP_API Tensor &yuv_to_bgr(Tensor &dst, const TensorList &src,
+                           const PixelInfo &pix_info,
+                           ChannelFormat cformat = kNCHW);
+HMP_API Tensor yuv_to_bgr(const TensorList &src,
+                          const PixelInfo &pix_info,
+                          ChannelFormat cformat = kNCHW);
 
 HMP_API TensorList &rgb_to_yuv(TensorList &dst, const Tensor &src,
                                const PixelInfo &pix_info,
                                ChannelFormat cformat = kNCHW);
 HMP_API TensorList rgb_to_yuv(const Tensor &src, const PixelInfo &pix_info,
+                              ChannelFormat cformat = kNCHW);
+HMP_API TensorList &bgr_to_yuv(TensorList &dst, const Tensor &src,
+                               const PixelInfo &pix_info,
+                               ChannelFormat cformat = kNCHW);
+HMP_API TensorList bgr_to_yuv(const Tensor &src,
+                              const PixelInfo &pix_info,
                               ChannelFormat cformat = kNCHW);
 
 HMP_API TensorList &yuv_to_yuv(TensorList &dst, const TensorList &src,

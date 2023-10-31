@@ -15,10 +15,10 @@ namespace{
 
 
 // scalar_t, dst, src, batch, width, height need pre-defined
-#define PIXEL_FORMAT_CASE(Op, Format, Cformat)                                                  \
+#define PIXEL_FORMAT_CASE(Op, Format, Cformat, Bgr)                                                  \
     case(PPixelFormat::Format):                                                                  \
         do{                                                                                     \
-            Op<scalar_t, PPixelFormat::Format, Cformat> op(dst, src);                            \
+            Op<scalar_t, PPixelFormat::Format, Cformat, Bgr> op(dst, src);                            \
             cuda::invoke_img_elementwise_kernel([=]HMP_HOST_DEVICE(int batch, int w, int h) mutable{\
                 op(batch, w, h);                                                                \
             }, batch, width, height);                                                           \
@@ -26,28 +26,28 @@ namespace{
         break;
 
 
-#define PIXEL_FORMAT_DISPATCH(Op, format, Cformat, name)                                        \
+#define PIXEL_FORMAT_DISPATCH(Op, format, Cformat, name, bgr)                                        \
     switch(format){                                                                             \
-        PIXEL_FORMAT_CASE(Op, H420, Cformat)                                                   \
-        PIXEL_FORMAT_CASE(Op, H422, Cformat)                                                   \
-        PIXEL_FORMAT_CASE(Op, H444, Cformat)                                                   \
-        PIXEL_FORMAT_CASE(Op, I420, Cformat)                                                   \
-        PIXEL_FORMAT_CASE(Op, I422, Cformat)                                                   \
-        PIXEL_FORMAT_CASE(Op, I444, Cformat)                                                   \
-        PIXEL_FORMAT_CASE(Op, NV21, Cformat)                                                   \
-        PIXEL_FORMAT_CASE(Op, NV12, Cformat)                                                   \
-        PIXEL_FORMAT_CASE(Op, NV21_BT709, Cformat)                                                   \
-        PIXEL_FORMAT_CASE(Op, NV12_BT709, Cformat)                                                   \
-        PIXEL_FORMAT_CASE(Op, U420, Cformat)                                                   \
-        PIXEL_FORMAT_CASE(Op, U422, Cformat)                                                   \
-        PIXEL_FORMAT_CASE(Op, U444, Cformat)                                                   \
-        PIXEL_FORMAT_CASE(Op, P010, Cformat)                                                   \
+        PIXEL_FORMAT_CASE(Op, H420, Cformat, bgr)                                                   \
+        PIXEL_FORMAT_CASE(Op, H422, Cformat, bgr)                                                   \
+        PIXEL_FORMAT_CASE(Op, H444, Cformat, bgr)                                                   \
+        PIXEL_FORMAT_CASE(Op, I420, Cformat, bgr)                                                   \
+        PIXEL_FORMAT_CASE(Op, I422, Cformat, bgr)                                                   \
+        PIXEL_FORMAT_CASE(Op, I444, Cformat, bgr)                                                   \
+        PIXEL_FORMAT_CASE(Op, NV21, Cformat, bgr)                                                   \
+        PIXEL_FORMAT_CASE(Op, NV12, Cformat, bgr)                                                   \
+        PIXEL_FORMAT_CASE(Op, NV21_BT709, Cformat, bgr)                                                   \
+        PIXEL_FORMAT_CASE(Op, NV12_BT709, Cformat, bgr)                                                   \
+        PIXEL_FORMAT_CASE(Op, U420, Cformat, bgr)                                                   \
+        PIXEL_FORMAT_CASE(Op, U422, Cformat, bgr)                                                   \
+        PIXEL_FORMAT_CASE(Op, U444, Cformat, bgr)                                                   \
+        PIXEL_FORMAT_CASE(Op, P010, Cformat, bgr)                                                   \
         default:                                                                                \
             HMP_REQUIRE(false, "{} : unsupported PPixelFormat {}", name, format);                \
      }
 
 
-Tensor &yuv_to_rgb_cuda(Tensor &dst, const TensorList &src, PPixelFormat format, ChannelFormat cformat)
+Tensor &yuv_to_rgb_cuda(Tensor &dst, const TensorList &src, PPixelFormat format, ChannelFormat cformat, PixelFormat rgbformat)
 {
     auto batch = src[0].size(0);
     auto height = src[0].size(1);
@@ -55,32 +55,59 @@ Tensor &yuv_to_rgb_cuda(Tensor &dst, const TensorList &src, PPixelFormat format,
 
     HMP_DISPATCH_IMAGE_TYPES_AND_HALF(src[0].scalar_type(), "yuv_to_rgb_cuda", [&](){
         if(cformat == kNCHW){
-            PIXEL_FORMAT_DISPATCH(YUV2RGB, format, kNCHW, "yuv_to_rgb_cuda");
+            switch(rgbformat) {
+                case PF_RGB24:
+                case PF_RGB48:
+                PIXEL_FORMAT_DISPATCH(YUV2RGB, format, kNCHW, "yuv_to_rgb_cuda", kRGB);
+                break;
+
+                case PF_BGR24:
+                case PF_BGR48:
+                PIXEL_FORMAT_DISPATCH(YUV2RGB, format, kNCHW, "yuv_to_rgb_cuda", kBGR);
+                break;
+
+                default:
+                HMP_REQUIRE(false, "Unsupported RGB PixelFormat {}", rgbformat);
+            }
         }
         else{
-            PIXEL_FORMAT_DISPATCH(YUV2RGB, format, ChannelFormat::NHWC, "yuv_to_rgb_cuda");
+            // PIXEL_FORMAT_DISPATCH(YUV2RGB, format, ChannelFormat::NHWC, "yuv_to_rgb_cuda", BGR);
+            switch(rgbformat) {
+                case PF_RGB24:
+                case PF_RGB48:
+                PIXEL_FORMAT_DISPATCH(YUV2RGB, format, ChannelFormat::NHWC, "yuv_to_rgb_cuda", kRGB);
+                break;
+
+                case PF_BGR24:
+                case PF_BGR48:
+                PIXEL_FORMAT_DISPATCH(YUV2RGB, format, ChannelFormat::NHWC, "yuv_to_rgb_cuda", kBGR);
+                break;
+
+                default:
+                HMP_REQUIRE(false, "Unsupported RGB PixelFormat {}", rgbformat);
+            }
         }
     });
- 
+
     return dst;
 }
 
 
 
-TensorList &rgb_to_yuv_cuda(TensorList &dst, const Tensor &src, PPixelFormat format, ChannelFormat cformat)
+TensorList &rgb_to_yuv_cuda(TensorList &dst, const Tensor &src, PPixelFormat format, ChannelFormat cformat, PixelFormat rgbformat)
 {
-    auto batch = dst[0].size(0);
-    auto height = dst[0].size(1);
-    auto width = dst[0].size(2);
+    // auto batch = dst[0].size(0);
+    // auto height = dst[0].size(1);
+    // auto width = dst[0].size(2);
 
-    HMP_DISPATCH_IMAGE_TYPES_AND_HALF(dst[0].scalar_type(), "rgb_to_yuv_cuda", [&](){
-        if(cformat == kNCHW){
-            PIXEL_FORMAT_DISPATCH(RGB2YUV, format, kNCHW, "rgb_to_yuv_cuda");
-        }
-        else{
-            PIXEL_FORMAT_DISPATCH(RGB2YUV, format, ChannelFormat::NHWC, "rgb_to_yuv_cuda");
-        }
-    });
+    // HMP_DISPATCH_IMAGE_TYPES_AND_HALF(dst[0].scalar_type(), "rgb_to_yuv_cuda", [&](){
+    //     if(cformat == kNCHW){
+    //         PIXEL_FORMAT_DISPATCH(RGB2YUV, format, kNCHW, "rgb_to_yuv_cuda");
+    //     }
+    //     else{
+    //         PIXEL_FORMAT_DISPATCH(RGB2YUV, format, ChannelFormat::NHWC, "rgb_to_yuv_cuda");
+    //     }
+    // });
  
     return dst;
 }

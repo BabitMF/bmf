@@ -14,9 +14,28 @@ Video Effects have below features:
 - Artifact Reduction
 - Video Noise Removal
 
-The `test_maxine_module.py` illustrates how to use all effects. You can also find more details from from the online [documentation](https://docs.nvidia.com/deeplearning/maxine/vfx-sdk-programming-guide/index.html)
+The `test_maxine_module.py` illustrates how to use all effects. You can also find more details from the online [documentation](https://docs.nvidia.com/deeplearning/maxine/vfx-sdk-programming-guide/index.html)
 
 ## Build the module
+
+### Prerequisites
+
+- OpenCV
+
+```bash
+wget -O opencv.zip https://github.com/opencv/opencv/archive/4.x.zip
+wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/4.x.zip
+unzip opencv.zip && rm opencv.zip && unzip opencv_contrib.zip && rm opencv_contrib.zip
+cd opencv-4.x
+mkdir -p build && cd build
+cmake -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib-4.x/modules .. && cmake --build . --config Release -- -j
+make install
+```
+
+- CUDA 11.8
+- TensorRT 8.5.1.7
+
+### Build
 
 You should download the Video Effect SDK from the [NVIDIA NGC website](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/maxine/resources/maxine_linux_video_effects_sdk_ga) first. 
 

@@ -21,6 +21,9 @@
 #include <torch/csrc/utils/pybind.h>
 #endif
 
+#ifdef _WIN32
+#include <corecrt.h>
+#endif
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
@@ -382,7 +385,8 @@ void module_sdk_bind(py::module &m) {
              py::arg("device"), py::arg("non_blocking") = false)
         .def("copy_props", &VideoFrame::copy_props, py::arg("from"),
              py::arg("copy_private") = false)
-        .def("reformat", &VideoFrame::reformat, py::arg("pix_info"));
+        .def("reformat", &VideoFrame::reformat, py::arg("pix_info"))
+        .def("as_contiguous_storage", &VideoFrame::as_contiguous_storage);
     PACKET_REGISTER_BMF_SDK_TYPE(VideoFrame)
 
     // AudioFrame

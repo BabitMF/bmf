@@ -19,6 +19,7 @@ from bmf import *
 import bmf.hml.hmp as mp
 from nms import NMS
 
+
 class trt_face_detect(Module):
 
     def __init__(self, node=None, option=None):
@@ -141,7 +142,7 @@ class trt_face_detect(Module):
                     y2 = int(box[3] * image.size[1])
                     boxes_data.append([x1, y1, x2, y2])
                     scores_data.append(scores[image_id][index][1])
-            
+
             nms_boxes, nms_scores = NMS(boxes_data, scores_data)
             output_list.append(nms_boxes)
         return output_list

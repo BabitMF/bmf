@@ -4,7 +4,16 @@ import unittest
 
 sys.path.append("../../..")
 import bmf
-import timeout_decorator
+import os
+if os.name == 'nt':
+    # We redefine timeout_decorator on windows
+    class timeout_decorator:
+
+        @staticmethod
+        def timeout(*args, **kwargs):
+            return lambda f: f  # return a no-op decorator
+else:
+    import timeout_decorator
 
 sys.path.append("../../test/")
 from base_test.base_test_case import BaseTestCase

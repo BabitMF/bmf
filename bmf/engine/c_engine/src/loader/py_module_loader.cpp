@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifdef _WIN32
+#include <corecrt.h>
+#endif
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
 #include <filesystem>
@@ -221,7 +224,7 @@ bmf_import_py_module(const char *module_path, const char *module,
 
     // try to use top most path as module path, which can fix import ambiguity
     // when module have same module.cls
-    std::string temp_module_path = fs::absolute(module_path);
+    std::string temp_module_path = fs::absolute(module_path).string();
     std::string temp_module_name = module;
     // if module_path last charector is '/' or '.', remove it
     while (temp_module_path.size() &&
@@ -230,8 +233,8 @@ bmf_import_py_module(const char *module_path, const char *module,
     }
     while (fs::exists(fs::path(temp_module_path) / "__init__.py")) {
         auto p = fs::path(temp_module_path);
-        temp_module_name = std::string(p.filename()) + "." + temp_module_name;
-        temp_module_path = p.parent_path();
+        temp_module_name = p.filename().string() + "." + temp_module_name;
+        temp_module_path = p.parent_path().string();
     }
 
     //

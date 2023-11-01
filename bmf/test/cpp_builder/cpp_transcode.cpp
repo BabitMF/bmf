@@ -68,10 +68,12 @@ TEST(cpp_transcode, transcode_video) {
     auto graph = bmf::builder::Graph(bmf::builder::NormalMode,
                                      bmf_sdk::JsonParam(graph_para));
 
-    nlohmann::json decode_tail_para = {{"input_path", "../../files/header.mp4"}};
+    nlohmann::json decode_tail_para = {
+        {"input_path", "../../files/header.mp4"}};
     auto tail = graph.Decode(bmf_sdk::JsonParam(decode_tail_para));
 
-    nlohmann::json decode_header_para = {{"input_path", "../../files/header.mp4"}};
+    nlohmann::json decode_header_para = {
+        {"input_path", "../../files/header.mp4"}};
     auto header = graph.Decode(bmf_sdk::JsonParam(decode_header_para));
 
     nlohmann::json decode_main_para = {
@@ -172,7 +174,8 @@ TEST(cpp_transcode, transcode_option) {
                                      bmf_sdk::JsonParam(graph_para));
 
     nlohmann::json decode_para = {
-        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}, {"start_time", 2}};
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"},
+        {"start_time", 2}};
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
 
     nlohmann::json encode_para = {
@@ -587,7 +590,7 @@ TEST(cpp_transcode, transcode_extract_frames) {
     videoStream.Start();
     int num = 0;
     while (true) {
-        Packet pkt = graph.Generate();
+        Packet pkt = graph.Generate(videoStream.GetName());
         if (pkt.timestamp() == BMF_EOF) {
             break;
         }
@@ -648,7 +651,7 @@ TEST(cpp_transcode, transcode_incorrect_encoder_param) {
              {wrong_k_2, wrong_v_2},
          }},
         {"audio_params", {{wrong_k_1, wrong_v_1}, {wrong_k_2, wrong_v_2}}},
-        {"mux_params", {{wrong_k_1 : wrong_v_1}, {wrong_k_2 : wrong_v_2}}}};
+        {"mux_params", {{wrong_k_1, wrong_v_1}, {wrong_k_2, wrong_v_2}}}};
     try {
         graph.Encode(v, a, bmf_sdk::JsonParam(encode_para));
         graph.Run();
@@ -811,7 +814,7 @@ TEST(cpp_transcode, test_encoder_push_output_mp4) {
     stream.Start();
     std::ofstream outFile(output_file, std::ios::out | std::ios::binary);
     while (true) {
-        Packet pkt = graph.Generate();
+        Packet pkt = graph.Generate(stream.GetName());
         if (pkt.timestamp() == BMF_EOF) {
             break;
         }
@@ -861,7 +864,7 @@ TEST(cpp_transcode, test_encoder_push_output_image2pipe) {
     stream.Start();
     int write_num = 0;
     while (true) {
-        Packet pkt = graph.Generate();
+        Packet pkt = graph.Generate(stream.GetName());
         if (pkt.timestamp() == BMF_EOF) {
             break;
         }
@@ -914,7 +917,7 @@ TEST(cpp_transcode, test_encoder_push_output_audio_pcm_s16le) {
     stream.Start();
     std::ofstream outFile(output_file, std::ios::out | std::ios::binary);
     while (true) {
-        Packet pkt = graph.Generate();
+        Packet pkt = graph.Generate(stream.GetName());
         if (pkt.timestamp() == BMF_EOF) {
             break;
         }
@@ -946,12 +949,12 @@ TEST(cpp_transcode, test_generator) {
 
     nlohmann::json decode_para = {{"input_path", input_file}};
 
-    graph.Decode(bmf_sdk::JsonParam(decode_para))["video"]
-        .Scale("299:299")
-        .Start();
+    auto stream =
+        graph.Decode(bmf_sdk::JsonParam(decode_para))["video"].Scale("299:299");
+    stream.Start();
     int frame_num = 0;
     while (true) {
-        Packet pkt = graph.Generate();
+        Packet pkt = graph.Generate(stream[0].GetName());
         if (pkt.timestamp() == BMF_EOF) {
             break;
         }

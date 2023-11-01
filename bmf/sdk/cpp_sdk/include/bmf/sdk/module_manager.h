@@ -82,7 +82,21 @@ class ModuleFactoryI {
 
 //
 class BMF_API ModuleManager {
-    struct Private;
+    struct Private {
+        nlohmann::json builtin_config;
+        std::string builtin_root;
+        std::vector<std::string> repo_roots;
+        // cached module info
+        std::map<std::string, ModuleInfo> known_modules;
+
+        // cached moudle factories
+        std::map<std::string, std::shared_ptr<ModuleFactoryI>> factories;
+
+        // supported module loaders
+        std::map<std::string,
+                 std::function<ModuleFactoryI *(const ModuleInfo &)>>
+            loaders;
+    };
 
   public:
     // find module info from builtin and sys repo(/opt/tiger/xxx)

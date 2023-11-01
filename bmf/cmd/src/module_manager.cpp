@@ -110,10 +110,12 @@ int install_module(const bmf_sdk::ModuleInfo &info, bool force) {
         // check module file
         if (info.module_type == "c++" || info.module_type == "go") {
             module_file =
-                fs::path(info.module_path) /
-                (module_file + bmf_sdk::SharedLibrary::default_extension());
+                (fs::path(info.module_path) /
+                 (module_file + bmf_sdk::SharedLibrary::default_extension()))
+                    .string();
         } else {
-            module_file = fs::path(info.module_path) / (module_file + ".py");
+            module_file =
+                (fs::path(info.module_path) / (module_file + ".py")).string();
         }
         if (!fs::exists(module_file)) {
             BMFLOG(BMF_ERROR)
@@ -126,7 +128,7 @@ int install_module(const bmf_sdk::ModuleInfo &info, bool force) {
         return -1;
     }
 
-    if (!fs::exists(module_root_path) and
+    if (!fs::exists(module_root_path) &&
         !fs::create_directories(module_root_path)) {
         BMFLOG(BMF_ERROR) << "create module root directory failed."
                           << std::endl;
@@ -163,7 +165,7 @@ int install_module(const bmf_sdk::ModuleInfo &info, bool force) {
 
 int uninstall_module(std::string module_name) {
     auto module_path = module_root_path / ("Module_" + module_name);
-    if (!fs::exists(module_path) or !fs::is_directory(module_path)) {
+    if (!fs::exists(module_path) || !fs::is_directory(module_path)) {
         BMFLOG(BMF_WARNING)
             << "Module:" << module_name << " is not exist" << std::endl;
         return -1;

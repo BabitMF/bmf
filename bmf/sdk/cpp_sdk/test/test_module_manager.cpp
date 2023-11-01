@@ -34,7 +34,6 @@ REGISTER_MODULE_CLASS(InAppModuleDemo)
 TEST(module_manager, test_compat_path) {
     auto p0 = fs::path("/home/foo");
     ASSERT_EQ(p0.string(), "/home/foo");
-    ASSERT_EQ(std::string(p0), "/home/foo");
 
     auto p1 = p0 / std::string("a.out");
     p0 /= std::string("a.out");
@@ -93,7 +92,8 @@ TEST(module_manager, resolve_module_info) {
         ASSERT_TRUE(info != nullptr);
         EXPECT_EQ(info->module_name, "cpu_gpu_trans_module");
         EXPECT_TRUE(fs::exists(info->module_path));
-        EXPECT_EQ(info->module_entry, "cpu_gpu_trans_module.cpu_gpu_trans_module");
+        EXPECT_EQ(info->module_entry,
+                  "cpu_gpu_trans_module.cpu_gpu_trans_module");
         EXPECT_EQ(info->module_type, "python");
     }
 
@@ -147,7 +147,7 @@ TEST(module_manager, load_module) {
         EXPECT_TRUE(module != nullptr);
     }
 
-    //load builtin module(python)
+    // load builtin module(python)
     {
         auto facotry = M.load_module("cpu_gpu_trans_module");
         ASSERT_TRUE(facotry != nullptr);
@@ -155,7 +155,7 @@ TEST(module_manager, load_module) {
         EXPECT_TRUE(module != nullptr);
     }
 
-    //load sys repo module(c++)
+    // load sys repo module(c++)
     {
         auto facotry = M.load_module("cpp_copy_module");
         ASSERT_TRUE(facotry != nullptr);
@@ -163,7 +163,7 @@ TEST(module_manager, load_module) {
         EXPECT_TRUE(module != nullptr);
     }
 
-    //load sys repo module(python)
+    // load sys repo module(python)
     {
         auto facotry = M.load_module("python_copy_module");
         ASSERT_TRUE(facotry != nullptr);
@@ -171,14 +171,13 @@ TEST(module_manager, load_module) {
         EXPECT_TRUE(module != nullptr);
     }
 
-    //load sys repo module(go)
+    // load sys repo module(go)
     {
         auto facotry = M.load_module("go_copy_module");
         ASSERT_TRUE(facotry != nullptr);
         auto module = facotry->make(1);
         EXPECT_TRUE(module != nullptr);
     }
-
 }
 
 #endif // BMF_ENABLE_MOBILE

@@ -145,6 +145,16 @@ void tensorBind(py::module &m) {
                  return arr_list;
              })
         .def("from_dlpack",
+             [](const py::list &arr_list) {
+                printf("dlpack from tensor list\n");
+                py::list tensor_list;
+                for (auto &arr : arr_list) {
+                     tensor_list.append(
+                         tensor_from_dlpack(py::cast<py::object>(arr)));
+                 }
+                 return tensor_list;
+             })
+        .def("from_dlpack",
              (Tensor(*)(const py::object &)) & tensor_from_dlpack,
              py::arg("tensor"))
 #ifdef HMP_ENABLE_TORCH

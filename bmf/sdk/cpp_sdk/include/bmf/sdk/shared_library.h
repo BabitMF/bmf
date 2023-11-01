@@ -18,7 +18,8 @@
 #include <string>
 #include <stdexcept>
 #include <memory>
-#ifndef __APPLE__
+#if defined __APPLE__ || defined __MINGW32__ || defined _WIN32
+#else
 #include <link.h>
 #endif
 #include <dlfcn.h>
@@ -81,7 +82,7 @@ class BMF_API SharedLibrary {
 #elif defined(__APPLE__)
         return "lib";
 #elif defined(__MINGW32__) || defined(_WIN32)
-        return "bin";
+        return "lib";
 #else
 #error "unsupported os"
 #endif
@@ -104,6 +105,8 @@ class BMF_API SharedLibrary {
         return ".so";
 #elif defined(__APPLE__)
         return ".dylib";
+#elif defined(__MINGW32__) || defined(_WIN32)
+        return ".dll";
 #else
 #error "unsupported os"
 #endif

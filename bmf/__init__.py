@@ -1,17 +1,17 @@
 import sys
 import ctypes
+import platform
 from bmf.python_sdk.module_functor import make_sync_func
-
-flags = sys.getdlopenflags()
-sys.setdlopenflags(flags | ctypes.RTLD_GLOBAL)
+if platform.system().lower() != 'windows':
+    flags = sys.getdlopenflags()
+    sys.setdlopenflags(flags | ctypes.RTLD_GLOBAL)
 
 # import hmp types
 import bmf.hml.hmp as mp
 # import bmf_sdk types
-from bmf.lib._bmf.sdk import VideoFrame, AudioFrame, Packet, BMFAVPacket
-from bmf.lib._bmf.sdk import Task, ModuleTag, ModuleInfo
 
-from bmf.lib._bmf import sdk
+from bmf.lib._bmf.sdk import VideoFrame, AudioFrame, Packet, BMFAVPacket
+from bmf.lib._bmf.sdk import Task
 
 #
 from .ffmpeg_engine import FFmpegEngine
@@ -23,4 +23,5 @@ from .builder import BmfGraph, graph, BmfCallBackType, module, py_module, c_modu
     GraphConfig, get_module_file_dependencies, ff_filter
 from .server import ServerGateway, ServerGatewayNew
 
-sys.setdlopenflags(flags)
+if platform.system().lower() != 'windows':
+    sys.setdlopenflags(flags)

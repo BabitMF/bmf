@@ -22,8 +22,16 @@ function(set_soname)
 endfunction()
 
 function(module_install)
-    set_target_properties(${ARGV0} PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/cpp_modules/Module_${ARGV0})
+    if(WIN32)
+        set_target_properties(${ARGV0} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/cpp_modules/Module_${ARGV0}
+            RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BMF_ASSEMBLE_ROOT}/bmf/cpp_modules/Module_${ARGV0}
+            RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BMF_ASSEMBLE_ROOT}/bmf/cpp_modules/Module_${ARGV0}
+        )
+    else()
+        set_target_properties(${ARGV0} PROPERTIES
+            LIBRARY_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/cpp_modules/Module_${ARGV0})
+    endif()
 
     # copy meta.info
     add_custom_command(TARGET ${ARGV0}
@@ -56,7 +64,16 @@ if(BMF_ENABLE_FFMPEG)
         PUBLIC
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/bmf/c_modules/include>
     )
-
+    target_compile_options(builtin_modules PRIVATE
+        -DBMF_BUILD_SHARED
+    )
+    if(WIN32)
+        set_target_properties(builtin_modules PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/lib
+            RUNTIME_OUTPUT_DIRECTORY_DEBUG ${BMF_ASSEMBLE_ROOT}/bmf/lib
+            RUNTIME_OUTPUT_DIRECTORY_RELEASE ${BMF_ASSEMBLE_ROOT}/bmf/lib
+        )
+    endif()
     if(BMF_ENABLE_CUDA)
         # need by ffmpeg for hwframe support
         target_link_libraries(builtin_modules

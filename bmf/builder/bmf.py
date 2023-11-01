@@ -1,4 +1,5 @@
 import json
+
 from bmf.lib._bmf import engine
 from .bmf_graph import BmfGraph
 

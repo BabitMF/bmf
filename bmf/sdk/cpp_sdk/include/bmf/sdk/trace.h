@@ -398,7 +398,7 @@ class BMF_API TraceLogger {
 };
 
 // Global singleton of the TraceLogger
-inline TraceLogger *TraceLogger::traceLogger;
+// inline TraceLogger *TraceLogger::traceLogger;
 
 /* ThreadTrace class collects all emitted trace events and provides the
     interface for event emission

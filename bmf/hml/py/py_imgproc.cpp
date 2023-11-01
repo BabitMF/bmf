@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifdef _WIN32
+#include <corecrt.h>
+#endif
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 #include <pybind11/pybind11.h>
@@ -222,6 +225,8 @@ void imageBind(py::module &m) {
         .def("crop", &Frame::crop, py::arg("left"), py::arg("top"),
              py::arg("width"), py::arg("height"))
         .def("reformat", &Frame::reformat, py::arg("pix_info"))
+        .def("as_contiguous_storage", &Frame::as_contiguous_storage)
+        .def("storage", (Tensor & (Frame::*)()) & Frame::storage)
         .def("numpy", [](const Frame &frame) {
             py::list arr_list;
             for (auto &tensor : frame.data()) {

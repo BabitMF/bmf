@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include "cpp_test_helper.h"
+#include "unistd.h"
 
 MediaInfo::MediaInfo(std::string filepath) {
     // Execute ffprobe

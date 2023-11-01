@@ -5,7 +5,16 @@ import unittest
 sys.path.append("../..")
 # sys.path.append("../../c_module_sdk/build/bin/lib")
 import bmf
-import timeout_decorator
+import os
+if os.name == 'nt':
+    # We redefine timeout_decorator on windows
+    class timeout_decorator:
+
+        @staticmethod
+        def timeout(*args, **kwargs):
+            return lambda f: f  # return a no-op decorator
+else:
+    import timeout_decorator
 
 sys.path.append("../../test/")
 from base_test.base_test_case import BaseTestCase
@@ -52,15 +61,15 @@ class TestVideoCModule(BaseTestCase):
         self.remove_result_data(output_path)
         (bmf.graph().decode({'input_path': input_video_path})['video'].scale(
             320, 240).c_module("cpp_copy_module").encode(
-                                   None, {
-                                       "output_path": output_path,
-                                       "format": "mjpeg",
-                                       "video_params": {
-                                           "codec": "jpg",
-                                           "width": 320,
-                                           "height": 240
-                                       }
-                                   }).run())
+                None, {
+                    "output_path": output_path,
+                    "format": "mjpeg",
+                    "video_params": {
+                        "codec": "jpg",
+                        "width": 320,
+                        "height": 240
+                    }
+                }).run())
         self.check_video_diff(output_path, expect_result)
 
 

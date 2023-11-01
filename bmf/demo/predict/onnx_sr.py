@@ -30,7 +30,7 @@ class onnx_sr(Module):
 
         # load model
         # model path: "/Users/bytedance/code/v_lambda/models/sr/lab_videosr/v1.onnx"
-        self.sess_ = rt.InferenceSession(self.model_path_)
+        self.sess_ = rt.InferenceSession(self.model_path_, providers=['CPUExecutionProvider'])
 
         # Let's see the input name and shape.
         # in this example, we assume there is only one input

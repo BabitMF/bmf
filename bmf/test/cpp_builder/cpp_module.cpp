@@ -89,9 +89,9 @@ TEST(cpp_modules, audio_python_module) {
 
     nlohmann::json encode_para = {{"output_path", output_file}};
 
-    auto audio_output = graph.Module(
-        {audio}, "python_copy_module", bmf::builder::Python,
-        bmf_sdk::JsonParam());
+    auto audio_output =
+        graph.Module({audio}, "python_copy_module", bmf::builder::Python,
+                     bmf_sdk::JsonParam());
     graph.Encode(graph.NewPlaceholderStream(), audio_output,
                  bmf_sdk::JsonParam(encode_para));
     graph.Run();

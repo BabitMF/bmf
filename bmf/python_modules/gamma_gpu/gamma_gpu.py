@@ -142,6 +142,7 @@ class gamma_gpu(Module):
 
         return ProcessResult.OK
 
+
 def register_gamma_gpu_info(info):
     info.module_description = "Builtin module for gamma using GPU"
     info.module_tag = ModuleTag.TAG_DEVICE_HWACCEL

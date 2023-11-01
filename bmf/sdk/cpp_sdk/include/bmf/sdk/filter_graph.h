@@ -497,7 +497,7 @@ class FilterGraph {
                 config->sample_rate = frame->sample_rate;
                 config->channels = frame->channels;
                 config->channel_layout = frame->channel_layout;
-                config->tb = (AVRational){1, config->sample_rate};
+                config->tb = av_make_q(1, config->sample_rate);
                 if (frame->metadata) {
                     AVDictionaryEntry *tag = NULL;
                     while ((tag = av_dict_get(frame->metadata, "", tag,

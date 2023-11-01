@@ -142,6 +142,7 @@ class scale_gpu(Module):
 
         return ProcessResult.OK
 
+
 def register_scale_gpu_info(info):
     info.module_description = "Builtin module for scale using GPU"
     info.module_tag = ModuleTag.TAG_DEVICE_HWACCEL

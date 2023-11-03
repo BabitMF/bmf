@@ -277,21 +277,6 @@ template <typename Pixel, ChannelFormat CFormat, RGBFormat RFormat = kRGB> struc
 template <typename Pixel, ChannelFormat CFormat>
 struct RGBSeqIter<Pixel, CFormat, kRGB> : public ImageSeqIter<Pixel, CFormat> {
     using ImageSeqIter<Pixel, CFormat>::ImageSeqIter;
-
-    // HMP_HOST_DEVICE inline Pixel get(int batch, int x, int y) const {
-    //     Pixel pix;
-    //     pix = ImageSeqIter<Pixel, CFormat>::get(batch, x, y);
-
-    //     std::swap(pix[0], pix[1]);
-    //     return pix;
-    // }
-
-    // HMP_HOST_DEVICE inline void set(int batch, int x, int y,
-    //                                 const Pixel &pix) const {
-    //     // std::swap(pix[0], pix[1]);
-    //     Pixel p_{pix[2], pix[1], pix[0]};
-    //     ImageSeqIter<Pixel, CFormat>::set(batch, x, y, p_);
-    // }
 };
 
 template <typename Pixel, ChannelFormat CFormat>
@@ -308,7 +293,6 @@ struct RGBSeqIter<Pixel, CFormat, kBGR> : public ImageSeqIter<Pixel, CFormat> {
 
     HMP_HOST_DEVICE inline void set(int batch, int x, int y,
                                     const Pixel &pix) const {
-        // std::swap(pix[0], pix[1]);
         Pixel p_{pix[2], pix[1], pix[0]};
         ImageSeqIter<Pixel, CFormat>::set(batch, x, y, p_);
     }
@@ -319,60 +303,6 @@ struct RGBSeqIter<Pixel, CFormat, kBGR> : public ImageSeqIter<Pixel, CFormat> {
 
 template <typename T, ChannelFormat cformat, RGBFormat rformat = kRGB, int C = 3>
 using RGBIter = RGBSeqIter<Vector<T, C>, cformat, rformat>;
-
-// template <typename T, ChannelFormat cformat, 3, RGBFormat::kRGB>
-// using RGBIter = ImageSeqIter<Vector<T, C>, cformat>;
-
-// template <typename T, ChannelFormat cformat, int C = 4, RGBFormat rformat = RGBFormat::kRGBA>
-// using RGBIter = ImageSeqIter<Vector<T, C>, cformat>;
-
-// template <typename T, ChannelFormat cformat, int C = 3, RGBFormat rformat = RGBFormat::kBGR>
-// using RGBIter = ImageSeqIter<Vector<T, C>, cformat> {
-//     // using ImageSeqIter::ImageSeqIter;
-
-//     HMP_HOST_DEVICE inline Pixel get(int batch, int x, int y) const {
-//         Pixel pix;
-//         if (border_ == kBReplicate) {
-//             x = clamp(x, 0, width_ - 1);
-//             y = clamp(y, 0, height_ - 1);
-
-//             auto idx = index(batch, x, y);
-// #pragma unroll
-//             for (int i = 0; i < Pixel::size(); ++i) {
-//                 pix[i] = ptr_[i][idx];
-//             }
-//         } else {
-//             if (x < 0 || x >= width_ || y < 0 || y >= height_) {
-//                 pix = DefaultPixelValue<Pixel>::value();
-//             } else {
-//                 auto idx = index(batch, x, y);
-// #pragma unroll
-//                 for (int i = 0; i < Pixel::size(); ++i) {
-//                     pix[i] = ptr_[i][idx];
-//                 }
-//             }
-//         }
-
-//         return pix;
-//     }
-
-//     HMP_HOST_DEVICE inline void set(int batch, int x, int y,
-//                                     const Pixel &pix) const {
-//         if (border_ == kBReplicate) {
-//             x = clamp(x, 0, width_ - 1);
-//             y = clamp(y, 0, height_ - 1);
-//         } else if (x < 0 || x >= width_ || y < 0 || y >= height_) {
-//             return;
-//         }
-
-//         auto idx = index(batch, x, y);
-// #pragma unroll
-//         for (int i = 0; i < Pixel::size(); ++i) {
-//             ptr_[i][idx] = pix[i];
-//         }
-//     }
-
-// };
 
 template <typename T, PPixelFormat format, typename = void> struct YUVIter;
 

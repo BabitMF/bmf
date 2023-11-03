@@ -23,43 +23,6 @@
 namespace hmp {
 namespace kernel {
 
-// template <typename T>
-union RGB {
-    // RGB24() {c.r = 0; c.g = 0; c.b = 0;}
-    Vector<float, 3> v;
-    struct {
-        float r = 0, g = 0, b = 0;
-    } c;
-};
-
-// template <typename T>
-union BGR {
-    // BGR24() {b = 0; g = 0; r = 0;}
-    Vector<float, 3> v;
-    
-    struct {
-        float b = 0, g = 0, r = 0;
-    } c;
-};
-
-// template <typename T>
-union RGBA {
-    // RGBA24() {r = 0; g = 0; b = 0; a = std::numeric_limits<float>::max();}
-    Vector<float, 4> v;
-    struct {
-        float r, g, b, a;
-    } c;
-};
-
-// template <typename T>
-union BGRA {
-    // BGRA24() {b = 0; g = 0; r = 0; a = std::numeric_limits<float>::max();}
-    Vector<float, 4> v;
-    struct {
-        float b, g, r, a;
-    } c;
-};
-
 template <typename T, PPixelFormat format, ChannelFormat cformat, RGBFormat rformat>
 struct YUV2RGB {
     RGBIter<T, cformat, rformat> rgb_iter;

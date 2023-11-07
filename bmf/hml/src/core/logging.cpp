@@ -43,6 +43,7 @@
 
 namespace hmp {
 namespace logging {
+    logCallBackFunc callBackFunc = nullptr;
 
 class OStreamImpl : public StreamLogger::OStream {
     std::stringstream ss_;
@@ -130,6 +131,10 @@ void set_format(const std::string &fmt) {
 #endif
 }
 
+void set_log_callback_func(logCallBackFunc func) {
+    callBackFunc = func;
+}
+
 void _log(int level, const char *tag, const char *msg) {
 #if defined(__ANDROID__)
     auto prio = to_android_priority(level);
@@ -187,6 +192,9 @@ void _log(int level, const char *tag, const char *msg) {
     spdlog::default_logger_raw()->log(spdlog::source_loc{},
                                       (spdlog::level::level_enum)level, msg);
 #endif
+    if (callBackFunc) {
+        callBackFunc(level, msg);
+    }
 }
 
 #if defined(__ANDROID__) || defined(__APPLE__)

@@ -37,6 +37,7 @@ typedef std::chrono::high_resolution_clock::time_point TimeVar;
 #define BMF_DISABLE hmp::logging::Level::off
 
 #define BMFLOG_SET_LEVEL(log_level) hmp::logging::set_level(log_level)
+#define BMFLOG_SET_LOG_CALLBACK(log_callback) hmp::logging::set_log_callback_func(log_callback)
 #define BMFLOG(log_level) HMP_SLOG_IF(true, log_level, "BMF")
 #define BMFLOG_NODE(log_level, node_id)                                        \
     BMFLOG(log_level) << "node id:" << node_id << " "

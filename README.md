@@ -1,21 +1,21 @@
-# BMF - Cross-platform, customizable video processing framework with strong GPU acceleration
+# BMF - Cross-platform, multi-language, customizable video processing framework with strong GPU acceleration
 
-**BMF (Babit Multimedia Framework)** is a cross-platform, customizable multimedia processing framework developed by [**ByteDance**](https://www.bytedance.com/en).
-With over 4 years of testing and improvements, BMF has been tailored to adeptly tackle challenges in our real-world production environments. Now it's widely used in ByteDance's video streaming, live transcoding, cloud editing and mobile pre/post processing scenarios. More than 2 billion videos are processed by the framework everyday.
+**BMF (Babit Multimedia Framework)** is a cross-platform, multi-language, customizable multimedia processing framework developed by [**ByteDance**](https://www.bytedance.com/en).
+With over 4 years of testing and improvements, BMF has been tailored to adeptly tackle challenges in our real-world production environments. It is currently widely used in ByteDance's video streaming, live transcoding, cloud editing and mobile pre/post processing scenarios. More than 2 billion videos are processed by the framework every day.
 
-Here are some key features:
+Here are some key features of BMF:
 
-- Cross-Platform Support: Native compatibility with Linux, Windows, and Mac OS, as well as optimization for both x86 and ARM CPUs.
+- **Cross-Platform Support:** Native compatibility with Linux, Windows, and Mac OS, as well as optimization for both x86 and ARM CPUs.
 
-- Easy to use: BMF provides Python, Go, and C++ APIs, allowing developers the flexibility to code in their favourite languages.
+- **Easy to use:** BMF provides Python, Go, and C++ APIs, allowing developers the flexibility to code in their favourite languages.
 
-- Customizability: Developers can enhance the framework's features by adding their own modules, thanks to its decoupled architecture.
+- **Customizability:** Developers can enhance the framework's features by adding their own modules independently because of BMF decoupled architecture.
 
-- High performance: BMF has a powerful scheduler and strong support for heterogeneous acceleration hardware. Moreover, [**NVIDIA**](https://www.nvidia.com/) has been cooperating with us to develop a highly optimized GPU pipeline for video transcoding and AI inference.
+- **High performance:** BMF has a powerful scheduler and strong support for heterogeneous acceleration hardware. Moreover, [**NVIDIA**](https://www.nvidia.com/) has been cooperating with us to develop a highly optimized GPU pipeline for video transcoding and AI inference.
 
-- Efficient data conversion: BMF offers seamless data format conversions across popular frameworks (FFmpeg/Numpy/PyTorch/OpenCV/TensorRT), conversion between hardware devices (CPU/GPU), and color space and pixel format conversion.
+- **Efficient data conversion:** BMF offers seamless data format conversions across popular frameworks (FFmpeg/Numpy/PyTorch/OpenCV/TensorRT), conversion between hardware devices (CPU/GPU), and color space and pixel format conversion.
 
-Dive deeper into BMF's capabilities on [our website](https://babitmf.github.io/) for more details.
+Dive deeper into BMF's capabilities on our [website](https://babitmf.github.io/) for more details.
 
 ## Quick Experience
 In this section, we will directly showcase the capabilities of the BMF framework around five dimensions: **Transcode**, **Edit**, **Meeting/Broadcaster**, **GPU acceleration**, and **AI Inference**. For all the demos provided below, corresponding implementations and documentation are available on Google Colab, allowing you to experience them intuitively.
@@ -31,7 +31,7 @@ The Edit Demo will show you how to implement a high-complexity audio and video e
 If you want to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/edit/bmf_edit_python.ipynb)
 
 ### Meeting/Broadcaster
-This demo uses BMF framework to construct a simple broadcast service. The service provides an API that enables dynamic video source pulling, video layout control, audio mixing, and ultimately streaming the output to an RTMP server. This demo showcases the modularity of BMF, multi-language development, and the ability of dynamically adjusting the pipeline.
+This demo uses BMF framework to construct a simple broadcast service. The service provides an API that enables dynamic video source pulling, video layout control, audio mixing, and ultimately streaming the output to an RTMP server. This demo showcases the modularity of BMF, multi-language development, and the ability to dynamically adjust the pipeline.
 
 Below is a screen recording demonstrating the operation of broadcaster:
 
@@ -44,14 +44,14 @@ Below is a screen recording demonstrating the operation of broadcaster:
 The video frame extraction acceleration demo shows:
 1. BMF flexible capability of:
 
-   *   Multi-language programming，we can see multi-language module work together in the demo
-   *   Ability extend easily, there are new C++, Python modules added simply
-   *   FFmpeg ability fully compatible
+   *   Multi-language programming, we can see multi-language modules work together in the demo
+   *   Ability to extend easily, there are new C++, Python modules added simply
+   *   FFmpeg ability is fully compatible
 
 2. Hardware acceleration quickly enablement and CPU/GPU pipeline support
 
    *   Heterogeneous pipeline is supported in BMF, such as process between CPU and GPU
-   *   Usefull hardware color space convertion in BMF
+   *   Useful hardware color space conversion in BMF
 
 If you want to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/video_frame_extraction/video_frame_extraction_acceleration.ipynb)
 
@@ -72,7 +72,7 @@ If you want to have a quick experiment, you can try it on [![Open In Colab](http
 
 #### Deoldify
 
-This demo shows the how to integrate the state of art AI algorithms into the BMF video processing pipeline. The famous open source colorization algorithm [DeOldify](https://github.com/jantic/DeOldify) is wrapped as an BMF pyhton module in less than 100 lines of codes. The final effect is illustrated below, with the original video on the left side and the colored video on the right. 
+This demo shows how to integrate the state of art AI algorithms into the BMF video processing pipeline. The famous open source colorization algorithm [DeOldify](https://github.com/jantic/DeOldify) is wrapped as a BMF pyhton module in less than 100 lines of codes. The final effect is illustrated below, with the original video on the left side and the colored video on the right. 
 
 If you want to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/colorization_python/deoldify_demo_colab.ipynb)
 
@@ -92,7 +92,7 @@ If you want to have a quick experiment, you can try it on [![Open In Colab](http
 
 #### Face Detect With TensorRT
 
-This Demo shows a full-link face detect pipeline based on TensorRT acceleration, which internally uses the TensorRT-accelerated Onnx model to process the input video, and uses the NMS algorithm to filter repeated candidate boxes to form an output, which can be used to efficiently process a Face Detection Task.
+This Demo shows a full-link face detect pipeline based on TensorRT acceleration, which internally uses the TensorRT-accelerated Onnx model to process the input video. It uses the NMS algorithm to filter repeated candidate boxes to form an output, which can be used to process a Face Detection Task efficiently.
 
 If you want to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/face_detect/facedetect_demo_colab.ipynb)
 
@@ -162,7 +162,7 @@ Contributions are welcomed. Please follow the
 We use GitHub issues to track and resolve problems. If you have any questions, please feel free to join the discussion and work with us to find a solution.
 
 ## Acknowledgment
-The decoder, encoder and filter reference [ffmpeg cmdline tool](http://ffmpeg.org/), and are wrapped as BMF's built-in modules under a LGPL license.
+The decoder, encoder and filter reference [ffmpeg cmdline tool](http://ffmpeg.org/). They are wrapped as BMF's built-in modules under the LGPL license.
 
 The project also draws inspiration from other popular frameworks, such as [ffmpeg-python](https://github.com/kkroening/ffmpeg-python) and [mediapipe](https://github.com/google/mediapipe). Our [website](https://babitmf.github.io/) is using the project from [docsy](https://github.com/google/docsy) based on [hugo](https://github.com/gohugoio/hugo).
 

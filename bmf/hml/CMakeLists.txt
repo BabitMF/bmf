@@ -31,7 +31,15 @@ option(HMP_ENABLE_TORCH "Enable Troch support" ON)
 option(HMP_ENABLE_PYTHON "Enable Python support" ON)
 option(HMP_ENABLE_JNI "Enable build with JNI support" ON)
 option(HMP_ENABLE_MOBILE "Enable build for mobile device" OFF)
-set(HMP_CUDA_ARCH_FLAGS 6.0 6.1 6.2 7.0 7.5 8.0 8.6 8.9+PTX)
+
+if (HMP_ENABLE_CUDA)
+    # For FindCUDAToolkit support
+    cmake_minimum_required(VERSION 3.17 FATAL_ERROR)
+endif()
+
+# See https://cmake.org/cmake/help/latest/prop_tgt/CUDA_ARCHITECTURES.html for allowed values.
+# Default: SASS for all supported architectures and PTX for highest architecture
+set(HMP_CUDA_ARCH_FLAGS all CACHE STRING "HMP CUDA architectures")
 
 
 ### version

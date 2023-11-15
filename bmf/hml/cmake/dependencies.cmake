@@ -1,7 +1,7 @@
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 if(UNIX)
     # hidden symbols by default & static library compilation
-    add_compile_options(-fPIC)
     if(CMAKE_CXX_COMPILER_ID MATCHES "Clang") # IOS -> AppleClang
         if(NOT CMAKE_SYSTEM_NAME STREQUAL "Android") # FIXME
             add_link_options(-undefined error)
@@ -45,7 +45,6 @@ if(HMP_ENABLE_TORCH)
         COMMAND bash -c "${Python_EXECUTABLE} -c 'import site; print(site.getsitepackages()[0])'"
         OUTPUT_VARIABLE SITE_ROOT
         OUTPUT_STRIP_TRAILING_WHITESPACE)
-    set(CUDA_LINK_LIBRARIES_KEYWORD PRIVATE)
     set(CUDNN_LIBRARY_PATH /usr/local/cuda/targets/x86_64-linux/lib/libcudnn.so.8)
     find_package(Torch HINTS ${SITE_ROOT})
     find_library(TORCH_PYTHON_LIB torch_python HINTS ${SITE_ROOT}/*/lib)
@@ -116,12 +115,13 @@ endif()
 if(HMP_ENABLE_CUDA)
     include(cmake/cuda.cmake)
 
-    if(NOT CUDA_FOUND)
+    if(NOT CUDAToolkit_FOUND)
         message("CUDA not found, disable it!")
         set(HMP_ENABLE_CUDA OFF)
         set(HMP_ENABLE_NPP OFF)
     else()
-        list(APPEND HMP_CORE_PRI_DEPS cuda::cuda cuda::cudart)
+        list(APPEND HMP_CORE_PUB_DEPS cuda::cuda)
+        list(APPEND HMP_CORE_PRI_DEPS cuda::cudart)
 
         if(HMP_ENABLE_NPP)
             list(APPEND HMP_CORE_PRI_DEPS cuda::npp)

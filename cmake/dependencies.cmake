@@ -69,7 +69,6 @@ if(BMF_ENABLE_TORCH)
         COMMAND bash -c "${Python_EXECUTABLE} -c 'import site; print(site.getsitepackages()[0])'"
         OUTPUT_VARIABLE SITE_ROOT
         OUTPUT_STRIP_TRAILING_WHITESPACE)
-    set(CUDA_LINK_LIBRARIES_KEYWORD PRIVATE)
     set(CUDNN_LIBRARY_PATH /usr/local/cuda/targets/x86_64-linux/lib/libcudnn.so.8)
     find_package(Torch HINTS ${SITE_ROOT})
     find_library(TORCH_PYTHON_LIB torch_python HINTS ${SITE_ROOT}/*/lib)
@@ -90,9 +89,8 @@ endif()
 
 ## CUDA
 if(BMF_ENABLE_CUDA)
-    set(CUDA_LINK_LIBRARIES_KEYWORD PRIVATE)
-    find_package(CUDA QUIET)
-    if(NOT CUDA_FOUND)
+    find_package(CUDAToolkit 11 QUIET COMPONENTS cudart cuda_driver)
+    if(NOT CUDAToolkit_FOUND)
         if (DEFINED $ENV{DEVICE})
             if ($ENV{DEVICE} STREQUAL "gpu")
                 message(FATAL_ERROR "cuda not found for gpu generation.")
@@ -133,14 +131,7 @@ add_subdirectory(bmf/hml)
 
 ## cuda driver api
 if(BMF_ENABLE_CUDA)
-    find_package(CUDA QUIET)
-    find_library(CUDA_LIB cuda 
-            PATHS ${CUDA_TOOLKIT_ROOT_DIR}
-            PATH_SUFFIXES lib lib64 lib/stubs lib64/stubs lib/x64)
-    add_library(cuda::cuda UNKNOWN IMPORTED)   
-    set_target_properties(cuda::cuda PROPERTIES
-        IMPORTED_LOCATION ${CUDA_LIB}
-        INTERFACE_INCLUDE_DIRECTORIES ${CUDA_INCLUDE_DIRS})
+    add_library(cuda::cuda ALIAS CUDA::cuda_driver)
 endif()
 
 

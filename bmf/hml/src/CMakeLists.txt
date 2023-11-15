@@ -57,6 +57,7 @@ list(APPEND HMP_SRCS ${DLPACK_SRCS})
 list(APPEND HMP_SRCS ${DLPACK_HDRS})
 
 if(HMP_ENABLE_CUDA)
+    enable_language(CUDA)
     if(HMP_ENABLE_OPENCV)
         list(APPEND HMP_SRCS ${OPENCV_CUDA_KERN_SRCS})
     endif()
@@ -67,7 +68,7 @@ if(HMP_ENABLE_CUDA)
 
     list(APPEND HMP_SRCS ${CUDA_SRCS} ${CUDA_KERN_SRCS})
     list(APPEND HMP_HDRS ${CUDA_HDRS})
-    cuda_add_library(hmp ${HMP_SRCS} ${HMP_HDRS})
+    add_library(hmp ${HMP_SRCS} ${HMP_HDRS})
 else()
     add_library(hmp ${HMP_SRCS} ${HMP_HDRS})
 endif()
@@ -113,8 +114,12 @@ endif()
 target_compile_options(hmp
     PRIVATE
         -D_FILE_OFFSET_BITS=64
-        -fvisibility=hidden
     )
+
+set_target_properties(hmp PROPERTIES
+        C_VISIBILITY_PRESET hidden
+        CXX_VISIBILITY_PRESET hidden
+)
 
 if(BUILD_SHARED_LIBS)
     target_compile_options(hmp

@@ -25,6 +25,11 @@ option(BMF_ENABLE_FFMPEG "Enable build with ffmpeg support" ON)
 option(BMF_ENABLE_MOBILE "Enable build for mobile platform" OFF)
 option(BMF_ENABLE_TEST "compile examples and tests" ON)
 
+if (BMF_ENABLE_CUDA)
+    # For FindCUDAToolkit support
+    cmake_minimum_required(VERSION 3.17 FATAL_ERROR)
+endif()
+
 if(ENABLE_BITCODE)
     set(CMAKE_XCODE_ATTRIBUTE_BITCODE_GENERATION_MODE "bitcode")
     set(CMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE "YES") 

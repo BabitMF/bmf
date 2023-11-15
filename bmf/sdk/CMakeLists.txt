@@ -72,7 +72,11 @@ endif()
 
 target_compile_options(bmf_module_sdk PRIVATE
     -DBMF_BUILD_SHARED
-    -fvisibility=hidden
+)
+
+set_target_properties(bmf_module_sdk PROPERTIES
+        C_VISIBILITY_PRESET hidden
+        CXX_VISIBILITY_PRESET hidden
 )
 
 if(BMF_ENABLE_MOBILE)

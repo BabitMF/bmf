@@ -96,9 +96,9 @@ Tensor &yuv_to_rgb_cuda(Tensor &dst, const TensorList &src, PPixelFormat format,
 
 TensorList &rgb_to_yuv_cuda(TensorList &dst, const Tensor &src, PPixelFormat format, ChannelFormat cformat, PixelFormat rgbformat)
 {
-    // auto batch = dst[0].size(0);
-    // auto height = dst[0].size(1);
-    // auto width = dst[0].size(2);
+    auto batch = dst[0].size(0);
+    auto height = dst[0].size(1);
+    auto width = dst[0].size(2);
 
     // HMP_DISPATCH_IMAGE_TYPES_AND_HALF(dst[0].scalar_type(), "rgb_to_yuv_cuda", [&](){
     //     if(cformat == kNCHW){
@@ -108,6 +108,40 @@ TensorList &rgb_to_yuv_cuda(TensorList &dst, const Tensor &src, PPixelFormat for
     //         PIXEL_FORMAT_DISPATCH(RGB2YUV, format, ChannelFormat::NHWC, "rgb_to_yuv_cuda");
     //     }
     // });
+    HMP_DISPATCH_IMAGE_TYPES_AND_HALF(dst[0].scalar_type(), "rgb_to_yuv_cuda", [&](){
+        if(cformat == kNCHW){
+            switch(rgbformat) {
+                case PF_RGB24:
+                case PF_RGB48:
+                PIXEL_FORMAT_DISPATCH(RGB2YUV, format, kNCHW, "rgb_to_yuv_cuda", kRGB);
+                break;
+
+                case PF_BGR24:
+                case PF_BGR48:
+                PIXEL_FORMAT_DISPATCH(RGB2YUV, format, kNCHW, "rgb_to_yuv_cuda", kBGR);
+                break;
+
+                default:
+                HMP_REQUIRE(false, "Unsupported RGB PixelFormat {}", rgbformat);
+            }
+        }
+        else{
+            switch(rgbformat) {
+                case PF_RGB24:
+                case PF_RGB48:
+                PIXEL_FORMAT_DISPATCH(RGB2YUV, format, ChannelFormat::NHWC, "rgb_to_yuv_cuda", kRGB);
+                break;
+
+                case PF_BGR24:
+                case PF_BGR48:
+                PIXEL_FORMAT_DISPATCH(RGB2YUV, format, ChannelFormat::NHWC, "rgb_to_yuv_cuda", kBGR);
+                break;
+
+                default:
+                HMP_REQUIRE(false, "Unsupported RGB PixelFormat {}", rgbformat);
+            }
+        }
+    });
  
     return dst;
 }

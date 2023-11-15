@@ -14,6 +14,7 @@ set(BMF_ASSEMBLE_ROOT ${CMAKE_BINARY_DIR}/output CACHE STRING "Directory to assy
 set(BMF_BUILD_VERSION "" CACHE STRING "BMF version")
 set(BMF_BUILD_COMMIT "" CACHE STRING "BMF commit")
 
+option(BMF_LOCAL_DEPENDENCIES "Build dependencies locally" ON)
 option(BMF_ENABLE_BREAKPAD "Enable build with breakpad support" OFF)
 option(BMF_ENABLE_CUDA "Enable CUDA support" ON)
 option(BMF_ENABLE_TORCH "Enable CUDA support" OFF)

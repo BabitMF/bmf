@@ -20,6 +20,7 @@ endif()
 
 
 ### options
+option(HMP_LOCAL_DEPENDENCIES "Build dependencies locally" ON)
 option(HMP_ENABLE_CUDA "Enable CUDA device support" ON)
 option(HMP_ENABLE_FFMPEG "Enable FFMEPG support" ON)
 option(HMP_ENABLE_OPENCV "Enable OpenCV support" ON)

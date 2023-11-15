@@ -6,7 +6,7 @@ file(GLOB CPU_SRCS *.cpp *.h core/*.h core/*.cpp kernel/*.cpp imgproc/*.cpp)
 file(GLOB CPU_HDRS ${INC_DIR}/hmp/*.h ${INC_DIR}/hmp/core/*.h kernel/*.h image/*.h)
 file(GLOB CUDA_SRCS cuda/*.cpp)
 file(GLOB CUDA_HDRS ${INC_DIR}/hmp/cuda/*.h)
-file(GLOB CPU_KERN_SRCS 
+file(GLOB CPU_KERN_SRCS
     kernel/*.h
     kernel/cpu/*.h
     kernel/cpu/*.cpp)
@@ -80,17 +80,23 @@ if(WIN32)
     )
 endif()
 
-target_include_directories(hmp 
+target_include_directories(hmp
     PUBLIC
         $<BUILD_INTERFACE:${INC_DIR}>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third_party/spdlog/include>
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third_party/fmt/include>
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third_party/dlpack/include>
     PRIVATE
-        ${INC_DIR} 
+        ${INC_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}
     )
+
+if (HMP_LOCAL_DEPENDENCIES)
+    target_include_directories(hmp
+        PUBLIC
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third_party/spdlog/include>
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third_party/fmt/include>
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third_party/dlpack/include>
+    )
+endif()
 
 target_link_libraries(hmp
     PUBLIC
@@ -107,7 +113,7 @@ endif()
 target_compile_options(hmp
     PRIVATE
         -D_FILE_OFFSET_BITS=64
-        -fvisibility=hidden 
+        -fvisibility=hidden
     )
 
 if(BUILD_SHARED_LIBS)

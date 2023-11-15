@@ -19,11 +19,20 @@ set(BUILD_SHARED_LIBS OFF)
 
 #### pybind11
 if(HMP_ENABLE_PYTHON)
-    add_subdirectory(third_party/pybind11)
+    if (HMP_LOCAL_DEPENDENCIES)
+        add_subdirectory(third_party/pybind11)
+    else ()
+        find_package(pybind11 REQUIRED)
+    endif()
 endif()
 
 ##### fmt
-add_subdirectory(third_party/fmt)
+if (HMP_LOCAL_DEPENDENCIES)
+    add_subdirectory(third_party/fmt)
+else ()
+    find_package(fmt REQUIRED)
+    add_library(fmt ALIAS fmt::fmt)
+endif()
 list(APPEND HMP_CORE_PUB_DEPS fmt)
 
 ##### Torch
@@ -55,7 +64,6 @@ if(HMP_ENABLE_TORCH)
     endif()
 endif()
 
-
 ##### optional(remove it when nvcc support c++17)
 add_library(optional INTERFACE)   
 set_target_properties(optional PROPERTIES
@@ -65,23 +73,43 @@ list(APPEND HMP_CORE_PUB_DEPS optional)
 
 #### spdlog
 if(NOT "${CMAKE_SYSTEM_NAME}" MATCHES "Android|iOS")
-    add_subdirectory(third_party/spdlog)
-    list(APPEND HMP_CORE_PRI_DEPS spdlog)
-    target_compile_options(spdlog PRIVATE 
-        -fvisibility=hidden
-    )
+    if (HMP_LOCAL_DEPENDENCIES)
+        add_subdirectory(third_party/spdlog)
+        set_target_properties(spdlog PROPERTIES
+                C_VISIBILITY_PRESET hidden
+                CXX_VISIBILITY_PRESET hidden
+        )
+        list(APPEND HMP_CORE_PRI_DEPS spdlog)
+    else ()
+        find_package(spdlog REQUIRED)
+        add_library(spdlog ALIAS spdlog::spdlog)
+        list(APPEND HMP_CORE_PUB_DEPS spdlog)
+    endif()
+
 endif()
 
+#### dlpack
+if (NOT HMP_LOCAL_DEPENDENCIES)
+else ()
+    find_package(dlpack REQUIRED)
+    list(APPEND HMP_CORE_PRI_DEPS dlpack::dlpack)
+endif()
 
 #### backward-cpp
 if(NOT "${CMAKE_SYSTEM_NAME}" MATCHES "Android|iOS")
-    find_library(LIBDW dw)
-    if("${LIBDW}" MATCHES "LIBDW-NOTFOUND")
-        set(STACK_DETAILS_BFD TRUE)
-        set(STACK_DETAILS_AUTO_DETECT FALSE)
+    if (HMP_LOCAL_DEPENDENCIES)
+        find_library(LIBDW dw)
+        if("${LIBDW}" MATCHES "LIBDW-NOTFOUND")
+            set(STACK_DETAILS_BFD TRUE)
+            set(STACK_DETAILS_AUTO_DETECT FALSE)
+        endif()
+
+        add_subdirectory(third_party/backward)
+        list(APPEND HMP_CORE_PRI_DEPS backward ${BACKWARD_LIBRARIES})
+    else ()
+        find_package(Backward REQUIRED)
+        list(APPEND HMP_CORE_PUB_DEPS Backward::Backward)
     endif()
-    add_subdirectory(third_party/backward)
-    list(APPEND HMP_CORE_PRI_DEPS backward ${BACKWARD_LIBRARIES})
 endif()
 
 ##### CUDA
@@ -134,17 +162,25 @@ endif()
 
 
 ##### GTest
-if(WIN32)
-    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+if (HMP_LOCAL_DEPENDENCIES)
+    if(WIN32)
+        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    endif()
+    add_subdirectory(third_party/gtest)
+else ()
+    find_package(GTest REQUIRED)
 endif()
-add_subdirectory(third_party/gtest)
 
 
 ##### Benchmark
-set(BENCHMARK_ENABLE_TESTING OFF)
-set(BENCHMARK_ENABLE_INSTALL OFF)
-set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
-add_subdirectory(third_party/benchmark)
+if (HMP_LOCAL_DEPENDENCIES)
+    set(BENCHMARK_ENABLE_TESTING OFF)
+    set(BENCHMARK_ENABLE_INSTALL OFF)
+    set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
+    add_subdirectory(third_party/benchmark)
+else ()
+    find_package(benchmark REQUIRED)
+endif()
 
 
 ##### OpenMP

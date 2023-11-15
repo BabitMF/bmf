@@ -14,19 +14,32 @@ if(BMF_ENABLE_PYTHON)
     endif()
 endif()
 
+if (NOT BMF_LOCAL_DEPENDENCIES)
+    find_package(pybind11 REQUIRED)
+endif()
+
 # breakpad
 if(BMF_ENABLE_BREAKPAD)
     include(cmake/breakpad.cmake)
 endif()
 
 ### json
-add_library(nlohmann INTERFACE IMPORTED GLOBAL)
-set_property(TARGET nlohmann PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-    ${PROJECT_SOURCE_DIR}/3rd_party/json/include)
+if (BMF_LOCAL_DEPENDENCIES)
+    add_library(nlohmann INTERFACE IMPORTED GLOBAL)
+    set_property(TARGET nlohmann PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+            ${PROJECT_SOURCE_DIR}/3rd_party/json/include)
+else()
+    find_package(nlohmann_json REQUIRED)
+    add_library(nlohmann ALIAS nlohmann_json::nlohmann_json)
+endif()
 
 ## glog
 if(BMF_EANBLE_GLOG)
-    include(cmake/glog.cmake)
+    if (BMF_LOCAL_DEPENDENCIES)
+        include(cmake/glog.cmake)
+    else()
+        find_package(glog REQUIRED)
+    endif()
 endif()
 
 ## gtest
@@ -107,6 +120,7 @@ endif()
 
 ## HML
 # disable torch build, as -D_GLIBCXX_USE_CXX11_ABI=0 will make gtest build failed
+set(HMP_LOCAL_DEPENDENCIES ${BMF_LOCAL_DEPENDENCIES})
 set(HMP_ENABLE_TORCH ${BMF_ENABLE_TORCH}) 
 set(HMP_ENABLE_FFMPEG OFF)  # remove ffmpeg dependencies
 set(HMP_ENABLE_OPENCV OFF)  # remove opencv dependencies

@@ -56,7 +56,7 @@ function(copy_dir_to_bmf_module)
     endif()
 
     add_custom_command(TARGET bmf_assem
-        POST_BUILD 
+        POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                         ${CMAKE_CURRENT_SOURCE_DIR}/${ARGV0}
                         ${BMF_ASSEMBLE_ROOT}/bmf/${TARGET_NAME})
@@ -84,24 +84,24 @@ endif()
 if(ANDROID)
     add_custom_command(TARGET bmf_assem
         POST_BUILD
-            COMMAND ${ANDROID_TOOLCHAIN_PREFIX}strip $<TARGET_FILE:hmp> 
+            COMMAND ${ANDROID_TOOLCHAIN_PREFIX}strip $<TARGET_FILE:hmp>
     )
     if(BMF_ENABLE_JNI)
         add_custom_command(TARGET bmf_assem
             POST_BUILD
-                COMMAND ${ANDROID_TOOLCHAIN_PREFIX}strip $<TARGET_FILE:_jhmp> 
+                COMMAND ${ANDROID_TOOLCHAIN_PREFIX}strip $<TARGET_FILE:_jhmp>
         )
     endif()
 
     add_custom_command(TARGET bmf_assem
         POST_BUILD
-            COMMAND ${ANDROID_TOOLCHAIN_PREFIX}strip $<TARGET_FILE:bmf_module_sdk> 
+            COMMAND ${ANDROID_TOOLCHAIN_PREFIX}strip $<TARGET_FILE:bmf_module_sdk>
     )
 
     if(BMF_ENABLE_JNI)
         add_custom_command(TARGET bmf_assem
             POST_BUILD
-                COMMAND ${ANDROID_TOOLCHAIN_PREFIX}strip $<TARGET_FILE:_jbmf> 
+                COMMAND ${ANDROID_TOOLCHAIN_PREFIX}strip $<TARGET_FILE:_jbmf>
         )
     endif()
 endif()
@@ -109,7 +109,7 @@ endif()
 
 
 add_custom_command(TARGET bmf_assem
-    POST_BUILD 
+    POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
                     ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py
                     ${BMF_ASSEMBLE_ROOT}/bmf/)
@@ -124,10 +124,12 @@ if(BMF_ENABLE_TEST)
 endif()
 
 # json
-add_custom_command(TARGET bmf_assem
-    POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/3rd_party/json/include
-                                                   ${BMF_ASSEMBLE_ROOT}/bmf/include)
+if (BMF_LOCAL_DEPENDENCIES)
+    add_custom_command(TARGET bmf_assem
+        POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/3rd_party/json/include
+                                                       ${BMF_ASSEMBLE_ROOT}/bmf/include)
+endif()
 
 # COPY hml related resources
 set(HML_ROOT ${PROJECT_SOURCE_DIR}/bmf/hml)
@@ -135,8 +137,14 @@ set(HML_ROOT ${PROJECT_SOURCE_DIR}/bmf/hml)
 add_custom_command(TARGET bmf_assem
     POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:hmp> ${BMF_ASSEMBLE_ROOT}/bmf/lib
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:fmt> ${BMF_ASSEMBLE_ROOT}/bmf/lib
 )
+
+if (BMF_LOCAL_DEPENDENCIES)
+    add_custom_command(TARGET bmf_assem
+        POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:fmt> ${BMF_ASSEMBLE_ROOT}/bmf/lib
+    )
+endif()
 
 ## copy symbol link of hmp and _jhmp
 if(NOT APPLE AND NOT ANDROID)
@@ -170,10 +178,12 @@ add_custom_command(TARGET bmf_assem
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${HML_ROOT}/include/ ${BMF_ASSEMBLE_ROOT}/bmf/include/
 )
 
-add_custom_command(TARGET bmf_assem
-    POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${HML_ROOT}/third_party/fmt/include ${BMF_ASSEMBLE_ROOT}/bmf/include/
-)
+if (BMF_LOCAL_DEPENDENCIES)
+    add_custom_command(TARGET bmf_assem
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${HML_ROOT}/third_party/fmt/include ${BMF_ASSEMBLE_ROOT}/bmf/include/
+    )
+endif()
 
 ## python module
 if(TARGET _hmp)
@@ -190,7 +200,7 @@ add_custom_command(TARGET bmf_assem
 
 
 if(IOS)
-    if(BUILD_SHARED_LIBS)
+    if(BUILD_SHARED_LIBS OR NOT BMF_LOCAL_DEPENDENCIES)
         message(FATAL_ERROR "Only support static build for IOS platform")
     endif()
 
@@ -198,7 +208,7 @@ if(IOS)
     add_custom_command(TARGET bmf_assem
         POST_BUILD
         # create ios assemble root if needed
-        COMMAND 
+        COMMAND
         ${CMAKE_COMMAND} -E make_directory ${IOS_ASSEMBLE_ROOT}
     )
 
@@ -206,39 +216,39 @@ if(IOS)
         POST_BUILD
         # archive all related static libraries to single one
         COMMAND
-        libtool -static -o libbmf_module_sdk-all.a 
+        libtool -static -o libbmf_module_sdk-all.a
         $<TARGET_FILE:bmf_module_sdk>
-        $<TARGET_FILE:hmp> 
+        $<TARGET_FILE:hmp>
         $<TARGET_FILE:fmt>
         $<TARGET_FILE:bmf_module_sdk_oc>
-        $<TARGET_FILE:hmp_oc> 
+        $<TARGET_FILE:hmp_oc>
 
         # copy all all public headers(cpp & object-c)
-        COMMAND 
-        ${CMAKE_COMMAND} -E copy_directory 
-                            ${BMF_ASSEMBLE_ROOT}/bmf/include/bmf 
+        COMMAND
+        ${CMAKE_COMMAND} -E copy_directory
+                            ${BMF_ASSEMBLE_ROOT}/bmf/include/bmf
                             ${IOS_ASSEMBLE_ROOT}/include/bmf
-        COMMAND 
-        ${CMAKE_COMMAND} -E copy_directory 
+        COMMAND
+        ${CMAKE_COMMAND} -E copy_directory
                             ${BMF_ASSEMBLE_ROOT}/bmf/include/hmp
                             ${IOS_ASSEMBLE_ROOT}/include/hmp
-        COMMAND 
-        ${CMAKE_COMMAND} -E copy_directory 
+        COMMAND
+        ${CMAKE_COMMAND} -E copy_directory
                             ${BMF_ASSEMBLE_ROOT}/bmf/include/fmt
                             ${IOS_ASSEMBLE_ROOT}/include/fmt
-        COMMAND 
-        ${CMAKE_COMMAND} -E copy_directory 
+        COMMAND
+        ${CMAKE_COMMAND} -E copy_directory
                             ${BMF_ASSEMBLE_ROOT}/bmf/include/nlohmann
                             ${IOS_ASSEMBLE_ROOT}/include/nlohmann
-        COMMAND 
-        ${CMAKE_COMMAND} -E copy_directory 
+        COMMAND
+        ${CMAKE_COMMAND} -E copy_directory
                             ${CMAKE_CURRENT_SOURCE_DIR}/object-c/include/bmf/oc
                             ${IOS_ASSEMBLE_ROOT}/include/bmf/oc
-        COMMAND 
-        ${CMAKE_COMMAND} -E copy_directory 
+        COMMAND
+        ${CMAKE_COMMAND} -E copy_directory
                             ${HML_ROOT}/object-c/include/hmp/oc
                             ${IOS_ASSEMBLE_ROOT}/include/hmp/oc
 
-        WORKING_DIRECTORY ${IOS_ASSEMBLE_ROOT} 
+        WORKING_DIRECTORY ${IOS_ASSEMBLE_ROOT}
     )
 endif()

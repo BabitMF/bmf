@@ -14,6 +14,9 @@
 # For debug build and generating coverage report:
 #   ./build.sh with_cov
 #
+# To build with non local dependencies:
+#   ./build.sh non_local
+#
 
 # Default build type - Release
 BUILD_TYPE="Release"
@@ -27,6 +30,7 @@ BUILD_TYPE="Release"
 # dist folder). The other folders are catered for SCM installation method.
 
 COVERAGE_OPTION=0
+LOCAL_BUILD=1
 
 # Handle options
 if [ $# -gt 0 ]
@@ -50,11 +54,20 @@ then
         BUILD_TYPE="Debug"
         COVERAGE_OPTION=1
     fi
+
+    # Debug type with coverage option
+    if [ "$1" = "non_local" ]
+    then
+        LOCAL_BUILD=0
+    fi
 fi
 
 mkdir -p output
 
-git submodule update --init --recursive
+if [ $LOCAL_BUILD -ne 0 ]
+then
+  git submodule update --init --recursive
+fi
 
 (cd 3rd_party/dlpack && cmake . && make && make install)
 
@@ -169,6 +182,7 @@ else
     cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
         -DBMF_PYENV=$(python3 -c "import sys; print('{}.{}'.format(sys.version_info.major, sys.version_info.minor))") \
         -DCOVERAGE=${COVERAGE_OPTION} \
+        -DBMF_LOCAL_DEPENDENCIES=${LOCAL_BUILD} \
         -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
         -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ${cmake_args} ..
     make -j$(nproc)

@@ -7,6 +7,9 @@ jobs:
     name: build_test
     image: ubuntu:22.04
     steps:
+      - uses: actions/checkout
+        inputs:
+          depth: 1
       - uses: actions/setup-proxy
       - name: prepare libraries
         commands:
@@ -87,3 +90,64 @@ jobs:
           - commit=$(cat ../../../gosdk_version.txt) && go get github.com/babitmf/bmf-gosdk@${commit}
           - go build main.go
           - python3 test_go.py
+
+  conda_build_test:
+    name: conda_build_test
+    image: ubuntu:22.04
+    envs:
+      ENV: /home/code/.micromamba.sh
+    steps:
+      - uses: actions/checkout
+        inputs:
+          depth: 1
+      - uses: actions/setup-proxy
+      - name: prepare conda environment
+        commands:
+          - apt update && apt install -y wget curl bzip2
+          - curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
+          - ./bin/micromamba env create -f conda-env.yaml -y
+      - name: build_env
+        commands:
+          - eval "$(./bin/micromamba shell hook -s posix)"
+          - micromamba activate bmf-test
+          - ./build.sh non_local
+          - echo "build finished"
+      - name: run_test
+        commands:
+          - eval "$(./bin/micromamba shell hook -s posix)"
+          - micromamba activate bmf-test
+          - export C_INCLUDE_PATH=${C_INCLUDE_PATH}:$(pwd)/output/bmf/include
+          - export CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:$(pwd)/output/bmf/include
+          - export LIBRARY_PATH=${LIBRARY_PATH}:$(pwd)/output/bmf/lib
+          - export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(pwd)/output/bmf/lib:/usr/local/lib
+          - export PYTHONPATH=$(pwd)/output/bmf/lib:$(pwd)/output
+          - export PATH=${PATH}:$(pwd)/output/bmf/bin
+          - export HMP_TEST_DATA_ROOT=$(pwd)/bmf/hml/tests/data
+          - $(pwd)/output/bmf/bin/module_manager install python_copy_module python my_module:my_module $(pwd)/output/test/customize_module v0.0.1
+          - $(pwd)/output/bmf/bin/module_manager install cpp_copy_module c++ libcopy_module:CopyModule $(pwd)/output/test/c_module/lib v0.0.1
+          - (cd $(pwd)/output/test/go_module && go build -buildmode c-shared -o lib/go_copy_module.so test_go_module.go)
+          - $(pwd)/output/bmf/bin/module_manager install go_copy_module go go_copy_module:PassThrough $(pwd)/output/test/go_module/lib v0.0.1
+          # download files
+          - (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz && tar xvf files.tar.gz && rm -rf files.tar.gz)
+          - (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/models.tar.gz && tar xvf models.tar.gz && rm -rf models.tar.gz)
+          # test bmf
+          - (cd output/bmf/bin && ./test_bmf_module_sdk && ./test_bmf_engine && ./test_cpp_builder)
+          #(cd output/bmf/bin && ./test_builtin_modules)
+          - (cd output/demo/transcode               && python3 test_transcode.py)
+          - (cd output/demo/edit                    && python3 test_edit.py)
+          - (cd output/demo/predict                 && python3 predict_sample.py)
+          - (cd output/test/audio_copy              && python3 test_simple.py)
+          - (cd output/test/pre_module              && python3 test_pre_module.py)
+          - (cd output/test/sync_mode               && python3 test_sync_mode.py)
+          - (cd output/test/generator               && python3 test_generator.py)
+          - (cd output/test/run_by_config           && python3 test_run_by_config.py)
+          - (cd output/test/server                  && python3 test_server.py)
+          - (cd output/test/c_module                && python3 test_video_c_module.py)
+          - (cd output/test/dynamical_graph         && python3 dynamical_graph.py)
+          - (cd output/test/av_log_buffer           && python3 test_av_log_buffer.py)
+          - (cd output/test/push_data_into_graph    && python3 test_push_data.py)
+          - (cd output/test/complex_edit_case       && python3 test_complex_case.py)
+          - (cd output/test/complex_edit_case       && python3 test_compare_with_edit.py)
+          # test hmp
+          - (cd bmf/hml/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
+          - (cd bmf/hml/tests                       && pytest)

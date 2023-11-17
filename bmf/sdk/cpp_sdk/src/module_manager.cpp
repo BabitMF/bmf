@@ -122,11 +122,6 @@ const ModuleInfo *
 ModuleManager::resolve_module_info(const std::string &module_name) {
     std::lock_guard<std::mutex> guard(m_mutex);
 
-#if defined(__APPLE__)
-    BMFLOG(BMF_INFO)
-        << "if APPLE, Module Mananger resolve_module_info, return nullptr.\n";
-    return nullptr;
-#endif
     // check if it has already cached
     if (self->known_modules.find(module_name) != self->known_modules.end()) {
         return &self->known_modules.at(module_name);

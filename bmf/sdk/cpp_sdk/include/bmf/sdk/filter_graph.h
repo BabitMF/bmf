@@ -580,7 +580,7 @@ class FilterGraph {
 
                 static int video_frame_num = 0;
                 static int audio_frame_num = 0;
-                if (index == 0) {
+                if (frame && frame->width > 0) {
                     video_frame_num++;
                     //ffmpeg filter graph which contains hwfilters may change frame width/height, set frame width/height after getting from filter graph
                     int w = av_buffersink_get_w(buffer_sink_ctx_[i]);

@@ -178,8 +178,11 @@ int CFFFilter::init_filtergraph() {
         return ret;
     for (auto it = input_cache_.begin(); it != input_cache_.end(); it++) {
         AVFrame *frm = it->second.front();
+        /*
+         * the first frame is a NULL AVFrame, filtergraph could not be initialized
+        */
         if (!frm)
-            continue;
+            return AVERROR_EOF;
         config_[it->first].width = frm->width;
         config_[it->first].height = frm->height;
         config_[it->first].format = frm->format;
@@ -239,8 +242,8 @@ int CFFFilter::init_filtergraph() {
 
     // AVFrame *frame = input_cache_.begin()->second.front();
     for (auto it : input_cache_) {
-        auto ctx = it.second.front()->hw_frames_ctx;
-        if (ctx) {
+        if (it.second.front() && it.second.front()->hw_frames_ctx) {
+            auto ctx = it.second.front()->hw_frames_ctx;
             filter_graph_->hw_frames_ctx_map_[it.first] = av_buffer_ref(ctx);
         }
     }
@@ -411,9 +414,13 @@ int CFFFilter::process_filter_graph(Task &task) {
                         push_frame_number_map[choose_index]++;
                         av_dict_free(&frame->metadata);
                     }
-                    filter_graph_->push_frame(frame, choose_index);
+                    ret = filter_graph_->push_frame(frame, choose_index);
                     if (frame) {
                         av_frame_free(&frame);
+                    }
+                    if (ret < 0) {
+                        BMFLOG_NODE(BMF_INFO, node_id_) << "init push frame, ret: " << ret;
+                        return ret;
                     }
                 }
             }
@@ -433,6 +440,7 @@ int CFFFilter::process_filter_graph(Task &task) {
                         out_eof_[output_frame.first] = true;
                         continue;
                     }
+
                     static int conver_av_frame = 0;
                     conver_av_frame++;
                     auto packet = convert_avframe_to_packet(
@@ -463,10 +471,14 @@ int CFFFilter::process_filter_graph(Task &task) {
                         push_frame_number_map[choose_index]++;
                         av_dict_free(&frame->metadata);
                     }
-                    filter_graph_->push_frame(frame, choose_index);
+                    ret = filter_graph_->push_frame(frame, choose_index);
                     push_frame_flag = 1;
                     if (frame) {
                         av_frame_free(&frame);
+                    }
+                    if (ret < 0) {
+                        BMFLOG_NODE(BMF_INFO, node_id_) << "push frame, choose_index: " << choose_index << " ret: " << ret;
+                        return ret;
                     }
                 } else if (in_eof_[index]) {
                     filter_graph_->push_frame(NULL, index);
@@ -577,7 +589,7 @@ int CFFFilter::process(Task &task) {
         }
     }
 
-    if (ret = process_filter_graph(task) < 0) {
+    if ((ret = process_filter_graph(task)) < 0) {
         return ret;
     };
 

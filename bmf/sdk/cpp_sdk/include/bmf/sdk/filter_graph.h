@@ -601,12 +601,13 @@ class FilterGraph {
 
     int push_frame(AVFrame *frame, int index) {
         int ret = 0;
-        if (ret = check_input_property(frame, index) >= 0) {
+        if ((ret = check_input_property(frame, index)) >= 0) {
             ret = av_buffersrc_add_frame_flags(buffer_src_ctx_[index], frame,
                                                AV_BUFFERSRC_FLAG_PUSH |
                                                    AV_BUFFERSRC_FLAG_KEEP_REF);
             if (ret < 0) {
                 if (ret != AVERROR_EOF) {
+                    BMFLOG(BMF_ERROR) << "add frame error: " << ret;
                     return ret;
                 }
             }

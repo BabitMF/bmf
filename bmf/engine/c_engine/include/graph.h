@@ -55,17 +55,18 @@ class GraphOutputStream {
   public:
     void set_manager(std::shared_ptr<InputStreamManager> &input_manager);
 
-    void set_node();
-
     void poll_packet(Packet &packet, bool block = true);
+
+    void set_node_id(int node_id){node_id_ = node_id;};
 
     void inject_packet(Packet &packet, int index = -1);
 
     std::shared_ptr<InputStreamManager> input_manager_;
+
+    int node_id_;
 };
 
 class Graph {
-
   public:
     Graph(
         GraphConfig graph_config,

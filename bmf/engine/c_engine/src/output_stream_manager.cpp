@@ -81,8 +81,8 @@ bool OutputStreamManager::any_of_downstream_full() {
     for (auto &out_s : output_streams_) {
         for (auto &mirror_stream : (out_s.second->mirror_streams_)) {
             std::shared_ptr<InputStream> downstream;
-            if (mirror_stream.input_stream_manager_->node_id_ < 0)
-                continue;
+            //if (mirror_stream.input_stream_manager_->node_id_ < 0)
+            //    continue;
             mirror_stream.input_stream_manager_->get_stream(
                 mirror_stream.stream_id_, downstream);
             if (downstream->is_full()) {

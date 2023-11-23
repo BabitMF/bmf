@@ -85,7 +85,7 @@ int SchedulerQueue::exec_loop() {
     while (true) {
         if (paused_)
             internal_pause();
-        if (state_ == State::TERMINATING and queue_.empty() ||
+        if ((state_ == State::TERMINATING and queue_.empty()) ||
             exception_catch_flag_) {
             break;
         }

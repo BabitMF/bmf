@@ -262,6 +262,7 @@ int Graph::init_nodes() {
                                                 input_manager);
                     auto g_out_s = std::make_shared<GraphOutputStream>();
                     g_out_s->set_manager(input_manager);
+                    g_out_s->set_node_id(node.get_id());
 
                     std::map<int, std::shared_ptr<OutputStream>> output_streams;
                     nodes_[node.id]->get_output_streams(output_streams);
@@ -883,6 +884,8 @@ Packet Graph::poll_output_stream_packet(std::string const &stream_name,
     Packet packet;
     if (output_streams_.count(stream_name) > 0) {
         output_streams_[stream_name]->poll_packet(packet, block);
+        if (scheduler_)
+            scheduler_->sched_required(output_streams_[stream_name]->node_id_, false);
     }
     return packet;
 }

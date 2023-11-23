@@ -122,11 +122,6 @@ const ModuleInfo *
 ModuleManager::resolve_module_info(const std::string &module_name) {
     std::lock_guard<std::mutex> guard(m_mutex);
 
-#if defined(__APPLE__)
-    BMFLOG(BMF_INFO)
-        << "if APPLE, Module Mananger resolve_module_info, return nullptr.\n";
-    return nullptr;
-#endif
     // check if it has already cached
     if (self->known_modules.find(module_name) != self->known_modules.end()) {
         return &self->known_modules.at(module_name);
@@ -453,8 +448,8 @@ bool ModuleManager::initialize_loader(const std::string &module_type) {
         auto lib_name = std::string(SharedLibrary::default_prefix()) +
                         "bmf_py_loader" + SharedLibrary::default_extension();
         auto loader_path =
-            fs::path(SharedLibrary::this_line_location()).parent_path() /
-            lib_name;
+            fs::path(SharedLibrary::this_line_location())
+                .lexically_normal().parent_path() / lib_name;
         auto lib = std::make_shared<SharedLibrary>(
             loader_path.string(), SharedLibrary::LAZY | SharedLibrary::GLOBAL);
         self->loaders["python"] =
@@ -482,8 +477,8 @@ bool ModuleManager::initialize_loader(const std::string &module_type) {
         auto lib_name = std::string(SharedLibrary::default_prefix()) +
                         "bmf_go_loader" + SharedLibrary::default_extension();
         auto loader_path =
-            fs::path(SharedLibrary::this_line_location()).parent_path() /
-            lib_name;
+            fs::path(SharedLibrary::this_line_location())
+                .lexically_normal().parent_path() / lib_name;
         auto lib = std::make_shared<SharedLibrary>(
             loader_path.string(), SharedLibrary::LAZY | SharedLibrary::GLOBAL);
 
@@ -507,8 +502,8 @@ bool ModuleManager::initialize_loader(const std::string &module_type) {
         auto lib_name = std::string(SharedLibrary::default_prefix()) +
                         "bmf_go_loader" + SharedLibrary::default_extension();
         auto loader_path =
-            fs::path(SharedLibrary::this_line_location()).parent_path() /
-            lib_name;
+            fs::path(SharedLibrary::this_line_location())
+                .lexically_normal().parent_path() / lib_name;
         auto lib = std::make_shared<SharedLibrary>(
             loader_path.string(), SharedLibrary::LAZY | SharedLibrary::GLOBAL);
 
@@ -568,8 +563,8 @@ void ModuleManager::init() {
 
         // locate BUILTIN_CONFIG.json
         std::vector<std::string> roots;
-        auto lib_path =
-            fs::path(SharedLibrary::this_line_location()).parent_path();
+        auto lib_path = fs::path(SharedLibrary::this_line_location())
+                            .lexically_normal().parent_path();
         roots.push_back(lib_path.string());
         roots.push_back(lib_path.parent_path().string());
         roots.push_back(fs::current_path().string());
@@ -595,16 +590,19 @@ void ModuleManager::init() {
         // initialize cpp/py/go loader lazily
     }
     set_repo_root((fs::path(SharedLibrary::this_line_location())
+                       .lexically_normal()
                        .parent_path()
                        .parent_path() /
                    "cpp_modules")
                       .string());
     set_repo_root((fs::path(SharedLibrary::this_line_location())
+                       .lexically_normal()
                        .parent_path()
                        .parent_path() /
                    "python_modules")
                       .string());
     set_repo_root((fs::path(SharedLibrary::this_line_location())
+                       .lexically_normal()
                        .parent_path()
                        .parent_path() /
                    "go_modules")

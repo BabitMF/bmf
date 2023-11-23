@@ -14,6 +14,7 @@ set(BMF_ASSEMBLE_ROOT ${CMAKE_BINARY_DIR}/output CACHE STRING "Directory to assy
 set(BMF_BUILD_VERSION "" CACHE STRING "BMF version")
 set(BMF_BUILD_COMMIT "" CACHE STRING "BMF commit")
 
+option(BMF_LOCAL_DEPENDENCIES "Build dependencies locally" ON)
 option(BMF_ENABLE_BREAKPAD "Enable build with breakpad support" OFF)
 option(BMF_ENABLE_CUDA "Enable CUDA support" ON)
 option(BMF_ENABLE_TORCH "Enable CUDA support" OFF)
@@ -23,6 +24,11 @@ option(BMF_ENABLE_JNI "Enable build with JNI support" OFF)
 option(BMF_ENABLE_FFMPEG "Enable build with ffmpeg support" ON)
 option(BMF_ENABLE_MOBILE "Enable build for mobile platform" OFF)
 option(BMF_ENABLE_TEST "compile examples and tests" ON)
+
+if (BMF_ENABLE_CUDA)
+    # For FindCUDAToolkit support
+    cmake_minimum_required(VERSION 3.17 FATAL_ERROR)
+endif()
 
 if(ENABLE_BITCODE)
     set(CMAKE_XCODE_ATTRIBUTE_BITCODE_GENERATION_MODE "bitcode")

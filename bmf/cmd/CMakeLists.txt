@@ -49,11 +49,14 @@ install(TARGETS run_bmf_graph trace_format_log module_manager
 )
 
 # Tool suite
-find_library(CURSES_NCURSESW_LIB ncursesw)
+find_package(PkgConfig)
+if(PKG_CONFIG_FOUND)
+    pkg_check_modules(CURSES_NCURSESW IMPORTED_TARGET ncursesw)
+endif()
 
 # only compile tool suite if ncursesw is detected
 # ncursesw can be installed by command line "apt-get install libncursesw5-dev" on Debian
-if(CURSES_NCURSESW_LIB)
+if(CURSES_NCURSESW_FOUND)
     file(GLOB SUITE_LOG_SRCS
         include/menu.h
         include/trace_config_menu.h
@@ -65,7 +68,7 @@ if(CURSES_NCURSESW_LIB)
 
     set_target_properties(bmf_suite PROPERTIES OUTPUT_NAME "bmf")
 
-    target_link_libraries(bmf_suite PUBLIC ncursesw)
+    target_link_libraries(bmf_suite PUBLIC PkgConfig::CURSES_NCURSESW)
 
     install(TARGETS bmf_suite
         RUNTIME DESTINATION bin

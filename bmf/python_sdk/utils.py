@@ -2,7 +2,7 @@ import os, time
 from fractions import Fraction
 import logging
 from bmf.lib._bmf import engine
-import bmf.lib._bmf
+import bmf.lib._bmf as _bmf
 
 ## @ingroup pyAPI
 ## @defgroup pyAPIVer version

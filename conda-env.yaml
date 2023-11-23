@@ -1,0 +1,38 @@
+name: bmf-test
+channels:
+  - conda-forge
+  - fastai
+dependencies:
+  # Build
+  - cmake
+  - make
+  - pkg-config
+  - patchelf
+  - gcc
+  - gxx
+
+  # Run
+  - python
+  - ffmpeg =4.4
+  - nlohmann_json
+  - glog
+  - fmt  =7
+  - benchmark
+  - spdlog  =1.8
+  - backward-cpp
+  - pybind11
+  - dlpack
+  - ncurses
+  - numpy
+  - pip
+  - elfutils
+
+  # Test
+  - gtest
+  - pytest
+  - requests
+  - onnxruntime
+  - opencv-python-headless
+  - go
+  - pip:
+      - timeout_decorator

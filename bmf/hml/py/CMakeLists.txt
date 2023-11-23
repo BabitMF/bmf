@@ -2,7 +2,11 @@
 
 file(GLOB PY_SRCS *.cpp *.h)
 
-pybind11_add_module(_hmp SHARED ${PY_SRCS})
+if (APPLE AND NOT HMP_LOCAL_DEPENDENCIES)
+    pybind11_add_module(_hmp MODULE ${PY_SRCS})
+else()
+    pybind11_add_module(_hmp SHARED ${PY_SRCS})
+endif()
 
 target_link_libraries(_hmp PRIVATE hmp)
 

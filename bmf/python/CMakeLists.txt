@@ -1,6 +1,12 @@
 file(GLOB PY_SRCS *.cpp *.h)
 
-pybind11_add_module(_bmf SHARED ${PY_SRCS})
+if (APPLE AND NOT BMF_LOCAL_DEPENDENCIES)
+    pybind11_add_module(_bmf MODULE ${PY_SRCS})
+    set_target_properties(_bmf PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+else()
+    pybind11_add_module(_bmf SHARED ${PY_SRCS})
+    target_link_libraries(_bmf PRIVATE _hmp)
+endif()
 
 
 if(BMF_ENABLE_FFMPEG)
@@ -8,9 +14,6 @@ if(BMF_ENABLE_FFMPEG)
 else()
     target_link_libraries(_bmf PRIVATE nlohmann bmf_module_sdk engine)
 endif()
-
-target_link_libraries(_bmf
-        PRIVATE _hmp)
 
 if(BMF_ENABLE_CUDA)
     # need by ffmpeg for hwframe support

@@ -59,6 +59,9 @@ namespace hmp {
 
 namespace logging {
 
+typedef int (*logCallBackFunc)(int loglevel, const char* msg);
+extern logCallBackFunc callBackFunc;
+
 struct Level {
     // map from spdlog::level
     enum {
@@ -77,6 +80,7 @@ HMP_API void _log(int level, const char *tag, const char *msg);
 
 HMP_API void set_level(int level);
 HMP_API void set_format(const std::string &fmt);
+HMP_API void set_log_callback_func(logCallBackFunc func);
 HMP_API void dump_stack_trace(int max = 128);
 
 class HMP_API LogMessageVoidify {

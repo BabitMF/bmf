@@ -31,8 +31,12 @@ class CUDADeviceManager : public impl::DeviceManager {
         cuInit(0);
         CUdevice device;
         const unsigned int flags = CU_CTX_SCHED_BLOCKING_SYNC;
-        int count;
-        HMP_CUDA_CHECK(cudaGetDeviceCount(&count));
+        int count = 0;
+        try {
+          HMP_CUDA_CHECK(cudaGetDeviceCount(&count));
+        } catch (std::exception &e) {
+          HMP_WRN("cudaGetDeviceCount failed, {}", e.what());
+        }
         for (int idx = 0; idx < count; idx++) {
             auto ret = cuDeviceGet(&device, idx);
             HMP_REQUIRE(ret == CUDA_SUCCESS, "get CUdevice {} failed={}", idx,

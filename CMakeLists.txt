@@ -66,6 +66,18 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     endif()
 endif()
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    # C4068: unknown pragma
+
+    # C4576: a parenthesized type followed by an initializer list is a non-standard explicit type conversion syntax
+    # Used in FFmpeg macros which assumes C.
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:preprocessor /wd4068 /wd4576")
+    add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+    if (BMF_ENABLE_CUDA)
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=/Zc:preprocessor")
+    endif()
+endif()
+
 if(ANDROID)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections -fdata-sections -g")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffunction-sections -fdata-sections -g")

@@ -20,6 +20,13 @@
 #include <bmf/sdk/trace.h>
 #include <bmf/sdk/log.h>
 
+#include <unistd.h>
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
+
 BEGIN_BMF_ENGINE_NS
 USE_BMF_SDK_NS
 
@@ -169,7 +176,6 @@ int SchedulerQueue::start() {
 #elif !defined(_WIN32)
     pthread_setname_np(handle, thread_name.c_str());
 #else // WIN32
-#include <cstdlib>
     typedef HRESULT(WINAPI * SETTHREADDESCRIPTION)(HANDLE, PCWSTR);
     auto SetThreadDescription =
         reinterpret_cast<SETTHREADDESCRIPTION>(::GetProcAddress(

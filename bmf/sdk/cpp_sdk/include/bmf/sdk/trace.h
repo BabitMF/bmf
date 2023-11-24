@@ -16,8 +16,6 @@
 #ifndef BMF_TRACE_H
 #define BMF_TRACE_H
 
-#include <unistd.h>
-
 #include <set>
 #include <map>
 #include <queue>

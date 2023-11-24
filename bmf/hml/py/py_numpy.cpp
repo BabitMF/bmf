@@ -103,7 +103,7 @@ HMP_API py::array tensor_to_numpy(const Tensor &tensor) {
                 tensor.device_type());
 
     auto dtype = scalarTypeToNumpyDtype(tensor.scalar_type());
-    std::vector<ssize_t> shape, strides;
+    std::vector<int64_t> shape, strides;
     auto itemsize = tensor.itemsize();
     for (int i = 0; i < tensor.dim(); ++i) {
         shape.push_back(tensor.size(i));

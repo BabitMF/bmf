@@ -21,6 +21,8 @@
 
 #include <bmf/sdk/trace.h>
 
+#include <unistd.h>
+
 BEGIN_BMF_ENGINE_NS
 USE_BMF_SDK_NS
 

@@ -21,6 +21,8 @@
 
 #include <fstream>
 
+#include <unistd.h>
+
 USE_BMF_ENGINE_NS
 USE_BMF_SDK_NS
 TEST(graph, start) {

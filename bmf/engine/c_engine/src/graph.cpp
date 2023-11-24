@@ -27,6 +27,8 @@
 #include <iomanip>
 #include <iostream>
 
+#include <unistd.h>
+
 BEGIN_BMF_ENGINE_NS
 USE_BMF_SDK_NS
 std::vector<Graph *> g_ptr;

@@ -15,12 +15,11 @@
  */
 #pragma once
 
-#include <hmp/core/details/optional.hpp>
+#include <optional>
 
 namespace hmp {
 
-// NOTE: don't use martinmoene/optional-lite, as it may have issues for nvcc
-using std::experimental::nullopt;
-using std::experimental::optional;
+using std::nullopt;
+using std::optional;
 
 } // namespace hmp

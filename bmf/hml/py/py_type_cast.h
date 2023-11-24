@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 #include <hmp/tensor.h>
 
 namespace pybind11 {
@@ -46,29 +47,6 @@ template <> struct type_caster<hmp::Scalar> {
             return PyFloat_FromDouble(src.to<double>());
         } else {
             throw std::runtime_error("unexpected Scalar type");
-        }
-    }
-};
-
-template <typename T> struct type_caster<hmp::optional<T>> {
-    PYBIND11_TYPE_CASTER(hmp::optional<T>, _("hmp::optional"));
-
-    bool load(handle src, bool b) {
-        if (src.is_none()) {
-            value = hmp::nullopt;
-        } else {
-            value = pybind11::cast<T>(src);
-        }
-
-        return true;
-    }
-
-    static handle cast(hmp::optional<T> src, return_value_policy policy,
-                       handle hnd) {
-        if (src.has_value()) {
-            return type_caster<T>::cast(*src, policy, hnd);
-        } else {
-            return none();
         }
     }
 };

@@ -168,6 +168,8 @@ if (HMP_LOCAL_DEPENDENCIES)
     add_subdirectory(third_party/gtest)
 else ()
     find_package(GTest REQUIRED)
+    add_library(gtest ALIAS GTest::gtest)
+    add_library(gtest_main ALIAS GTest::gtest_main)
 endif()
 
 

@@ -47,7 +47,7 @@ namespace filesystem = experimental::filesystem;
 
 BEGIN_BMF_SDK_NS
 
-class BMF_API ModuleRegistry {
+class BMF_SDK_API ModuleRegistry {
   public:
     typedef std::shared_ptr<Module> (*Constructor)(int node_id,
                                                    JsonParam json_param);
@@ -71,7 +71,7 @@ class BMF_API ModuleRegistry {
     ModuleRegistry() {}
 };
 
-class BMF_API ModuleRegister {
+class BMF_SDK_API ModuleRegister {
   public:
     ModuleRegister(std::string const &module_name,
                    std::string const &sdk_version,
@@ -98,7 +98,8 @@ class BMF_API ModuleRegister {
     REGISTER_MODULE_CONSTRUCTOR(module_name, Constructor_##module_name##Module);
 
 #define REGISTER_MODULE_INFO(module_name, info)                                \
-    extern "C" BMF_API void register_##module_name##_info(ModuleInfo &info)
+    extern "C" BMF_MODULE_EXPORT void register_##module_name##_info(           \
+        ModuleInfo &info)
 
 // make sure static module library is linked
 #define BMF_DECLARE_MODULE(module_name)                                        \

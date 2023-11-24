@@ -23,12 +23,12 @@ namespace bmf_sdk {
  * stream
  *
  */
-class BMF_API ProcessDone : public std::runtime_error {
+class BMF_SDK_API ProcessDone : public std::runtime_error {
   public:
     ProcessDone(const std::string &what) : std::runtime_error(what) {}
 };
 
-class BMF_API ModuleFunctor {
+class BMF_SDK_API ModuleFunctor {
     struct Private;
 
   public:
@@ -147,9 +147,10 @@ auto make_sync_func(const ModuleInfo &info, const JsonParam &option = {},
     return make_sync_func<Inputs, Outputs>(factory->make(node_id, option));
 }
 
-BMF_API ModuleFunctor make_sync_func(const ModuleInfo &info, int32_t ninputs,
-                                     int32_t noutputs,
-                                     const JsonParam &option = {},
-                                     int32_t node_id = 0);
+BMF_SDK_API ModuleFunctor make_sync_func(const ModuleInfo &info,
+                                         int32_t ninputs,
+                                         int32_t noutputs,
+                                         const JsonParam &option = {},
+                                         int32_t node_id = 0);
 
 } // namespace bmf_sdk

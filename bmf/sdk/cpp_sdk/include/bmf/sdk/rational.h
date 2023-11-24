@@ -21,7 +21,7 @@
 #include <cstdint>
 
 BEGIN_BMF_SDK_NS
-struct BMF_API Rational {
+struct BMF_SDK_API Rational {
     Rational() {}
 
     Rational(int n, int d) {

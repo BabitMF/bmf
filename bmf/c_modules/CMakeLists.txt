@@ -64,9 +64,6 @@ if(BMF_ENABLE_FFMPEG)
         PUBLIC
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/bmf/c_modules/include>
     )
-    target_compile_options(builtin_modules PRIVATE
-        -DBMF_BUILD_SHARED
-    )
     if(WIN32)
         set_target_properties(builtin_modules PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/lib

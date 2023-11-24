@@ -52,7 +52,7 @@ BEGIN_BMF_SDK_NS
 
     Currently TraceUserInfo supports std::string, int and double only.
 */
-class BMF_API TraceUserInfo {
+class BMF_SDK_API TraceUserInfo {
   public:
     std::string data;
     TraceUserInfo() = default;
@@ -305,7 +305,7 @@ class TraceBuffer {
     It performs a batched binary logging based on stipulated intervals, and
     consolidates all binary logs into a final formatted log at the end
 */
-class BMF_API TraceLogger {
+class BMF_SDK_API TraceLogger {
   public:
     static TraceLogger *traceLogger;
 
@@ -404,7 +404,7 @@ class BMF_API TraceLogger {
     Thread-local instances of ThreadTrace is created for each thread, and
     destroyed with the thread
 */
-class BMF_API ThreadTrace {
+class BMF_SDK_API ThreadTrace {
   public:
     ThreadTrace();
     ~ThreadTrace();

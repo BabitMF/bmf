@@ -21,7 +21,7 @@
 
 namespace bmf_sdk {
 
-class BMF_API BMFAVPacket : public OpaqueDataSet, public SequenceData {
+class BMF_SDK_API BMFAVPacket : public OpaqueDataSet, public SequenceData {
     struct Private;
 
     std::shared_ptr<Private> self;

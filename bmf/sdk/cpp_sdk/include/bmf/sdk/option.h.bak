@@ -10,7 +10,7 @@
 namespace bmf_sdk{
 /** @ingroup CppMdSDK
     */
-enum class BMF_API OptionType {
+enum class BMF_SDK_API OptionType {
     OPT_TYPE_OBJECT,
     OPT_TYPE_ARRAY,
     OPT_TYPE_STRING,
@@ -19,7 +19,7 @@ enum class BMF_API OptionType {
     OPT_TYPE_NULL,
 };
 
-class BMF_API Option {
+class BMF_SDK_API Option {
 public:
     Option(std::string name, std::string help, enum OptionType type, void *default_value);
 

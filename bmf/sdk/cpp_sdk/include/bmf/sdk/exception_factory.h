@@ -41,7 +41,7 @@
 
 BEGIN_BMF_SDK_NS
 
-BMF_API std::string format(const char *fmt, ...);
+BMF_SDK_API std::string format(const char *fmt, ...);
 
 /** @ingroup CppMdSDK
  */
@@ -52,7 +52,7 @@ information about the error happened in the program. The exception is
 usually constructed and thrown implicitly via BMF_Error
 @see error
  */
-class BMF_API Exception : public std::exception {
+class BMF_SDK_API Exception : public std::exception {
   public:
     /*!
      Default constructor
@@ -85,8 +85,8 @@ class BMF_API Exception : public std::exception {
     int line; ///< line number in the source file where the error has occurred
 };
 
-BMF_API void error(int _code, const char *_err, const char *_func,
-                   const char *_file, int _line);
+BMF_SDK_API void error(int _code, const char *_err, const char *_func,
+                       const char *_file, int _line);
 
 END_BMF_SDK_NS
 #endif // MODULE_SDK_EXCEPTION_H

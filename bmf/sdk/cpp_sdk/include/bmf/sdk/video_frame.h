@@ -22,9 +22,9 @@
 
 namespace bmf_sdk {
 
-class BMF_API VideoFrame : public OpaqueDataSet,
-                           public SequenceData,
-                           public Future {
+class BMF_SDK_API VideoFrame : public OpaqueDataSet,
+                               public SequenceData,
+                               public Future {
     struct Private;
 
   public:

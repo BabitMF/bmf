@@ -24,11 +24,12 @@ namespace bmf_sdk {
 
 static std::unordered_map<MediaType, Convertor *> iConvertors;
 
-BMF_API void set_convertor(const MediaType &media_type, Convertor *convertor) {
+BMF_SDK_API void set_convertor(const MediaType &media_type,
+                               Convertor *convertor) {
     iConvertors[media_type] = convertor;
 }
 
-BMF_API Convertor *get_convertor(const MediaType &media_type) {
+BMF_SDK_API Convertor *get_convertor(const MediaType &media_type) {
     if (iConvertors.find(media_type) == iConvertors.end()) {
         BMFLOG(BMF_WARNING) << "the media type is not supported by bmf backend";
         return NULL;
@@ -36,7 +37,7 @@ BMF_API Convertor *get_convertor(const MediaType &media_type) {
     return iConvertors[media_type];
 }
 
-BMF_API VideoFrame bmf_convert(VideoFrame &vf, const MediaDesc &dp) {
+BMF_SDK_API VideoFrame bmf_convert(VideoFrame &vf, const MediaDesc &dp) {
     auto convt = get_convertor(MediaType::kBMFVideoFrame);
     if (dp.media_type.has_value()) {
         convt = get_convertor(dp.media_type());
@@ -48,7 +49,7 @@ BMF_API VideoFrame bmf_convert(VideoFrame &vf, const MediaDesc &dp) {
     return device_vf;
 }
 
-BMF_API VideoFrame bmf_convert_to_videoframe(VideoFrame &vf,
+BMF_SDK_API VideoFrame bmf_convert_to_videoframe(VideoFrame &vf,
                                              const MediaDesc &dp) {
     VideoFrame frame;
     auto convt = get_convertor(MediaType::kBMFVideoFrame);
@@ -69,7 +70,7 @@ bool mt_is_vf(const MediaDesc &dp) {
              dp.media_type() != MediaType::kBMFVideoFrame);
 }
 
-BMF_API VideoFrame bmf_convert(VideoFrame &src_vf, const MediaDesc &src_dp,
+BMF_SDK_API VideoFrame bmf_convert(VideoFrame &src_vf, const MediaDesc &src_dp,
                                const MediaDesc &dst_dp) {
     VideoFrame frame;
     // VideoFrame transfer to other mediatype

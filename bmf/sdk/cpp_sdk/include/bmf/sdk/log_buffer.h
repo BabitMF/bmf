@@ -27,7 +27,7 @@
 
 BEGIN_BMF_SDK_NS
 
-class BMF_API LogBuffer {
+class BMF_SDK_API LogBuffer {
   public:
     static void set_av_log_callback();
     static void register_av_log_set_callback(void *func);

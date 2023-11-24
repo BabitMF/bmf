@@ -107,7 +107,6 @@ if [[ ${HOST} =~ msys_nt || ${HOST} =~ mingw ]]; then
     cd ${preset}
     cmake -DCMAKE_VERBOSE_MAKEFILE=ON -G "${CMAKE_GENERATOR}" --preset ${preset} \
         -DCMAKE_VERBOSE_MAKEFILE=ON \
-        -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE \
         -DBUILD_SHARED_LIBS=TRUE \
         -DCMAKE_TOOLCHAIN_FILE=../../cmake/win-toolchain.cmake \
         -DBMF_ENABLE_PYTHON=ON \
@@ -134,7 +133,6 @@ EOF
 else
     cmake -A ${PLATFORM_NAME} \
         -DCMAKE_VERBOSE_MAKEFILE=ON \
-        -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE \
         -DBUILD_SHARED_LIBS=TRUE \
         -DCMAKE_TOOLCHAIN_FILE=../cmake/win-toolchain.cmake \
         -DBMF_ENABLE_PYTHON=ON \

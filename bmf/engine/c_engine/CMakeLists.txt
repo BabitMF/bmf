@@ -19,6 +19,8 @@ endif()
 
 add_library(engine ${SRCS} ${HDRS})
 
+target_compile_definitions(engine PRIVATE BMF_BUILD_SHARED_ENGINE)
+
 if(WIN32)
     set_target_properties(engine PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/lib

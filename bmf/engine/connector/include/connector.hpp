@@ -19,14 +19,6 @@
 
 #include "running_info.h"
 
-#if defined(__clang__)
-#define BMF_FUNC_VIS __attribute__((__visibility__("default")))
-#elif defined(__GNUC__)
-#define BMF_FUNC_VIS __attribute__((visibility("default")))
-#else
-#define BMF_FUNC_VIS
-#endif
-
 // From SDK
 #include <bmf/sdk/cbytes.h>
 #include <bmf/sdk/packet.h>
@@ -36,11 +28,13 @@
 #include <string>
 #include <stdint.h>
 
+#include "connector_common.h"
+
 namespace bmf {
 /*
  * @brief Interface of a runnable BMF Graph instance.
  */
-class BMFGraph {
+class BMF_ENGINE_API BMFGraph {
   public:
     /*
      * @brief Create a BMF Graph instance from provided graph_config.
@@ -54,34 +48,34 @@ class BMFGraph {
      * introduce some stability issue.
      *      This param is set to true by default.
      */
-    BMF_FUNC_VIS BMFGraph(std::string const &graph_config, bool is_path = false,
+    BMFGraph(std::string const &graph_config, bool is_path = false,
                           bool need_merge = true);
 
-    BMF_FUNC_VIS BMFGraph(BMFGraph const &graph);
+    BMFGraph(BMFGraph const &graph);
 
-    BMF_FUNC_VIS ~BMFGraph();
+    ~BMFGraph();
 
-    BMF_FUNC_VIS BMFGraph &operator=(BMFGraph const &graph);
+    BMFGraph &operator=(BMFGraph const &graph);
 
-    BMF_FUNC_VIS uint32_t uid();
+    uint32_t uid();
 
     /*
      * @brief Start running a BMF Graph instance.
      */
-    BMF_FUNC_VIS void start();
+    void start();
 
     /*
      * @brief Update a dynamical BMF Graph instance.
      */
-    BMF_FUNC_VIS void update(const std::string &config, bool is_path);
+    void update(const std::string &config, bool is_path);
 
     /*
      * @brief Wait a running BMF Graph instance stopping.
      *      It may be stuck if the instance has not been 'start'ed.
      */
-    BMF_FUNC_VIS int close();
+    int close();
 
-    BMF_FUNC_VIS int force_close();
+    int force_close();
 
     /*
      * @brief
@@ -90,7 +84,7 @@ class BMFGraph {
      *
      * @return
      */
-    BMF_FUNC_VIS int add_input_stream_packet(std::string const &stream_name,
+    int add_input_stream_packet(std::string const &stream_name,
                                              bmf_sdk::Packet &packet,
                                              bool block = false);
 
@@ -101,7 +95,7 @@ class BMFGraph {
      *
      * @return
      */
-    BMF_FUNC_VIS bmf_sdk::Packet
+    bmf_sdk::Packet
     poll_output_stream_packet(std::string const &stream_name,
                               bool block = true);
 
@@ -109,7 +103,7 @@ class BMFGraph {
      * @brief
      * @return
      */
-    BMF_FUNC_VIS GraphRunningInfo status();
+    GraphRunningInfo status();
 
   private:
     uint32_t graph_uid_;
@@ -118,7 +112,7 @@ class BMFGraph {
 /*
  * @brief Interface of a Module instance.
  */
-class BMFModule {
+class BMF_ENGINE_API BMFModule {
   public:
     /*
      * @brief
@@ -128,7 +122,7 @@ class BMFModule {
      * @param [in] module_path
      * @param [in] module_entry
      */
-    BMF_FUNC_VIS BMFModule(std::string const &module_name,
+    BMFModule(std::string const &module_name,
                            std::string const &option,
                            std::string const &module_type = "",
                            std::string const &module_path = "",
@@ -138,43 +132,43 @@ class BMFModule {
      * @brief
      * @param [in] module_p
      */
-    BMF_FUNC_VIS BMFModule(std::shared_ptr<bmf_sdk::Module> module_p);
+    BMFModule(std::shared_ptr<bmf_sdk::Module> module_p);
 
-    BMF_FUNC_VIS BMFModule(BMFModule const &mod);
+    BMFModule(BMFModule const &mod);
 
-    BMF_FUNC_VIS ~BMFModule();
+    ~BMFModule();
 
-    BMF_FUNC_VIS BMFModule &operator=(BMFModule const &mod);
-
-    /*
-     * @brief
-     * @return
-     */
-    BMF_FUNC_VIS uint32_t uid();
+    BMFModule &operator=(BMFModule const &mod);
 
     /*
      * @brief
      * @return
      */
-    BMF_FUNC_VIS int32_t process(bmf_sdk::Task &task);
+    uint32_t uid();
 
     /*
      * @brief
      * @return
      */
-    BMF_FUNC_VIS int32_t reset();
+    int32_t process(bmf_sdk::Task &task);
 
     /*
      * @brief
      * @return
      */
-    BMF_FUNC_VIS int32_t init();
+    int32_t reset();
 
     /*
      * @brief
      * @return
      */
-    BMF_FUNC_VIS int32_t close();
+    int32_t init();
+
+    /*
+     * @brief
+     * @return
+     */
+    int32_t close();
 
   private:
     friend BMFGraph;
@@ -186,26 +180,25 @@ class BMFModule {
 /*
  * @brief Interface of a registered callback.
  */
-class BMFCallback {
+class BMF_ENGINE_API BMFCallback {
   public:
     /*
      * @brief
      * @param [in] callback
      */
-    BMF_FUNC_VIS
     BMFCallback(std::function<bmf_sdk::CBytes(bmf_sdk::CBytes)> callback);
 
-    BMF_FUNC_VIS BMFCallback(BMFCallback const &cb);
+    BMFCallback(BMFCallback const &cb);
 
-    BMF_FUNC_VIS ~BMFCallback();
+    ~BMFCallback();
 
-    BMF_FUNC_VIS BMFCallback &operator=(BMFCallback const &cb);
+    BMFCallback &operator=(BMFCallback const &cb);
 
     /*
      * @brief
      * @return
      */
-    BMF_FUNC_VIS uint32_t uid();
+    uint32_t uid();
 
   private:
     friend BMFGraph;
@@ -213,7 +206,7 @@ class BMFCallback {
     uint32_t callback_uid_;
 };
 
-void ChangeDmpPath(std::string path);
+void BMF_ENGINE_API ChangeDmpPath(std::string path);
 } // namespace bmf
 
 #endif // CONNECTOR_CONNECTOR_HPP

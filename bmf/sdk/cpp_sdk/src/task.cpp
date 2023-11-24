@@ -39,7 +39,7 @@ Task &Task::operator=(Task rhs) {
     return *this;
 }
 
-BMF_API void swap(Task &target, Task &source) {
+BMF_SDK_API void swap(Task &target, Task &source) {
     using std::swap;
 
     std::swap(target.node_id_, source.node_id_);

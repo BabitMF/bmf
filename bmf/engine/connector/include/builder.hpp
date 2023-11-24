@@ -28,22 +28,24 @@
 #include <bmf/sdk/task.h>
 #include <bmf/sdk/packet.h>
 #include <bmf/sdk/module.h>
+
 #include "connector.hpp"
+#include "connector_common.h"
 
 #ifndef BMF_MAX_CAPACITY
 #define BMF_MAX_CAPACITY (1 << 10)
 #endif
 
 namespace bmf::builder {
-class Graph;
+class BMF_ENGINE_API Graph;
 
-class Node;
+class BMF_ENGINE_API Node;
 
-class Stream;
+class BMF_ENGINE_API Stream;
 
-class SyncModule;
+class BMF_ENGINE_API SyncModule;
 
-class SyncPackets;
+class BMF_ENGINE_API SyncPackets;
 
 // enum constants
 enum GraphMode {
@@ -257,78 +259,78 @@ class RealGraph : public std::enable_shared_from_this<RealGraph> {
 };
 } // namespace internal
 
-std::string GetVersion();
+std::string BMF_ENGINE_API GetVersion();
 
-std::string GetCommit();
+std::string BMF_ENGINE_API GetCommit();
 
-void ChangeDmpPath(std::string path);
+void BMF_ENGINE_API ChangeDmpPath(std::string path);
 
-bmf::BMFModule GetModuleInstance(std::string const &moduleName,
-                                 std::string const &option,
-                                 ModuleType moduleType = Python,
-                                 std::string const &modulePath = "",
-                                 std::string const &moduleEntry = "");
+bmf::BMFModule BMF_ENGINE_API GetModuleInstance(std::string const &moduleName,
+                                                std::string const &option,
+                                                ModuleType moduleType = Python,
+                                                std::string const &modulePath = "",
+                                                std::string const &moduleEntry = "");
 
-bmf::BMFCallback
+bmf::BMFCallback BMF_ENGINE_API
 GetCallbackInstance(std::function<bmf_sdk::CBytes(bmf_sdk::CBytes)> callback);
 
-class Stream {
+class BMF_ENGINE_API Stream {
   public:
-    BMF_FUNC_VIS Stream() = delete;
+    Stream() = delete;
 
-    BMF_FUNC_VIS Stream(Stream const &) = default;
+    Stream(Stream const &) = default;
 
-    BMF_FUNC_VIS Stream(Stream &&) = default;
+    Stream(Stream &&) = default;
 
   private:
     friend Node;
     friend Graph;
 
-    BMF_FUNC_VIS explicit Stream(std::shared_ptr<internal::RealStream> baseP);
+    explicit Stream(std::shared_ptr<internal::RealStream> baseP);
     std::shared_ptr<internal::RealStream> baseP_;
 
   public:
-    BMF_FUNC_VIS void SetNotify(std::string const &notify);
+    void SetNotify(std::string const &notify);
 
-    BMF_FUNC_VIS void SetAlias(std::string const &alias);
-    BMF_FUNC_VIS void Start();
+    void SetAlias(std::string const &alias);
+    void Start();
 
-    BMF_FUNC_VIS Node
+    Node
     Module(const std::vector<Stream> &inStreams, std::string const &moduleName,
            ModuleType moduleType, const bmf_sdk::JsonParam &option,
            std::string const &alias = "", std::string const &modulePath = "",
            std::string const &moduleEntry = "",
            InputManagerType inputStreamManager = Immediate, int scheduler = 0);
 
-    BMF_FUNC_VIS Node CppModule(
+    Node CppModule(
         const std::vector<Stream> &inStreams, std::string const &moduleName,
         const bmf_sdk::JsonParam &option, std::string const &alias = "",
         std::string const &modulePath = "", std::string const &moduleEntry = "",
         InputManagerType inputStreamManager = Immediate, int scheduler = 0);
 
-    BMF_FUNC_VIS Node PythonModule(
+    Node PythonModule(
         const std::vector<Stream> &inStreams, std::string const &moduleName,
         const bmf_sdk::JsonParam &option, std::string const &alias = "",
         std::string const &modulePath = "", std::string const &moduleEntry = "",
         InputManagerType inputStreamManager = Immediate, int scheduler = 0);
 
-    BMF_FUNC_VIS Node GoModule(
+    Node GoModule(
         const std::vector<Stream> &inStreams, std::string const &moduleName,
         const bmf_sdk::JsonParam &option, std::string const &alias = "",
         std::string const &modulePath = "", std::string const &moduleEntry = "",
         InputManagerType inputStreamManager = Immediate, int scheduler = 0);
 
-    BMF_FUNC_VIS Node Decode(const bmf_sdk::JsonParam &decodePara,
+    Node Decode(const bmf_sdk::JsonParam &decodePara,
                              std::string const &alias = "");
 
-    BMF_FUNC_VIS Node EncodeAsVideo(const bmf_sdk::JsonParam &encodePara,
+    Node EncodeAsVideo(const bmf_sdk::JsonParam &encodePara,
                                     std::string const &alias = "");
 
-    BMF_FUNC_VIS Node EncodeAsVideo(Stream audioStream,
+    Node EncodeAsVideo(Stream audioStream,
                                     const bmf_sdk::JsonParam &encodePara,
                                     std::string const &alias = "");
 
-    BMF_FUNC_VIS Node FFMpegFilter(const std::vector<Stream> &inStreams,
+    Node FFMpegFilter(const std::vector<Stream> &inStreams,
                                    std::string const &filterName,
                                    bmf_sdk::JsonParam filterPara,
                                    std::string const &alias = "");
@@ -339,125 +341,125 @@ class Stream {
                       std::is_convertible<T, std::string const &>{} ||
                       std::is_convertible<T, nlohmann::json>{},
                   bool>::type = true>
-    BMF_FUNC_VIS Node FFMpegFilter(std::vector<Stream> inStreams,
+    Node FFMpegFilter(std::vector<Stream> inStreams,
                                    std::string const &filterName, T filterPara,
                                    std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Vflip(T para, std::string const &alias = "");
+    Node Vflip(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Scale(T para, std::string const &alias = "");
+    Node Scale(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Setsar(T para, std::string const &alias = "");
+    Node Setsar(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Pad(T para, std::string const &alias = "");
+    Node Pad(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Trim(T para, std::string const &alias = "");
+    Node Trim(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Setpts(T para, std::string const &alias = "");
+    Node Setpts(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Loop(T para, std::string const &alias = "");
+    Node Loop(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Split(T para, std::string const &alias = "");
+    Node Split(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Adelay(T para, std::string const &alias = "");
+    Node Adelay(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Atrim(T para, std::string const &alias = "");
+    Node Atrim(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Afade(T para, std::string const &alias = "");
+    Node Afade(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Asetpts(T para, std::string const &alias = "");
+    Node Asetpts(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Amix(std::vector<Stream> inStreams, T para,
+    Node Amix(std::vector<Stream> inStreams, T para,
                            std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Overlay(std::vector<Stream> inStreams, T para,
+    Node Overlay(std::vector<Stream> inStreams, T para,
                               std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Concat(std::vector<Stream> inStreams, T para,
+    Node Concat(std::vector<Stream> inStreams, T para,
                              std::string const &alias = "");
 
-    BMF_FUNC_VIS Node Fps(int fps, std::string const &alias = "");
+    Node Fps(int fps, std::string const &alias = "");
 
-    BMF_FUNC_VIS std::string GetName();
+    std::string GetName();
 
   private:
-    BMF_FUNC_VIS Node ConnectNewModule(
+    Node ConnectNewModule(
         std::string const &alias, const bmf_sdk::JsonParam &option,
         const std::vector<Stream> &inputStreams, std::string const &moduleName,
         ModuleType moduleType, std::string const &modulePath,
         std::string const &moduleEntry, InputManagerType inputStreamManager,
         int scheduler);
 
-    BMF_FUNC_VIS Node InternalFFMpegFilter(const std::vector<Stream> &inStreams,
+    Node InternalFFMpegFilter(const std::vector<Stream> &inStreams,
                                            std::string const &filterName,
                                            const bmf_sdk::JsonParam &filterPara,
                                            std::string const &alias = "");
 };
 
-class Node {
+class BMF_ENGINE_API Node {
   public:
-    BMF_FUNC_VIS Node() = delete;
+    Node() = delete;
 
-    BMF_FUNC_VIS Node(Node const &) = default;
+    Node(Node const &) = default;
 
-    BMF_FUNC_VIS Node(Node &&) = default;
+    Node(Node &&) = default;
 
   private:
     friend class Stream;
 
     friend Graph;
 
-    BMF_FUNC_VIS explicit Node(std::shared_ptr<internal::RealNode> baseP);
+    explicit Node(std::shared_ptr<internal::RealNode> baseP);
     std::shared_ptr<internal::RealNode> baseP_;
 
   public:
-    BMF_FUNC_VIS class Stream operator[](int index);
+    class Stream operator[](int index);
 
-    BMF_FUNC_VIS class Stream operator[](std::string const &notifyOrAlias);
+    class Stream operator[](std::string const &notifyOrAlias);
 
-    BMF_FUNC_VIS class Stream Stream(int index);
+    class Stream Stream(int index);
 
-    BMF_FUNC_VIS class Stream Stream(std::string const &notifyOrAlias);
+    class Stream Stream(std::string const &notifyOrAlias);
 
-    BMF_FUNC_VIS operator class Stream();
+    operator class Stream();
 
-    BMF_FUNC_VIS void SetAlias(std::string const &alias);
+    void SetAlias(std::string const &alias);
 
-    BMF_FUNC_VIS void
+    void
     SetInputStreamManager(InputManagerType inputStreamManager);
 
-    BMF_FUNC_VIS void SetThread(int threadNum);
+    void SetThread(int threadNum);
 
-    BMF_FUNC_VIS void SetPreModule(const bmf::BMFModule &preModuleInstance);
+    void SetPreModule(const bmf::BMFModule &preModuleInstance);
 
-    BMF_FUNC_VIS void AddCallback(long long key,
+    void AddCallback(long long key,
                                   const bmf::BMFCallback &callbackInstance);
 
-    BMF_FUNC_VIS void Start();
+    void Start();
 
-    BMF_FUNC_VIS Node Module(
+    Node Module(
         const std::vector<class Stream> &inStreams,
         std::string const &moduleName, ModuleType moduleType,
         const bmf_sdk::JsonParam &option, std::string const &alias = "",
         std::string const &modulePath = "", std::string const &moduleEntry = "",
         InputManagerType inputStreamManager = Immediate, int scheduler = 0);
 
-    BMF_FUNC_VIS Node CppModule(const std::vector<class Stream> &inStreams,
+    Node CppModule(const std::vector<class Stream> &inStreams,
                                 std::string const &moduleName,
                                 const bmf_sdk::JsonParam &option,
                                 std::string const &alias = "",
@@ -466,14 +468,14 @@ class Node {
                                 InputManagerType inputStreamManager = Immediate,
                                 int scheduler = 0);
 
-    BMF_FUNC_VIS Node PythonModule(
+    Node PythonModule(
         const std::vector<class Stream> &inStreams,
         std::string const &moduleName, const bmf_sdk::JsonParam &option,
         std::string const &alias = "", std::string const &modulePath = "",
         std::string const &moduleEntry = "",
         InputManagerType inputStreamManager = Immediate, int scheduler = 0);
 
-    BMF_FUNC_VIS Node GoModule(const std::vector<class Stream> &inStreams,
+    Node GoModule(const std::vector<class Stream> &inStreams,
                                std::string const &moduleName,
                                const bmf_sdk::JsonParam &option,
                                std::string const &alias = "",
@@ -482,17 +484,17 @@ class Node {
                                InputManagerType inputStreamManager = Immediate,
                                int scheduler = 0);
 
-    BMF_FUNC_VIS Node Decode(const bmf_sdk::JsonParam &decodePara,
+    Node Decode(const bmf_sdk::JsonParam &decodePara,
                              std::string const &alias = "");
 
-    BMF_FUNC_VIS Node EncodeAsVideo(const bmf_sdk::JsonParam &encodePara,
+    Node EncodeAsVideo(const bmf_sdk::JsonParam &encodePara,
                                     std::string const &alias = "");
 
-    BMF_FUNC_VIS Node EncodeAsVideo(class Stream audioStream,
+    Node EncodeAsVideo(class Stream audioStream,
                                     const bmf_sdk::JsonParam &encodePara,
                                     std::string const &alias = "");
 
-    BMF_FUNC_VIS Node FFMpegFilter(const std::vector<class Stream> &inStreams,
+    Node FFMpegFilter(const std::vector<class Stream> &inStreams,
                                    std::string const &filterName,
                                    bmf_sdk::JsonParam filterPara,
                                    std::string const &alias = "");
@@ -503,110 +505,110 @@ class Node {
                       std::is_convertible<T, std::string const &>{} ||
                       std::is_convertible<T, nlohmann::json>{},
                   bool>::type = true>
-    BMF_FUNC_VIS Node FFMpegFilter(std::vector<class Stream> inStreams,
+    Node FFMpegFilter(std::vector<class Stream> inStreams,
                                    std::string const &filterName, T filterPara,
                                    std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Vflip(T para, std::string const &alias = "");
+    Node Vflip(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Scale(T para, std::string const &alias = "");
+    Node Scale(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Setsar(T para, std::string const &alias = "");
+    Node Setsar(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Pad(T para, std::string const &alias = "");
+    Node Pad(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Trim(T para, std::string const &alias = "");
+    Node Trim(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Setpts(T para, std::string const &alias = "");
+    Node Setpts(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Loop(T para, std::string const &alias = "");
+    Node Loop(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Split(T para, std::string const &alias = "");
+    Node Split(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Adelay(T para, std::string const &alias = "");
+    Node Adelay(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Atrim(T para, std::string const &alias = "");
+    Node Atrim(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Afade(T para, std::string const &alias = "");
+    Node Afade(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Asetpts(T para, std::string const &alias = "");
+    Node Asetpts(T para, std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Amix(std::vector<class Stream> inStreams, T para,
+    Node Amix(std::vector<class Stream> inStreams, T para,
                            std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Overlay(std::vector<class Stream> inStreams, T para,
+    Node Overlay(std::vector<class Stream> inStreams, T para,
                               std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Concat(std::vector<class Stream> inStreams, T para,
+    Node Concat(std::vector<class Stream> inStreams, T para,
                              std::string const &alias = "");
 
-    BMF_FUNC_VIS Node Fps(int fps, std::string const &alias = "");
+    Node Fps(int fps, std::string const &alias = "");
 
   private:
-    BMF_FUNC_VIS Node ConnectNewModule(
+    Node ConnectNewModule(
         std::string const &alias, const bmf_sdk::JsonParam &option,
         const std::vector<class Stream> &inputStreams,
         std::string const &moduleName, ModuleType moduleType,
         std::string const &modulePath, std::string const &moduleEntry,
         InputManagerType inputStreamManager, int scheduler);
 
-    BMF_FUNC_VIS Node InternalFFMpegFilter(
+    Node InternalFFMpegFilter(
         const std::vector<class Stream> &inStreams,
         std::string const &filterName, const bmf_sdk::JsonParam &filterPara,
         std::string const &alias = "");
 };
 
-class SyncPackets {
+class BMF_ENGINE_API SyncPackets {
   public:
-    BMF_FUNC_VIS SyncPackets() = default;
-    BMF_FUNC_VIS void Insert(int streamId, std::vector<Packet> frames);
-    BMF_FUNC_VIS std::vector<Packet> operator[](int);
+    SyncPackets() = default;
+    void Insert(int streamId, std::vector<Packet> frames);
+    std::vector<Packet> operator[](int);
     std::map<int, std::vector<Packet>> packets;
 };
 
-class SyncModule {
+class BMF_ENGINE_API SyncModule {
   public:
-    BMF_FUNC_VIS SyncModule() = default;
+    SyncModule() = default;
     std::vector<int> inputStreams;
     std::vector<int> outputStreams;
     std::shared_ptr<bmf_sdk::Module> moduleInstance = nullptr;
-    BMF_FUNC_VIS std::map<int, std::vector<Packet>>
+    std::map<int, std::vector<Packet>>
     ProcessPkts(std::map<int, std::vector<Packet>> inputPackets);
-    BMF_FUNC_VIS SyncPackets ProcessPkts(SyncPackets pkts = SyncPackets());
-    BMF_FUNC_VIS int32_t Process(bmf_sdk::Task task);
-    BMF_FUNC_VIS int32_t SendEOF();
-    BMF_FUNC_VIS int32_t Init();
-    BMF_FUNC_VIS int32_t Close();
+    SyncPackets ProcessPkts(SyncPackets pkts = SyncPackets());
+    int32_t Process(bmf_sdk::Task task);
+    int32_t SendEOF();
+    int32_t Init();
+    int32_t Close();
 };
 
-class Graph {
+class BMF_ENGINE_API Graph {
   public:
-    BMF_FUNC_VIS explicit Graph(GraphMode runMode,
+    explicit Graph(GraphMode runMode,
                                 bmf_sdk::JsonParam graphOption);
 
-    BMF_FUNC_VIS explicit Graph(GraphMode runMode,
+    explicit Graph(GraphMode runMode,
                                 nlohmann::json graphOption = {});
 
-    BMF_FUNC_VIS Graph() = delete;
+    Graph() = delete;
 
-    BMF_FUNC_VIS Graph(Graph const &rhs) = default;
+    Graph(Graph const &rhs) = default;
 
-    BMF_FUNC_VIS Graph(Graph &&rhs) = default;
+    Graph(Graph &&rhs) = default;
 
   private:
     friend class Stream;
@@ -616,71 +618,71 @@ class Graph {
     std::shared_ptr<internal::RealGraph> graph_;
 
   public:
-    BMF_FUNC_VIS void SetTotalThreadNum(int num);
+    void SetTotalThreadNum(int num);
 
-    BMF_FUNC_VIS Stream NewPlaceholderStream();
+    Stream NewPlaceholderStream();
 
-    BMF_FUNC_VIS Node GetAliasedNode(std::string const &alias);
+    Node GetAliasedNode(std::string const &alias);
 
-    BMF_FUNC_VIS Stream GetAliasedStream(std::string const &alias);
+    Stream GetAliasedStream(std::string const &alias);
 
-    BMF_FUNC_VIS bmf::BMFGraph Instantiate(bool dumpGraph = true,
+    bmf::BMFGraph Instantiate(bool dumpGraph = true,
                                            bool needMerge = true);
 
-    BMF_FUNC_VIS bmf::BMFGraph Instance();
+    bmf::BMFGraph Instance();
 
-    BMF_FUNC_VIS int Run(bool dumpGraph = true, bool needMerge = true);
+    int Run(bool dumpGraph = true, bool needMerge = true);
 
-    BMF_FUNC_VIS void Start(bool dumpGraph = true, bool needMerge = true);
+    void Start(bool dumpGraph = true, bool needMerge = true);
 
-    BMF_FUNC_VIS void Start(std::vector<Stream>& generateStreams, bool dumpGraph = true, bool needMerge = true);
+    void Start(std::vector<Stream>& generateStreams, bool dumpGraph = true, bool needMerge = true);
 
-    BMF_FUNC_VIS std::string Dump();
+    std::string Dump();
 
-    BMF_FUNC_VIS Node
+    Node
     Module(const std::vector<Stream> &inStreams, std::string const &moduleName,
            ModuleType moduleType, const bmf_sdk::JsonParam &option,
            std::string const &alias = "", std::string const &modulePath = "",
            std::string const &moduleEntry = "",
            InputManagerType inputStreamManager = Immediate, int scheduler = 0);
 
-    BMF_FUNC_VIS Node CppModule(
+    Node CppModule(
         const std::vector<Stream> &inStreams, std::string const &moduleName,
         const bmf_sdk::JsonParam &option, std::string const &alias = "",
         std::string const &modulePath = "", std::string const &moduleEntry = "",
         InputManagerType inputStreamManager = Immediate, int scheduler = 0);
 
-    BMF_FUNC_VIS Node PythonModule(
+    Node PythonModule(
         const std::vector<Stream> &inStreams, std::string const &moduleName,
         const bmf_sdk::JsonParam &option, std::string const &alias = "",
         std::string const &modulePath = "", std::string const &moduleEntry = "",
         InputManagerType inputStreamManager = Immediate, int scheduler = 0);
 
-    BMF_FUNC_VIS Node GoModule(
+    Node GoModule(
         const std::vector<Stream> &inStreams, std::string const &moduleName,
         const bmf_sdk::JsonParam &option, std::string const &alias = "",
         std::string const &modulePath = "", std::string const &moduleEntry = "",
         InputManagerType inputStreamManager = Immediate, int scheduler = 0);
 
-    BMF_FUNC_VIS Node Decode(const bmf_sdk::JsonParam &decodePara,
+    Node Decode(const bmf_sdk::JsonParam &decodePara,
                              std::string const &alias = "");
 
-    BMF_FUNC_VIS Node Decode(const bmf_sdk::JsonParam &decodePara,
+    Node Decode(const bmf_sdk::JsonParam &decodePara,
                              Stream controlStream,
                              std::string const &alias = "");
 
-    BMF_FUNC_VIS Node Encode(Stream videoStream, Stream audioStream,
+    Node Encode(Stream videoStream, Stream audioStream,
                              const bmf_sdk::JsonParam &encodePara,
                              std::string const &alias = "");
 
-    BMF_FUNC_VIS Node Encode(Stream videoStream,
+    Node Encode(Stream videoStream,
                              const bmf_sdk::JsonParam &encodePara,
                              std::string const &alias = "");
 
-    BMF_FUNC_VIS Node Encode(const bmf_sdk::JsonParam &encodePara,
+    Node Encode(const bmf_sdk::JsonParam &encodePara,
                              std::string const &alias = "");
 
-    BMF_FUNC_VIS Node FFMpegFilter(const std::vector<Stream> &inStreams,
+    Node FFMpegFilter(const std::vector<Stream> &inStreams,
                                    std::string const &filterName,
                                    const bmf_sdk::JsonParam &filterPara,
                                    std::string const &alias = "");
@@ -691,115 +693,115 @@ class Graph {
                       std::is_convertible<T, std::string const &>{} ||
                       std::is_convertible<T, nlohmann::json>{},
                   bool>::type = true>
-    BMF_FUNC_VIS Node FFMpegFilter(std::vector<Stream> inStreams,
+    Node FFMpegFilter(std::vector<Stream> inStreams,
                                    std::string const &filterName, T filterPara,
                                    std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Vflip(Stream inStream, T para,
+    Node Vflip(Stream inStream, T para,
                             std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Scale(Stream inStream, T para,
+    Node Scale(Stream inStream, T para,
                             std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Setsar(Stream inStream, T para,
+    Node Setsar(Stream inStream, T para,
                              std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Pad(Stream inStream, T para,
+    Node Pad(Stream inStream, T para,
                           std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Trim(Stream inStream, T para,
+    Node Trim(Stream inStream, T para,
                            std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Setpts(Stream inStream, T para,
+    Node Setpts(Stream inStream, T para,
                              std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Loop(Stream inStream, T para,
+    Node Loop(Stream inStream, T para,
                            std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Split(Stream inStream, T para,
+    Node Split(Stream inStream, T para,
                             std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Adelay(Stream inStream, T para,
+    Node Adelay(Stream inStream, T para,
                              std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Atrim(Stream inStream, T para,
+    Node Atrim(Stream inStream, T para,
                             std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Afade(Stream inStream, T para,
+    Node Afade(Stream inStream, T para,
                             std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Asetpts(Stream inStream, T para,
+    Node Asetpts(Stream inStream, T para,
                               std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Amix(std::vector<Stream> inStreams, T para,
+    Node Amix(std::vector<Stream> inStreams, T para,
                            std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Overlay(std::vector<Stream> inStreams, T para,
+    Node Overlay(std::vector<Stream> inStreams, T para,
                               std::string const &alias = "");
 
     template <typename T>
-    BMF_FUNC_VIS Node Concat(std::vector<Stream> inStreams, T para,
+    Node Concat(std::vector<Stream> inStreams, T para,
                              std::string const &alias = "");
 
-    BMF_FUNC_VIS Node Fps(Stream inStream, int fps,
+    Node Fps(Stream inStream, int fps,
                           std::string const &alias = "");
 
-    BMF_FUNC_VIS SyncModule
+    SyncModule
     Sync(const std::vector<int> inStreams, const std::vector<int> outStreams,
          bmf_sdk::JsonParam moduleOption, std::string const &moduleName,
          ModuleType moduleType = CPP, std::string const &modulePath = "",
          std::string const &moduleEntry = "", std::string const &alias = "",
          InputManagerType inputStreamManager = Immediate, int scheduler = 0);
 
-    BMF_FUNC_VIS SyncModule
+    SyncModule
     Sync(const std::vector<int> inStreams, const std::vector<int> outStreams,
          nlohmann::json moduleOption, std::string const &moduleName,
          ModuleType moduleType = CPP, std::string const &modulePath = "",
          std::string const &moduleEntry = "", std::string const &alias = "",
          InputManagerType inputStreamManager = Immediate, int scheduler = 0);
 
-    BMF_FUNC_VIS std::map<int, std::vector<Packet>>
+    std::map<int, std::vector<Packet>>
     Process(SyncModule module, std::map<int, std::vector<Packet>> inputPackets);
 
-    BMF_FUNC_VIS SyncPackets Process(SyncModule module,
+    SyncPackets Process(SyncModule module,
                                      SyncPackets pkts = SyncPackets());
 
-    BMF_FUNC_VIS int32_t  Init(SyncModule module);
+    int32_t  Init(SyncModule module);
 
-    BMF_FUNC_VIS int32_t  Close(SyncModule module);
+    int32_t  Close(SyncModule module);
 
-    BMF_FUNC_VIS int32_t  SendEOF(SyncModule module);
+    int32_t  SendEOF(SyncModule module);
 
-    BMF_FUNC_VIS void SetOption(const bmf_sdk::JsonParam &optionPatch);
+    void SetOption(const bmf_sdk::JsonParam &optionPatch);
 
-    BMF_FUNC_VIS Packet Generate(std::string streamName, bool block = true);
+    Packet Generate(std::string streamName, bool block = true);
 
-    BMF_FUNC_VIS Stream InputStream(std::string streamName, std::string notify, std::string alias);
+    Stream InputStream(std::string streamName, std::string notify, std::string alias);
 
-    BMF_FUNC_VIS int FillPacket(std::string stream_name, Packet packet, bool block = false);
+    int FillPacket(std::string stream_name, Packet packet, bool block = false);
 
   private:
-    BMF_FUNC_VIS Node
+    Node
     NewNode(std::string const &alias, const bmf_sdk::JsonParam &option,
             const std::vector<Stream> &inputStreams,
             std::string const &moduleName, ModuleType moduleType,
             std::string const &modulePath, std::string const &moduleEntry,
             InputManagerType inputStreamManager, int scheduler);
-    BMF_FUNC_VIS Node InternalFFMpegFilter(const std::vector<Stream> &inStreams,
+    Node InternalFFMpegFilter(const std::vector<Stream> &inStreams,
                                            std::string const &filterName,
                                            const bmf_sdk::JsonParam &filterPara,
                                            std::string const &alias = "");

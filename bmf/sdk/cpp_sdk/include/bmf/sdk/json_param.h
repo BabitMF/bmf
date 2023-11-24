@@ -26,7 +26,7 @@
 BEGIN_BMF_SDK_NS
 /** @ingroup CppMdSDK
  */
-class BMF_API JsonParam {
+class BMF_SDK_API JsonParam {
 
   public:
     /** @brief JsonParam struct

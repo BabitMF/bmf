@@ -30,7 +30,7 @@
 namespace bmf_sdk {
 /** @ingroup CppMdSDK
  */
-class BMF_API Module {
+class BMF_SDK_API Module {
   public:
     /** @brief
         @param node_id unique id .

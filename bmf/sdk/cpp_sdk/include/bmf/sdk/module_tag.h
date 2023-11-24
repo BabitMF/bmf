@@ -22,7 +22,7 @@ namespace bmf_sdk {
 
 using module_tag_type = int64_t;
 
-enum class BMF_API ModuleTag : module_tag_type {
+enum class BMF_SDK_API ModuleTag : module_tag_type {
     BMF_TAG_NONE = 0x0,
 
     BMF_TAG_DECODER = 0x01 << 0,
@@ -40,8 +40,8 @@ enum class BMF_API ModuleTag : module_tag_type {
     BMF_TAG_DONE = 0x01LL << (sizeof(module_tag_type) * 8 - 1),
 };
 
-ModuleTag BMF_API operator|(ModuleTag tag1, ModuleTag tag2);
-ModuleTag BMF_API operator|=(ModuleTag &tag1, ModuleTag tag2);
-std::ostream BMF_API &operator<<(std::ostream &os, const ModuleTag &tag);
+ModuleTag BMF_SDK_API operator|(ModuleTag tag1, ModuleTag tag2);
+ModuleTag BMF_SDK_API operator|=(ModuleTag &tag1, ModuleTag tag2);
+std::ostream BMF_SDK_API &operator<<(std::ostream &os, const ModuleTag &tag);
 
 } // namespace bmf_sdk

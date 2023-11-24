@@ -30,7 +30,7 @@
 
 #ifdef __cplusplus
 BEGIN_BMF_SDK_NS
-struct BMF_API CBytes {
+struct BMF_SDK_API CBytes {
     uint8_t const *buffer;
     size_t size;
 

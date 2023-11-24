@@ -36,17 +36,20 @@
 
 // interface export
 #ifdef _WIN32
-#ifdef BMF_BUILD_SHARED
-#define BMF_API __declspec(dllexport)
-#else // BMF_BUILD_SHARED
-#define BMF_API __declspec(dllimport)
+#ifdef BMF_BUILD_SHARED_SDK
+#define BMF_SDK_API __declspec(dllexport)
+#else // BMF_BUILD_SHARED_SDK
+#define BMF_SDK_API __declspec(dllimport)
 #endif
+#define BMF_MODULE_EXPORT __declspec(dllexport)
 #else // GNUC
-#ifdef BMF_BUILD_SHARED
-#define BMF_API __attribute__((__visibility__("default")))
-#else // BMF_BUILD_SHARED
-#define BMF_API
-#endif //
+#ifdef BMF_BUILD_SHARED_SDK
+#define BMF_SDK_API __attribute__((__visibility__("default")))
+#define BMF_MODULE_EXPORT __attribute__((__visibility__("default")))
+#else // BMF_BUILD_SHARED_SDK
+#define BMF_SDK_API
+#define BMF_MODULE_EXPORT
+#endif //BMF_BUILD_SHARED_SDK
 #endif
 
 #ifdef __cplusplus

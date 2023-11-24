@@ -92,7 +92,7 @@ struct AudioChannelLayout {
     };
 };
 
-class BMF_API AudioFrame : public OpaqueDataSet, public SequenceData {
+class BMF_SDK_API AudioFrame : public OpaqueDataSet, public SequenceData {
     struct Private;
 
     std::shared_ptr<Private> self;

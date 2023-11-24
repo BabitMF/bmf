@@ -21,7 +21,7 @@
 
 namespace bmf_sdk {
 
-class BMF_API Convertor {
+class BMF_SDK_API Convertor {
   public:
     Convertor();
     virtual ~Convertor() {}
@@ -31,10 +31,11 @@ class BMF_API Convertor {
     virtual VideoFrame device_cvt(VideoFrame &src, const MediaDesc &dp);
 };
 
-BMF_API void set_convertor(const MediaType &media_type, Convertor *convertor);
-BMF_API Convertor *get_convertor(const MediaType &media_type);
+BMF_SDK_API void set_convertor(const MediaType &media_type,
+                               Convertor *convertor);
+BMF_SDK_API Convertor *get_convertor(const MediaType &media_type);
 
-BMF_API VideoFrame bmf_convert(VideoFrame &src_vf, const MediaDesc &src_dp,
+BMF_SDK_API VideoFrame bmf_convert(VideoFrame &src_vf, const MediaDesc &src_dp,
                                const MediaDesc &dst_dp);
 
 template <typename... Args> struct Register {

@@ -26,7 +26,7 @@
 
 namespace bmf_sdk {
 
-class BMF_API SharedLibrary {
+class BMF_SDK_API SharedLibrary {
     std::shared_ptr<void> handler_;
 
   public:

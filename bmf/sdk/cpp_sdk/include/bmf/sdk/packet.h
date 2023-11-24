@@ -25,7 +25,7 @@ namespace bmf_sdk {
 class Packet;
 
 // like boost::any, but with refcount support
-class BMF_API PacketImpl : public RefObject {
+class BMF_SDK_API PacketImpl : public RefObject {
     std::function<void(void *)> del_;
     void *obj_ = nullptr;
     const TypeInfo *type_info_ = nullptr;
@@ -73,7 +73,7 @@ class BMF_API PacketImpl : public RefObject {
                const std::function<void(void *)> &del);
 };
 
-class BMF_API Packet {
+class BMF_SDK_API Packet {
     RefPtr<PacketImpl> self;
 
   public:

@@ -38,7 +38,7 @@ static inline bool operator!=(const TypeInfo &lhs, const TypeInfo &rhs) {
     return lhs.index != rhs.index;
 }
 
-BMF_API std::size_t string_hash(const char *str);
+BMF_SDK_API std::size_t string_hash(const char *str);
 
 //
 template <typename T> struct TypeTraits {

@@ -22,9 +22,9 @@
 
 namespace bmf_sdk {
 
-extern const fs::path BMF_API s_bmf_repo_root;
+extern const fs::path BMF_SDK_API s_bmf_repo_root;
 
-class BMF_API ModuleInfo {
+class BMF_SDK_API ModuleInfo {
   public:
     ModuleInfo(){};
 
@@ -81,7 +81,7 @@ class ModuleFactoryI {
 }; //
 
 //
-class BMF_API ModuleManager {
+class BMF_SDK_API ModuleManager {
     struct Private {
         nlohmann::json builtin_config;
         std::string builtin_root;

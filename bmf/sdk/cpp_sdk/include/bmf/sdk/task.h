@@ -27,7 +27,7 @@ typedef std::map<int, std::shared_ptr<std::queue<Packet>>> PacketQueueMap;
 
 /** @ingroup CppMdSDK
  */
-class BMF_API Task {
+class BMF_SDK_API Task {
   public:
     /*!
      * @brief construct Task.
@@ -44,7 +44,7 @@ class BMF_API Task {
 
     Task &operator=(Task rhs);
 
-    friend BMF_API void swap(Task &target, Task &source);
+    friend BMF_SDK_API void swap(Task &target, Task &source);
 
     /* @} */
     /*!

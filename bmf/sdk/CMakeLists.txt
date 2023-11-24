@@ -70,9 +70,7 @@ if(NOT APPLE AND NOT ANDROID)
     )
 endif()
 
-target_compile_options(bmf_module_sdk PRIVATE
-    -DBMF_BUILD_SHARED
-)
+target_compile_definitions(bmf_module_sdk PRIVATE BMF_BUILD_SHARED_SDK)
 
 set_target_properties(bmf_module_sdk PROPERTIES
         C_VISIBILITY_PRESET hidden

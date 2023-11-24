@@ -56,7 +56,7 @@ struct OpaqueDataKey {
     };
 };
 
-class BMF_API OpaqueDataSet {
+class BMF_SDK_API OpaqueDataSet {
   public:
     OpaqueDataSet() = default;
 
@@ -126,7 +126,7 @@ class BMF_API OpaqueDataSet {
     OpaqueData opaque_set_[OpaqueDataKey::kNumKeys] = {nullptr};
 }; //
 
-class BMF_API SequenceData {
+class BMF_SDK_API SequenceData {
   public:
     /**
      * @brief Set the pts object
@@ -178,7 +178,7 @@ class BMF_API SequenceData {
 }; //
 
 // support async execution
-class BMF_API Future {
+class BMF_SDK_API Future {
     struct Private;
 
   public:

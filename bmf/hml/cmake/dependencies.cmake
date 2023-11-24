@@ -89,7 +89,6 @@ endif()
 
 #### dlpack
 if (NOT HMP_LOCAL_DEPENDENCIES)
-else ()
     find_package(dlpack REQUIRED)
     list(APPEND HMP_CORE_PRI_DEPS dlpack::dlpack)
 endif()

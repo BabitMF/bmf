@@ -46,6 +46,13 @@ if(NOT WIN32)
             ${CMAKE_CURRENT_BINARY_DIR}/always_update
         COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/always_update
     )
+else()
+    add_custom_command(
+            OUTPUT
+            ${CMAKE_CURRENT_BINARY_DIR}/__always_update
+            ${CMAKE_CURRENT_BINARY_DIR}/always_update
+            COMMAND copy /Y NUL \"${CMAKE_CURRENT_BINARY_DIR}/always_update\"
+    )
 endif()
 
 function(copy_dir_to_bmf_module)

@@ -136,6 +136,10 @@ endif()
 
 
 ## standard deps
+if(WIN32 AND NOT BMF_LOCAL_DEPENDENCIES)
+    find_package(dlfcn-win32 REQUIRED)
+    add_library(dl ALIAS dlfcn-win32::dl)
+endif()
 set(BMF_STD_DEPS dl)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     list(APPEND BMF_STD_DEPS stdc++fs pthread)

@@ -18,7 +18,6 @@ if(FFMPEG_ROOT)
             ${LIBRARY})
         unset(LIBRARY CACHE)
     endfunction()
-
     define_ffmpeg_target(avcodec)
     define_ffmpeg_target(avformat)
     define_ffmpeg_target(avfilter)

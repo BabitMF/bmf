@@ -37,13 +37,6 @@ else()
     set(CMAKE_XCODE_ATTRIBUTE_ENABLE_BITCODE "NO")
 endif()
 
-if(BMF_ENABLE_FFMPEG)
-    if(BMF_FFMPEG_VERSION VERSION_LESS 40 OR BMF_FFMPEG_VERSION VERSION_GREATER 51)
-        message(FATAL_ERROR "ffmpeg version is less than 4.0 or greater than 5.1, which is not supported.")
-    else()
-        add_definitions(-DBMF_FFMPEG_VERSION=${BMF_FFMPEG_VERSION})
-    endif()
-endif()
 
 
 ### VERSION

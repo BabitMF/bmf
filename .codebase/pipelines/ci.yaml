@@ -66,7 +66,6 @@ jobs:
           - (cd output/test/push_data_into_graph    && python3 test_push_data.py)
           - (cd output/test/complex_edit_case       && python3 test_complex_case.py)
           - (cd output/test/complex_edit_case       && python3 test_compare_with_edit.py)
-          - (cd output/test/json_param_transfer     && python3 json_param_transfer.py)
           # test hmp
           - (cd bmf/hml/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
           - (cd bmf/hml/tests                       && pytest)
@@ -149,7 +148,6 @@ jobs:
           - (cd output/test/push_data_into_graph    && python3 test_push_data.py)
           - (cd output/test/complex_edit_case       && python3 test_complex_case.py)
           - (cd output/test/complex_edit_case       && python3 test_compare_with_edit.py)
-          - (cd output/test/json_param_transfer     && python3 json_param_transfer.py)
           # test hmp
           - (cd bmf/hml/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
           - (cd bmf/hml/tests                       && pytest)

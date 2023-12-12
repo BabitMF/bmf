@@ -10,7 +10,6 @@ SET(MODULE_SRCS ${PROJECT_SOURCE_DIR}/cpp_module.cpp)
 add_library(cpp_module SHARED ${MODULE_SRCS})
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/../../../output/bmf/include
-                           ${CUDA_INCLUDE_DIR}
                            /usr/local/include)
 target_link_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE_DIR}/../../../output/bmf/lib)
 target_link_libraries(cpp_module

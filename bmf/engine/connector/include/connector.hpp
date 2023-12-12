@@ -207,6 +207,8 @@ class BMF_ENGINE_API BMFCallback {
 };
 
 void BMF_ENGINE_API ChangeDmpPath(std::string path);
+
+JsonParam BMF_ENGINE_API ConvertFilterPara(JsonParam config);
 } // namespace bmf
 
 #endif // CONNECTOR_CONNECTOR_HPP

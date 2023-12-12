@@ -298,4 +298,12 @@ BMFCallback &BMFCallback::operator=(BMFCallback const &cb) {
 uint32_t BMFCallback::uid() { return callback_uid_; }
 
 void ChangeDmpPath(std::string path) { internal::env_init.ChangeDmpPath(path); }
+
+JsonParam ConvertFilterPara(JsonParam config) {
+  bmf_engine::NodeConfig node_config(config);
+  bmf_engine::Optimizer::convert_filter_para(node_config);
+  bmf_engine::Optimizer::replace_stream_name_with_id(node_config);
+  return node_config.get_option();
+}
+
 } // namespace bmf

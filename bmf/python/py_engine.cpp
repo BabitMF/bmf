@@ -108,12 +108,7 @@ void engine_bind(py::module &m) {
                 []() { bmf_sdk::TraceLogger::instance()->format_logs(); });
 
     m.def_nogil("convert_filter_para", [](const std::string &config) {
-        JsonParam json_config = JsonParam(config);
-        bmf_engine::NodeConfig node_config =
-            bmf_engine::NodeConfig(json_config);
-        bmf_engine::Optimizer::convert_filter_para(node_config);
-        bmf_engine::Optimizer::replace_stream_name_with_id(node_config);
-        return node_config.get_option().dump();
+        return ConvertFilterPara(JsonParam(config)).dump();
     });
 
 } //

@@ -12,7 +12,9 @@ import bmf.hml.hmp as mp
 class controlnet_module(Module):
     def __init__(self, node, option=None):
         self.node_ = node
-        self.eof_received_ = False
+        self.eof_received_ = [False, False]
+        self.prompt_ = None
+        self.frame_list_ = []
         # self.hk = hackathon()
         # self.hk.initialize()
         # self.prompt_path = './prompt.txt'
@@ -25,20 +27,25 @@ class controlnet_module(Module):
         pmt_queue = task.get_inputs()[1]
         output_queue = task.get_outputs()[0]
 
-        while not img_queue.empty() and not pmt_queue.empty():
-            in_pkt = img_queue.get()
+        while not pmt_queue.empty():
             pmt_pkt = pmt_queue.get()
-
+            if pmt_pkt.timestamp == Timestamp.EOF:
+                self.eof_received_[0] = True
+            else:
+                pmt = pmt_pkt.get(dict)
+                print("Got controlnet prompt:", pmt)
+                self.prompt_ = pmt
+        while not img_queue.empty():
+            in_pkt = img_queue.get()
             if in_pkt.timestamp == Timestamp.EOF:
-                # we should done all frames processing in following loop
-                # self.eof_received_ = True
-                # continue
-                output_queue.put(Packet.generate_eof_packet())
-                Log.log_node(LogLevel.DEBUG, self.node_, 'output text stream', 'done')
-                task.set_timestamp(Timestamp.DONE)
-                return ProcessResult.OK
-            in_frame = in_pkt.get(VideoFrame)
-            pmt = pmt_pkt.get(dict)
+                self.eof_received_[1] = True
+            else:
+                self.frame_list_.append(in_pkt.get(VideoFrame))
+
+        while self.prompt_ and len(self.frame_list_) > 0:
+            in_frame = self.frame_list_[0]
+            del self.frame_list_[0]
+
             # gen_img = self.hk.process(in_frame.cpu().frame().data()[0].numpy(),
             #     pmt['prompt'], pmt['a_prompt'], pmt['n_prompt'],
             #     1,
@@ -52,24 +59,26 @@ class controlnet_module(Module):
             #     100,
             #     200)
             
-            gen_img = np.zeros((384, 256, 3), dtype=np.uint8)
-            # pdb.set_trace()
-            rgbinfo = mp.PixelInfo(mp.PixelFormat.kPF_RGB24,
-                                    in_frame.frame().pix_info().space,
-                                    in_frame.frame().pix_info().range)
-            out_f = mp.Frame(mp.from_numpy(gen_img[0]), rgbinfo)
-            out_vf = VideoFrame(out_f)
+            #gen_img = np.zeros((384, 256, 3), dtype=np.uint8)
+            ## pdb.set_trace()
+            #rgbinfo = mp.PixelInfo(mp.PixelFormat.kPF_RGB24,
+            #                        in_frame.frame().pix_info().space,
+            #                        in_frame.frame().pix_info().range)
+            #out_f = mp.Frame(mp.from_numpy(gen_img[0]), rgbinfo)
+            #out_vf = VideoFrame(out_f)
+            out_vf = in_frame #here's a test without gen_img
+
             out_vf.pts = in_frame.pts
             out_vf.time_base = in_frame.time_base
             out_pkt = Packet(out_vf)
             out_pkt.timestamp = out_vf.pts
             output_queue.put(out_pkt)
 
-        # if self.eof_received_:
-        #     output_queue.put(Packet.generate_eof_packet())
-        #     Log.log_node(LogLevel.DEBUG, self.node_, 'output text stream', 'done')
-        #     task.set_timestamp(Timestamp.DONE)
-        #     return ProcessResult.OK
+        if self.eof_received_[0] and self.eof_received_[1] and len(self.frame_list_) == 0:
+            output_queue.put(Packet.generate_eof_packet())
+            Log.log_node(LogLevel.DEBUG, self.node_, 'output text stream', 'done')
+            task.set_timestamp(Timestamp.DONE)
+            return ProcessResult.OK
 
         return ProcessResult.OK
 

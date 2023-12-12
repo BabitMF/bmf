@@ -131,7 +131,7 @@ endif()
 
 if(NOT "${CMAKE_SYSTEM_NAME}" MATCHES "Android|iOS|Darwin")
     set_target_properties(hmp PROPERTIES
-        VERSION "${HMP_VERSION_MAJOR}.${HMP_VERSION_MINOR}"
+        VERSION "${HMP_VERSION_MAJOR}.${HMP_VERSION_MINOR}.${HMP_VERSION_PATCH}"
         SOVERSION "${HMP_VERSION_MAJOR}"
     )
 endif()

@@ -97,6 +97,9 @@ jobs:
         echo "ENV PATH=\${PATH}:/opt/python/cp39-cp39/bin" >>${tmp_file}
         echo "ENV LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/opt/python/cp39-cp39/lib" >>${tmp_file}
         echo "ENV GITHUB_ACTIONS=${GITHUB_ACTIONS}" >>${tmp_file}
+        if [ "${{ matrix.device }}" == "gpu" ]; then
+          echo "ENV CUDA_PATH=/usr/local/cuda" >>${tmp_file}
+        fi
         docker build -t bmf_build:tmp -f ${tmp_file} .
         rm -rf ${tmp_file}
         docker run --rm -v $(pwd):/root/bmf -w /root/bmf bmf_build:tmp bash -c "./scripts/build_ffmpeg.sh --device=${{ matrix.device }} && git config --global --add safe.directory /root/bmf && ./build.sh"

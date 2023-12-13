@@ -69,6 +69,7 @@ jobs:
           CMAKE_BUILD_PARALLEL_LEVEL=${{ steps.set_env.outputs.count }}
           GIT_SHA=${{ github.sha }}
           DEVICE=${{ matrix.device }}
+          CUDA_PATH=/usr/local/cuda
           SCRIPT_EXEC_MODE=x86
         CIBW_BUILD_VERBOSITY: 1
         CIBW_BUILD: ${{ matrix.py_ver_prefix }}-*

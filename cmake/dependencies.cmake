@@ -52,7 +52,6 @@ if(BMF_ENABLE_FFMPEG)
         set(BMF_FFMPEG_TARGETS 
             ffmpeg::avcodec ffmpeg::avformat ffmpeg::avfilter 
             ffmpeg::avdevice ffmpeg::avutil ffmpeg::swscale ffmpeg::swresample)
-        add_definitions(-DBMF_FFMPEG_VERSION=${BMF_FFMPEG_VERSION})
     else()
         set(BMF_FFMPEG_TARGETS)
         message(WARNING "FFMPEG libraries not found, disable it")

@@ -69,6 +69,10 @@ if(HMP_ENABLE_CUDA)
     list(APPEND HMP_SRCS ${CUDA_SRCS} ${CUDA_KERN_SRCS})
     list(APPEND HMP_HDRS ${CUDA_HDRS})
     add_library(hmp ${HMP_SRCS} ${HMP_HDRS})
+    set_target_properties(hmp PROPERTIES
+        CUDA_STANDARD 17
+        CUDA_STANDARD_REQUIRED ON
+    )
 else()
     add_library(hmp ${HMP_SRCS} ${HMP_HDRS})
 endif()

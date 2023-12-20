@@ -15,21 +15,15 @@
  */
 #include <fstream>
 #include <iostream>
-#include <nlohmann/json.hpp>
 #include <bmf/sdk/compat/path.h>
 #ifdef BMF_USE_MEDIACODEC
 #include <jni.h>
 #endif
 
 #include "common.h"
-#include "graph_config.h"
-#include "graph.h"
-#include "module_factory.h"
-#include "optimizer.h"
 
 #include "connector.hpp"
 
-USE_BMF_ENGINE_NS
 USE_BMF_SDK_NS
 
 int main(int argc, char **argv) {
@@ -47,27 +41,6 @@ int main(int argc, char **argv) {
     if (!fs::exists(filepath)) {
         std::cerr << "File does not exists!" << std::endl;
         exit(EXIT_FAILURE);
-    }
-
-    // Load file
-    std::cout << "Loading graph config from " << filepath << std::endl;
-    nlohmann::json graph_json;
-    std::ifstream gs(filepath);
-    gs >> graph_json;
-    GraphConfig graph_config(graph_json);
-
-    // Perform additional validations on input file paths
-    std::string input_path_key = "input_path";
-    for (auto node : graph_config.get_nodes()) {
-        if (node.get_option().has_key(input_path_key)) {
-            std::string input_path;
-            node.get_option().get_string(input_path_key, input_path);
-            if (!fs::exists(input_path)) {
-                std::cerr << "Input file path " << input_path
-                          << " does not exists!" << std::endl;
-                exit(EXIT_FAILURE);
-            }
-        }
     }
 
     // Run the graph

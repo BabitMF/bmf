@@ -104,7 +104,7 @@ jobs:
       - name: prepare conda environment
         commands:
           - apt update && apt install -y wget curl bzip2
-          - curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
+          - curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/1.5.5 | tar -xvj bin/micromamba
           - ./bin/micromamba env create -f conda-env.yaml -y
       - name: build_env
         commands:

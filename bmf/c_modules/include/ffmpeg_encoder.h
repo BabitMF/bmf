@@ -58,6 +58,7 @@ typedef struct OutputStream {
     int inputFrmUsed;
     int outputNums;
     FILE*ioFrmMatch;
+    int pre_sn;
 } OutputStream;
 
 typedef struct CurrentImage2Buffer {

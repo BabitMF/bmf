@@ -122,6 +122,7 @@ int CFFEncoder::init() {
         ost_[1].filter_in_rescale_delta_last = AV_NOPTS_VALUE;
     ost_[0].max_frames = ost_[1].max_frames = INT64_MAX;
     ost_[0].inputFrmUsed = ost_[1].inputFrmUsed = -1;
+    ost_[0].pre_sn = ost_[1].pre_sn = -1;
 
     /** @addtogroup EncM
      * @{
@@ -713,6 +714,41 @@ void CFFEncoder::update_io_frame_matchinfo(AVFrame *inFrm, OutputStream *ost) {
     return;
 }
 
+static void force_key_frame_by_sn(OutputStream *ost, AVFrame *inFrm) {
+    int ret;
+    char *endptr = NULL;
+    int serial_num = 0;
+
+    if (!inFrm)
+        return;
+
+    AVDictionaryEntry *e = av_dict_get(inFrm->metadata, "sn", NULL, AV_DICT_MATCH_CASE);
+    if (!e || !e->value)
+        return;
+
+    serial_num = strtol(e->value, &endptr, 10);
+
+    /* error or no conversion */
+    if (!endptr || endptr == e->value)
+        return;
+
+
+    if (serial_num&1)
+    {
+        int sn = serial_num >> 1;
+        if (sn != ost->pre_sn)
+        {
+            ost->pre_sn = sn;
+            inFrm->pict_type = AV_PICTURE_TYPE_I;
+        }
+        else {
+            inFrm->pict_type = AV_PICTURE_TYPE_NONE;
+        }
+    }
+
+    return;
+}
+
 int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_packet) {
     int ret;
     int got_packet_local;
@@ -738,6 +774,10 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_pack
 
     if (io_frm_match_ && codecs_[idx]->type == AVMEDIA_TYPE_VIDEO) {
         update_io_frame_matchinfo(frame, ost);
+    }
+
+    if (av_index == 0) {
+        force_key_frame_by_sn(ost, frame);
     }
 
     ret = avcodec_send_frame(enc_ctxs_[idx], frame);

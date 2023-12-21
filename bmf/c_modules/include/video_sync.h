@@ -59,12 +59,13 @@ class VideoSync {
     int nb_frames_drop_ = 0;
     int nb_frames_dup_ = 0;
     unsigned int dup_warning_ = 1000;
+    bool has_complex_filtergraph_  = false;
 
   public:
     VideoSync(AVRational input_stream_time_base, AVRational encode_time_base,
               AVRational filter_in_frame_rate, AVRational video_frame_rate,
               int64_t stream_start_time, int64_t stream_first_dts,
-              int sync_method, int64_t max_frames, int64_t min_frames = 0);
+              int sync_method, int64_t max_frames, int64_t min_frames = 0, bool has_complex_filtergraph = false);
     ~VideoSync();
     int process_video_frame(AVFrame *frame,
                             std::vector<AVFrame *> &output_frame,

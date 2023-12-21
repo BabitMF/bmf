@@ -290,6 +290,8 @@ Packet CFFFilter::convert_avframe_to_packet(AVFrame *frame, int index) {
     if (copy_ts_)
         av_dict_set(&frame->metadata, "copyts", "1", 0);
 
+    av_dict_set(&frame->metadata, "has_complex_filtergraph", "1", 0);
+    
     if (frame->width > 0) {
         auto video_frame = ffmpeg::to_video_frame(frame);
         video_frame.set_time_base(Rational(tb.num, tb.den));

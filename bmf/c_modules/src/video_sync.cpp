@@ -38,7 +38,7 @@ VideoSync::VideoSync(AVRational input_stream_time_base,
                      AVRational filter_in_frame_rate,
                      AVRational video_frame_rate, int64_t stream_start_time,
                      int64_t stream_first_dts, int sync_method,
-                     int64_t max_frames, int64_t min_frames) {
+                     int64_t max_frames, int64_t min_frames, bool has_complex_filtergraph) {
     input_stream_time_base_ = input_stream_time_base;
     encode_time_base_ = encode_time_base;
     filter_in_frame_rate_ = filter_in_frame_rate;
@@ -49,6 +49,7 @@ VideoSync::VideoSync(AVRational input_stream_time_base,
     stream_first_dts_ = stream_first_dts;
     max_frames_ = max_frames > 0 ? max_frames : INT64_MAX;
     min_frames_ = min_frames;
+    has_complex_filtergraph_ = has_complex_filtergraph;
 }
 
 VideoSync::~VideoSync() {
@@ -86,7 +87,8 @@ int VideoSync::process_video_frame(AVFrame *frame,
         //   temp_encode_time_base) : 0);
         float_pts /= 1 << extra_bits;
         float_pts += FFSIGN(float_pts) * 1.0 / (1 << 17);
-
+        frame->pts = av_rescale_q(frame->pts, input_stream_time_base_,
+                                 encode_time_base_);
         if (filter_in_frame_rate_.num > 0 && filter_in_frame_rate_.den > 0) {
             duration =
                 1 / (av_q2d(filter_in_frame_rate_) * av_q2d(encode_time_base_));
@@ -97,9 +99,9 @@ int VideoSync::process_video_frame(AVFrame *frame,
             duration = FFMIN(duration, 1 / (av_q2d(video_frame_rate_) *
                                             av_q2d(encode_time_base_)));
 
-        if (filter_in_frame_rate_.num == 0 && filter_in_frame_rate_.den == 0 &&
+        if (!has_complex_filtergraph_ &&
             lrint(frame->pkt_duration * av_q2d(input_stream_time_base_) /
-                  av_q2d(encode_time_base_)) > 0)
+                   av_q2d(encode_time_base_)) > 0)
             duration =
                 lrintf(frame->pkt_duration * av_q2d(input_stream_time_base_) /
                        av_q2d(encode_time_base_));
@@ -164,7 +166,7 @@ int VideoSync::process_video_frame(AVFrame *frame,
 
     if (nb0_frames == 0 && last_dropped_) {
         nb_frames_drop_++;
-        BMFLOG(BMF_INFO) << "*** dropping frame " << frame_number_ << " at ts "
+        BMFLOG(BMF_DEBUG) << "*** dropping frame " << frame_number_ << " at ts "
                          << last_frame_->pts;
     }
     if (nb_frames > (nb0_frames && last_dropped_) + (nb_frames > nb0_frames)) {
@@ -177,7 +179,7 @@ int VideoSync::process_video_frame(AVFrame *frame,
         }
         nb_frames_dup_ += nb_frames - (nb0_frames && last_dropped_) -
                           (nb_frames > nb0_frames);
-        BMFLOG(BMF_INFO) << "*** " << nb_frames - 1 << " dup!";
+        BMFLOG(BMF_DEBUG) << "*** " << nb_frames - 1 << " dup!";
         if (nb_frames_dup_ > dup_warning_) {
             BMFLOG(BMF_WARNING)
                 << "More than " << dup_warning_ << " frames duplicated";

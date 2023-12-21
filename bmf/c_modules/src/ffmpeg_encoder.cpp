@@ -1100,6 +1100,9 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
 
                 if (!strcmp(tag->key, "copyts"))
                     copy_ts_ = true;
+
+                if (!strcmp(tag->key, "has_complex_filtergraph"))
+                    has_complex_filtergraph_ = true;
             }
         }
         /** @addtogroup EncM
@@ -1657,7 +1660,7 @@ int CFFEncoder::handle_video_frame(AVFrame *frame, bool is_flushing,
                 in_stream_tbs_[0], enc_ctxs_[0]->time_base,
                 input_video_frame_rate_, video_frame_rate_, stream_start_time_,
                 stream_first_dts_, vsync_method_, ost_[0].max_frames,
-                ost_[0].min_frames);
+                ost_[0].min_frames, has_complex_filtergraph_);
         }
 
         video_sync_->process_video_frame(filter_frame, sync_frames,

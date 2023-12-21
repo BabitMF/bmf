@@ -136,6 +136,7 @@ class CFFEncoder : public Module {
     bool first_packet_[2] = {true, true};
     CurrentImage2Buffer current_image_buffer_ = {0};
     bool copy_ts_ = false;
+    bool has_complex_filtergraph_ = false;
 
   public:
     CFFEncoder(int node_id, JsonParam option);

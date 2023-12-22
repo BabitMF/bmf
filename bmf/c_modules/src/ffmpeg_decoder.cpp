@@ -1292,6 +1292,7 @@ int CFFDecoder::handle_output_data(Task &task, int index, AVPacket *pkt,
                             for (int i = 0; i < 2; i++) {
                                 if (filter_graph_[i]) {
                                     delete filter_graph_[i];
+                                    filter_graph_[i] = NULL;
                                     fg_inited_[i] = false;
                                 }
                             }

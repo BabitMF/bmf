@@ -1276,17 +1276,20 @@ int CFFDecoder::handle_output_data(Task &task, int index, AVPacket *pkt,
                                 file_list_.size() == 0)
                                 task.get_outputs()[index]->push(packet);
                         } else {
-                            int64_t timestamp =
-                                (int64_t)(durations_[idx_dur_] * AV_TIME_BASE);
-                            int s_ret = avformat_seek_file(input_fmt_ctx_, -1,
-                                                           INT64_MIN, timestamp,
-                                                           timestamp, 0);
-                            if (s_ret < 0) {
-                                BMFLOG_NODE(BMF_ERROR, node_id_)
-                                    << input_path_.c_str()
-                                    << "could not seek to position "
-                                    << (double)(timestamp / AV_TIME_BASE);
-                                return s_ret;
+                            /*
+                            * pkt->size == 0 means a flush packet and stream has ended, there is no need to seek and seeking may also fail
+                            */
+                            if (pkt->size != 0) {
+                                int64_t timestamp = (int64_t)(durations_[idx_dur_] * AV_TIME_BASE);
+                                int s_ret = avformat_seek_file(input_fmt_ctx_, -1, INT64_MIN, timestamp, timestamp, 0);
+                                BMFLOG_NODE(BMF_DEBUG, node_id_) << "filter eof, seek: " << timestamp;
+                                avcodec_flush_buffers(video_decode_ctx_);
+                                if (s_ret < 0) {
+                                    BMFLOG_NODE(BMF_ERROR, node_id_) << input_path_.c_str()
+                                                                     << "could not seek to position "
+                                                                     << (double)(timestamp / AV_TIME_BASE);
+                                    return s_ret;
+                                }
                             }
                             // clean the graph and make it to be reinit
                             for (int i = 0; i < 2; i++) {
@@ -1296,6 +1299,25 @@ int CFFDecoder::handle_output_data(Task &task, int index, AVPacket *pkt,
                                     fg_inited_[i] = false;
                                 }
                             }
+
+                            //we should send this frame in new filter graph when there is no seek, otherwise this frame will be drop
+                            if (pkt->size == 0) {
+                                AVFrame* last_frame = NULL;
+                                if (!fg_inited_[index]) {
+                                    int ret;
+                                    last_frame = av_frame_clone(decoded_frm_);
+                                    if ((ret = init_filtergraph(index, last_frame)) != 0) {
+                                        if(last_frame)
+                                            av_frame_free(&last_frame);
+                                        return ret;
+                                    }
+                                    fg_inited_[index] = true;
+                                }
+                                ret = filter_graph_[index]->get_filter_frame(last_frame, 0, 0, filter_frames);
+                                if(last_frame)
+                                    av_frame_free(&last_frame);
+                            }
+
                         }
                     }
                 }
@@ -1307,8 +1329,9 @@ int CFFDecoder::handle_output_data(Task &task, int index, AVPacket *pkt,
             }
             if (frame)
                 av_frame_free(&frame);
-        } else
+        } else {
             filter_frames.push_back(frame);
+        }
 
         if (index == 0) {
             if (has_input_ &&

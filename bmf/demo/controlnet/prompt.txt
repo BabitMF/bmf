@@ -1,0 +1,3 @@
+prompt: a bird
+a_prompt: best quality, extremely detailed
+n_prompt: longbody, lowres, bad anatomy, bad hands, missing fingers

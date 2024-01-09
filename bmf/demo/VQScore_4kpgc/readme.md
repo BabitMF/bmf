@@ -5,8 +5,9 @@ The VQScore_4kpgc model evaluates video quality for 4kpgc scenes, and carries ou
 
 2. Get Started quickly:
 By running vqscore_4kpgc_demo.py file, you can quickly complete the experience of VQScore_4kpg. The quality score ranges from 0 to 10. The higher the score, the lower the distortion degree and the better the video quality.
+!!!!!!!! Before running, you need to create models dir and download the onnx file to the created dir.
 
-3. Requirements
+4. Requirements
     os
     bmf
     sys

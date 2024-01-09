@@ -1,5 +1,5 @@
 ### bmf- VQScore_4kpgc demo
-!!!!!!!! Before running, you need to create models dir and download the onnx file to the created dir.
+!!!!!!!! Before running, you need to create models dir and download the onnx file to the created dir. The onnx file path is releases/download/files/vqa_4kpgc_1.onnx
 
 1. Algorithm introduction:
 The VQScore_4kpgc model evaluates video quality for 4kpgc scenes, and carries out targeted algorithm design and optimization for specific spatiotemporal distortion characteristics.The model is trained and tested based on NAIC(National Artifical Intelligence Challenge) competition data. The average value of the model on srcc, plcc and ur(usability ratio) reaches 0.855, winning the championship of the AI+ Video Quality evaluation circuit of the National Artificial Intelligence Competition. Details: https://naic.pcl.ac.cn/contest/17/53

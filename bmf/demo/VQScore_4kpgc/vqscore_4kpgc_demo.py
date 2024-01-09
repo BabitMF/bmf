@@ -63,7 +63,7 @@ if __name__=='__main__':
     model_path = "models/vqa_4kpgc_1.onnx"
     if not os.path.exists(model_path):
         print(
-            "please download model first"
+            "please download model first, use 'wget https://github.com/BabitMF/bmf/releases/download/files/models.tar.gz && tar zxvf models.tar.gz' "
         )
         exit(0)
 

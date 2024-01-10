@@ -6,7 +6,7 @@ import bmf
 sys.path.pop()
 
 def test():
-    input_video_path = "../../files/bird.png"
+    input_video_path = "./controlnet/test_imgs/bird.png"
     input_prompt_path = "./prompt.txt"
     output_path = "./output.png"
 

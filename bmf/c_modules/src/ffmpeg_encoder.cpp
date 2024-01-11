@@ -121,6 +121,7 @@ int CFFEncoder::init() {
     ost_[0].filter_in_rescale_delta_last =
         ost_[1].filter_in_rescale_delta_last = AV_NOPTS_VALUE;
     ost_[0].max_frames = ost_[1].max_frames = INT64_MAX;
+    ost_[0].inputFrmUsed = ost_[1].inputFrmUsed = -1;
 
     /** @addtogroup EncM
      * @{
@@ -324,6 +325,12 @@ int CFFEncoder::init() {
             BMFLOG_NODE(BMF_INFO, node_id_)
                 << "encode setting log level to: " << log_level;
         }
+    }
+
+    if (input_option_.has_key("io_frm_match")) {
+        int io_frm_match = 0;
+        input_option_.get_int("io_frm_match", io_frm_match);
+        io_frm_match_ = !!io_frm_match;
     }
 
     return 0;
@@ -640,6 +647,72 @@ void CFFEncoder::save_orig_pts(AVFrame *frame, unsigned int idx) {
     }
 }
 
+void CFFEncoder::update_io_frame_matchinfo(AVFrame *inFrm, OutputStream *ost) {
+    char *endptr = NULL;
+    int frame_index = -1;
+    AVDictionaryEntry *e = NULL;
+    if (!ost)
+    {
+        return;
+    }
+
+    if (!ost->ioFrmMatch) {
+        char ioFile[1024] = { 0 };
+        snprintf(ioFile, sizeof(ioFile), "%s_iofrm.txt", output_path_.c_str());
+        ost->ioFrmMatch = fopen(ioFile, "wb");
+        if (!ost->ioFrmMatch) {
+            BMFLOG_NODE(BMF_ERROR, node_id_) << "open ioFrmMatch file failed;";
+            io_frm_match_ = false;
+            return;
+        }
+    }
+
+    // flush last
+    if (!inFrm && ost->ioFrmMatch) {
+        if (ost->inputFrmUsed != -1 && ost->outputNums) {
+            fprintf(ost->ioFrmMatch, "inputFrm:%d,outputNums:%d\n", ost->inputFrmUsed, ost->outputNums);
+        }
+        fclose(ost->ioFrmMatch);
+        ost->ioFrmMatch = NULL;
+        io_frm_match_ = false;
+        return;
+    }
+
+    // get input frame index
+    e = av_dict_get(inFrm->metadata, "inputFrmOrder", NULL, AV_DICT_MATCH_CASE);
+    if (!e || !e->value)
+        return;
+
+    frame_index = strtol(e->value, &endptr, 10);
+    if (frame_index < 0)
+        return;
+
+    if (ost->inputFrmUsed == -1) {
+        //first time we output [0, ost->inputFrmUsed), because frame_index maybe gt 0
+        for (int i = 0; i < frame_index; ++i) {
+            fprintf(ost->ioFrmMatch,"inputFrm:%d,outputNums:%d\n", i, 0);
+        }
+        ost->outputNums = 1;
+
+    } else if (ost->inputFrmUsed == frame_index) {
+        ost->outputNums++;
+
+    } else {
+        if (ost->ioFrmMatch)
+        {
+            fprintf(ost->ioFrmMatch,"inputFrm:%d,outputNums:%d\n", ost->inputFrmUsed, ost->outputNums);
+            for (int i = 1; i < frame_index - ost->inputFrmUsed; i++)
+            {
+                fprintf(ost->ioFrmMatch,"inputFrm:%d,outputNums:%d\n", ost->inputFrmUsed + i, 0);
+            }
+            fflush(ost->ioFrmMatch);
+        }
+        ost->outputNums = 1;
+    }
+    ost->inputFrmUsed = frame_index;
+    return;
+}
+
 int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_packet) {
     int ret;
     int got_packet_local;
@@ -662,6 +735,10 @@ int CFFEncoder::encode_and_write(AVFrame *frame, unsigned int idx, int *got_pack
 
     if (frame && enc_ctxs_[idx])
         frame->quality = enc_ctxs_[idx]->global_quality;
+
+    if (io_frm_match_ && codecs_[idx]->type == AVMEDIA_TYPE_VIDEO) {
+        update_io_frame_matchinfo(frame, ost);
+    }
 
     ret = avcodec_send_frame(enc_ctxs_[idx], frame);
     if (ret != AVERROR_EOF && ret < 0) {

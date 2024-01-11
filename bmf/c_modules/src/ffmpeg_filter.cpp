@@ -417,7 +417,7 @@ int CFFFilter::process_filter_graph(Task &task) {
                             push_frame_number_map[choose_index] = 0;
                         }
                         push_frame_number_map[choose_index]++;
-                        av_dict_free(&frame->metadata);
+                        //av_dict_free(&frame->metadata);
                     }
                     ret = filter_graph_->push_frame(frame, choose_index);
                     if (frame) {
@@ -474,7 +474,7 @@ int CFFFilter::process_filter_graph(Task &task) {
                             push_frame_number_map[choose_index] = 0;
                         }
                         push_frame_number_map[choose_index]++;
-                        av_dict_free(&frame->metadata);
+                        //av_dict_free(&frame->metadata);
                     }
                     ret = filter_graph_->push_frame(frame, choose_index);
                     push_frame_flag = 1;

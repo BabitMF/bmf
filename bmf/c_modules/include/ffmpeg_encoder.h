@@ -54,6 +54,10 @@ typedef struct OutputStream {
     bool encoding_needed;
     std::shared_ptr<AVStream> input_stream;
     int64_t filter_in_rescale_delta_last;
+    //io frame index match
+    int inputFrmUsed;
+    int outputNums;
+    FILE*ioFrmMatch;
 } OutputStream;
 
 typedef struct CurrentImage2Buffer {
@@ -138,6 +142,7 @@ class CFFEncoder : public Module {
     CurrentImage2Buffer current_image_buffer_ = {0};
     bool copy_ts_ = false;
     bool has_complex_filtergraph_ = false;
+    bool io_frm_match_ = false;
 
   public:
     CFFEncoder(int node_id, JsonParam option);
@@ -201,6 +206,8 @@ class CFFEncoder : public Module {
     bool need_output_video_filter_graph(AVFrame *frame);
 
     int streamcopy(AVPacket *ipkt, AVPacket *opkt, int idx);
+
+    void update_io_frame_matchinfo(AVFrame *inFrm, OutputStream*ost);
 };
 
 /** @page ModuleEncoder Build-in Encode Module

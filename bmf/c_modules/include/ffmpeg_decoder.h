@@ -173,6 +173,9 @@ class CFFDecoder : public Module {
 
     int orig_pts_time_ = 0;
 
+    //io frame match
+    bool io_frm_match_ = false;
+
     int process_raw_stream_packet(Task &task, BMFAVPacket &bmf_pkt, bool eof);
 
     int process_input_bmf_av_packet(Task &task);

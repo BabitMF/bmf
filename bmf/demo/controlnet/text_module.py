@@ -15,7 +15,6 @@ class text_module(Module):
             self.prompt_path = option['path']
 
     def process(self, task):
-        # pdb.set_trace()
         input_packets = task.get_inputs()[0]
         output_queue = task.get_outputs()[0]
 
@@ -26,12 +25,6 @@ class text_module(Module):
                 Log.log_node(LogLevel.DEBUG, self.node_, 'output text stream', 'done')
                 task.set_timestamp(Timestamp.DONE)
                 return ProcessResult.OK
-
-            # if self.eof_received_ == True:
-            #     output_queue.put(Packet.generate_eof_packet())
-            #     Log.log_node(LogLevel.DEBUG, self.node_, 'output text stream', 'done')
-            #     task.set_timestamp(Timestamp.DONE)
-            #     return ProcessResult.OK
 
             prompt_dict = dict()
             with open(self.prompt_path) as f:

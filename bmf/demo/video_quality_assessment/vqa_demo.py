@@ -55,9 +55,15 @@ def segment_decode_ticks(video_path, seg_dur=4.0, lv1_dur_thres=24.0, max_dur=10
 
 
 if __name__=='__main__':
-    #input_path='source/20f72ebc978c4b06830e23adee6b6ff7'
-    input_path='source/VD_0290_00405.png'
+    input_path='files/VD_0290_00405.png'
     out_path='result/20f72ebc978c4b06830e23adee6b6ff7.json'
+    
+    # check input path
+    if not os.path.exists(input_path):
+        print(
+            "please download input first, use 'wget https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz && tar zxvf files.tar.gz' "
+        )
+        exit(0)
 
     # check model path
     model_path = "models/vqa_4kpgc_1.onnx"

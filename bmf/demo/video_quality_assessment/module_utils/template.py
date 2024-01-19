@@ -4,18 +4,20 @@ if sys.version_info.major == 2:
 else:
     from queue import *
 import bmf
-
-#from module_utils.util import generate_out_packets
-
+from bmf import VideoFrame
+from bmf.lib._bmf.sdk import ffmpeg
+import bmf.hml.hmp as mp
 
 def generate_out_packets(packet, np_arr, out_fmt):
-    video_frame = bmf.VideoFrame.from_ndarray(np_arr, format=out_fmt)
-    video_frame.pts = packet.get_data().pts
-    video_frame.time_base = packet.get_data().time_base
+    rgbformat = mp.PixelInfo(mp.kPF_RGB24)
+    image = mp.Frame(mp.from_numpy(np_arr), rgbformat)
+    video_frame = VideoFrame(image)
 
-    pkt = bmf.Packet()
-    pkt.set_timestamp(packet.get_timestamp())
-    pkt.set_data(video_frame)
+    video_frame.pts = packet.get(VideoFrame).pts
+    video_frame.time_base = packet.get(VideoFrame).time_base
+
+    pkt = bmf.Packet(video_frame)
+    pkt.timestamp = packet.timestamp
     return pkt
 
 
@@ -42,20 +44,30 @@ class SyncModule(bmf.Module):
     def process(self, task):
         print(task.get_inputs().items(),'####',task.get_outputs().items())
         input_queue = task.get_inputs()[0]
-        output_queue = task.get_outputs()[0]
 
         while not input_queue.empty():
             pkt = input_queue.get()
-            pkt_timestamp = pkt.get_timestamp()
-            pkt_data = pkt.get_data()
-            print('##',pkt_data)
-
+            pkt_timestamp = pkt.timestamp
 
             if pkt_timestamp == bmf.Timestamp.EOF:
                 self._eof = True
+                for _ in range(self._margin_num):
+                    self._in_packets.append(self._in_packets[-1])
+                    self._frames.append(self._frames[-1])
+                self._consume()
+
+                # output_queue.put(bmf.Packet.generate_eof_packet())
+                task.set_timestamp(bmf.Timestamp.DONE)
+                return bmf.ProcessResult.OK
+
+            pkt_data = pkt.get(VideoFrame)
             if pkt_data is not None:
                 self._in_packets.append(pkt)
-                self._frames.append(pkt.get_data().to_ndarray(format=self._in_fmt))
+                # self._frames.append(pkt.get(VideoFrame).to_ndarray(format=self._in_fmt))
+
+                self._frames.append(
+                    ffmpeg.reformat(pkt.get(VideoFrame),
+                                    self._in_fmt).frame().plane(0).numpy())
 
             # padding first frame.
             if len(self._in_packets) == 1:
@@ -63,24 +75,14 @@ class SyncModule(bmf.Module):
                     self._in_packets.append(self._in_packets[0])
                     self._frames.append(self._frames[0])
 
-        if self._eof:
-            #print(self._in_packets, self._frames)
-            # padding last frame.
-            for _ in range(self._margin_num):
-                self._in_packets.append(self._in_packets[-1])
-                self._frames.append(self._frames[-1])
-            self._consume(output_queue)
-
-            output_queue.put(bmf.Packet.generate_eof_packet())
-            task.set_timestamp(bmf.Timestamp.DONE)
+        self._consume()
 
         return bmf.ProcessResult.OK
 
-    def _consume(self, output_queue):
+    def _consume(self, output_queue = None):
         while len(self._in_packets) >= self._in_frame_num:
             out_frame = self.core_process(self._frames[:self._in_frame_num])
             out_packet = generate_out_packets(self._in_packets[self._out_frame_index], out_frame, self._out_fmt)
-            output_queue.put(out_packet)
             self._in_packets.pop(0)
             self._frames.pop(0)
 

@@ -7,11 +7,14 @@ The vqa model evaluates video quality for 4kpgc scenes, and carries out targeted
 2. Get Started quickly:
 By running vqa_demo.py file, you can quickly complete the experience of video quality assessment. The quality score ranges from 0 to 10. The higher the score, the lower the distortion degree and the better the video quality.
 
-4. Requirements
-    os
-    bmf
-    sys
-    time
-    json
-    numpy
-    onnxruntime
+3. Requirements:
+    os  
+    bmf  
+    sys  
+    time  
+    json  
+    numpy  
+    onnxruntime  
+
+4. Notice:
+   Algorithm in detail can refer to https://mp.weixin.qq.com/s/EHjMnOkay5gSRGR5W59iqQ, pay attention to the participation of reasoning frame number and the image patch number of every frame, recommend num_crop parameter is set to 15.

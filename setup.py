@@ -178,6 +178,8 @@ setup(
     author_email="",
     python_requires='>= 3.6',
     description="Babit Multimedia Framework",
+    long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
     readme='README.md',
     url="https://github.com/BabitMF/bmf",
     install_requires=[

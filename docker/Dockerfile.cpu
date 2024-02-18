@@ -22,7 +22,7 @@ WORKDIR /root/bmf/
 RUN scripts/build_ffmpeg.sh --device=$DEVICE nasm yasm x264 x265 fdk-aac opus \
     && rm -rf ffmpeg_source
 
-RUN ./build.sh disable cuda && rm -rf .git && ./build.sh clean
+RUN ./build.sh disable_cuda && rm -rf .git && ./build.sh clean
 
 ENV LD_LIBRARY_PATH=/root/bmf/output/bmf/lib
 ENV PATH=${PATH}:/root/bmf/output/bmf/bin

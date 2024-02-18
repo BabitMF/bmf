@@ -60,13 +60,9 @@ then
     then
         LOCAL_BUILD=0
     fi
-    if [ "$1" = "disable" ]
+    if [ "$1" = "disable_cuda" ]
     then
-        shift
-        if [ "$1" = "cuda" ]
-        then
-            CUDA_ENABLE=OFF
-        fi
+        CUDA_ENABLE=OFF
     fi
 fi
 

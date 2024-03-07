@@ -598,6 +598,9 @@ void CFFEncoder::push_output(AVPacket *enc_pkt, unsigned int idx) {
 }
 
 void CFFEncoder::push_output(AVFrame *frame, unsigned int idx) {
+    //update time_base
+    std::string s_tb = std::to_string(output_stream_[idx]->time_base.num) + "," + std::to_string(output_stream_[idx]->time_base.den);
+    av_dict_set(&frame->metadata, "time_base", s_tb.c_str(), 0);
     VideoFrame video_frame = ffmpeg::to_video_frame(frame, true);
     video_frame.set_pts(frame->pts);
     Packet packet = Packet(video_frame);
@@ -952,7 +955,9 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
         return AVERROR(ENOMEM);
     }
 
-    output_stream_[idx] = avformat_new_stream(output_fmt_ctx_, NULL);
+    if (ost_[idx].encoding_needed || !output_stream_[idx])
+        output_stream_[idx] = avformat_new_stream(output_fmt_ctx_, NULL);
+
     if (!output_stream_[idx]) {
         BMFLOG_NODE(BMF_ERROR, node_id_) << "Could not allocate stream";
         return AVERROR_UNKNOWN;

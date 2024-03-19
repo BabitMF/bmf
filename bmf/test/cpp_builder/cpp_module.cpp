@@ -55,11 +55,16 @@ TEST(cpp_modules, module_cpp) {
     nlohmann::json decode_para = {
         {"input_path", "../../files/big_bunny_10s_30fps.mp4"}};
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
-
+    std::string module_name;
+    #ifdef _WIN32
+    module_name = "../lib/copy_module.dll";
+    #else
+    module_name = "../lib/libcopy_module.so";
+    #endif
     auto video_2 =
         graph.Module({video["video"]}, "copy_module", bmf::builder::CPP,
                      bmf_sdk::JsonParam(), "CopyModule",
-                     "../lib/libcopy_module.so", "copy_module:CopyModule");
+                     module_name, "copy_module:CopyModule");
 
     nlohmann::json encode_para = {
         {"output_path", output_file},

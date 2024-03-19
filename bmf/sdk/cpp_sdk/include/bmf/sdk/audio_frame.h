@@ -23,7 +23,7 @@ namespace bmf_sdk {
 
 struct AudioChannelLayout {
     // ref: ffmpeg/channel_layout.h
-    enum Layout {
+    enum Layout : uint64_t {
         kFRONT_LEFT = 0x00000001,
         kFRONT_RIGHT = 0x00000002,
         kFRONT_CENTER = 0x00000004,

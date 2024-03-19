@@ -77,3 +77,20 @@ jobs:
         # test hmp
         (cd bmf/hml/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
         (cd bmf/hml/tests                       && pytest)
+  
+  build_and_test_win:
+    name: build and test win
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: build
+        shell: pwsh
+        run: |
+          $bashPath = "C:\msys64\usr\bin\bash.exe"
+          $bashCommand = @'
+          export PATH=$PATH:/usr/bin:/usr/local/bin
+          echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" | sed 's/[^0-9A-Za-z]/^&/g'
+          eval "$(./win_env/vcvarsall.sh x64)"
+          cl
+          '@
+          echo $bashCommand | & $bashPath

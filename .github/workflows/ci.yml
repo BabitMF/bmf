@@ -77,3 +77,83 @@ jobs:
         # test hmp
         (cd bmf/hml/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
         (cd bmf/hml/tests                       && pytest)
+  
+  build_and_test_win:
+    name: build and test win
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v4
+      - name: build_test
+        shell: pwsh
+        run: |
+          $bashPath = "C:\msys64\usr\bin\bash.exe"
+
+          $bashCommand = @'
+          export PATH=/usr/bin:/usr/lib:/usr/local/bin:/usr/local/lib:$PATH
+          python -V
+          python3 -V
+          echo $PATH
+          echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" | sed 's/[^0-9A-Za-z]/^&/g'
+          eval "$(./win_env/vcvarsall.sh x64)"
+          export INCLUDE="${INCLUDE};C:\\msys64\\usr\\local\\include"
+          wget https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2024-03-20-13-14/ffmpeg-n4.4.4-92-g01fc3034ee-win64-gpl-shared-4.4.zip
+          pacman -S unzip --noconfirm
+          unzip ffmpeg-n4.4.4-92-g01fc3034ee-win64-gpl-shared-4.4.zip
+          mkdir -p /usr/local
+          cp -r ffmpeg-n4.4.4-92-g01fc3034ee-win64-gpl-shared-4.4/* /usr/local/
+          ls /usr/lib
+          ls /usr/include
+          ls /usr/bin
+          cmake -version
+          ./build_win_lite.sh --msvc=2019 --preset=x64-Release bmf_ffmpeg
+          cmake --build build_win_lite/x64-Release --config Release --target ALL_BUILD
+          cmake --build build_win_lite/x64-Release --config Release --target ALL_BUILD
+          cmake --build build_win_lite/x64-Release --config Release --target ALL_BUILD
+          cp -r build_win_lite/x64-Release/output .
+          python -m pip install timeout_decorator numpy onnxruntime pytest opencv-python
+          export PYTHONHOME="$(dirname "$(which python)")"
+          export C_INCLUDE_PATH=${C_INCLUDE_PATH}:$(pwd)/output/bmf/include
+          export CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:$(pwd)/output/bmf/include
+          export LIBRARY_PATH=${LIBRARY_PATH}:$(pwd)/output/bmf/lib
+          export PYTHONPATH=$(pwd)/output/bmf/lib:$(pwd)/output
+          export PATH=$(pwd)/3rd_party/win_rootfs/x64/usr/bin:$(pwd)/3rd_party/win_rootfs/x64/usr/lib:$(pwd)/output/bmf/bin:$(pwd)/output/bmf/lib:${PATH}
+          echo $PATH
+          echo $(pwd)
+          export HMP_TEST_DATA_ROOT=$(pwd)/bmf/hml/tests/data
+          run_bmf_graph
+          ffmpeg
+          module_manager
+          ./output/bmf/bin/module_manager install python_copy_module python my_module:my_module $(pwd)/output/test/customize_module v0.0.1
+          ./output/bmf/bin/module_manager install cpp_copy_module c++ copy_module:CopyModule $(pwd)/output/test/c_module/lib v0.0.1
+          (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz && tar xvf files.tar.gz && rm -rf files.tar.gz)
+          (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/models.tar.gz && tar xvf models.tar.gz && rm -rf models.tar.gz)
+          cd output/bmf/bin
+          ./test_bmf_module_sdk.exe
+          ./test_bmf_engine.exe --gtest_filter=-go_module.module_loader
+          ./test_cpp_builder.exe
+          cd -
+          export
+          ls output/bmf/lib
+          ls output/bmf/bin
+          which python
+          which python3
+          (cd output/demo/transcode               && python test_transcode.py)
+          (cd output/demo/edit                    && python test_edit.py)
+          (cd output/demo/predict                 && python predict_sample.py)
+          (cd output/test/audio_copy              && python test_simple.py)
+          (cd output/test/pre_module              && python test_pre_module.py)
+          (cd output/test/sync_mode               && python test_sync_mode.py)
+          (cd output/test/generator               && python test_generator.py)
+          (cd output/test/run_by_config           && python test_run_by_config.py)
+          (cd output/test/server                  && python test_server.py)
+          (cd output/test/c_module                && python test_video_c_module.py)
+          (cd output/test/dynamical_graph         && python dynamical_graph.py)
+          (cd output/test/av_log_buffer           && python test_av_log_buffer.py)
+          (cd output/test/push_data_into_graph    && python test_push_data.py)
+          (cd output/test/complex_edit_case       && python test_complex_case.py)
+          (cd output/test/complex_edit_case       && python test_compare_with_edit.py)
+          (cd bmf/hml/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
+          (cd bmf/hml/tests                       && python -m pytest)
+          '@
+
+          echo $bashCommand | & $bashPath

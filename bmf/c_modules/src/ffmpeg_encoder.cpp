@@ -1691,6 +1691,7 @@ int CFFEncoder::handle_video_frame(AVFrame *frame, bool is_flushing,
                 save_orig_pts(sync_frames[j], index);
                 get_orig_pts();
                 push_output(sync_frames[j], index);
+                av_frame_free(&sync_frames[j]);
             }
         } else {
             for (int j = 0; j < sync_frames.size(); j++) {

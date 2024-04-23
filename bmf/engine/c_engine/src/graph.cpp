@@ -22,6 +22,7 @@
 
 #include <bmf/sdk/log.h>
 #include <bmf/sdk/trace.h>
+#include <bmf/sdk/bmf_stat.h>
 
 #include <csignal>
 #include <iomanip>
@@ -55,6 +56,15 @@ Graph::Graph(
     BMFLOG(BMF_INFO) << "BMF Version: " << BMF_VERSION;
     BMFLOG(BMF_INFO) << "BMF Commit: " << BMF_COMMIT;
     BMFLOG(BMF_INFO) << "start init graph";
+
+    auto gsd = std::make_shared<GraphStartData>();
+    gsd->start_timestamp = bmf_get_time();
+    gsd->version = BMF_VERSION;
+    gsd->commit = BMF_COMMIT;
+
+    std::shared_ptr<TrackPoint> p = gsd;
+    bmf_stat_report(p);
+
     BMF_TRACE(GRAPH_START, "Init");
     init(graph_config, pre_modules, callback_bindings);
     g_ptr.push_back(this);

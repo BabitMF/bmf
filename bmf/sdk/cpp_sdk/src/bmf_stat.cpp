@@ -18,31 +18,80 @@
 
 namespace bmf_sdk {
 
-BMFStat& BMFStat::GetInstance()
-{
+BMFStat &BMFStat::GetInstance() {
     static BMFStat bmfst;
     return bmfst;
 }
 
-BMFStat::BMFStat()
-{
-    std::string path = ""; //linux, win, ios, android
-    upload_lib = SharedLibrary(path, SharedLibrary::LAZY | SharedLibrary::GLOBAL);
+BMFStat::BMFStat() {
+    std::string path = ""; // linux, win, ios, android
+    upload_lib =
+        SharedLibrary(path, SharedLibrary::LAZY | SharedLibrary::GLOBAL);
     if (upload_lib.is_open())
         BMFLOG(BMF_INFO) << "BMF stat upload lib was found and loaded";
 }
 
-void BMFStat::push_info(JsonParam info)
-{
-    stat_info.merge_patch(info);
+BMFStat::~BMFStat() {
+    {
+        std::lock_guard<std::mutex> lk(mutex_);
+        thread_quit_ = true;
+        cv_.notify_one();
+    }
+
+    if (t_.joinable()) {
+        t_.join();
+    }
 }
 
-int BMFStat::upload_info()
-{
+void BMFStat::push_info(JsonParam info) { stat_info.merge_patch(info); }
+
+int BMFStat::upload_info() {
     if (upload_lib.is_open()) {
-        //send back the stat info base on the lib for different OS/environments
+        // send back the stat info base on the lib for different OS/environments
     }
     return 0;
 }
+
+void BMFStat::push_track_point(std::shared_ptr<TrackPoint> track_point) {
+    std::lock_guard<std::mutex> lk(mutex_);
+    queue_.push(track_point);
+}
+
+void BMFStat::process_track_points() {
+    while (true) {
+        std::shared_ptr<TrackPoint> point;
+
+        {
+            std::unique_lock<std::mutex> lock(mutex_);
+            if (queue_.empty() && thread_quit_) {
+                break;
+            } else if (queue_.empty() && !thread_quit_) {
+                cv_.wait(lock,
+                         [this] { return !queue_.empty() || thread_quit_; });
+            }
+
+            if (!queue_.empty()) {
+                point = queue_.front();
+                queue_.pop();
+            }
+        }
+
+        if (point)
+            report_stat(point);
+    }
+}
+
+void BMFStat::report_stat(std::shared_ptr<TrackPoint> point) {
+
+}
+
+void bmf_stat_report(std::shared_ptr<TrackPoint> track_point) {
+    auto &stat = BMFStat::GetInstance();
+    stat.push_track_point(track_point);
+}
+
+// int64_t BMFStat::task_id() {
+//     return task_id_;
+// }
 
 } // namespace bmf_sdk

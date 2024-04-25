@@ -573,7 +573,12 @@ void module_sdk_bind(py::module &m) {
             return std::make_unique<LogBuffer>(
                 [buffer](const std::string &log) mutable {
                     py::gil_scoped_acquire gil;
-                    buffer.append(py::cast(log));
+                    try {
+                        buffer.append(py::cast(log));
+                    } catch (py::error_already_set &e) {
+                        BMFLOG(BMF_WARNING) << "log buffer append exception, log string: " << log;
+                        py::print("log append error");
+                    }
                 },
                 level);
         }))

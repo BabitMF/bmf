@@ -46,8 +46,8 @@ jobs:
           - (cd $(pwd)/output/test/go_module && go build -buildmode c-shared -o lib/go_copy_module.so test_go_module.go)
           - $(pwd)/output/bmf/bin/module_manager install go_copy_module go go_copy_module:PassThrough $(pwd)/output/test/go_module/lib v0.0.1
           # download files
-          - (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz && tar xvf files.tar.gz && rm -rf files.tar.gz)
-          - (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/models.tar.gz && tar xvf models.tar.gz && rm -rf models.tar.gz)
+          - (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz && tar xvf files.tar.gz)
+          - (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/models.tar.gz && tar xvf models.tar.gz)
           # test bmf
           - (cd output/bmf/bin && ./test_bmf_module_sdk && ./test_bmf_engine && ./test_cpp_builder)
           #(cd output/bmf/bin && ./test_builtin_modules)
@@ -72,7 +72,7 @@ jobs:
       - name: run_go_test
         commands:
           - mkdir go
-          - (cd go && wget https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz && tar xvf files.tar.gz && rm -rf files.tar.gz)
+          - (cd go && mv ../output/files.tar.gz . && tar xvf files.tar.gz && rm -rf files.tar.gz)
           - $(pwd)/output/bmf/bin/module_manager install my_module python my_module:my_module $(pwd)/output/test/customize_module v0.0.1
           - export GOPATH=$PWD/go
           - export C_INCLUDE_PATH=${C_INCLUDE_PATH}:$(pwd)/output/bmf/include

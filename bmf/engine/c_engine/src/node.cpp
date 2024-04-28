@@ -185,6 +185,11 @@ int Node::reset() {
         if (input_stream.second->get_block()) {
             input_stream.second->set_block(false);
         }
+        if (!input_stream.second->is_connected()) {
+            std::shared_ptr<SafeQueue<Packet> > q = std::make_shared<SafeQueue<Packet> >();
+            q->push(Packet::generate_eof_packet());
+            input_stream.second->add_packets(q);
+        }
     }
 
     if (!all_input_queue_empty()) { // in some case such as server mode previous

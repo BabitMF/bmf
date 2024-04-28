@@ -316,6 +316,10 @@ bool ServerInputStreamManager::fill_task_input(Task &task) {
                 break;
             } else if (pkt.timestamp() == EOS) {
                 stream_done_[input_stream.first] = 1;
+                for (auto instrm:input_streams_) { // for orphan streams
+                    if (!instrm.second->is_connected())
+                        stream_done_[instrm.first] = 1;
+                }
                 break;
             }
             task.fill_input_packet(input_stream.second->get_id(), pkt);

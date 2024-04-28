@@ -76,7 +76,7 @@ function build_x264_unix() {
 
 function build_x265_unix() {
     cd $1
-    git clone --branch stable --depth 2 https://bitbucket.org/multicoreware/x265_git
+    git clone --branch stable --depth 7 https://bitbucket.org/multicoreware/x265_git
     cd $1/x265_git/build/linux
     cmake -G "Unix Makefiles" -DENABLE_SHARED:bool=off ../../source
     make -j $2

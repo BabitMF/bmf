@@ -266,6 +266,8 @@ int Graph::init_nodes() {
 
                     std::map<int, std::shared_ptr<OutputStream>> output_streams;
                     nodes_[node.id]->get_output_streams(output_streams);
+                    while (output_streams.find(idx) == output_streams.end())
+                        idx++;
                     output_streams[idx]->add_mirror_stream(input_manager, 0);
 
                     output_streams_[graph_output_stream.get_identifier()] =

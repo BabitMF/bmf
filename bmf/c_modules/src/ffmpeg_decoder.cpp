@@ -577,7 +577,7 @@ int CFFDecoder::codec_context(int *stream_idx, AVCodecContext **dec_ctx,
 
     ret = av_find_best_stream(fmt_ctx, type, *stream_idx, -1, NULL, 0);
     if (ret < 0) {
-        BMFLOG_NODE(BMF_ERROR, node_id_)
+        BMFLOG_NODE(BMF_INFO, node_id_)
             << "Could not find " << av_get_media_type_string(type)
             << " stream in input file '" << input_path_.c_str() << "'";
         return ret;

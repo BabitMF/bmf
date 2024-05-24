@@ -41,7 +41,6 @@ function(find_ffmpeg_version FFMPEG_VERSION_INCLUDE_DIR VERSION_VAR)
     endif()
 endfunction()
 
-
 if(DEFINED ENV{FFMPEG_ROOT_PATH})
     set(FFMPEG_LIBRARY_DIR $ENV{FFMPEG_ROOT_PATH}/lib)
     set(FFMPEG_INCLUDE_DIR $ENV{FFMPEG_ROOT_PATH}/include)
@@ -52,7 +51,7 @@ else()
     find_library(FFMPEG_LIBRARY_DIR avcodec
             HINTS /usr/)
 endif()
-
+message(STATUS "FFMPEG_INCLUDE_DIR:" ${FFMPEG_INCLUDE_DIR} ", FFMPEG_LIBRARY_DIR:" ${FFMPEG_LIBRARY_DIR})
 if(FFMPEG_LIBRARY_DIR AND FFMPEG_INCLUDE_DIR)
     message(STATUS "find FFmpeg, FFMPEG_INCLUDE_DIR:" ${FFMPEG_INCLUDE_DIR} ", FFMPEG_LIBRARY_DIR:" ${FFMPEG_LIBRARY_DIR})
     function(define_ffmpeg_target)

@@ -29,7 +29,7 @@ static int popcount_c(uint32_t x) {
 }
 
 static inline int popcount64_c(uint64_t x) {
-    return popcount_c(uint32_t(x)) + popcount_c((uint32_t(x >> 32)));
+    return popcount_c((uint32_t)(x)) + popcount_c((uint32_t)(x >> 32));
 }
 
 struct AudioFrame::Private {

@@ -38,7 +38,16 @@ TEST(module_manager, test_compat_path) {
     auto p1 = p0 / std::string("a.out");
     p0 /= std::string("a.out");
     EXPECT_EQ(p0.string(), p0.string());
-    EXPECT_EQ(p0.string(), "/home/foo/a.out");
+    std::string p0_result;
+    std::string val;
+    #ifdef _WIN32
+    p0_result = "/home/foo\\a.out";
+    val = "test_bmf_module_sdk.exe";
+    #else
+    p0_result = "/home/foo/a.out";
+    val = "test_bmf_module_sdk";
+    #endif
+    EXPECT_EQ(p0.string(), p0_result);
 
     auto p2 = fs::path("./foo/b.txt");
     EXPECT_EQ(p2.extension(), std::string(".txt"));
@@ -56,8 +65,8 @@ TEST(module_manager, test_compat_path) {
     EXPECT_EQ(p4.parent_path().filename().string(), "foo");
     EXPECT_EQ(fs::path("foo").filename().string(), "foo");
 
-    EXPECT_TRUE(fs::exists("test_bmf_module_sdk"));
-    EXPECT_FALSE(fs::is_directory("test_bmf_module_sdk"));
+    EXPECT_TRUE(fs::exists(val));
+    EXPECT_FALSE(fs::is_directory(val));
     EXPECT_FALSE(fs::exists("not_exists"));
 }
 
@@ -72,7 +81,13 @@ TEST(module_manager, resolve_module_info) {
         ASSERT_TRUE(info != nullptr);
         EXPECT_EQ(info->module_name, "c_ffmpeg_decoder");
         EXPECT_TRUE(fs::exists(info->module_path));
-        EXPECT_EQ(info->module_entry, "libbuiltin_modules.CFFDecoder");
+        std::string module_entry;
+        #ifdef _WIN32
+        module_entry = "builtin_modules.CFFDecoder";
+        #else
+        module_entry = "libbuiltin_modules.CFFDecoder";
+        #endif
+        EXPECT_EQ(info->module_entry, module_entry);
         EXPECT_EQ(info->module_type, "c++");
     }
 
@@ -82,7 +97,13 @@ TEST(module_manager, resolve_module_info) {
         ASSERT_TRUE(info != nullptr);
         EXPECT_EQ(info->module_name, "pass_through");
         EXPECT_TRUE(fs::exists(info->module_path));
-        EXPECT_EQ(info->module_entry, "libpass_through.PassThroughModule");
+        std::string module_entry;
+        #ifdef _WIN32
+        module_entry = "pass_through.PassThroughModule";
+        #else
+        module_entry = "libpass_through.PassThroughModule";
+        #endif
+        EXPECT_EQ(info->module_entry, module_entry);
         EXPECT_EQ(info->module_type, "c++");
     }
 
@@ -104,7 +125,13 @@ TEST(module_manager, resolve_module_info) {
         EXPECT_EQ(info->module_type, "c++");
         EXPECT_EQ(info->module_name, "cpp_copy_module");
         EXPECT_TRUE(fs::exists(info->module_path));
-        EXPECT_EQ(info->module_entry, "libcopy_module.CopyModule");
+        std::string module_entry;
+        #ifdef _WIN32
+        module_entry = "copy_module.CopyModule";
+        #else
+        module_entry = "libcopy_module.CopyModule";
+        #endif
+        EXPECT_EQ(info->module_entry, module_entry);
     }
 
     // resolve module info from sys repo(python)
@@ -170,7 +197,7 @@ TEST(module_manager, load_module) {
         auto module = facotry->make(1);
         EXPECT_TRUE(module != nullptr);
     }
-
+#ifndef _WIN32
     // load sys repo module(go)
     {
         auto facotry = M.load_module("go_copy_module");
@@ -178,6 +205,7 @@ TEST(module_manager, load_module) {
         auto module = facotry->make(1);
         EXPECT_TRUE(module != nullptr);
     }
+#endif
 }
 
 #endif // BMF_ENABLE_MOBILE

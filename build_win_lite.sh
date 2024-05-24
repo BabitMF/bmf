@@ -11,6 +11,7 @@ BUILD_DIR=build_win_lite
 OUTPUT_DIR=output
 COMPILE_ARCH=""
 preset=""
+PYTHON_VERSION=3.7
 export SCRIPT_EXEC_MODE=win
 
 export WIN_XCOMPILE_ROOT=$(pwd)/3rd_party/win_rootfs
@@ -117,6 +118,7 @@ if [[ ${HOST} =~ msys_nt || ${HOST} =~ mingw ]]; then
         -DRUN_HAVE_POSIX_REGEX=0 \
         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
         -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
+        -DBMF_PYENV=${PYTHON_VERSION} \
         -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ../..
 
     )

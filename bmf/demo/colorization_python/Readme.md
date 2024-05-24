@@ -35,7 +35,7 @@ git clone https://github.com/eefengwei/DeOldify.git DeOldify
 
 ### 1.2 install the dependent python packages
 ```Bash
-pip3 install -r ./DeOldify/requirements-colab.txt
+pip3 install -r ./requirements.txt
 ```
 
 ### 1.3 download the pretrained-weights
@@ -46,7 +46,7 @@ wget -c https://data.deepai.org/deoldify/ColorizeVideo_gen.pth -O ./DeOldify/mod
 
 ### 1.4 pip install BMF packages
 ```Bash
-pip3 install bmf
+pip3 install BabitMF BabitMF-GPU
 ```
 ### 1.5 verify the FFmpeg libraries is installed and version is correct
 
@@ -73,7 +73,7 @@ ffmpeg -version
 
 ```Python
 import sys
-sys.path.insert(0, '/content/DeOldify')
+sys.path.insert(0, './DeOldify')
 print(sys.path)
 ```
 

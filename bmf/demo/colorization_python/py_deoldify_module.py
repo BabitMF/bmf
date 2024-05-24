@@ -4,6 +4,12 @@ from bmf import ProcessResult, Packet, Timestamp, VideoFrame
 import PIL
 import bmf.hml.hmp as mp
 
+# Add the DeOldify folder to the python search path
+import sys
+
+sys.path.insert(0, './DeOldify')
+print(sys.path)
+
 from deoldify import device
 from deoldify.device_id import DeviceId
 import torch

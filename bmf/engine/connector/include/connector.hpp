@@ -170,6 +170,8 @@ class BMF_ENGINE_API BMFModule {
      */
     int32_t close();
 
+    int32_t dynamic_reset(JsonParam opt_reset);
+
   private:
     friend BMFGraph;
 

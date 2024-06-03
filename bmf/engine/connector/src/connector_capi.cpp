@@ -112,5 +112,14 @@ int bmf_module_reset(bmf_BMFModule module) {
 
 int bmf_module_close(bmf_BMFModule module) {
     BMF_PROTECT(return module->close();)
+
+int bmf_module_dynamic_reset(bmf_BMFModule module, bmf_JsonParam opt_reset)
+{
+    BMF_PROTECT(
+        return module->dynamic_reset(*opt_reset);
+    )
+    return -1;
+}
+
     return -1;
 }

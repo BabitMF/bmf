@@ -59,7 +59,9 @@ void engine_bind(py::module &m) {
         .def_nogil("process", &BMFModule::process, py::arg("task"))
         .def_nogil("reset", &BMFModule::reset)
         .def_nogil("init", &BMFModule::init)
-        .def_nogil("close", &BMFModule::close);
+        .def_nogil("close", &BMFModule::close)
+        .def_nogil("dynamic_reset", &BMFModule::dynamic_reset)
+    ;
 
     py::class_<BMFCallback>(m, "Callback")
         .def(py::init([](py::function &cb) {

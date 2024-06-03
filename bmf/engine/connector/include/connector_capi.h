@@ -65,6 +65,7 @@ BMF_ENGINE_API int bmf_module_uid(bmf_BMFModule module);
 BMF_ENGINE_API int bmf_module_process(bmf_BMFModule module, bmf_Task task);
 BMF_ENGINE_API int bmf_module_init(bmf_BMFModule module);
 BMF_ENGINE_API int bmf_module_reset(bmf_BMFModule module);
+BMF_ENGINE_API int bmf_module_dynamic_reset(bmf_BMFModule module, bmf_JsonParam opt_reset);
 BMF_ENGINE_API int bmf_module_close(bmf_BMFModule module);
 
 #ifdef __cplusplus

@@ -595,6 +595,7 @@ class BMF_ENGINE_API SyncModule {
     int32_t SendEOF();
     int32_t Init();
     int32_t Close();
+    void DynamicReset(const bmf_sdk::JsonParam& opt_reset);
 };
 
 class BMF_ENGINE_API Graph {

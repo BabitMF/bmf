@@ -251,6 +251,13 @@ int32_t BMFModule::process(bmf_sdk::Task &task) {
     return status;
 }
 
+int32_t BMFModule::dynamic_reset(JsonParam opt_reset) {
+    return internal::ConnectorMapping::ModuleInstanceMapping()
+                         .get(module_uid_)
+                         ->dynamic_reset(opt_reset);
+}
+
+
 int32_t BMFModule::init() {
     return internal::ConnectorMapping::ModuleInstanceMapping()
         .get(module_uid_)

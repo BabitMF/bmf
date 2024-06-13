@@ -246,6 +246,14 @@ static SimpleFilterGraph init_reformat_filter(AVFrame *av_frame,
     return simple_filter_graph;
 }
 
+static SimpleFilterGraph init_filter(AVFrame *av_frame,
+                                              const std::string &filter_str) {
+    SimpleFilterGraph simple_filter_graph;
+    std::string filter_desc = "[i0_0]" + filter_str + "[o0_0]";
+    simple_filter_graph.init(av_frame, filter_desc);
+    return simple_filter_graph;
+}
+
 static VideoFrame reformat(const VideoFrame &vf, const std::string &format_str,
                            SimpleFilterGraph filter_graph = SimpleFilterGraph(),
                            std::string flags = "") {
@@ -278,6 +286,33 @@ static VideoFrame reformat(const VideoFrame &vf, AVPixelFormat format,
                            SimpleFilterGraph filter_graph = SimpleFilterGraph(),
                            std::string flags = "") {
     return reformat(vf, av_get_pix_fmt_name(format), filter_graph, flags);
+}
+
+static VideoFrame siso_filter(const VideoFrame &vf, const std::string &filter_str,
+                           SimpleFilterGraph filter_graph = SimpleFilterGraph()) {
+    HMP_REQUIRE(vf.device().type() == kCPU,
+                "ffmpeg::spsc_filter only support CPU data")
+    std::vector<AVFrame *> result_frames;
+
+    AVFrame *av_frame = from_video_frame(vf, false);
+
+    if (filter_graph.filter_graph_ == nullptr) {
+        filter_graph = init_filter(av_frame, filter_str);
+    }
+
+    // allocate dest AVFrame
+    filter_graph.get_filter_frame(av_frame, result_frames);
+    if (result_frames.size() != 1) {
+        BMF_Error(BMF_TranscodeError, "filter process error");
+    }
+
+    auto dst_vf = to_video_frame(result_frames[0], false);
+
+    av_frame_free(&result_frames[0]);
+    av_frame_free(&av_frame);
+
+    dst_vf.copy_props(vf);
+    return dst_vf;
 }
 
 /*

@@ -71,7 +71,12 @@ class SimpleFilterGraph {
                         AVRational frame_rate;
                         frame_rate.num = stoi(svalue.substr(0, pos));
                         frame_rate.den = stoi(svalue.substr(pos + 1));
-                        fg_config.frame_rate = frame_rate;
+                        if (frame_rate.num > 0 && frame_rate.den > 0)
+                            fg_config.frame_rate = frame_rate;
+                        else
+                            BMFLOG(BMF_WARNING) << "Frame rate abnormal in simple filter graph:"
+                                                << frame_rate.num << "/" << frame_rate.den
+                                                << ", use default value";
                     }
                 }
                 if (!strcmp(tag->key, "time_base")) {

@@ -36,6 +36,8 @@ class ModuleConfig {
 
     ModuleConfig(JsonParam &module_config);
 
+    ModuleConfig(const ModuleConfig &other);
+
     std::string get_module_name();
     std::string get_module_type();
     std::string get_module_path();
@@ -67,7 +69,11 @@ class StreamConfig {
 
     StreamConfig(JsonParam &stream_config);
 
+    StreamConfig(const StreamConfig &other);
+
     std::string get_alias();
+
+    void set_identifier(std::string i);
 
     std::string get_identifier();
 
@@ -95,6 +101,8 @@ class NodeMetaInfo {
     NodeMetaInfo(JsonParam &node_meta);
 
     NodeMetaInfo(nlohmann::json &node_meta);
+
+    NodeMetaInfo(const NodeMetaInfo &other);
 
     int32_t get_premodule_id();
 
@@ -129,6 +137,10 @@ class NodeConfig {
 
     NodeConfig(JsonParam &node_config);
 
+    NodeConfig(const NodeConfig &other);
+
+    // NodeConfig(NodeConfig &&other) noexcept;
+
     ModuleConfig get_module_info();
 
     NodeMetaInfo get_node_meta();
@@ -145,17 +157,71 @@ class NodeConfig {
 
     void add_output_stream(StreamConfig output_stream);
 
+    void change_input_stream_identifier(std::string identifier);
+
+    void change_output_stream_identifier(size_t order = 0);
+
     std::string get_input_manager();
+
+    void set_output_manager(std::string output_manager_type);
+
+    std::string get_output_manager();
+
+    void set_id(int id);
 
     int get_id();
 
+    void set_scheduler(int scheduler);
+
     int get_scheduler();
+
+    void set_thread(int thread);
+
+    int get_thread();
 
     std::string get_alias();
 
     std::string get_action();
 
     nlohmann::json to_json();
+
+    // // Assignment operator
+    // NodeConfig& operator=(const NodeConfig &other) {
+    //     if (this != &other) {
+    //         id = other.id;
+    //         module = other.module;
+    //         meta = other.meta;
+    //         input_streams = other.input_streams;  // Copying vectors
+    //         output_streams = other.output_streams;
+    //         option = other.option;
+    //         scheduler = other.scheduler;
+    //         thread = other.thread;
+    //         input_manager = other.input_manager;
+    //         output_manager = other.output_manager;
+    //         alias = other.alias;
+    //         action = other.action;
+    //     }
+    //     return *this;
+    // }
+
+    // // Move assignment operator
+    // NodeConfig& operator=(NodeConfig &&other) noexcept {
+    //     if (this != &other) {
+    //         id = std::move(other.id);
+    //         module = std::move(other.module);
+    //         meta = std::move(other.meta);
+    //         input_streams = std::move(other.input_streams);  // Move the vectors
+    //         output_streams = std::move(other.output_streams);
+    //         option = std::move(other.option);
+    //         scheduler = std::move(other.scheduler);
+    //         thread = std::move(other.thread);
+    //         input_manager = std::move(other.input_manager);
+    //         output_manager = std::move(other.output_manager);
+    //         alias = std::move(other.alias);
+    //         action = std::move(other.action);
+    //     }
+    //     return *this;
+    // }
 
     bool operator==(NodeConfig const &rhs) {
         return this->id == rhs.id && this->module == rhs.module &&
@@ -169,7 +235,9 @@ class NodeConfig {
     std::vector<StreamConfig> output_streams;
     JsonParam option;
     int scheduler;
+    int thread = 1;
     std::string input_manager = "immediate";
+    std::string output_manager = "default";
     std::string alias;
     std::string action;
 

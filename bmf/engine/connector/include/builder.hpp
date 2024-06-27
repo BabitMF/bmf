@@ -665,22 +665,27 @@ class BMF_ENGINE_API Graph {
         InputManagerType inputStreamManager = Immediate, int scheduler = 0);
 
     Node Decode(const bmf_sdk::JsonParam &decodePara,
-                             std::string const &alias = "");
+                             std::string const &alias = "",
+                             int scheduler = 0);
 
     Node Decode(const bmf_sdk::JsonParam &decodePara,
                              Stream controlStream,
-                             std::string const &alias = "");
+                             std::string const &alias = "",
+                             int scheduler = 0);
 
     Node Encode(Stream videoStream, Stream audioStream,
                              const bmf_sdk::JsonParam &encodePara,
-                             std::string const &alias = "");
+                             std::string const &alias = "",
+                             int scheduler = 1);
 
     Node Encode(Stream videoStream,
                              const bmf_sdk::JsonParam &encodePara,
-                             std::string const &alias = "");
+                             std::string const &alias = "",
+                             int scheduler = 1);
 
     Node Encode(const bmf_sdk::JsonParam &encodePara,
-                             std::string const &alias = "");
+                             std::string const &alias = "",
+                             int scheduler = 1);
 
     Node FFMpegFilter(const std::vector<Stream> &inStreams,
                                    std::string const &filterName,

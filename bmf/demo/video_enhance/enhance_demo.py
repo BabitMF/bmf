@@ -20,6 +20,7 @@ def run():
         option={
             "fp32": True,
             "output_scale": 2,
+            "thread": 3
         },
         entry="enhance_module.EnhanceModule",
         input_manager="immediate",

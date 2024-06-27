@@ -235,6 +235,7 @@ int Graph::init_nodes() {
     }
 
     // create connections
+    // binding the OS and ISM
     for (auto &node_iter : nodes_) {
         std::map<int, std::shared_ptr<OutputStream>> output_streams;
         node_iter.second->get_output_streams(output_streams);
@@ -243,6 +244,7 @@ int Graph::init_nodes() {
             add_all_mirrors_for_output_stream(output_stream.second);
         }
     }
+    // set the upstreams' node id (OS->ISM)
     for (auto &node_iter : nodes_) {
         std::map<int, std::shared_ptr<OutputStream>> output_streams;
         node_iter.second->get_output_streams(output_streams);

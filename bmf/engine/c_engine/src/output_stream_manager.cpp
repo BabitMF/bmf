@@ -175,4 +175,32 @@ int OutputStreamManager::get_outlink_nodes_id(std::vector<int> &nodes_id) {
         nodes_id.push_back(it.first);
     return 0;
 }
+
+SplitOutputStreamManager::SplitOutputStreamManager(
+    std::vector<StreamConfig> output_streams) : OutputStreamManager(output_streams) {
+
+}
+
+int SplitOutputStreamManager::post_process(Task &task) {
+    for (auto &t : task.outputs_queue_) {
+        auto q = std::make_shared<SafeQueue<Packet>>(t.second);
+        output_streams_[t.first]->add_packets(q);
+        // split packets to distributed downstream node
+        output_streams_[t.first]->split_packets();
+    }
+    return 0;
+}
+
+int create_output_stream_manager(
+    std::string const &manager_type, int node_id,
+    std::vector<StreamConfig> output_streams,
+    std::shared_ptr<OutputStreamManager> &output_stream_manager) {
+    if (manager_type == "split") {
+        output_stream_manager = std::make_shared<SplitOutputStreamManager>(output_streams);
+    } else {
+        output_stream_manager = std::make_shared<OutputStreamManager>(output_streams);
+    }
+    return 0;
+}
+
 END_BMF_ENGINE_NS

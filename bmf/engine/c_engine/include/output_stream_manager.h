@@ -36,9 +36,9 @@ class OutputStreamManager {
 
     std::vector<int> get_stream_id_list();
 
-    int post_process(Task &task);
+    virtual int post_process(Task &task);
 
-    int propagate_packets(int stream_id,
+    virtual int propagate_packets(int stream_id,
                           std::shared_ptr<SafeQueue<Packet>> packets);
 
     bool any_of_downstream_full();
@@ -57,6 +57,18 @@ class OutputStreamManager {
   private:
     int max_id_;
 };
+
+class SplitOutputStreamManager : public OutputStreamManager {
+  public:
+    SplitOutputStreamManager(std::vector<StreamConfig> output_streams);
+    
+    int post_process(Task &task) override;
+};
+
+int create_output_stream_manager(
+    std::string const &manager_type, int node_id,
+    std::vector<StreamConfig> output_streams,
+    std::shared_ptr<OutputStreamManager> &output_stream_manager);
 
 END_BMF_ENGINE_NS
 #endif // BMF_OUTPUT_STREAM_MANAGER_H

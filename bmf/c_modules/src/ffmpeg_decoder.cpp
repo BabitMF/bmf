@@ -2424,6 +2424,9 @@ int CFFDecoder::process(Task &task) {
             }
         }
 
+        if (push_raw_stream_)
+            return 0;
+
         for (int index = 0; index < task.get_inputs().size(); index++) {
             Packet packet;
             while (task.pop_packet_from_input_queue(index, packet)) {

@@ -779,10 +779,19 @@ int CFFDecoder::get_rotate_desc(std::string &filter_desc, AVFrame *frame) {
         if (ctx->device_ctx->type == AV_HWDEVICE_TYPE_CUDA) {
             //check theta
             if (fabs(theta - 90) < 1.0) {
-                filter_desc = "scale_npp=format=yuv420p,transpose_npp=clock,scale_npp=format=nv12";
+
+                if (displaymatrix[3] > 0) {
+                    filter_desc = "scale_npp=format=yuv420p,transpose_npp=cclock_flip,scale_npp=format=nv12";
+                } else {
+                    filter_desc = "scale_npp=format=yuv420p,transpose_npp=clock,scale_npp=format=nv12";
+                }
 
             } else if (fabs(theta - 270) < 1.0) {
-                filter_desc = "scale_npp=format=yuv420p,transpose_npp=cclock,scale_npp=format=nv12";
+                if (displaymatrix[3] < 0) {
+                    filter_desc = "scale_npp=format=yuv420p,transpose_npp=clock_flip,scale_npp=format=nv12";
+                } else {
+                    filter_desc = "scale_npp=format=yuv420p,transpose_npp=cclock,scale_npp=format=nv12";
+                }
 
             } else {
                 BMFLOG_NODE(BMF_ERROR, node_id_) << "theta is not supported: " << theta;
@@ -797,17 +806,37 @@ int CFFDecoder::get_rotate_desc(std::string &filter_desc, AVFrame *frame) {
     }
 
     if (fabs(theta - 90) < 1.0) {
-        filter_desc = "transpose=clock";
+        filter_desc = "transpose="; 
+        filter_desc += displaymatrix[3] > 0 ? "cclock_flip":"clock";
+
     } else if (fabs(theta - 180) < 1.0) {
-        filter_desc = "hflip[0_0];[0_0]vflip";
+        if (displaymatrix[0] < 0) {
+            filter_desc = "hflip";
+        }
+        if (displaymatrix[4] < 0) {
+            if (filter_desc.empty()) {
+                filter_desc = "vflip";
+            } else {
+                filter_desc += ",vflip";
+            }
+        }
+
     } else if (fabs(theta - 270) < 1.0) {
-        filter_desc = "transpose=cclock";
+        filter_desc = "transpose="; 
+        filter_desc += displaymatrix[3] < 0 ? "clock_flip":"cclock";
+
     } else if (fabs(theta) > 1.0) {
         char rotate_buf[64];
         snprintf(rotate_buf, sizeof(rotate_buf), "%f*PI/180", theta);
         std::string temp(rotate_buf);
         filter_desc = "rotate=" + temp;
+
+    } else if (fabs(theta) < 1.0) {
+        if (displaymatrix && displaymatrix[4] < 0) {
+            filter_desc = "vflip";
+        }
     }
+
     return 0;
 }
 

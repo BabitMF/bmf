@@ -100,13 +100,12 @@ bool InputStreamManager::schedule_node() {
     int64_t min_timestamp;
     NodeReadiness node_readiness = get_node_readiness(min_timestamp);
     if (node_readiness == NodeReadiness::READY_FOR_PROCESS) {
-
         Task task = Task(node_id_, stream_id_list_, output_stream_id_list_);
         task.set_timestamp(min_timestamp);
 
         bool result = fill_task_input(task);
         if (not result) {
-            BMFLOG_NODE(BMF_INFO, node_id_) << "Failed to fill packet to task";
+            BMFLOG_NODE(BMF_DEBUG, node_id_) << "Failed to fill packet to task";
             return false;
         }
         callback_.scheduler_cb(task);
@@ -196,6 +195,25 @@ bool ImmediateInputStreamManager::fill_task_input(Task &task) {
             //            task.fill_input_packet(iter->second->get_id(),
             //            Packet());
             continue;
+        }
+
+        if (callback_.get_node_cb) {
+            std::shared_ptr<Node> node_ptr;
+            callback_.get_node_cb(node_id_, node_ptr);
+            if (node_ptr) {
+                bool hungry = true;
+                std::vector<std::function<bool()> > hungry_funcs;
+                node_ptr->get_hungry_check_func(input_stream.first, hungry_funcs);
+                for (auto func : hungry_funcs) {
+                    if (func && !func()) {
+                        hungry = false;
+                    }
+                }
+                if (!hungry) {
+                    BMFLOG(BMF_DEBUG) << "node id:" << node_id_ << "stream id: " << input_stream.first << " not hungry, do not send packets to node";
+                    continue;
+                }
+            }
         }
 
         while (not input_stream.second->is_empty()) {

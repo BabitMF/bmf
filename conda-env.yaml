@@ -8,8 +8,8 @@ dependencies:
   - make
   - pkg-config
   - patchelf
-  - gcc
-  - gxx
+  - gcc =13.2
+  - gxx =13.2
 
   # Run
   - python

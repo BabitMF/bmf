@@ -3,12 +3,7 @@ if [[ $OS == *Windows* ]];
 then
     BMF_BUILD_VERSION=$(python setup.py --version)
 else
-    if [[ -z $BMF_PYENV ]]; 
-    then
-        BMF_BUILD_VERSION=$(python${BMF_PYVER} setup.py --version)
-    else
-        BMF_BUILD_VERSION=$(python3 setup.py --version)
-    fi
+    BMF_BUILD_VERSION=$(cat setup.py | grep "package_version=" | grep -oP '"\K[0-9.]+')
 fi
 
 if echo "Using git: " && git --version

@@ -754,8 +754,8 @@ int CFFDecoder::get_rotate_desc(std::string &filter_desc, AVFrame *frame) {
     if (video_stream_ == NULL) {
         return 0;
     }
-    uint8_t *displaymatrix =
-        av_stream_get_side_data(video_stream_, AV_PKT_DATA_DISPLAYMATRIX, NULL);
+    int32_t *displaymatrix = (int32_t *)av_stream_get_side_data(video_stream_,
+                                                     AV_PKT_DATA_DISPLAYMATRIX, NULL);
     double theta = 0;
     if (displaymatrix) {
         double rotation, scale[2];

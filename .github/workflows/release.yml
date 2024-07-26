@@ -29,10 +29,6 @@ jobs:
             py_ver_prefix: cp39
             device: gpu
           - os: ubuntu-20.04
-            arch: i686
-            py_ver_prefix: cp39
-            device: cpu
-          - os: ubuntu-20.04
             arch: aarch64
             py_ver_prefix: cp39
             device: cpu
@@ -91,7 +87,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         tmp_file=$(mktemp -p .)
-        echo "FROM smartbrave/manylinux2014_${{ matrix.arch }}_shared_python" >>${tmp_file}
+        echo "FROM babitmf/manylinux_2_28_${{ matrix.arch }}_shared_python" >>${tmp_file}
         echo "RUN yum -y install binutils-devel openssl-devel" >>${tmp_file}
         echo "WORKDIR /root" >>${tmp_file}
         echo "ENV PATH=\${PATH}:/opt/python/cp39-cp39/bin" >>${tmp_file}

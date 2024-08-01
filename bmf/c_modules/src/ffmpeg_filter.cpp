@@ -38,6 +38,7 @@ CFFFilter::CFFFilter(int node_id, JsonParam option) {
 CFFFilter::~CFFFilter() { clean(); }
 
 bool CFFFilter::is_hungry(int input_stream_id) {
+    std::lock_guard<std::mutex> lk(cache_mutex_);
     if (input_cache_.count(input_stream_id) == 0 ||
         input_cache_[input_stream_id].size() < 5 || filter_graph_ == NULL) {
         return true;
@@ -533,6 +534,7 @@ bool CFFFilter::check_finished() {
 }
 
 int CFFFilter::process(Task &task) {
+    std::lock_guard<std::mutex> lk(cache_mutex_);
 
     Packet packet;
     AVFrame *frame;

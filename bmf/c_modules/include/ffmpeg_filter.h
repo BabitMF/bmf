@@ -45,6 +45,7 @@ class CFFFilter : public Module {
     std::map<int, int> input_stream_node_;
     std::map<int, std::string> orig_pts_time_cache_;
     JsonParam option_;
+    std::mutex cache_mutex_;
 
   public:
     CFFFilter(int node_id, JsonParam option);

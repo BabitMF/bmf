@@ -232,7 +232,7 @@ function install_cuda_linux() {
         dnf update -y
         yum config-manager --add-repo http://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo
         dnf install kernel-devel -y
-        dnf install cuda-11-8 -y
+        dnf install cuda-12-2 -y
 
     fi
     export PATH=${PATH}:/usr/local/cuda/bin

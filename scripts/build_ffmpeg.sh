@@ -228,12 +228,14 @@ function install_cuda_linux() {
         apt-get -y install cuda-toolkit-11-8
     elif [[ ${NAME} =~ "AlmaLinux" ]] && [[ ${VERSION_ID} == "8.10" ]]
     then
+        original_ld_lib_path=$LD_LIBRARY_PATH
+        unset LD_LIBRARY_PATH
         dnf install epel-release -y
         dnf update -y
         yum config-manager --add-repo http://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo
         dnf install kernel-devel -y
-        dnf install cuda-11-8 -y
-
+        dnf install cuda-12-2 -y
+        export LD_LIBRARY_PATH=$original_ld_lib_path
     fi
     export PATH=${PATH}:/usr/local/cuda/bin
     cd -

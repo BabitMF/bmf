@@ -289,10 +289,18 @@ Packet CFFFilter::convert_avframe_to_packet(AVFrame *frame, int index) {
         if (stream_start_time_ != AV_NOPTS_VALUE && num_input_streams_ == 1) {
             st = std::to_string(stream_start_time_);
             av_dict_set(&frame->metadata, "start_time", st.c_str(), 0);
+
+        } else {
+            //delete
+            av_dict_set(&frame->metadata, "start_time", NULL, 0);
         }
+
         if (stream_first_dts_ != AV_NOPTS_VALUE && num_input_streams_ == 1) {
             st = std::to_string(stream_first_dts_);
             av_dict_set(&frame->metadata, "first_dts", st.c_str(), 0);
+
+        } else {
+             av_dict_set(&frame->metadata, "first_dts", NULL, 0);
         }
     }
     if (copy_ts_)

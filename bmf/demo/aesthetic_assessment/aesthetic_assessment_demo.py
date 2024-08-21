@@ -54,7 +54,7 @@ def segment_decode_ticks(video_path,
 
 
 if __name__ == "__main__":
-    input_path = "bbb_360_20s.mp4"
+    input_path = "../../files/big_bunny_1min_30fps.mp4"
     outp_path = "res2.json"
 
     option = dict()

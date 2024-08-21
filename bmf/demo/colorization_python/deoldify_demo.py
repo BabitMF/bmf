@@ -1,5 +1,4 @@
 import bmf
-import py_deoldify_module
 
 # Add the DeOldify folder to the python search path
 import sys

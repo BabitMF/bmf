@@ -190,7 +190,7 @@ function install_cuda_linux() {
 	    dpkg -i cuda-repo-ubuntu2004-12-2-local_12.2.0-535.54.03-1_amd64.deb
 	    cp /var/cuda-repo-ubuntu2004-12-2-local/cuda-*-keyring.gpg /usr/share/keyrings/
         apt-get update
-        apt-get -y install cuda        
+        apt-get -y install cuda-toolkit-12-2 cuda-compat-12-2     
 	rm -rf cuda-repo-ubuntu2004-12-2-local_12.2.0-535.54.03-1_amd64.deb
 	dpkg -r cuda-repo-ubuntu2004-12-2-local
     elif [[ ${NAME} == "Ubuntu" ]] && [[ ${VERSION_ID} == "22.04" ]]
@@ -200,7 +200,7 @@ function install_cuda_linux() {
         wget https://developer.download.nvidia.com/compute/cuda/12.2.0/local_installers/cuda-repo-ubuntu2204-12-2-local_12.2.0-535.54.03-1_amd64.deb            dpkg -i cuda-repo-ubuntu2204-12-2-local_12.2.0-535.54.03-1_amd64.deb
 	    cp /var/cuda-repo-ubuntu2204-11-8-local/cuda-*-keyring.gpg /usr/share/keyrings/
         apt-get update
-        apt-get -y install cuda
+        apt-get -y install cuda-toolkit-12-2 cuda-compat-12-2  
     elif [[ ${NAME} =~ "Debian" ]] && [[ ${VERSION_ID} == "11" ]]
     then
         wget https://developer.download.nvidia.com/compute/cuda/12.2.0/local_installers/cuda-repo-debian11-12-2-local_12.2.0-535.54.03-1_amd64.deb
@@ -208,7 +208,7 @@ function install_cuda_linux() {
         cp /var/cuda-repo-debian11-12-2-local/cuda-*-keyring.gpg /usr/share/keyrings/
         add-apt-repository contrib
         apt-get update
-        apt-get -y install cuda
+        apt-get -y install cuda-toolkit-12-2 cuda-compat-12-2  
     elif [[ ${NAME} =~ "AlmaLinux" ]] && [[ ${VERSION_ID} == "8.10" ]]
     then
         original_ld_lib_path=$LD_LIBRARY_PATH
@@ -290,6 +290,7 @@ function build_ffnvcodec_linux() {
 }
 
 function install_cudnn_linux() {
+    rm /etc/apt/sources.list.d/cuda*
     cd $1
     mkdir cudnn
     cd cudnn
@@ -301,12 +302,16 @@ function install_cudnn_linux() {
         apt-get -y install libcudnn8 libcudnn8-dev
     elif [[ ${NAME} == "Ubuntu" ]] && [[ ${VERSION_ID} == "22.04" ]]
     then
-        wget https://developer.nvidia.com/downloads/compute/cudnn/secure/8.9.2/local_installers/12.x/cudnn-local-repo-ubuntu2204-8.9.2.26_1.0-1_amd64.deb
-        dpkg -i cudnn-local-repo-ubuntu2204-8.9.2.26_1.0-1_amd64.deb
+        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+        dpkg -i cuda-keyring_1.1-1_all.deb
+        apt-get update
+        apt-get -y install libcudnn8 libcudnn8-dev
     elif [[ ${NAME} =~ "Debian" ]] && [[ ${VERSION_ID} == "11" ]]
     then
-        wget https://developer.nvidia.com/downloads/compute/cudnn/secure/8.9.2/local_installers/12.x/cudnn-local-repo-debian11-8.9.2.26_1.0-1_amd64.deb
-        dpkg -i cudnn-local-repo-debian11-8.9.2.26_1.0-1_amd64.deb
+        wget https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/cuda-keyring_1.1-1_all.deb
+        dpkg -i cuda-keyring_1.1-1_all.deb
+        apt-get update
+        apt-get -y install libcudnn8 libcudnn8-dev
     fi
     cd -
     rm -rf cudnn

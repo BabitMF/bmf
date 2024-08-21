@@ -30,7 +30,7 @@ jobs:
           - apt-get update
           - apt-get install -y protobuf-compiler libgflags-dev libdw-dev libgoogle-glog-dev
           - pip3 install --upgrade pip
-          - pip3 install timeout_decorator onnxruntime requests opencv-python
+          - pip3 install timeout_decorator onnxruntime==1.18.0 numpy==1.26.4 requests opencv-python
           - echo "build finished"
       - name: run_test
         commands:
@@ -101,14 +101,14 @@ jobs:
       - uses: actions/checkout
         inputs:
           depth: 1
-      - uses: actions/setup-proxy
       - name: prepare conda environment
         commands:
           - apt update && apt install -y wget curl bzip2
           - curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/1.5.5 | tar -xvj bin/micromamba
-          - ./bin/micromamba env create -f conda-env.yaml -y
+      - uses: actions/setup-proxy
       - name: build_env
         commands:
+          - ./bin/micromamba env create -f conda-env.yaml -y
           - eval "$(./bin/micromamba shell hook -s posix)"
           - micromamba activate bmf-test
           - ./build.sh non_local
@@ -169,7 +169,7 @@ jobs:
           eval "$(./win_env/vcvarsall.sh x64)"
           export INCLUDE="${INCLUDE};C:\\msys64\\usr\\local\\include"
           pacman -S unzip ca-certificates --noconfirm
-          wget https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2024-03-31-17-28/ffmpeg-n4.4.4-94-g5d07afd482-win64-gpl-shared-4.4.zip
+          wget https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2024-03-31-17-28/ffmpeg-n4.4.4-94-g5d07afd482-win64-gpl-shared-4.4.zip --no-check-certificate
           unzip ffmpeg-n4.4.4-94-g5d07afd482-win64-gpl-shared-4.4.zip
           mkdir -p /usr/local
           cp -r ffmpeg-n4.4.4-94-g5d07afd482-win64-gpl-shared-4.4/* /usr/local/
@@ -187,8 +187,8 @@ jobs:
           export PATH=$(pwd)/3rd_party/win_rootfs/x64/usr/bin:$(pwd)/3rd_party/win_rootfs/x64/usr/lib:$(pwd)/output/bmf/bin:$(pwd)/output/bmf/lib:${PATH}
           ./output/bmf/bin/module_manager install python_copy_module python my_module:my_module $(pwd)/output/test/customize_module v0.0.1
           ./output/bmf/bin/module_manager install cpp_copy_module c++ copy_module:CopyModule $(pwd)/output/test/c_module/lib v0.0.1
-          (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz && tar xvf files.tar.gz && rm -rf files.tar.gz)
-          (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/models.tar.gz && tar xvf models.tar.gz && rm -rf models.tar.gz)
+          (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz --no-check-certificate && tar xvf files.tar.gz && rm -rf files.tar.gz)
+          (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/models.tar.gz --no-check-certificate && tar xvf models.tar.gz && rm -rf models.tar.gz)
           cd output/bmf/bin
           ./test_bmf_module_sdk.exe
           ./test_bmf_engine.exe --gtest_filter=-go_module.module_loader
@@ -213,3 +213,29 @@ jobs:
           (cd bmf/hml/tests                       && python -m pytest)
           '@
         - echo $bashCommand | & $bashPath
+  
+  gpu_test_ci:
+    name: gpu_test_ci
+    image: babitmf/bmf_runtime:latest
+    runs-on:
+      cluster: "gpu_host"
+    envs:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: all
+    steps:
+      - uses: actions/setup-proxy
+      - name: build_env
+        commands:
+          - rm -rf /root/bmf
+          - git submodule update --init --recursive
+          - ./build.sh
+          - export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$(pwd)/output/bmf/lib"
+          - export PYTHONPATH="${PYTHONPATH}:$(pwd)/output/bmf/lib:$(pwd)/output"
+          - (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz --no-check-certificate && tar xvf files.tar.gz && rm -rf files.tar.gz)
+          - (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/models.tar.gz --no-check-certificate && tar xvf models.tar.gz && rm -rf models.tar.gz)
+          - (cd output/demo/gpu_module                    && python3 test_gpu_module.py)
+          - (cd output/demo/video_frame_extraction && cmake . && make -j8 && python3 video_frame_extraction.py)
+          - (cd output/demo/video_enhance && pip install basicsr==1.4.2 realesrgan && (sed -i '8s/from torchvision.transforms.functional_tensor import rgb_to_grayscale/from torchvision.transforms.functional import rgb_to_grayscale/' /usr/local/lib/python3.8/dist-packages/basicsr/data/degradations.py) && python3 enhance_demo.py)
+          - (cd output/demo/aesthetic_assessment && pip install onnxruntime && python3 aesthetic_assessment_demo.py)
+          - (cd output/demo/face_detect && cp ../../models/version-RFB-640.onnx . && trtexec --onnx=version-RFB-640.onnx --buildOnly --saveEngine=version-RFB-640.engine && cp version-RFB-640.engine ../../models && python3 detect_trt_sample.py)
+          - (cd output/demo/colorization_python && git clone https://github.com/eefengwei/DeOldify.git DeOldify && pip3 install -r ./DeOldify/requirements-colab.txt && pip3 install Ipython && mkdir -p ./DeOldify/models && wget -c https://huggingface.co/spensercai/DeOldify/resolve/main/ColorizeVideo_gen.pth -O ./DeOldify/models/ColorizeVideo_gen.pth && python3 deoldify_demo.py)

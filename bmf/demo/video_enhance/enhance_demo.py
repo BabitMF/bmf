@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-input_file = "bbb_360_20s.mp4"
+input_file = "../../files/big_bunny_10s_30fps.mp4"
 output_file = "output.mp4"
 output_compose_file = "output_compose.mp4"
 

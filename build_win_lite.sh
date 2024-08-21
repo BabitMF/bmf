@@ -90,7 +90,7 @@ git submodule update --init --recursive
 
 if [ ! -d "3rd_party/win_rootfs" ]
 then
-    (cd 3rd_party/ && wget https://github.com/BabitMF/bmf/releases/download/files/win_rootfs.tar.gz && tar zvxf win_rootfs.tar.gz)
+    (cd 3rd_party/ && wget https://github.com/BabitMF/bmf/releases/download/files/win_rootfs.tar.gz --no-check-certificate && tar zvxf win_rootfs.tar.gz)
 fi
 source ./version.sh
 

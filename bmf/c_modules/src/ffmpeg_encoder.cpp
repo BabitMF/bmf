@@ -568,8 +568,11 @@ int CFFEncoder::handle_output(AVPacket *hpkt, int idx) {
                              output_stream_[idx]->time_base);
 
     ret = av_interleaved_write_frame(output_fmt_ctx_, pkt);
-    if (ret < 0)
+    if (ret < 0) {
         BMFLOG_NODE(BMF_ERROR, node_id_) << "Interleaved write error: " << error_msg(ret);
+        std::string msg = "Interleaved write error: " + error_msg(ret);
+        BMF_Error(BMF_TranscodeError, msg.c_str());
+    }
     if (!ost->encoding_needed)
         av_packet_unref(pkt);
 
@@ -1665,8 +1668,11 @@ int CFFEncoder::flush() {
     if (output_fmt_ctx_ && (push_output_ == OutputMode::OUTPUT_NOTHING or
                             push_output_ == OutputMode::OUTPUT_MUXED_PACKET)) {
         ret = av_write_trailer(output_fmt_ctx_);
-        if (ret < 0)
+        if (ret < 0) {
             BMFLOG_NODE(BMF_ERROR, node_id_) << "Error writing trailer: " << error_msg(ret);
+            std::string msg = "Error write trailer: " + error_msg(ret);
+            BMF_Error(BMF_TranscodeError, msg.c_str());
+        }
     }
     return ret;
 }

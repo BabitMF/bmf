@@ -179,53 +179,36 @@ function build_ffmpeg_unix() {
     make install
 }
 
-# cuda11.8 is now supported
+# cuda12.2 is now supported
 function install_cuda_linux() {
     cd $1
-    if [[ ${NAME} =~ "CentOS" ]] && [[ ${VERSION_ID} == "7" ]]
-    then
-        wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda-repo-rhel7-11-8-local-11.8.0_520.61.05-1.x86_64.rpm
-        rpm -i cuda-repo-rhel7-11-8-local-11.8.0_520.61.05-1.x86_64.rpm
-        yum clean all
-        yum -y install nvidia-driver-latest-dkms
-        yum -y install cuda
-    elif [[ ${NAME} == "Ubuntu" ]] && [[ ${VERSION_ID} == "18.04" ]]
-    then
-        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-ubuntu1804.pin
-        mv cuda-ubuntu1804.pin /etc/apt/preferences.d/cuda-repository-pin-600
-        wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda-repo-ubuntu1804-11-8-local_11.8.0-520.61.05-1_amd64.deb
-        dpkg -i cuda-repo-ubuntu1804-11-8-local_11.8.0-520.61.05-1_amd64.deb
-        cp /var/cuda-repo-ubuntu1804-11-8-local/cuda-*-keyring.gpg /usr/share/keyrings/
-        apt-get update
-        apt-get -y install cuda-toolkit-11-8
-    elif [[ ${NAME} == "Ubuntu" ]] && [[ ${VERSION_ID} == "20.04" ]]
+    if [[ ${NAME} == "Ubuntu" ]] && [[ ${VERSION_ID} == "20.04" ]]
     then
         wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
         mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
-        wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda-repo-ubuntu2004-11-8-local_11.8.0-520.61.05-1_amd64.deb
-        dpkg -i cuda-repo-ubuntu2004-11-8-local_11.8.0-520.61.05-1_amd64.deb
-        cp /var/cuda-repo-ubuntu2004-11-8-local/cuda-*-keyring.gpg /usr/share/keyrings/
+	    wget https://developer.download.nvidia.com/compute/cuda/12.2.0/local_installers/cuda-repo-ubuntu2004-12-2-local_12.2.0-535.54.03-1_amd64.deb
+	    dpkg -i cuda-repo-ubuntu2004-12-2-local_12.2.0-535.54.03-1_amd64.deb
+	    cp /var/cuda-repo-ubuntu2004-12-2-local/cuda-*-keyring.gpg /usr/share/keyrings/
         apt-get update
-        apt-get -y install cuda-toolkit-11-8
-        rm -rf cuda-repo-ubuntu2004-11-8-local_11.8.0-520.61.05-1_amd64.deb
-        dpkg -r cuda-repo-ubuntu2004-11-8-local
+        apt-get -y install cuda        
+	rm -rf cuda-repo-ubuntu2004-12-2-local_12.2.0-535.54.03-1_amd64.deb
+	dpkg -r cuda-repo-ubuntu2004-12-2-local
     elif [[ ${NAME} == "Ubuntu" ]] && [[ ${VERSION_ID} == "22.04" ]]
     then
         wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
         mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600
-        wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda-repo-ubuntu2204-11-8-local_11.8.0-520.61.05-1_amd64.deb
-        dpkg -i cuda-repo-ubuntu2204-11-8-local_11.8.0-520.61.05-1_amd64.deb
-        cp /var/cuda-repo-ubuntu2204-11-8-local/cuda-*-keyring.gpg /usr/share/keyrings/
+        wget https://developer.download.nvidia.com/compute/cuda/12.2.0/local_installers/cuda-repo-ubuntu2204-12-2-local_12.2.0-535.54.03-1_amd64.deb            dpkg -i cuda-repo-ubuntu2204-12-2-local_12.2.0-535.54.03-1_amd64.deb
+	    cp /var/cuda-repo-ubuntu2204-11-8-local/cuda-*-keyring.gpg /usr/share/keyrings/
         apt-get update
-        apt-get -y install cuda-toolkit-11-8
+        apt-get -y install cuda
     elif [[ ${NAME} =~ "Debian" ]] && [[ ${VERSION_ID} == "11" ]]
     then
-        wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda-repo-debian11-11-8-local_11.8.0-520.61.05-1_amd64.deb
-        dpkg -i cuda-repo-debian11-11-8-local_11.8.0-520.61.05-1_amd64.deb
-        cp /var/cuda-repo-debian11-11-8-local/cuda-*-keyring.gpg /usr/share/keyrings/
+        wget https://developer.download.nvidia.com/compute/cuda/12.2.0/local_installers/cuda-repo-debian11-12-2-local_12.2.0-535.54.03-1_amd64.deb
+        dpkg -i cuda-repo-debian11-12-2-local_12.2.0-535.54.03-1_amd64.deb
+        cp /var/cuda-repo-debian11-12-2-local/cuda-*-keyring.gpg /usr/share/keyrings/
         add-apt-repository contrib
         apt-get update
-        apt-get -y install cuda-toolkit-11-8
+        apt-get -y install cuda
     elif [[ ${NAME} =~ "AlmaLinux" ]] && [[ ${VERSION_ID} == "8.10" ]]
     then
         original_ld_lib_path=$LD_LIBRARY_PATH
@@ -246,11 +229,12 @@ function install_cvcuda_linux() {
     cd $1
     mkdir -p cvcuda_source
     cd cvcuda_source
-    wget https://github.com/CVCUDA/CV-CUDA/releases/download/v0.3.0-beta/nvcv_python-0.3.x_beta-cp38-cp38-linux_x86_64.whl
-    wget https://github.com/CVCUDA/CV-CUDA/releases/download/v0.3.0-beta/nvcv-lib-0.3.0_beta-cuda11-x86_64-linux.deb
-    wget https://github.com/CVCUDA/CV-CUDA/releases/download/v0.3.0-beta/nvcv-dev-0.3.0_beta-cuda11-x86_64-linux.deb
-    apt-get install -y ./nvcv-lib-0.3.0_beta-cuda11-x86_64-linux.deb ./nvcv-dev-0.3.0_beta-cuda11-x86_64-linux.deb
-    pip3 install ./nvcv_python-0.3.x_beta-cp38-cp38-linux_x86_64.whl
+    wget https://github.com/CVCUDA/CV-CUDA/releases/download/v0.3.1-beta/nvcv-lib-0.3.1_beta-cuda12-x86_64-linux.deb
+    wget https://github.com/CVCUDA/CV-CUDA/releases/download/v0.3.1-beta/nvcv-dev-0.3.1_beta-cuda12-x86_64-linux.deb
+    wget https://github.com/CVCUDA/CV-CUDA/releases/download/v0.3.1-beta/nvcv-python3.8-0.3.1_beta-cuda12-x86_64-linux.deb
+    wget https://github.com/CVCUDA/CV-CUDA/releases/download/v0.3.1-beta/nvcv_python-0.3.1_beta-cp38-cp38-linux_x86_64.whl
+    apt install ./nvcv-lib-0.3.1_beta-cuda12-x86_64-linux.deb ./nvcv-dev-0.3.1_beta-cuda12-x86_64-linux.deb ./nvcv-python3.8-0.3.1_beta-cuda12-x86_64-linux.deb
+    pip3 install ./nvcv_python-0.3.1_beta-cp38-cp38-linux_x86_64.whl
     export PYTHONPATH=/usr/local/lib/python3.8/dist-packages/nvcv_python
     cd -
     rm -rf cvcuda_source
@@ -263,10 +247,10 @@ function install_trt_linux() {
     cd $1
     mkdir -p trt
     cd trt
-    wget https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/secure/8.6.1/tars/TensorRT-8.6.1.6.Linux.x86_64-gnu.cuda-11.8.tar.gz
+    wget https://developer.nvidia.com/downloads/compute/machine-learning/tensorrt/secure/8.6.1/tars/TensorRT-8.6.1.6.Linux.x86_64-gnu.cuda-12.0.tar.gz
     version="8.6.1.6"
     arch=$(uname -m)
-    cuda="cuda-11.8"
+    cuda="cuda-12.0"
     tar -xzvf TensorRT-${version}.Linux.${arch}-gnu.${cuda}.tar.gz
     python3 -m pip install --upgrade pip
     cd TensorRT-${version}/python
@@ -309,26 +293,20 @@ function install_cudnn_linux() {
     cd $1
     mkdir cudnn
     cd cudnn
-    if [[ ${NAME} =~ "CentOS" ]] && [[ ${VERSION_ID} == "7" ]]
+    if [[ ${NAME} == "Ubuntu" ]] && [[ ${VERSION_ID} == "20.04" ]]
     then
-        wget https://developer.download.nvidia.cn/compute/cuda/repos/rhel7/x86_64/libcudnn8-8.9.2.26-1.cuda11.8.x86_64.rpm
-        rpm -i libcudnn8-8.9.2.26-1.cuda11.8.x86_64.rpm
-    elif [[ ${NAME} == "Ubuntu" ]] && [[ ${VERSION_ID} == "18.04" ]]
-    then
-        wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu1804/x86_64/libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
-        dpkg -i libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
-    elif [[ ${NAME} == "Ubuntu" ]] && [[ ${VERSION_ID} == "20.04" ]]
-    then
-        wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
-        dpkg -i libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
+        wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.1-1_all.deb
+        dpkg -i cuda-keyring_1.1-1_all.deb
+        apt-get update
+        apt-get -y install libcudnn8 libcudnn8-dev
     elif [[ ${NAME} == "Ubuntu" ]] && [[ ${VERSION_ID} == "22.04" ]]
     then
-        wget https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2204/x86_64/libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
-        dpkg -i libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
+        wget https://developer.nvidia.com/downloads/compute/cudnn/secure/8.9.2/local_installers/12.x/cudnn-local-repo-ubuntu2204-8.9.2.26_1.0-1_amd64.deb
+        dpkg -i cudnn-local-repo-ubuntu2204-8.9.2.26_1.0-1_amd64.deb
     elif [[ ${NAME} =~ "Debian" ]] && [[ ${VERSION_ID} == "11" ]]
     then
-        wget https://developer.download.nvidia.cn/compute/cuda/repos/debian11/x86_64/libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
-        dpkg -i libcudnn8_8.9.2.26-1+cuda11.8_amd64.deb
+        wget https://developer.nvidia.com/downloads/compute/cudnn/secure/8.9.2/local_installers/12.x/cudnn-local-repo-debian11-8.9.2.26_1.0-1_amd64.deb
+        dpkg -i cudnn-local-repo-debian11-8.9.2.26_1.0-1_amd64.deb
     fi
     cd -
     rm -rf cudnn

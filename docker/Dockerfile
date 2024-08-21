@@ -13,14 +13,14 @@ RUN    apt update \
 
 RUN pip3 install setuptools timeout_decorator opencv-python onnx onnxruntime-gpu numpy cuda-python
 # torch
-RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+RUN pip3 install torch torchvision torchaudio
 RUN rm -rf /var/cache/apk/* && \
     rm -rf /root/.cache/pip/*
 COPY ./ /root/bmf/
 WORKDIR /root/bmf/
 # ffmpeg installed via apt has no development libraries, so we build it from source
 
-RUN ./scripts/build_ffmpeg.sh --device=$DEVICE x264 x265 fdk-aac opus \
+RUN ./scripts/build_ffmpeg.sh --device=gpu x264 x265 fdk-aac opus nasm \
     && rm -rf ffmpeg_source
 
 ARG CMAKE_ARGS="-DBMF_ENABLE_CUDA=OFF -DBMF_ENABLE_BREAKPAD=ON"

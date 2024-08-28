@@ -46,38 +46,54 @@ class TrackPoint {
   public:
     int64_t get_task_id() { return task_id; }
     virtual std::string get_tag() = 0;
+    virtual nlohmann::json to_json() = 0;
+
     int64_t task_id = -1;
 };
+
+#define TOJSON_MEMFUNC                                                         \
+    nlohmann::json to_json() { return *this; }
 
 struct GraphStartData : public TrackPoint {
     std::string get_tag() { return "GraphStartData"; }
     int64_t start_timestamp = -1;
     std::string version;
     std::string commit;
-};
 
-// macro to generate to_json and from_json function. object key is variable name
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(GraphStartData, task_id, start_timestamp,
+    // macro to generate to_json and from_json function
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(GraphStartData, task_id, start_timestamp,
                                    version)
+    TOJSON_MEMFUNC
+};
 
 // exact key value data
 struct GraphEndData : public TrackPoint {
     std::string get_tag() { return "GraphEndData"; }
     int64_t start_timestamp = -1;
-    int err = -1;
+    int64_t end_timestamp = -1;
+    int err = 0;
     std::string graph_str;
+    // macro to generate to_json and from_json function
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(GraphEndData, task_id, start_timestamp,
+                                   end_timestamp, err, graph_str)
+    TOJSON_MEMFUNC
 };
 
 struct ModuleData : public TrackPoint {
     std::string get_tag() { return "ModuleData"; }
     std::string module_name;
+    int node_id;
     int64_t avg_processing_time = 0;
     int64_t max_processing_time = 0;
     int64_t min_processing_time = INT64_MAX;
     int process_cnts = 0;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ModuleData, node_id, avg_processing_time,
+                                   max_processing_time, min_processing_time,
+                                   process_cnts)
+    TOJSON_MEMFUNC
 };
 
-struct ModuleFFDecoderData {
+struct ModuleFFDecoderData : public TrackPoint {
     std::string get_tag() { return "ModuleFFDecoderData"; }
     int width = 0;
     int height = 0;
@@ -123,6 +139,7 @@ class BMF_SDK_API BMFStat {
     std::condition_variable cv_;
     std::queue<std::shared_ptr<TrackPoint>> queue_;
     bool thread_quit_ = false;
+    int64_t task_id_;
 };
 
 BMF_SDK_API void bmf_stat_report(std::shared_ptr<TrackPoint> track_point);

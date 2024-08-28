@@ -156,6 +156,10 @@ class Graph {
     std::mutex con_var_mutex_;
     int32_t closed_count_ = 0;
     bool exception_from_scheduler_ = false;
+    
+    int64_t graph_start_time_ = -1;
+    int64_t graph_end_time_ = -1;
+
 };
 
 END_BMF_ENGINE_NS

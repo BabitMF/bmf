@@ -29,6 +29,8 @@ BMFStat::BMFStat() {
         SharedLibrary(path, SharedLibrary::LAZY | SharedLibrary::GLOBAL);
     if (upload_lib.is_open())
         BMFLOG(BMF_INFO) << "BMF stat upload lib was found and loaded";
+    
+    t_ = std::thread(&BMFStat::process_track_points, this);
 }
 
 BMFStat::~BMFStat() {
@@ -55,6 +57,7 @@ int BMFStat::upload_info() {
 void BMFStat::push_track_point(std::shared_ptr<TrackPoint> track_point) {
     std::lock_guard<std::mutex> lk(mutex_);
     queue_.push(track_point);
+    cv_.notify_one();
 }
 
 void BMFStat::process_track_points() {
@@ -82,6 +85,8 @@ void BMFStat::process_track_points() {
 }
 
 void BMFStat::report_stat(std::shared_ptr<TrackPoint> point) {
+    BMFLOG(BMF_INFO) << "data point tag: " << point->get_tag();
+    BMFLOG(BMF_INFO) << "data point content: " << point->to_json().dump();
 
 }
 
@@ -90,8 +95,8 @@ void bmf_stat_report(std::shared_ptr<TrackPoint> track_point) {
     stat.push_track_point(track_point);
 }
 
-// int64_t BMFStat::task_id() {
-//     return task_id_;
-// }
+int64_t BMFStat::task_id() {
+    return task_id_;
+}
 
 } // namespace bmf_sdk

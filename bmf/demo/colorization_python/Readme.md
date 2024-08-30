@@ -46,7 +46,7 @@ wget -c https://data.deepai.org/deoldify/ColorizeVideo_gen.pth -O ./DeOldify/mod
 
 ### 1.4 pip install BMF packages
 ```Bash
-pip3 install BabitMF BabitMF-GPU
+pip3 install BabitMF-GPU
 ```
 ### 1.5 verify the FFmpeg libraries is installed and version is correct
 

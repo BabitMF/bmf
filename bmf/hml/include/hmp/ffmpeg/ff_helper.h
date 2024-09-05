@@ -559,7 +559,7 @@ static bool check_frame_memory_is_contiguous(const Frame &frame) {
 
 /**
  * @brief convert Frame to AVFrame,
- * if frame.deivce() != kCPU, hw_frames_ctx info must be provided either by
+ * if frame.device() != kCPU, hw_frames_ctx info must be provided either by
  * avf_ref->hw_frames_ctx or hw_frames_ctx
  * if both avf_ref->hw_frames_ctx and hw_frames_ctx are provided, hw_frames_ctx
  * will be used

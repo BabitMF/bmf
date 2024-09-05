@@ -2,7 +2,6 @@ import bmf
 
 # Add the DeOldify folder to the python search path
 import sys
-
 sys.path.insert(0, './DeOldify')
 print(sys.path)
 

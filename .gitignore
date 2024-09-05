@@ -1,4 +1,5 @@
 .idea/*
+.venv/
 *.mov
 *.json
 *.pyc
@@ -8,6 +9,7 @@
 .DS_Store
 *.o
 *.so
+*.sym
 /build*/
 !build.gradle
 bmf/c_module_sdk/build
@@ -21,7 +23,7 @@ bmf/engine/connector/cmake-build-debug
 bmf/go_module_sdk/.idea
 bmf/go_module_sdk/build
 bmf/go_module_sdk/cmake-build-debug
-
+output/
 
 .DS_Store
 */.DS_Store

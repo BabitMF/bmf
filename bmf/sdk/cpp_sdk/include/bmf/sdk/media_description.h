@@ -59,6 +59,7 @@ class MediaDesc {
   public:
     MediaParam<int> width{this};
     MediaParam<int> height{this};
+    MediaParam<hmp::PixelInfo> pixel_info{this};
     MediaParam<hmp::PixelFormat> pixel_format{this};
     MediaParam<hmp::ColorSpace> color_space{this};
     MediaParam<hmp::Device> device{this};

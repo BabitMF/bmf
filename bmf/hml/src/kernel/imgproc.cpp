@@ -151,7 +151,7 @@ TensorList &yuv_to_yuv(TensorList &dst, const TensorList &src,
     auto stmp = img::image_format(src, kNHWC);
     auto dtmp = img::image_format(dst, kNHWC);
     yuv_common_check(stmp, 0, "yuv_to_yuv");
-    yuv_common_check(dtmp, 0, "rgb_to_yuv");
+    yuv_common_check(dtmp, 0, "yuv_to_yuv");
 
     yuv_to_yuv_stub(dtmp[0].device_type(), dtmp, stmp, dformat, sformat);
     return dst;

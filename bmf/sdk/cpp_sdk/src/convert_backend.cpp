@@ -121,7 +121,7 @@ VideoFrame Convertor::format_cvt(VideoFrame &src, const MediaDesc &dp) {
             BMFLOG(BMF_WARNING) << "convert media description has redundant information, continuing with "
                                 << stringfy(dp.pixel_info()); 
         }
-        dst = bmf_csc_func_with_param(dp.pixel_info());
+        dst = bmf_csc_func_with_param(dst, dp.pixel_info());
     } else if (dp.pixel_format.has_value()) {
         if (dp.color_space.has_value()) {
             dst = bmf_csc_func_with_param(

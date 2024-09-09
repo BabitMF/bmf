@@ -14,7 +14,7 @@ from bmf.lib._bmf.sdk import VideoFrame, AudioFrame, Packet, BMFAVPacket
 from bmf.lib._bmf.sdk import Task
 
 # import data convert backend
-from bmf.lib._bmf.sdk import MediaDesc, bmf_convert
+from bmf.lib._bmf.sdk import MediaDesc, MediaType, bmf_convert
 
 from .ffmpeg_engine import FFmpegEngine
 from .python_sdk import Module, LogLevel, Log, InputType, ProcessResult,  Timestamp, scale_av_pts, av_time_base, \

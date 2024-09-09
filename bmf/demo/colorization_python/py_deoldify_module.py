@@ -4,11 +4,7 @@ from bmf import ProcessResult, Packet, Timestamp, VideoFrame
 import PIL
 import bmf.hml.hmp as mp
 
-# Add the DeOldify folder to the python search path
-import sys
-
-sys.path.insert(0, './DeOldify')
-print(sys.path)
+from bmf.lib._bmf import sdk
 
 from deoldify import device
 from deoldify.device_id import DeviceId
@@ -73,8 +69,8 @@ class py_deoldify_module(bmf.Module):
                         VideoFrame):
 
                     vf = packet.get(VideoFrame)
-                    rgb = mp.PixelInfo(mp.kPF_RGB24)
-                    np_vf = vf.reformat(rgb).frame().plane(0).numpy()
+                    dst_md = sdk.MediaDesc().pixel_format(mp.kPF_RGB24)
+                    np_vf = sdk.bmf_convert(vf, sdk.MediaDesc(), dst_md).frame().plane(0).numpy()
 
                     # numpy to PIL
                     image = Image.fromarray(np_vf.astype('uint8'), 'RGB')

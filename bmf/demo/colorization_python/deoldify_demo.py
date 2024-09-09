@@ -1,5 +1,9 @@
 import bmf
-import py_deoldify_module
+
+# Add the DeOldify folder to the python search path
+import sys
+sys.path.insert(0, './DeOldify')
+print(sys.path)
 
 input_video_path = './DeOldify/test_videos/test_video.mp4'
 output_video_path = 'colored_video.mp4'

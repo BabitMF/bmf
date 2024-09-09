@@ -1,9 +1,10 @@
 import pytest
 import bmf.hml.hmp as mp
 import numpy as np
-from bmf_fixtures import has_cuda
+from bmf_fixtures import has_cuda, has_torch
 from bmf.lib._bmf.sdk import VideoFrame, AudioFrame, BMFAVPacket
 from bmf.lib._bmf.sdk import Packet
+from bmf import MediaDesc, MediaType, bmf_convert
 from bmf.lib._bmf import sdk
 
 

@@ -181,8 +181,13 @@ int CFFFilter::init_filtergraph() {
         /*
          * the first frame is a NULL AVFrame, filtergraph could not be initialized
         */
-        if (!frm)
+        if (!frm) {
+            //set eof of all stream to support normal close
+            for (int i = 0; i < num_output_streams_; i++) {
+                out_eof_[i] = true;
+            }
             return AVERROR_EOF;
+        }
         config_[it->first].width = frm->width;
         config_[it->first].height = frm->height;
         config_[it->first].format = frm->format;
@@ -576,7 +581,7 @@ int CFFFilter::process(Task &task) {
 
             if (packet.is<VideoFrame>()) {
                 auto &video_frame = packet.get<VideoFrame>();
-                frame = ffmpeg::from_video_frame(video_frame, true);
+                frame = ffmpeg::from_video_frame(video_frame, false);
             } else if (packet.is<AudioFrame>()) {
                 auto &audio_frame = packet.get<AudioFrame>();
                 frame = ffmpeg::from_audio_frame(audio_frame, true);
@@ -589,7 +594,7 @@ int CFFFilter::process(Task &task) {
         }
     }
 
-    if ((ret = process_filter_graph(task)) < 0) {
+    if ((ret = process_filter_graph(task)) < 0 && ret != AVERROR_EOF) {
         return ret;
     };
 

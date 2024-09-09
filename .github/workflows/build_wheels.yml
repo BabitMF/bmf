@@ -19,11 +19,9 @@ jobs:
     strategy:
       matrix:
         py_ver_prefix: [cp36, cp37, cp38, cp39, cp310]
-        linux_arch: [x86_64, i686, aarch64, s390x, ppc64le] #the maximum timeout of a job is 360 minutes, which is easy to time out, so we compile different system architectures separately.
+        linux_arch: [x86_64, aarch64, s390x, ppc64le] #the maximum timeout of a job is 360 minutes, which is easy to time out, so we compile different system architectures separately.
         device: [cpu, gpu]
         exclude:
-          - linux_arch: i686
-            device: gpu
           - linux_arch: aarch64
             device: gpu
           - linux_arch: s390x
@@ -80,11 +78,10 @@ jobs:
         #CIBW_MANYLINUX_AARCH64_IMAGE: ghcr.io/${{ github.repository }}_manylinux2014_aarch64_shared_python:latest
         #CIBW_MANYLINUX_PPC64LE_IMAGE: ghcr.io/${{ github.repository }}_manylinux2014_ppc64le_shared_python:latest
         #CIBW_MANYLINUX_S390X_IMAGE: ghcr.io/${{ github.repository }}_manylinux2014_s390x_shared_python:latest
-        CIBW_MANYLINUX_X86_64_IMAGE: smartbrave/manylinux2014_x86_64_shared_python:latest
-        CIBW_MANYLINUX_I686_IMAGE: smartbrave/manylinux2014_i686_shared_python:latest
-        CIBW_MANYLINUX_AARCH64_IMAGE: smartbrave/manylinux2014_aarch64_shared_python:latest
-        CIBW_MANYLINUX_PPC64LE_IMAGE: smartbrave/manylinux2014_ppc64le_shared_python:latest
-        CIBW_MANYLINUX_S390X_IMAGE: smartbrave/manylinux2014_s390x_shared_python:latest
+        CIBW_MANYLINUX_X86_64_IMAGE: babitmf/manylinux_2_28_x86_64_shared_python:latest
+        CIBW_MANYLINUX_AARCH64_IMAGE: babitmf/manylinux_2_28_aarch64_shared_python:latest
+        CIBW_MANYLINUX_PPC64LE_IMAGE: babitmf/manylinux_2_28_ppc64le_shared_python:latest
+        CIBW_MANYLINUX_S390X_IMAGE: babitmf/manylinux_2_28_s390x_shared_python:latest
         CIBW_BEFORE_ALL_LINUX: >
           (./scripts/build_ffmpeg.sh --device=${{ matrix.device }})
         CIBW_REPAIR_WHEEL_COMMAND_LINUX:

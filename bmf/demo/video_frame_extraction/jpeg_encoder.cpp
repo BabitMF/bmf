@@ -22,6 +22,7 @@
 #include <bmf/sdk/video_frame.h>
 #include <bmf/sdk/ffmpeg_helper.h>
 #include <bmf/sdk/error_define.h>
+#include <bmf/sdk/convert_backend.h>
 
 extern "C" {
 #include <libavcodec/packet.h>
@@ -152,18 +153,10 @@ class jpeg_encoder : public bmf_sdk::Module {
                             << vf.frame().nplanes() << " planes.";
                     }
 
-                    if (!vf_rgb)
-                        vf_rgb = VideoFrame::make(width, height, RGB, kCUDA);
-                    Tensor t_img = vf_rgb.frame().plane(0);
-                    hmp::img::yuv_to_rgb(t_img, vf.frame().data(), NV12, kNHWC);
-                    if (!vf_yuv_from_rgb)
-                        vf_yuv_from_rgb =
-                            VideoFrame::make(width, height, H420, kCUDA);
-                    TensorList tl = vf_yuv_from_rgb.frame().data();
-                    hmp::img::rgb_to_yuv(tl, vf_rgb.frame().plane(0), H420,
-                                         kNHWC);
-
-                    vf_final_p = &vf_yuv_from_rgb;
+                    MediaDesc dp{};
+                    dp.pixel_format(hmp::PF_YUV420P);
+                    vf_rfmt = bmf_convert(vf, MediaDesc{}, dp);
+                    vf_final_p = &vf_rfmt;
                 } else {
                     BMFLOG_NODE(BMF_INFO, node_id_)
                         << "frame comes from cpu decoder.";

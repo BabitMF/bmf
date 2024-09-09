@@ -345,10 +345,10 @@ void optimize(std::vector<NodeConfig> &nodes) {
                                                  nodes_to_merge.end(),
                                                  circle_node),
                                      nodes_to_merge.end());
-                nodes.push_back(circle_node);
                 nodes.erase(
                     std::remove(nodes.begin(), nodes.end(), merged_node),
                     nodes.end());
+                nodes.push_back(circle_node);
                 continue;
             } else {
                 nodes_done.push_back(merged_node);

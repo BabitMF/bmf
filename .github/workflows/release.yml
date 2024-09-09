@@ -29,10 +29,6 @@ jobs:
             py_ver_prefix: cp39
             device: gpu
           - os: ubuntu-20.04
-            arch: i686
-            py_ver_prefix: cp39
-            device: cpu
-          - os: ubuntu-20.04
             arch: aarch64
             py_ver_prefix: cp39
             device: cpu
@@ -91,11 +87,11 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         tmp_file=$(mktemp -p .)
-        echo "FROM smartbrave/manylinux2014_${{ matrix.arch }}_shared_python" >>${tmp_file}
+        echo "FROM babitmf/manylinux_2_28_${{ matrix.arch }}_shared_python" >>${tmp_file}
         echo "RUN yum -y install binutils-devel openssl-devel" >>${tmp_file}
         echo "WORKDIR /root" >>${tmp_file}
-        echo "ENV PATH=\${PATH}:/opt/python/cp39-cp39/bin" >>${tmp_file}
-        echo "ENV LD_LIBRARY_PATH=\${LD_LIBRARY_PATH}:/opt/python/cp39-cp39/lib" >>${tmp_file}
+        echo "ENV PATH=/opt/python/cp39-cp39/bin:\${PATH}" >>${tmp_file}
+        echo "ENV LD_LIBRARY_PATH=/opt/python/cp39-cp39/lib:\${LD_LIBRARY_PATH}" >>${tmp_file}
         echo "ENV GITHUB_ACTIONS=${GITHUB_ACTIONS}" >>${tmp_file}
         if [ "${{ matrix.device }}" == "gpu" ]; then
           echo "ENV CUDA_PATH=/usr/local/cuda" >>${tmp_file}

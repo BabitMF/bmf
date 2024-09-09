@@ -6,6 +6,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations")
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR})
 
+# You may need to add this option for BabitMF version 0.0.9 or lower to solve an ABI missing symbol issue in the output `libjpeg_encoder.so` dynamic library
+# add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+
 if (NOT DEFINED CUDA_ROOT)
     set(CUDA_ROOT /usr/local/cuda)
 endif()

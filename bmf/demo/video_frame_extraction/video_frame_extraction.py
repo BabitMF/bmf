@@ -10,7 +10,7 @@ from bmf.builder.ff_filter import decode
 def extract_frame_test():
     graph = bmf.graph({'dump_graph': 1})
     video = graph.decode({
-        "input_path": "../../files/demo_JHH.mp4",
+        "input_path": "../../files/big_bunny_1min_30fps.mp4",
         "video_params": {
             "hwaccel": "cuda",
             "hwaccel_output_format": "cuda",

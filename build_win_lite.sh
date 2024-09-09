@@ -11,6 +11,7 @@ BUILD_DIR=build_win_lite
 OUTPUT_DIR=output
 COMPILE_ARCH=""
 preset=""
+PYTHON_VERSION=3.7
 export SCRIPT_EXEC_MODE=win
 
 export WIN_XCOMPILE_ROOT=$(pwd)/3rd_party/win_rootfs
@@ -89,7 +90,7 @@ git submodule update --init --recursive
 
 if [ ! -d "3rd_party/win_rootfs" ]
 then
-    (cd 3rd_party/ && wget https://github.com/BabitMF/bmf/releases/download/files/win_rootfs.tar.gz && tar zvxf win_rootfs.tar.gz)
+    (cd 3rd_party/ && wget https://github.com/BabitMF/bmf/releases/download/files/win_rootfs.tar.gz --no-check-certificate && tar zvxf win_rootfs.tar.gz)
 fi
 source ./version.sh
 
@@ -117,6 +118,7 @@ if [[ ${HOST} =~ msys_nt || ${HOST} =~ mingw ]]; then
         -DRUN_HAVE_POSIX_REGEX=0 \
         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
         -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
+        -DBMF_PYENV=${PYTHON_VERSION} \
         -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ../..
 
     )

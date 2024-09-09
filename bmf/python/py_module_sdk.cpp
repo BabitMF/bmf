@@ -222,6 +222,10 @@ void bmf_ffmpeg_bind(py::module &m) {
         auto new_vf = ffmpeg::reformat(vf, format_str);
         return py::cast(new_vf);
     });
+    ff.def("siso_filter", [](VideoFrame &vf, const std::string &filter_str) {
+        auto new_vf = ffmpeg::siso_filter(vf, filter_str);
+        return py::cast(new_vf);
+    });
 }
 #endif
 

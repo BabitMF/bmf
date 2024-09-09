@@ -30,7 +30,7 @@ jobs:
           - apt-get update
           - apt-get install -y protobuf-compiler libgflags-dev libdw-dev libgoogle-glog-dev
           - pip3 install --upgrade pip
-          - pip3 install timeout_decorator onnxruntime requests opencv-python
+          - pip3 install timeout_decorator onnxruntime==1.18.0 numpy==1.26.4 requests opencv-python
           - echo "build finished"
       - name: run_test
         commands:
@@ -66,6 +66,7 @@ jobs:
           - (cd output/test/push_data_into_graph    && python3 test_push_data.py)
           - (cd output/test/complex_edit_case       && python3 test_complex_case.py)
           - (cd output/test/complex_edit_case       && python3 test_compare_with_edit.py)
+          - (cd output/test/test_merge_filters      && python3 test.py)
           # test hmp
           - (cd bmf/hml/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
           - (cd bmf/hml/tests                       && pytest)
@@ -100,14 +101,14 @@ jobs:
       - uses: actions/checkout
         inputs:
           depth: 1
-      - uses: actions/setup-proxy
       - name: prepare conda environment
         commands:
           - apt update && apt install -y wget curl bzip2
           - curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/1.5.5 | tar -xvj bin/micromamba
-          - ./bin/micromamba env create -f conda-env.yaml -y
+      - uses: actions/setup-proxy
       - name: build_env
         commands:
+          - ./bin/micromamba env create -f conda-env.yaml -y
           - eval "$(./bin/micromamba shell hook -s posix)"
           - micromamba activate bmf-test
           - ./build.sh non_local
@@ -151,3 +152,90 @@ jobs:
           # test hmp
           - (cd bmf/hml/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
           - (cd bmf/hml/tests                       && pytest)
+  windows_job:
+    name: BMF Windows CI
+    image: "windows_2019_msys2:latest"
+    runs-on:
+      windows: {}
+      cluster:
+        execute-in-vm
+    steps:
+      - name: build and run test
+        commands:
+        - $bashPath = "C:\msys64\usr\bin\bash.exe"
+        - |
+          $bashCommand = @'
+          export PATH=/usr/bin:/usr/lib:/usr/local/bin:/usr/local/lib:$PATH
+          eval "$(./win_env/vcvarsall.sh x64)"
+          export INCLUDE="${INCLUDE};C:\\msys64\\usr\\local\\include"
+          pacman -S unzip ca-certificates --noconfirm
+          wget https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2024-03-31-17-28/ffmpeg-n4.4.4-94-g5d07afd482-win64-gpl-shared-4.4.zip --no-check-certificate
+          unzip ffmpeg-n4.4.4-94-g5d07afd482-win64-gpl-shared-4.4.zip
+          mkdir -p /usr/local
+          cp -r ffmpeg-n4.4.4-94-g5d07afd482-win64-gpl-shared-4.4/* /usr/local/
+          ./build_win_lite.sh --msvc=2019 --preset=x64-Release bmf_ffmpeg
+          cmake --build build_win_lite/x64-Release --config Release --target ALL_BUILD
+          cmake --build build_win_lite/x64-Release --config Release --target ALL_BUILD
+          cmake --build build_win_lite/x64-Release --config Release --target ALL_BUILD
+          cp -r build_win_lite/x64-Release/output .
+          python -m pip install timeout_decorator numpy onnxruntime pytest opencv-python
+          export PYTHONHOME="$(dirname "$(which python)")"
+          export C_INCLUDE_PATH=${C_INCLUDE_PATH}:$(pwd)/output/bmf/include
+          export CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:$(pwd)/output/bmf/include
+          export LIBRARY_PATH=${LIBRARY_PATH}:$(pwd)/output/bmf/lib
+          export PYTHONPATH=$(pwd)/output/bmf/lib:$(pwd)/output
+          export PATH=$(pwd)/3rd_party/win_rootfs/x64/usr/bin:$(pwd)/3rd_party/win_rootfs/x64/usr/lib:$(pwd)/output/bmf/bin:$(pwd)/output/bmf/lib:${PATH}
+          ./output/bmf/bin/module_manager install python_copy_module python my_module:my_module $(pwd)/output/test/customize_module v0.0.1
+          ./output/bmf/bin/module_manager install cpp_copy_module c++ copy_module:CopyModule $(pwd)/output/test/c_module/lib v0.0.1
+          (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz --no-check-certificate && tar xvf files.tar.gz && rm -rf files.tar.gz)
+          (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/models.tar.gz --no-check-certificate && tar xvf models.tar.gz && rm -rf models.tar.gz)
+          cd output/bmf/bin
+          ./test_bmf_module_sdk.exe
+          ./test_bmf_engine.exe --gtest_filter=-go_module.module_loader
+          ./test_cpp_builder.exe
+          cd -
+          (cd output/demo/transcode               && python test_transcode.py)
+          (cd output/demo/edit                    && python test_edit.py)
+          (cd output/demo/predict                 && python predict_sample.py)
+          (cd output/test/audio_copy              && python test_simple.py)
+          (cd output/test/pre_module              && python test_pre_module.py)
+          (cd output/test/sync_mode               && python test_sync_mode.py)
+          (cd output/test/generator               && python test_generator.py)
+          (cd output/test/run_by_config           && python test_run_by_config.py)
+          (cd output/test/server                  && python test_server.py)
+          (cd output/test/c_module                && python test_video_c_module.py)
+          (cd output/test/dynamical_graph         && python dynamical_graph.py)
+          (cd output/test/av_log_buffer           && python test_av_log_buffer.py)
+          (cd output/test/push_data_into_graph    && python test_push_data.py)
+          (cd output/test/complex_edit_case       && python test_complex_case.py)
+          (cd output/test/complex_edit_case       && python test_compare_with_edit.py)
+          (cd bmf/hml/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
+          (cd bmf/hml/tests                       && python -m pytest)
+          '@
+        - echo $bashCommand | & $bashPath
+  
+  gpu_test_ci:
+    name: gpu_test_ci
+    image: babitmf/bmf_runtime:latest
+    runs-on:
+      cluster: "gpu_host"
+    envs:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: all
+    steps:
+      - uses: actions/setup-proxy
+      - name: build_env
+        commands:
+          - rm -rf /root/bmf
+          - git submodule update --init --recursive
+          - ./build.sh
+          - export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$(pwd)/output/bmf/lib"
+          - export PYTHONPATH="${PYTHONPATH}:$(pwd)/output/bmf/lib:$(pwd)/output"
+          - (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz --no-check-certificate && tar xvf files.tar.gz && rm -rf files.tar.gz)
+          - (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/models.tar.gz --no-check-certificate && tar xvf models.tar.gz && rm -rf models.tar.gz)
+          - (cd output/demo/gpu_module                    && python3 test_gpu_module.py)
+          - (cd output/demo/video_frame_extraction && cmake . && make -j8 && python3 video_frame_extraction.py)
+          - (cd output/demo/video_enhance && pip install basicsr==1.4.2 realesrgan && (sed -i '8s/from torchvision.transforms.functional_tensor import rgb_to_grayscale/from torchvision.transforms.functional import rgb_to_grayscale/' /usr/local/lib/python3.8/dist-packages/basicsr/data/degradations.py) && python3 enhance_demo.py)
+          - (cd output/demo/aesthetic_assessment && pip install onnxruntime && python3 aesthetic_assessment_demo.py)
+          - (cd output/demo/face_detect && cp ../../models/version-RFB-640.onnx . && trtexec --onnx=version-RFB-640.onnx --buildOnly --saveEngine=version-RFB-640.engine && cp version-RFB-640.engine ../../models && python3 detect_trt_sample.py)
+          - (cd output/demo/colorization_python && git clone https://github.com/eefengwei/DeOldify.git DeOldify && pip3 install -r ./DeOldify/requirements-colab.txt && pip3 install Ipython && mkdir -p ./DeOldify/models && wget -c https://huggingface.co/spensercai/DeOldify/resolve/main/ColorizeVideo_gen.pth -O ./DeOldify/models/ColorizeVideo_gen.pth && python3 deoldify_demo.py)

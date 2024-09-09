@@ -41,7 +41,7 @@ pip3 install -r ./requirements.txt
 ### 1.3 download the pretrained-weights
 ```Bash
 mkdir -p ./DeOldify/models
-wget -c https://data.deepai.org/deoldify/ColorizeVideo_gen.pth -O ./DeOldify/models/ColorizeVideo_gen.pth
+wget -c https://huggingface.co/spensercai/DeOldify/resolve/main/ColorizeVideo_gen.pth -O ./DeOldify/models/ColorizeVideo_gen.pth
 ```
 
 ### 1.4 pip install BMF packages

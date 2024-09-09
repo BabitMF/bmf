@@ -30,12 +30,31 @@ TEST(media_description, construct) {
         .height(1080)
         .device(hmp::Device("cpu"))
         .pixel_format(hmp::PF_YUV420P)
+        .color_space(hmp::CS_BT709)
         .media_type(MediaType::kAVFrame);
 
     EXPECT_EQ(dp.width(), 1920);
     EXPECT_EQ(dp.height(), 1080);
     EXPECT_EQ(dp.device().type(), hmp::Device::Type::CPU);
     EXPECT_EQ(dp.pixel_format(), hmp::PF_YUV420P);
+    EXPECT_EQ(dp.color_space(), hmp::CS_BT709);
+    EXPECT_EQ(dp.media_type(), MediaType::kAVFrame);
+}
+
+TEST(media_description, construct_w_pix_info) {
+    MediaDesc dp;
+    dp.width(1920)
+        .height(1080)
+        .device(hmp::Device("cpu"))
+        .pixel_info(PixelInfo(hmp::PF_YUV420P, hmp::ColorSpace::CS_BT709, hmp::CR_MPEG))
+        .media_type(MediaType::kAVFrame);
+    
+    EXPECT_EQ(dp.width(), 1920);
+    EXPECT_EQ(dp.height(), 1080);
+    EXPECT_EQ(dp.device().type(), hmp::Device::Type::CPU);
+    EXPECT_EQ(dp.pixel_info().format(), hmp::PF_YUV420P);
+    EXPECT_EQ(dp.pixel_info().space(), hmp::CS_BT709);
+    EXPECT_EQ(dp.pixel_info().range(), hmp::CR_MPEG);
     EXPECT_EQ(dp.media_type(), MediaType::kAVFrame);
 }
 
@@ -47,6 +66,7 @@ TEST(media_description, has_value) {
     EXPECT_TRUE(dp.device.has_value());
     EXPECT_TRUE(dp.pixel_format.has_value());
     EXPECT_FALSE(dp.media_type.has_value());
+    EXPECT_FALSE(dp.pixel_info.has_value());
 }
 
 TEST(convert_backend, format_cvt) {
@@ -55,9 +75,38 @@ TEST(convert_backend, format_cvt) {
     auto rgbformat = hmp::PixelInfo(hmp::PF_RGB24);
     auto src_vf = VideoFrame::make(640, 320, rgbformat);
     auto dst_vf = bmf_convert(src_vf, MediaDesc{}, dp);
+    EXPECT_EQ(src_vf.width(), 640);
     EXPECT_EQ(dst_vf.width(), 1920);
     EXPECT_EQ(dst_vf.height(), 960);
     EXPECT_EQ(dst_vf.frame().format(), hmp::PF_YUV420P);
+}
+
+TEST(convert_backend, format_cvt_round_trip) {
+    // depart - using MediaDesc::pix_info
+    auto rgbformat = hmp::PixelInfo(hmp::PF_RGB24);
+    auto yuvformat = hmp::PixelInfo(hmp::PF_YUV420P, hmp::CS_BT709, hmp::CR_MPEG);
+    auto src_vf = VideoFrame::make(640, 320, rgbformat);
+    MediaDesc tp;
+    tp.width(1920).pixel_info(yuvformat);
+    auto tmp_vf = bmf_convert(src_vf, MediaDesc{}, tp);
+    EXPECT_EQ(src_vf.width(), 640);
+    EXPECT_EQ(tmp_vf.width(), 1920);
+    EXPECT_EQ(tmp_vf.height(), 960);
+    EXPECT_EQ(tmp_vf.frame().format(), hmp::PF_YUV420P);
+    EXPECT_EQ(tmp_vf.frame().pix_info().space(), hmp::CS_BT709);
+    EXPECT_EQ(tmp_vf.frame().pix_info().range(), hmp::CR_MPEG);
+
+    // return - using MediaDesc::pixel_format
+    MediaDesc dp;
+    dp.width(640)
+        .height(320)
+        .pixel_format(hmp::PF_RGB24);
+    auto dst_vf = bmf_convert(tmp_vf, MediaDesc{}, dp);
+    EXPECT_EQ(dst_vf.width(), 640);
+    EXPECT_EQ(dst_vf.height(), 320);
+    EXPECT_EQ(dst_vf.frame().format(), hmp::PF_RGB24);
+    EXPECT_NE(dst_vf.frame().pix_info().space(), tmp_vf.frame().pix_info().space());
+    EXPECT_NE(dst_vf.frame().pix_info().range(), tmp_vf.frame().pix_info().range());
 }
 
 #ifdef BMF_ENABLE_FFMPEG

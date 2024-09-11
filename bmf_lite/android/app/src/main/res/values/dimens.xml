@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="main_button_margin">54dp</dimen>
+    <dimen name="main_button_padding">54dp</dimen>
+
+    <dimen name="player_button_margin">12dp</dimen>
+    <dimen name="param_item_margin">4dp</dimen>
+
+</resources>

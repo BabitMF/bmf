@@ -1,0 +1,84 @@
+ext.deps = [:]
+def versions = [:]
+versions.lifecycle = "2.5.1"
+versions.material = "1.5.0"
+versions.recyclerview = "1.2.1"
+versions.kotlin = "1.8.10"
+versions.cardview = "1.0.0"
+versions.constraint_layout = "2.1.4"
+versions.arch_core = "2.1.0"
+versions.annotations = "1.2.0"
+versions.appcompat = "1.6.1"
+versions.activity = "1.7.0"
+versions.fragment = "1.5.5"
+versions.core = "1.7.0"
+versions.collection = "1.2.0"
+versions.coroutine = "1.6.1"
+versions.gson = "2.10.1"
+ext.versions = versions
+
+def build_versions = [:]
+build_versions.min_sdk = 21
+build_versions.compile_sdk = 33
+build_versions.target_sdk = 33
+ext.build_versions = build_versions
+
+def deps = [:]
+
+def lifecycle = [:]
+lifecycle.common = "androidx.lifecycle:lifecycle-common:$versions.lifecycle"
+lifecycle.runtime = "androidx.lifecycle:lifecycle-runtime:$versions.lifecycle"
+lifecycle.runtime_ktx = "androidx.lifecycle:lifecycle-runtime-ktx:$versions.lifecycle"
+lifecycle.java8 = "androidx.lifecycle:lifecycle-common-java8:$versions.lifecycle"
+lifecycle.compiler = "androidx.lifecycle:lifecycle-compiler:$versions.lifecycle"
+lifecycle.viewmodel_ktx = "androidx.lifecycle:lifecycle-viewmodel-ktx:$versions.lifecycle"
+lifecycle.livedata_ktx = "androidx.lifecycle:lifecycle-livedata-ktx:$versions.lifecycle"
+lifecycle.livedata_core_ktx = "androidx.lifecycle:lifecycle-livedata-core-ktx:$versions.lifecycle"
+deps.lifecycle = lifecycle
+
+deps.material = "com.google.android.material:material:$versions.material"
+
+deps.recyclerview = "androidx.recyclerview:recyclerview:$versions.recyclerview"
+
+def kotlin = [:]
+kotlin.stdlib = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlin"
+kotlin.test = "org.jetbrains.kotlin:kotlin-test-junit:$versions.kotlin"
+kotlin.plugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlin"
+deps.kotlin = kotlin
+
+deps.cardview = "androidx.cardview:cardview:$versions.cardview"
+
+deps.constraint_layout = "androidx.constraintlayout:constraintlayout:$versions.constraint_layout"
+
+def arch_core = [:]
+arch_core.runtime = "androidx.arch.core:core-runtime:$versions.arch_core"
+arch_core.testing = "androidx.arch.core:core-testing:$versions.arch_core"
+deps.arch_core = arch_core
+
+deps.annotations = "androidx.annotation:annotation:$versions.annotations"
+
+deps.app_compat = "androidx.appcompat:appcompat:$versions.appcompat"
+
+deps.core = "androidx.core:core-ktx:$versions.core"
+
+deps.coroutine = "org.jetbrains.kotlinx:kotlinx-coroutines-android:$versions.coroutine"
+
+deps.collection = "androidx.collection:collection-ktx:$versions.collection"
+
+def activity = [:]
+activity.activity_ktx = "androidx.activity:activity-ktx:$versions.activity"
+deps.activity = activity
+
+def fragment = [:]
+fragment.fragment_ktx = "androidx.fragment:fragment-ktx:$versions.fragment"
+deps.fragment = fragment
+
+def google = [:]
+google.gson = "com.google.code.gson:gson:$versions.gson"
+deps.google = google
+
+deps.bolts_tasks = "com.parse.bolts:bolts-tasks:$versions.bolts_tasks"
+
+
+
+ext.deps = deps

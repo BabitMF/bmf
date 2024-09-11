@@ -1,0 +1,56 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "BMF Lite"
+    },
+    {
+      "name": "button_player_sr",
+      "value": "Player Super Resolution"
+    },
+    {
+      "name": "button_camera_denoise",
+      "value": "Camera Denoise"
+    },
+    {
+      "name": "button_text_to_pic",
+      "value": "Text to Picture"
+    },
+    {
+      "name": "desc_constructing",
+      "value": "Constructing..."
+    },
+    {
+      "name": "button_start_sr",
+      "value": "Start SR"
+    },
+    {
+      "name": "button_stop_sr",
+      "value": "Stop SR"
+    },
+    {
+      "name": "button_start_denoise",
+      "value": "Start Denoise"
+    },
+    {
+      "name": "button_stop_denoise",
+      "value": "Stop Denoise"
+    },
+    {
+      "name": "hint_unprocessed",
+      "value": "Unprocessed"
+    },
+    {
+      "name": "hint_processed",
+      "value": "Processed"
+    }
+  ]
+}

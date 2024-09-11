@@ -1,0 +1,6 @@
+{
+  "name": "libnativerender.so",
+  "types": "./nativerender.d.ts",
+  "version": "",
+  "description": "Please describe the basic information."
+}

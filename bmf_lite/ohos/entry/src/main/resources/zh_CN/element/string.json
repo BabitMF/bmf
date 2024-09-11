@@ -1,0 +1,56 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "模块描述"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "BMF Lite"
+    },
+    {
+      "name": "button_player_sr",
+      "value": "播放超分辨率"
+    },
+    {
+      "name": "button_camera_denoise",
+      "value": "拍摄降噪"
+    },
+    {
+      "name": "button_text_to_pic",
+      "value": "文本生成图片"
+    },
+    {
+      "name": "desc_constructing",
+      "value": "敬请期待"
+    },
+    {
+      "name": "button_start_sr",
+      "value": "开启超分"
+    },
+    {
+      "name": "button_stop_sr",
+      "value": "关闭超分"
+    },
+    {
+      "name": "button_start_denoise",
+      "value": "开启降噪"
+    },
+    {
+      "name": "button_stop_denoise",
+      "value": "关闭降噪"
+    },
+    {
+      "name": "hint_unprocessed",
+      "value": "处理前"
+    },
+    {
+      "name": "hint_processed",
+      "value": "处理后"
+    }
+  ]
+}

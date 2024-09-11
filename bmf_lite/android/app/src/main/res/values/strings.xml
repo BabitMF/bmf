@@ -1,0 +1,12 @@
+<resources>
+    <string name="main_btn_superresolution_test">播放超分展示</string>
+    <string name="main_btn_denoise_test">摄像头降噪展示</string>
+    <string name="main_btn_brighten_test">亮度检测</string>
+    <string name="main_btn_canny_test">Canny特效展示</string>
+    <string name="main_btn_tex_gen_pic_test">文生图片展示</string>
+    <string name="main_tex_view">亮度检测结果：</string>
+    <string name="main_tex_gen_pic_edit">文生图：</string>
+    <string name="main_tex_gen_pic_ref_pic_btn_">选择边缘图</string>
+    <string name="main_tex_gen_pic_ref_generate_btn_">生成图片</string>
+    <string name="app_name">bmf_lite_app</string>
+</resources>

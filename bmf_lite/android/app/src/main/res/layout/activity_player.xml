@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="1dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:translationZ="1dp">
+
+        <SeekBar
+            android:id="@+id/splitSeekbar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:max="100"
+            android:maxHeight="50dp"
+            android:minHeight="50dp"
+            android:paddingTop="500dp"
+            android:paddingBottom="500dp"
+            android:progress="50"
+            android:rotationX="0"
+            android:splitTrack="false"
+            android:clickable="false"
+            android:alpha="0.0" />
+    </LinearLayout>
+
+    <com.bmf.lite.app.render.GLSurfaceViewWrapper
+        android:id="@+id/surfaceView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+
+
+</RelativeLayout>
+
+<!--    android:layout_gravity="center_vertical"-->

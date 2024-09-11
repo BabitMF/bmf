@@ -1,0 +1,108 @@
+{
+  "float": [
+    {
+      "name": "size_zero_five",
+      "value": "0.5"
+    },
+    {
+      "name": "size_zero_six",
+      "value": "0.6"
+    },
+    {
+      "name": "size_zero",
+      "value": "0"
+    },
+    {
+      "name": "size_1",
+      "value": "1"
+    },
+    {
+      "name": "size_5",
+      "value": "5"
+    },
+    {
+      "name": "size_10",
+      "value": "10"
+    },
+    {
+      "name": "size_12",
+      "value": "12"
+    },
+    {
+      "name": "size_15",
+      "value": "15"
+    },
+    {
+      "name": "size_16",
+      "value": "16"
+    },
+    {
+      "name": "size_18",
+      "value": "18"
+    },
+    {
+      "name": "size_20",
+      "value": "20"
+    },
+    {
+      "name": "size_down_20",
+      "value": "-20"
+    },
+    {
+      "name": "size_24",
+      "value": "24"
+    },
+    {
+      "name": "size_25",
+      "value": "25"
+    },
+    {
+      "name": "size_30",
+      "value": "30"
+    },
+    {
+      "name": "size_32",
+      "value": "32"
+    },
+    {
+      "name": "size_35",
+      "value": "35"
+    },
+    {
+      "name": "size_40",
+      "value": "40"
+    },
+    {
+      "name": "size_45",
+      "value": "45"
+    },
+    {
+      "name": "size_48",
+      "value": "48"
+    },
+    {
+      "name": "size_50",
+      "value": "50"
+    },
+    {
+      "name": "size_64",
+      "value": "64"
+    },
+    {
+      "name": "size_75",
+      "value": "75"
+    },
+    {
+      "name": "size_80",
+      "value": "80"
+    },
+    {
+      "name": "size_720",
+      "value": "720"
+    },
+    {
+      "name": "size_1280",
+      "value": "1280"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.MainActivity">
+
+    <Button
+        android:id="@+id/btnSuperResolutionTest"
+        android:text="@string/main_btn_superresolution_test"
+        android:drawableStart="@drawable/btn_start"
+        style="@style/Button.MainButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/btnDenoiseTest"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <Button
+        android:id="@+id/btnDenoiseTest"
+        android:text="@string/main_btn_denoise_test"
+        android:drawableStart="@drawable/btn_start"
+        style="@style/Button.MainButton"
+        android:layout_marginTop="40dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnSuperResolutionTest"
+        app:layout_constraintBottom_toTopOf="@+id/btnTexGenPicTest" />
+    <Button
+        android:id="@+id/btnTexGenPicTest"
+        android:text="@string/main_btn_tex_gen_pic_test"
+        android:drawableStart="@drawable/btn_start"
+        android:layout_marginTop="40dp"
+        style="@style/Button.MainButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnDenoiseTest"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

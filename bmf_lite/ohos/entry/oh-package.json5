@@ -1,0 +1,13 @@
+{
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "Please describe the basic information.",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "libnativerender.so": "file:./src/main/cpp/types/libnativerender",
+//    "bmf_lite": "../bmf_lite"
+  }
+}
+

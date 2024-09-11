@@ -1,0 +1,12 @@
+.idea/
+.hvigor/
+oh_modules
+
+.DS_Store
+.clang-format
+.clang-tidy
+.clangd
+
+local.properties
+
+oh-package-lock.json5

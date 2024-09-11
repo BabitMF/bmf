@@ -1,10 +1,7 @@
 .idea/*
 .venv/
 *.mov
-*.json
 *.pyc
-*.mp4
-*.png
 *.jpg
 .DS_Store
 *.o
@@ -43,6 +40,7 @@ UserInterface.xcuserstate
 !default.mode2v3
 *.perspectivev3
 !default.perspectivev3
+.vscode
 profile
 *.moved-aside
 DerivedData
@@ -53,3 +51,18 @@ Pods
 !Podfile
 !Podfile.lock
 !Manifest.lock
+
+bmf_lite/android/.idea/
+bmf_lite/android/.gradle
+bmf_lite/android/app/build
+bmf_lite/android/.gradle
+bmf_lite/android/.idea
+bmf_lite/android/lite/.cxx
+bmf_lite/android/lite/build
+bmf_lite/android/local.properties
+bmf_lite/build_android
+bmf_lite/demo/ios_demo/bmf_demo/bmf_demo.xcodeproj/xcshareddata/xcschemes/bmf_demo.xcscheme
+
+*.air
+bmf_lite/build_ios/
+bmf_lite/demo/ios_demo/bmf_demo/bmf_demo.xcodeproj/xcshareddata/

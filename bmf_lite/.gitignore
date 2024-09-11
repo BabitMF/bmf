@@ -1,0 +1,5 @@
+build_ohos/
+
+output/
+
+adb_run_cmd.txt

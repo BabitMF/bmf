@@ -32,25 +32,51 @@
 BEGIN_BMF_ENGINE_NS
 USE_BMF_SDK_NS
 std::vector<Graph *> g_ptr;
+std::atomic<bool> g_signal_handler_started(false);
+std::atomic<int> g_sigint_count(0);  // 用于记录 SIGINT 信号接收次数
+std::once_flag g_quit_once_flag;
+std::condition_variable g_stop_cv;
+std::mutex g_stop_mutex;
+
 
 void terminate(int signum) {
-    std::cout << "terminated, ending bmf gracefully..." << std::endl;
-    for (auto p : g_ptr)
-        p->quit_gracefully();
+    g_sigint_count.fetch_add(1);
+    
+    if (g_sigint_count == 1) {
+        std::cerr << "\nSignal received (1st time). Press Ctrl+C two more times to force exit." << std::endl;
+    } else if (g_sigint_count == 2) {
+        std::cerr << "\nSignal received (2nd time). Press Ctrl+C one more time to force exit." << std::endl;
+    } else if (g_sigint_count > 2) {
+        std::cerr << "\nSignal received (3rd time). Forcing exit now..." << std::endl;
+        std::terminate();  // 强制退出
+    }
+
+    g_stop_cv.notify_one(); 
 }
 
-void interrupted(int signum) {
-    std::cout << "interrupted, ending bmf gracefully..." << std::endl;
-    for (auto p : g_ptr)
-        p->quit_gracefully();
+void signal_handler_thread(Graph* graph_instance) {
+    std::cout << "Signal thread start..." << std::endl;
+
+    std::unique_lock<std::mutex> lock(g_stop_mutex);
+    g_stop_cv.wait(lock, [] { return g_sigint_count > 0; }); 
+
+    std::cout << "Initiating graceful shutdown..." << std::endl;
+    graph_instance->quit_gracefully();
 }
+
 
 Graph::Graph(
     GraphConfig graph_config,
     std::map<int, std::shared_ptr<Module>> pre_modules,
     std::map<int, std::shared_ptr<ModuleCallbackLayer>> callback_bindings) {
-    std::signal(SIGTERM, terminate);
-    std::signal(SIGINT, interrupted);
+
+    if (!g_signal_handler_started.load()) {  
+        g_signal_handler_started.store(true);                 
+        std::signal(SIGTERM, terminate);
+        std::signal(SIGINT, terminate);
+        std::thread(signal_handler_thread, this).detach();
+    }
+
     configure_bmf_log();
     BMFLOG(BMF_INFO) << "BMF Version: " << BMF_VERSION;
     BMFLOG(BMF_INFO) << "BMF Commit: " << BMF_COMMIT;
@@ -940,12 +966,15 @@ void Graph::print_node_info_pretty() {
 }
 
 void Graph::quit_gracefully() {
-    std::cerr << "quitting..." << std::endl;
-    for (auto g : g_ptr) {
-        g->print_node_info_pretty();
-        g->force_close();
-    }
+    std::call_once(g_quit_once_flag, [this]() {
+        std::cout << "quit_gracefully only once" << std::endl;
+        for (auto g : g_ptr) {
+            g->print_node_info_pretty();
+            g->force_close();
+        }
+    });
 }
+
 
 Graph::~Graph() {
     if (not exception_from_scheduler_)

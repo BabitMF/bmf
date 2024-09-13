@@ -58,10 +58,11 @@ void signal_handler_thread(Graph* graph_instance) {
     std::cout << "Signal thread start..." << std::endl;
 
     std::unique_lock<std::mutex> lock(g_stop_mutex);
-    g_stop_cv.wait(lock, [] { return g_sigint_count > 0; }); 
+    g_stop_cv.wait(lock, [&] { return g_sigint_count > 0 || graph_instance->is_closed();}); 
 
     std::cout << "Initiating graceful shutdown..." << std::endl;
-    graph_instance->quit_gracefully();
+    if (g_sigint_count > 0)
+        graph_instance->quit_gracefully();
 }
 
 
@@ -136,8 +137,11 @@ void Graph::init(
             BMFLOG(BMF_INFO)
                 << "node " << node_id
                 << " close report, closed count: " << this->closed_count_;
-        if (this->closed_count_ == this->nodes_.size() || is_exception)
+        if (this->closed_count_ == this->nodes_.size() || is_exception) {
             this->cond_close_.notify_one();
+            g_stop_cv.notify_one();
+        }
+
         return 0;
     };
 
@@ -170,6 +174,10 @@ void Graph::init(
 
     for (auto &node : source_nodes_)
         scheduler_->add_or_remove_node(node->get_id(), true);
+}
+
+bool Graph::is_closed() {
+    return this->closed_count_ == this->nodes_.size();
 }
 
 int Graph::get_hungry_check_func(std::shared_ptr<Node> &root_node,

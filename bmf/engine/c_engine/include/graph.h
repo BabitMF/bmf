@@ -130,6 +130,8 @@ class Graph {
 
     bmf::GraphRunningInfo status();
 
+    bool is_closed();
+
   private:
     // visible to monitor.
     friend class RunningInfoCollector;

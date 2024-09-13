@@ -48,7 +48,7 @@ void terminate(int signum) {
         std::cerr << "\nSignal received (2nd time). Press Ctrl+C one more time to force exit." << std::endl;
     } else if (g_sigint_count > 2) {
         std::cerr << "\nSignal received (3rd time). Forcing exit now..." << std::endl;
-        std::terminate();  // 强制退出
+        std::exit(123);  // 强制退出
     }
 
     g_stop_cv.notify_one(); 

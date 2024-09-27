@@ -54,6 +54,8 @@ inline void configure_bmf_log_level() {
             level = BMF_ERROR;
         } else if (log_level == "FATAL") {
             level = BMF_FATAL;
+        } else if (log_level == "DEBUG") {
+            level = BMF_DEBUG;
         } else if (log_level == "DISABLE") {
             level = BMF_DISABLE;
         }

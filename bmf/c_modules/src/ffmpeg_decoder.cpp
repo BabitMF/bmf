@@ -2339,6 +2339,7 @@ int CFFDecoder::process_raw_stream_packet(Task &task, BMFAVPacket &bmf_pkt,
 
     int decode_len = decode_send_packet(task, av_packet, &got_frame);
     av_packet_unref(av_packet);
+    av_packet_free(&av_packet);
     if (decode_len < 0 && decode_len != AVERROR(EAGAIN) &&
         decode_len != AVERROR_EOF && !(video_end_ && audio_end_))
         BMFLOG_NODE(BMF_ERROR, node_id_) << "Error of decode raw stream";

@@ -44,7 +44,7 @@ VideoSync::VideoSync(AVRational input_stream_time_base,
     filter_in_frame_rate_ = filter_in_frame_rate;
     video_frame_rate_ = video_frame_rate;
     sync_method_ = sync_method;
-    memset(last_nb0_frames_, 0, sizeof(int));
+    memset(last_nb0_frames_, 0, sizeof(last_nb0_frames_));
     stream_start_time_ = stream_start_time;
     stream_first_dts_ = stream_first_dts;
     max_frames_ = max_frames > 0 ? max_frames : INT64_MAX;

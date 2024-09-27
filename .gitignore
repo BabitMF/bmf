@@ -21,6 +21,7 @@ bmf/go_module_sdk/.idea
 bmf/go_module_sdk/build
 bmf/go_module_sdk/cmake-build-debug
 output/
+3rd_party/breakpad*
 
 .DS_Store
 */.DS_Store

@@ -30,41 +30,43 @@ BUILD_TYPE="Release"
 # dist folder). The other folders are catered for SCM installation method.
 
 COVERAGE_OPTION=0
+SANITIZER_OPTION=""
 LOCAL_BUILD=1
 
 # Handle options
-if [ $# -gt 0 ]
-then
-    # Clean up
-    if [ "$1" = "clean" ]
-    then
-        rm -rf build
-        exit
-    fi
-
-    # Debug type
-    if [ "$1" = "debug" ]
-    then
-        BUILD_TYPE="Debug"
-    fi
-
-    # Debug type with coverage option
-    if [ "$1" = "with_cov" ]
-    then
-        BUILD_TYPE="Debug"
-        COVERAGE_OPTION=1
-    fi
-
-    # Debug type with coverage option
-    if [ "$1" = "non_local" ]
-    then
-        LOCAL_BUILD=0
-    fi
-    if [ "$1" = "disable_cuda" ]
-    then
-        CUDA_ENABLE=OFF
-    fi
-fi
+while [ $# -gt 0 ]; do
+    case "$1" in
+        clean)
+            # Clean up
+            rm -rf build
+            exit
+        ;;
+        debug)
+            # Debug type
+            BUILD_TYPE="Debug"
+        ;;
+        asan)
+            # Build with asan
+            SANITIZER_OPTION="asan"
+        ;;
+        ubsan)
+            # Build with ubsan
+            SANITIZER_OPTION="ubsan"
+        ;;
+        with_cov)
+            # Debug with coverage option
+            BUILD_TYPE="Debug"
+            COVERAGE_OPTION=1
+        ;;
+        non_local)
+            LOCAL_BUILD=0
+        ;;
+        disable_cuda)
+            CUDA_ENABLE=OFF
+        ;;
+    esac
+    shift
+done
 
 mkdir -p output
 
@@ -186,6 +188,7 @@ else
     cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
         -DBMF_PYENV=$(python3 -c "import sys; print('{}.{}'.format(sys.version_info.major, sys.version_info.minor))") \
         -DCOVERAGE=${COVERAGE_OPTION} \
+        -DSANITIZE=${SANITIZER_OPTION} \
         -DBMF_LOCAL_DEPENDENCIES=${LOCAL_BUILD} \
         -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
         -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ${cmake_args} ..

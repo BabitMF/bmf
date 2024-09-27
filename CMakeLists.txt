@@ -23,7 +23,8 @@ option(BMF_ENABLE_GLOG "Enable build with glog support" OFF)
 option(BMF_ENABLE_JNI "Enable build with JNI support" OFF)
 option(BMF_ENABLE_FFMPEG "Enable build with ffmpeg support" ON)
 option(BMF_ENABLE_MOBILE "Enable build for mobile platform" OFF)
-option(BMF_ENABLE_TEST "compile examples and tests" ON)
+option(BMF_ENABLE_TEST "Compile examples and tests" ON)
+option(CMAKE_EXPORT_COMPILE_COMMANDS "Export compile commands" OFF)
 
 if (BMF_ENABLE_CUDA)
     # For FindCUDAToolkit support
@@ -62,12 +63,20 @@ else ()
     set(CMAKE_COVERAGE_FLAGS " ")
 endif()
 
+if (SANITIZE STREQUAL "asan")
+    set(CMAKE_SANITIZER_FLAGS "-fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-sanitize-recover=all")
+elseif (SANITIZE STREQUAL "ubsan")
+    set(CMAKE_SANITIZER_FLAGS "-fsanitize=undefined -fno-sanitize-recover=all")
+else ()
+    set(CMAKE_SANITIZER_FLAGS " ")
+endif()
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     if ($ENV{SCRIPT_EXEC_MODE} MATCHES "x86")
         # runpath for bmf libs
-        set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations -Wl,-z,defs,-rpath,'$ORIGIN',--enable-new-dtags ${CMAKE_COVERAGE_FLAGS} ${CMAKE_CXX_FLAGS}") # For python dist
+        set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations -Wl,-z,defs,-rpath,'$ORIGIN',--enable-new-dtags ${CMAKE_COVERAGE_FLAGS} ${CMAKE_SANITIZER_FLAGS} ${CMAKE_CXX_FLAGS}") # For python dist
     else()
-        set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations -Wl,-z,defs ${CMAKE_COVERAGE_FLAGS} ${CMAKE_CXX_FLAGS}") #report unresolved symbols
+        set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations -Wl,-z,defs ${CMAKE_COVERAGE_FLAGS} ${CMAKE_SANITIZER_FLAGS} ${CMAKE_CXX_FLAGS}") #report unresolved symbols
     endif()
 endif()
 

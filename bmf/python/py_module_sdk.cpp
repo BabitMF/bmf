@@ -628,10 +628,11 @@ void module_sdk_bind(py::module &m) {
     py::class_<MediaDesc>(m, "MediaDesc")
         .def(py::init<>()) DEFMEDIADESCBIND(width, int)
             DEFMEDIADESCBIND(height, int)
-                DEFMEDIADESCBIND(pixel_format, hmp::PixelFormat)
-                    DEFMEDIADESCBIND(color_space, hmp::ColorSpace)
-                        DEFMEDIADESCBIND(device, hmp::Device)
-                            DEFMEDIADESCBIND(media_type, MediaType);
+                DEFMEDIADESCBIND(pixel_info, hmp::PixelInfo)
+                    DEFMEDIADESCBIND(pixel_format, hmp::PixelFormat)
+                        DEFMEDIADESCBIND(color_space, hmp::ColorSpace)
+                            DEFMEDIADESCBIND(device, hmp::Device)
+                                DEFMEDIADESCBIND(media_type, MediaType);
 
     m.def("bmf_convert", &bmf_convert);
 

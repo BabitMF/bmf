@@ -89,7 +89,7 @@ while [ $# -gt 0 ]; do
                 exit
             fi
         ;;
-        fuzzing)
+        fuzz)
             # fuzzing optimised build mode (best for finding bugs): 
             #  - fuzztest "Fuzzing mode" enabled for long fuzzing runs with code coverage instrumentation
             #  - compile in "RelWithDebug" mode for speed but still have debug capability

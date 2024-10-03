@@ -42,3 +42,7 @@
 	path = bmf/hml/third_party/fmt
 	url = https://github.com/fmtlib/fmt.git
         ignore = dirty
+[submodule "bmf/hml/third_party/fuzztest"]
+	path = bmf/hml/third_party/fuzztest
+	url = https://github.com/google/fuzztest.git
+		ignore = dirty

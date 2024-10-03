@@ -127,6 +127,7 @@ set(HMP_ENABLE_CUDA ${BMF_ENABLE_CUDA})
 set(HMP_ENABLE_PYTHON ${BMF_ENABLE_PYTHON})
 set(HMP_ENABLE_JNI ${BMF_ENABLE_JNI})
 set(HMP_ENABLE_MOBILE ${BMF_ENABLE_MOBILE})
+
 add_subdirectory(bmf/hml)
 
 ## cuda driver api

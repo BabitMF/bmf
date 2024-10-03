@@ -24,7 +24,8 @@ option(BMF_ENABLE_JNI "Enable build with JNI support" OFF)
 option(BMF_ENABLE_FFMPEG "Enable build with ffmpeg support" ON)
 option(BMF_ENABLE_MOBILE "Enable build for mobile platform" OFF)
 option(BMF_ENABLE_TEST "Compile examples and tests" ON)
-option(CMAKE_EXPORT_COMPILE_COMMANDS "Export compile commands" OFF)
+option(FUZZTEST_ENABLE_FUZZING_MODE "Enable fuzztest fuzzing mode" OFF)
+option(CMAKE_EXPORT_COMPILE_COMMANDS "Export compiler commands" OFF)
 
 if (BMF_ENABLE_CUDA)
     # For FindCUDAToolkit support
@@ -63,21 +64,41 @@ else ()
     set(CMAKE_COVERAGE_FLAGS " ")
 endif()
 
-if (SANITIZE STREQUAL "asan")
-    set(CMAKE_SANITIZER_FLAGS "-fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-sanitize-recover=all")
-elseif (SANITIZE STREQUAL "ubsan")
-    set(CMAKE_SANITIZER_FLAGS "-fsanitize=undefined -fno-sanitize-recover=all")
-else ()
-    set(CMAKE_SANITIZER_FLAGS " ")
+if(SANITIZERS MATCHES "address")
+    set(CMAKE_SANITIZER_FLAGS "-fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-address-use-after-scope -fno-sanitize-recover=all")
+elseif(SANITIZERS MATCHES "undefined")
+    set(CMAKE_SANITIZER_FLAGS "-fno-sanitize-recover=all")
+endif()
+
+if(DEFINED CMAKE_SANITIZER_FLAGS)
+    set(CMAKE_SANITIZER_FLAGS "-fsanitize=${SANITIZERS} ${CMAKE_SANITIZER_FLAGS}")
+else()
+    set(CMAKE_SANITIZER_FLAGS " ") 
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    if ($ENV{SCRIPT_EXEC_MODE} MATCHES "x86")
-        # runpath for bmf libs
-        set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations -Wl,-z,defs,-rpath,'$ORIGIN',--enable-new-dtags ${CMAKE_COVERAGE_FLAGS} ${CMAKE_SANITIZER_FLAGS} ${CMAKE_CXX_FLAGS}") # For python dist
-    else()
-        set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations -Wl,-z,defs ${CMAKE_COVERAGE_FLAGS} ${CMAKE_SANITIZER_FLAGS} ${CMAKE_CXX_FLAGS}") #report unresolved symbols
+    if(SANITIZERS STREQUAL "")
+        if ($ENV{SCRIPT_EXEC_MODE} MATCHES "x86")
+            # runpath for bmf libs
+            set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations -Wl,-z,defs,-rpath,'$ORIGIN',--enable-new-dtags ${CMAKE_COVERAGE_FLAGS} ${CMAKE_SANITIZER_FLAGS} ${CMAKE_CXX_FLAGS}") # For python dist
+        else()
+            set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations -Wl,-z,defs ${CMAKE_COVERAGE_FLAGS} ${CMAKE_SANITIZER_FLAGS} ${CMAKE_CXX_FLAGS}") # report unresolved symbols
+        endif()
+    else() # for sanitizers, do not report unresolved symbols (e.g. because ASAN relies on interposition)
+        if ($ENV{SCRIPT_EXEC_MODE} MATCHES "x86")
+            # runpath for bmf libs
+            set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations -Wl,-rpath,'$ORIGIN',--enable-new-dtags ${CMAKE_COVERAGE_FLAGS} ${CMAKE_SANITIZER_FLAGS} ${CMAKE_CXX_FLAGS}") # For python dist
+        else()
+            set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations ${CMAKE_COVERAGE_FLAGS} ${CMAKE_SANITIZER_FLAGS} ${CMAKE_CXX_FLAGS}") # allow unresolved symbols
+        endif()    
     endif()
+endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations ${CMAKE_COVERAGE_FLAGS} ${CMAKE_SANITIZER_FLAGS} ${CMAKE_CXX_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "-fuse-ld=lld ${CMAKE_EXE_LINKER_FLAGS}")
+    add_compile_definitions("BMF_ENABLE_FUZZ_TEST") # set macro for test executables with both gtest and fuzztest tests
+    set(BMF_ENABLE_FUZZ_TEST "") # define cmake variable to optionally build test executables with fuzztest tests only
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")

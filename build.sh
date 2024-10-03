@@ -30,8 +30,24 @@ BUILD_TYPE="Release"
 # dist folder). The other folders are catered for SCM installation method.
 
 COVERAGE_OPTION=0
-SANITIZER_OPTION=""
+FUZZ_TEST_OPTION=0
 LOCAL_BUILD=1
+
+cmake_args=""
+if [[ ! -z "${CMAKE_ARGS}" ]]
+then
+    cmake_args="${cmake_args} ${CMAKE_ARGS}"
+fi
+
+SANITIZERS=""
+add_sanitizer() {
+  local new_san="$1"
+  if [[ -z "$SANITIZERS" ]]; then
+    SANITIZERS="$new_san"
+  else
+    SANITIZERS="$SANITIZERS,$new_san"
+  fi
+}
 
 # Handle options
 while [ $# -gt 0 ]; do
@@ -47,11 +63,11 @@ while [ $# -gt 0 ]; do
         ;;
         asan)
             # Build with asan
-            SANITIZER_OPTION="asan"
+            add_sanitizer "address"
         ;;
         ubsan)
             # Build with ubsan
-            SANITIZER_OPTION="ubsan"
+            add_sanitizer "undefined"
         ;;
         with_cov)
             # Debug with coverage option
@@ -59,10 +75,39 @@ while [ $# -gt 0 ]; do
             COVERAGE_OPTION=1
         ;;
         non_local)
-            LOCAL_BUILD=0
+            LOCAL_BUILD=OFF
         ;;
         disable_cuda)
             CUDA_ENABLE=OFF
+        ;;
+        clang)
+            # NOTE: fuzz tests will be compiled in "Unit test mode"
+            if [[ -x "$(command -v clang)" && -x "$(command -v clang++)" ]]; then 
+                cmake_args="${cmake_args} -DCMAKE_C_COMPILER=$(which clang) -DCMAKE_CXX_COMPILER=$(which clang++)"
+            else 
+                echo "ERROR: clang/clang++ compiler not found. To run clang_fuzz mode, you must first install clang and llvm compiler tools."
+                exit
+            fi
+        ;;
+        fuzzing)
+            # fuzzing optimised build mode (best for finding bugs): 
+            #  - fuzztest "Fuzzing mode" enabled for long fuzzing runs with code coverage instrumentation
+            #  - compile in "RelWithDebug" mode for speed but still have debug capability
+            #  - AddressSanitizer enabled for detecting memory bug at runtime
+            if [[ -x "$(command -v clang)" && -x "$(command -v clang++)" ]]; then
+                # Release mode optimisations with debug symbols
+                BUILD_TYPE="RelWithDebug"
+                FUZZING_MODE=ON 
+                cmake_args="${cmake_args} -DCMAKE_C_COMPILER=$(which clang) -DCMAKE_CXX_COMPILER=$(which clang++) -DFUZZTEST_FUZZING_MODE=on"
+                add_sanitizer "address" 
+            else 
+                echo "ERROR: clang/clang++ compiler not found. To run clang_fuzz mode, you must first install clang and llvm compiler tools."
+                exit
+            fi
+        ;;
+        *)
+            echo "ERROR: Unknown option $1"
+            exit
         ;;
     esac
     shift
@@ -70,7 +115,7 @@ done
 
 mkdir -p output
 
-if [ $LOCAL_BUILD -ne 0 ]
+if [[ $LOCAL_BUILD != "OFF" ]];
 then
   git submodule update --init --recursive
 fi
@@ -84,12 +129,6 @@ fi
 
 # Generate BMF version
 source ./version.sh
-
-cmake_args=""
-if [[ ! -z "${CMAKE_ARGS}" ]]
-then
-    cmake_args="${cmake_args} ${CMAKE_ARGS}"
-fi
 
 # Handle SCM compilation for x86 multiple Python versions
 if [ "$SCRIPT_EXEC_MODE" == "x86" ]
@@ -186,9 +225,10 @@ then
 else
     mkdir -p build && cd build
     cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-        -DBMF_PYENV=$(python3 -c "import sys; print('{}.{}'.format(sys.version_info.major, sys.version_info.minor))") \
         -DCOVERAGE=${COVERAGE_OPTION} \
-        -DSANITIZE=${SANITIZER_OPTION} \
+        -DSANITIZERS=${SANITIZERS} \
+        -DFUZZTEST_ENABLE_FUZZING_MODE=${FUZZING_MODE} \
+        -DBMF_PYENV=$(python3 -c "import sys; print('{}.{}'.format(sys.version_info.major, sys.version_info.minor))") \
         -DBMF_LOCAL_DEPENDENCIES=${LOCAL_BUILD} \
         -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
         -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ${cmake_args} ..

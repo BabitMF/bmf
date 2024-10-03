@@ -63,13 +63,6 @@ if(HMP_ENABLE_TORCH)
     endif()
 endif()
 
-##### optional(remove it when nvcc support c++17)
-add_library(optional INTERFACE)   
-set_target_properties(optional PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR}/third_party/optional/include)
-list(APPEND HMP_CORE_PUB_DEPS optional)
-
-
 #### spdlog
 if(NOT "${CMAKE_SYSTEM_NAME}" MATCHES "Android|iOS" AND NOT EMSCRIPTEN)
     if (HMP_LOCAL_DEPENDENCIES)
@@ -160,12 +153,16 @@ if(HMP_ENABLE_OPENCV)
 endif()
 
 
-##### GTest
+##### Testing Framework (GTest or FuzzTest)
 if (HMP_LOCAL_DEPENDENCIES)
     if(WIN32)
         set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     endif()
-    add_subdirectory(third_party/gtest)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang") # FuzzTest needs to be built with Clang
+        add_subdirectory(third_party/fuzztest)
+    else ()
+        add_subdirectory(third_party/gtest)
+    endif()
 else ()
     find_package(GTest REQUIRED)
     add_library(gtest ALIAS GTest::gtest)

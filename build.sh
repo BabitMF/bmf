@@ -101,7 +101,7 @@ while [ $# -gt 0 ]; do
                 cmake_args="${cmake_args} -DCMAKE_C_COMPILER=$(which clang) -DCMAKE_CXX_COMPILER=$(which clang++) -DFUZZTEST_FUZZING_MODE=on"
                 add_sanitizer "address" 
             else 
-                echo "ERROR: clang/clang++ compiler not found. To run clang_fuzz mode, you must first install clang and llvm compiler tools."
+                echo "ERROR: clang/clang++ compiler not found. \nTo run clang_fuzz mode, you must first install clang and llvm compiler tools. \nRun `apt install -y lld llvm llvm-dev clang`"
                 exit
             fi
         ;;

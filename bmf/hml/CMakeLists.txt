@@ -70,10 +70,6 @@ if (NOT EMSCRIPTEN)
     enable_testing()
 endif()
 
-if(FUZZTEST_ENABLE_FUZZING_MODE)
-    fuzztest_setup_fuzzing_flags()
-endif()
-
 ### 
 configure_file(
     "${PROJECT_SOURCE_DIR}/include/hmp/config.h.in"

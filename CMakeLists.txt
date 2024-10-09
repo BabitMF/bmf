@@ -24,7 +24,8 @@ option(BMF_ENABLE_JNI "Enable build with JNI support" OFF)
 option(BMF_ENABLE_FFMPEG "Enable build with ffmpeg support" ON)
 option(BMF_ENABLE_MOBILE "Enable build for mobile platform" OFF)
 option(BMF_ENABLE_TEST "Compile examples and tests" ON)
-option(FUZZTEST_ENABLE_FUZZING_MODE "Enable fuzztest fuzzing mode" OFF)
+option(BMF_ENABLE_FUZZTEST "Enable fuzz tests" OFF)
+option(FUZZTEST_ENABLE_FUZZING_MODE "Enable fuzz tests in fuzzing mode" OFF)
 option(CMAKE_EXPORT_COMPILE_COMMANDS "Export compiler commands" OFF)
 
 if (BMF_ENABLE_CUDA)
@@ -77,28 +78,19 @@ else()
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    if(SANITIZERS STREQUAL "")
-        if ($ENV{SCRIPT_EXEC_MODE} MATCHES "x86")
-            # runpath for bmf libs
-            set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations -Wl,-z,defs,-rpath,'$ORIGIN',--enable-new-dtags ${CMAKE_COVERAGE_FLAGS} ${CMAKE_SANITIZER_FLAGS} ${CMAKE_CXX_FLAGS}") # For python dist
-        else()
-            set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations -Wl,-z,defs ${CMAKE_COVERAGE_FLAGS} ${CMAKE_SANITIZER_FLAGS} ${CMAKE_CXX_FLAGS}") # report unresolved symbols
-        endif()
-    else() # for sanitizers, do not report unresolved symbols (e.g. because ASAN relies on interposition)
-        if ($ENV{SCRIPT_EXEC_MODE} MATCHES "x86")
-            # runpath for bmf libs
-            set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations -Wl,-rpath,'$ORIGIN',--enable-new-dtags ${CMAKE_COVERAGE_FLAGS} ${CMAKE_SANITIZER_FLAGS} ${CMAKE_CXX_FLAGS}") # For python dist
-        else()
-            set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations ${CMAKE_COVERAGE_FLAGS} ${CMAKE_SANITIZER_FLAGS} ${CMAKE_CXX_FLAGS}") # allow unresolved symbols
-        endif()    
+    if ($ENV{SCRIPT_EXEC_MODE} MATCHES "x86")
+        # runpath for bmf libs
+        set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations -Wl,-z,defs,-rpath,'$ORIGIN',--enable-new-dtags ${CMAKE_COVERAGE_FLAGS} ${CMAKE_SANITIZER_FLAGS} ${CMAKE_CXX_FLAGS}") # For python dist
+    else()
+        set(CMAKE_CXX_FLAGS "-D__STDC_FORMAT_MACROS -Wno-deprecated-declarations -Wl,-z,defs ${CMAKE_COVERAGE_FLAGS} ${CMAKE_SANITIZER_FLAGS} ${CMAKE_CXX_FLAGS}") #report unresolved symbols
     endif()
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations ${CMAKE_COVERAGE_FLAGS} ${CMAKE_SANITIZER_FLAGS} ${CMAKE_CXX_FLAGS}")
     set(CMAKE_EXE_LINKER_FLAGS "-fuse-ld=lld -pthread ${CMAKE_EXE_LINKER_FLAGS}")
-    add_compile_definitions("BMF_ENABLE_FUZZ_TEST") # set macro for test executables with both gtest and fuzztest tests
-    set(BMF_ENABLE_FUZZ_TEST "") # define cmake variable to optionally build test executables with fuzztest tests only
+    set(BMF_ENABLE_FUZZTEST ON) # enable compilation of fuzztest and fuzztest targets
+    add_compile_definitions("BMF_ENABLE_FUZZTEST") # define macro for targets with both gtest and fuzztest tests
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -151,17 +143,24 @@ endif()
 
 ### dependencies
 if(NOT DEFINED BUILD_SHARED_LIBS)
-    set(BUILD_SHARED_LIBS TRUE)  #build shared sdk by default
+    set(BUILD_SHARED_LIBS TRUE)  # build shared sdk by default
 endif()
 
-include(cmake/dependencies.cmake)
+include(cmake/dependencies.cmake) # also includes bmf/hml/cmake/dependencies.cmake
 
 if(BMF_USE_MEDIACODEC)
     add_definitions("-DBMF_USE_MEDIACODEC")
 endif()
 
+### set fuzzing mode compile flags to collect coverage for all BMF code, the following flags are set:
+# -g -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -UNDEBUG
+# -fsanitize-coverage=inline-8bit-counters -fsanitize-coverage=trace-cmp
+# -fsanitize=address -DADDRESS_SANITIZER
+if(FUZZTEST_ENABLE_FUZZING_MODE)
+    fuzztest_setup_fuzzing_flags()
+endif()
 
-### 
+### bmf project
 add_subdirectory(bmf)
 
 ## set (CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGSa} -Wl,--export-dynamic")

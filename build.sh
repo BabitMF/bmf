@@ -30,7 +30,7 @@ BUILD_TYPE="Release"
 # dist folder). The other folders are catered for SCM installation method.
 
 COVERAGE_OPTION=0
-FUZZ_TEST_OPTION=0
+FUZZING_MODE=OFF
 LOCAL_BUILD=1
 
 cmake_args=""
@@ -100,7 +100,6 @@ while [ $# -gt 0 ]; do
                 CUDA_ENABLE=OFF # CUDA not supported in fuzzing mode
                 FUZZING_MODE=ON 
                 cmake_args="${cmake_args} -DCMAKE_C_COMPILER=$(which clang) -DCMAKE_CXX_COMPILER=$(which clang++) -DFUZZTEST_FUZZING_MODE=on"
-                add_sanitizer "address" 
             else 
                 echo "ERROR: clang/clang++ compiler not found. \nTo run clang_fuzz mode, you must first install clang and llvm compiler tools. \nRun `apt install -y lld llvm llvm-dev clang`"
                 exit

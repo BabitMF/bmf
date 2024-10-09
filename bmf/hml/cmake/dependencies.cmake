@@ -154,7 +154,7 @@ endif()
 
 
 ##### Testing Framework (FuzzTest or GTest)
-if(DEFINED BMF_ENABLE_FUZZ_TEST AND HMP_LOCAL_DEPENDENCIES) # FuzzTest
+if(BMF_ENABLE_FUZZTEST AND HMP_LOCAL_DEPENDENCIES) # FuzzTest
     # The optional interface library is omitted when using FuzzTest because it conflicts with the optional target defined by fuzztest/abseil-cpp 
     # TODO: Add proper namespacing of fuzztest and associated dependencies to avoid target name conflicts
     if(WIN32)

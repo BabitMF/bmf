@@ -152,14 +152,6 @@ if(BMF_USE_MEDIACODEC)
     add_definitions("-DBMF_USE_MEDIACODEC")
 endif()
 
-### set fuzzing mode compile flags to collect coverage for all BMF code, the following flags are set:
-# -g -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION -UNDEBUG
-# -fsanitize-coverage=inline-8bit-counters -fsanitize-coverage=trace-cmp
-# -fsanitize=address -DADDRESS_SANITIZER
-if(FUZZTEST_ENABLE_FUZZING_MODE)
-    fuzztest_setup_fuzzing_flags()
-endif()
-
 ### bmf project
 add_subdirectory(bmf)
 

@@ -97,6 +97,7 @@ while [ $# -gt 0 ]; do
             if [[ -x "$(command -v clang)" && -x "$(command -v clang++)" ]]; then
                 # Release mode optimisations with debug symbols
                 BUILD_TYPE="RelWithDebug"
+                CUDA_ENABLE=OFF # CUDA not supported in fuzzing mode
                 FUZZING_MODE=ON 
                 cmake_args="${cmake_args} -DCMAKE_C_COMPILER=$(which clang) -DCMAKE_CXX_COMPILER=$(which clang++) -DFUZZTEST_FUZZING_MODE=on"
                 add_sanitizer "address" 

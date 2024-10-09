@@ -153,20 +153,31 @@ if(HMP_ENABLE_OPENCV)
 endif()
 
 
-##### Testing Framework (GTest or FuzzTest)
-if (HMP_LOCAL_DEPENDENCIES)
+##### Testing Framework (FuzzTest or GTest)
+if(DEFINED BMF_ENABLE_FUZZ_TEST AND HMP_LOCAL_DEPENDENCIES) # FuzzTest
+    # The optional interface library is omitted when using FuzzTest because it conflicts with the optional target defined by fuzztest/abseil-cpp 
+    # TODO: Add proper namespacing of fuzztest and associated dependencies to avoid target name conflicts
     if(WIN32)
         set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     endif()
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang") # FuzzTest needs to be built with Clang
-        add_subdirectory(third_party/fuzztest)
-    else ()
+    add_subdirectory(third_party/fuzztest)
+else() # GTest
+    # optional interface library (remove it when nvcc support c++17)
+    add_library(optional INTERFACE)
+    set_target_properties(optional PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR}/third_party/optional/include)
+    list(APPEND HMP_CORE_PUB_DEPS optional)
+
+    if(HMP_LOCAL_DEPENDENCIES)
+        if(WIN32)
+            set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+        endif()
         add_subdirectory(third_party/gtest)
+    else()
+        find_package(GTest REQUIRED)
+        add_library(gtest ALIAS GTest::gtest)
+        add_library(gtest_main ALIAS GTest::gtest_main)
     endif()
-else ()
-    find_package(GTest REQUIRED)
-    add_library(gtest ALIAS GTest::gtest)
-    add_library(gtest_main ALIAS GTest::gtest_main)
 endif()
 
 

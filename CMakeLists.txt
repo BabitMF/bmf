@@ -96,7 +96,7 @@ endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(CMAKE_CXX_FLAGS "-Wno-deprecated-declarations ${CMAKE_COVERAGE_FLAGS} ${CMAKE_SANITIZER_FLAGS} ${CMAKE_CXX_FLAGS}")
-    set(CMAKE_EXE_LINKER_FLAGS "-fuse-ld=lld ${CMAKE_EXE_LINKER_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "-fuse-ld=lld -pthread ${CMAKE_EXE_LINKER_FLAGS}")
     add_compile_definitions("BMF_ENABLE_FUZZ_TEST") # set macro for test executables with both gtest and fuzztest tests
     set(BMF_ENABLE_FUZZ_TEST "") # define cmake variable to optionally build test executables with fuzztest tests only
 endif()

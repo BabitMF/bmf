@@ -16,6 +16,7 @@
 
 #include "../include/node.h"
 #include "../include/input_stream_manager.h"
+#include "../include/output_stream_manager.h"
 #include "../include/module_factory.h"
 #include "../include/callback_layer.h"
 
@@ -88,8 +89,11 @@ Node::Node(int node_id, NodeConfig &node_config, NodeCallBack &node_callback,
     // should be set to low
     infinity_node_ = module_->is_infinity();
 
-    output_stream_manager_ =
-        std::make_shared<OutputStreamManager>(node_config.get_output_streams());
+    // output_stream_manager_ =
+    //     std::make_shared<OutputStreamManager>(node_config.get_output_streams());
+    create_output_stream_manager(node_config.get_output_manager(), node_id, 
+                                 node_config.get_output_streams(),
+                                 output_stream_manager_);
 
     InputStreamManagerCallBack callback;
     callback.scheduler_cb = callback_.scheduler_cb;

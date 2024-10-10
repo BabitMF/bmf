@@ -64,7 +64,12 @@ StreamConfig has_circle(std::vector<NodeConfig> opt_nodes,
                         NodeConfig merged_node, std::map<int, bool> &rec_stack);
 StreamConfig find_first_circle_node(std::vector<NodeConfig> opt_nodes,
                                     NodeConfig merged_node);
-void optimize(std::vector<NodeConfig> &nodes);
+NodeConfig create_split_node(int id, StreamConfig input_stream,
+                             int scheduler, int thread);
+NodeConfig create_assemble_node(int id, std::vector<StreamConfig> input_streams, 
+                                int scheduler, int thread);
+void process_multi_thread(std::vector<bmf_engine::NodeConfig> &nodes);
+void optimize(std::vector<bmf_engine::NodeConfig> &nodes);
 void merge_subgraph(GraphConfig &main_config, GraphConfig &sub_config,
                     int sub_node_id);
 void subgraph_preprocess(GraphConfig &main_graph_config,

@@ -860,38 +860,43 @@ Node Graph::GoModule(const std::vector<Stream> &inStreams,
 }
 
 Node Graph::Decode(const bmf_sdk::JsonParam &decodePara,
-                   std::string const &alias) {
+                   std::string const &alias,
+                   int scheduler) {
     auto nd = NewNode(alias, decodePara, {}, "c_ffmpeg_decoder", CPP, "", "",
-                      Immediate, 0);
+                      Immediate, scheduler);
     nd[0].SetNotify("video");
     nd[1].SetNotify("audio");
     return nd;
 }
 
 Node Graph::Decode(const bmf_sdk::JsonParam &decodePara, Stream controlStream,
-                   std::string const &alias) {
+                   std::string const &alias,
+                   int scheduler) {
     return NewNode(alias, decodePara, {std::move(controlStream)},
-                   "c_ffmpeg_decoder", CPP, "", "", Immediate, 0);
+                   "c_ffmpeg_decoder", CPP, "", "", Immediate, scheduler);
 }
 
 Node Graph::Encode(Stream videoStream, Stream audioStream,
                    const bmf_sdk::JsonParam &encodePara,
-                   std::string const &alias) {
+                   std::string const &alias,
+                   int scheduler) {
     return NewNode(alias, encodePara,
                    {std::move(videoStream), std::move(audioStream)},
-                   "c_ffmpeg_encoder", CPP, "", "", Immediate, 1);
+                   "c_ffmpeg_encoder", CPP, "", "", Immediate, scheduler);
 }
 
 Node Graph::Encode(Stream videoStream, const bmf_sdk::JsonParam &encodePara,
-                   std::string const &alias) {
+                   std::string const &alias,
+                   int scheduler) {
     return NewNode(alias, encodePara, {std::move(videoStream)},
-                   "c_ffmpeg_encoder", CPP, "", "", Immediate, 1);
+                   "c_ffmpeg_encoder", CPP, "", "", Immediate, scheduler);
 }
 
 Node Graph::Encode(const bmf_sdk::JsonParam &encodePara,
-                   std::string const &alias) {
+                   std::string const &alias,
+                   int scheduler) {
     return NewNode(alias, encodePara, {}, "c_ffmpeg_encoder", CPP, "", "",
-                   Immediate, 1);
+                   Immediate, scheduler);
 }
 
 Node Graph::FFMpegFilter(const std::vector<Stream> &inStreams,

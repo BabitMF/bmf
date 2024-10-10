@@ -205,6 +205,7 @@ class ClockBasedSyncInputStreamManager : public InputStreamManager {
     std::set<int> stream_paused_;
 };
 
+
 int create_input_stream_manager(
     std::string const &manager_type, int node_id,
     std::vector<StreamConfig> input_streams,

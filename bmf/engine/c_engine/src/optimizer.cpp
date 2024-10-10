@@ -278,6 +278,150 @@ StreamConfig find_first_circle_node(std::vector<NodeConfig> opt_nodes,
     return stream;
 }
 
+NodeConfig create_split_node(int id, StreamConfig input_stream,
+                             int scheduler, int thread) {
+    nlohmann:json info;
+
+    info["id"] = id;
+    // info["alias"] = alias_;
+    info["module_info"] = {
+        {"entry", "split_module:SplitModule"},
+        {"name", "SplitModule"},
+        {"path", "libengine.so"},
+        {"type", "c++"}
+    };
+    // info["meta_info"] = {
+    //             "callback_binding", []
+    //             "premodule_id", 0
+    //         };
+    info["input_streams"] = nlohmann::json::array();
+    info["input_streams"].push_back({
+        {"alias", input_stream.get_alias()},
+        {"identifier", input_stream.get_identifier()},
+        {"notify", input_stream.get_notify()}
+    });
+
+    std::ostringstream output_identifier;
+    output_identifier << "split_module_" << id << "_0";
+
+    info["output_streams"] = nlohmann::json::array();
+    info["output_streams"].push_back({
+        {"alias", ""},
+        {"identifier", output_identifier.str()},
+        {"notify", ""}
+    });
+    // info["option"] = option_.json_value_;
+    info["scheduler"] = scheduler;
+    info["thread"] = thread;
+    info["input_manager"] = "immediate";
+
+    return NodeConfig(info);
+}
+
+NodeConfig create_assemble_node(int id, std::vector<StreamConfig> input_streams, 
+                                int scheduler, int thread) {
+    nlohmann:json info;
+
+    info["id"] = id;
+    // info["alias"] = alias_;
+    info["module_info"] = {
+        {"entry", "assemble_module:AssembleModule"},
+        {"name", "assemble_module"},
+        {"path", "libengine.so"},
+        {"type", "c++"}
+    };
+    // info["meta_info"] = {
+    //             "callback_binding", []
+    //             "premodule_id", 0
+    //         };
+    info["input_streams"] = nlohmann::json::array();
+    for (auto &s : input_streams) {
+        info["input_streams"].push_back({
+            {"alias", s.get_alias()},
+            {"identifier", s.get_identifier()},
+            {"notify", s.get_notify()}
+        });
+    }
+
+    std::ostringstream output_identifier;
+    output_identifier << "assemble_module_" << id << "_0";
+
+    info["output_streams"] = nlohmann::json::array();
+    info["output_streams"].push_back({
+        {"alias", ""},
+        {"identifier", output_identifier.str()},
+        {"notify", ""}
+    });
+    // info["option"] = option_.json_value_;
+    info["scheduler"] = scheduler;
+    info["thread"] = thread;
+    info["input_manager"] = "immediate";
+
+    return NodeConfig(info);
+} 
+
+void process_multi_thread(std::vector<bmf_engine::NodeConfig> &nodes) {
+    NodeConfig *upstream_node = nullptr;
+    int nodes_index = 0;
+    while ((nodes.begin() + nodes_index) != nodes.end()) {
+        NodeConfig *node = &nodes[nodes_index];
+        if (!(node->get_thread() > 1)) {
+            upstream_node = node;
+        } else if (upstream_node) {
+            int threads = node->get_thread();
+            upstream_node = nullptr;
+            // Insert a split node before the current node  
+            auto split_node = create_split_node(nodes.size(), 
+                                                node->get_input_streams()[0],
+                                                nodes.size(), 1);
+            split_node.set_output_manager("split");
+            node->change_input_stream_identifier(split_node.output_streams[0].
+                                                 get_identifier());
+            nodes.insert(nodes.begin() + nodes_index, split_node);
+            
+            std::vector<StreamConfig> input_streams;
+            input_streams.push_back(nodes[nodes_index + 1].output_streams[0]);
+
+            // Insert copies of the current node
+            for (int i = 1; i < threads; ++i) {
+                node = &nodes[nodes_index + 1];
+                auto new_node = NodeConfig(*node);
+                new_node.set_id(nodes.size());
+                new_node.change_output_stream_identifier();
+                new_node.set_thread(1);
+                new_node.set_scheduler(new_node.get_id());
+                /* increase scheduler count to avoid conflict */
+                // int scheduler_count = json.at("scheduler_count").get<int>();
+                // nlohmann::json new_json = {{"scheduler_count", ++scheduler_count}};
+                // auto &scheduler = json.at("scheduler_count");
+                // scheduler.update(new_json);
+                // graph_config.get_option().json_value_.at("/scheduler_count"_json_pointer) = ++scheduler_count;
+                input_streams.push_back(new_node.output_streams[0]);
+                nodes.insert(nodes.begin() + nodes_index + 1 + i, new_node);
+            }
+            nodes[nodes_index + threads].set_thread(1);
+            // Insert assemble node after the copied nodes
+            auto assemble_node = create_assemble_node(nodes.size(), 
+                                                      input_streams,
+                                                      nodes.size(), 1);
+            nodes.insert(nodes.begin() + nodes_index + 1 + threads, assemble_node);
+            // link downstream node's inputstream and assemble node's outputstream
+            for (auto &tem_node : nodes)
+                for (auto &input_stream : tem_node.input_streams)
+                    if (input_stream.get_identifier() == 
+                        nodes[nodes_index + 1].output_streams[0].get_identifier() 
+                        && tem_node.get_id() != assemble_node.get_id())
+                        tem_node.change_input_stream_identifier((assemble_node.
+                                                                 get_output_streams())[0].
+                                                                 get_identifier());
+
+            // Update the index to skip the inserted nodes
+            nodes_index += threads + 1;
+        }
+        nodes_index++;
+    }
+}
+
 void optimize(std::vector<NodeConfig> &nodes) {
     // nodes_done is used to record ffmpeg_filter node that already optimized
     std::vector<NodeConfig> nodes_done;

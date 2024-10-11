@@ -1,11 +1,19 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(CMAKE_CXX_STANDARD 20)
 
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fno-exceptions -fno-rtti")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fdata-sections -ffunction-sections")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fdata-sections -ffunction-sections")
+
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -Oz -flto -fvisibility=hidden -fvisibility-inlines-hidden")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Oz -flto -fvisibility=hidden -fvisibility-inlines-hidden")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -O2 -flto -Wl,--exclude-libs,ALL -Wl,--gc-sections")
+
 message( "Android Platform")
 option(BMF_LITE_ENABLE_OPENGLTEXTUREBUFFER "Enable Enable build OpenglBuffer" ON)
 option(BMF_LITE_ENABLE_CPUMEMORYBUFFER "Enable build CpuMemoryBuffer" ON)
-option(BMF_LITE_ENABLE_SUPER_RESOLUTION "Enable build super resolution" ON)
 option(BMF_LITE_ENABLE_DENOISE "Enable build denoise" ON)
+option(BMF_LITE_ENABLE_SUPER_RESOLUTION "Enable build super resolution" ON)
 option(BMF_LITE_ENABLE_TEX_GEN_PIC "Enable build tex_gen_pic" ON)
 option(BMF_ENABLE_JNI "Enable build with JNI support" ON)
 

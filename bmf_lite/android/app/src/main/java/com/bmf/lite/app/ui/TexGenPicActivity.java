@@ -289,8 +289,7 @@ public class TexGenPicActivity extends AppCompatActivity {
     public void onTexGenPicBty() {
         String text = inputEditView.getText().toString();
         if (text == null) {
-            Toast
-                .makeText(TexGenPicActivity.this, "The input string is empty",
+            Toast.makeText(TexGenPicActivity.this, "The input string is empty",
                           Toast.LENGTH_SHORT)
                 .show();
         } else {

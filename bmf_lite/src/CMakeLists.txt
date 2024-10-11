@@ -1,5 +1,4 @@
 if(ANDROID)
-    # file(GLOB_RECURSE Src ./*.cpp)
     include_directories(./)
     include_directories(./algorithm/modules/operators)
     include_directories(./algorithm/modules/operators/utils)
@@ -67,7 +66,6 @@ if(ANDROID)
                         ./media/video_buffer/transform/gl_texture_transformer.cpp
                         ./algorithm/modules/operators/opengl/resize/resize.cpp)
     endif()
-
     add_library(bmf_lite ${Src})
     target_link_libraries(bmf_lite PUBLIC EGL log jnigraphics)
 

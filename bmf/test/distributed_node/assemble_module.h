@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Babit Authors
+ * Copyright 2024 Babit Authors
  *
  * This file is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -12,8 +12,8 @@
  * Lesser General Public License for more details.
  */
 
-#ifndef BMF_PASS_THROUGH_MODULE_H
-#define BMF_PASS_THROUGH_MODULE_H
+#ifndef BMF_ASSEMBLE_MODULE_H
+#define BMF_ASSEMBLE_MODULE_H
 
 #include <bmf/sdk/module.h>
 #include <bmf/sdk/module_registry.h>

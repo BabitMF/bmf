@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Babit Authors
+ * Copyright 2024 Babit Authors
  *
  * This file is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

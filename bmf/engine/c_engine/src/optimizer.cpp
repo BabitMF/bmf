@@ -279,7 +279,7 @@ StreamConfig find_first_circle_node(std::vector<NodeConfig> opt_nodes,
 }
 
 NodeConfig create_split_node(int id, StreamConfig input_stream,
-                             int scheduler, int thread) {
+                             int scheduler, int dist_nums) {
     nlohmann:json info;
 
     info["id"] = id;
@@ -312,14 +312,14 @@ NodeConfig create_split_node(int id, StreamConfig input_stream,
     });
     // info["option"] = option_.json_value_;
     info["scheduler"] = scheduler;
-    info["thread"] = thread;
+    info["dist_nums"] = dist_nums;
     info["input_manager"] = "immediate";
 
     return NodeConfig(info);
 }
 
 NodeConfig create_assemble_node(int id, std::vector<StreamConfig> input_streams, 
-                                int scheduler, int thread) {
+                                int scheduler, int dist_nums) {
     nlohmann:json info;
 
     info["id"] = id;
@@ -354,69 +354,74 @@ NodeConfig create_assemble_node(int id, std::vector<StreamConfig> input_streams,
     });
     // info["option"] = option_.json_value_;
     info["scheduler"] = scheduler;
-    info["thread"] = thread;
+    info["dist_nums"] = dist_nums;
     info["input_manager"] = "immediate";
 
     return NodeConfig(info);
 } 
 
-void process_multi_thread(std::vector<bmf_engine::NodeConfig> &nodes) {
+void process_distributed_node(std::vector<bmf_engine::NodeConfig> &nodes) {
     NodeConfig *upstream_node = nullptr;
     int nodes_index = 0;
     while ((nodes.begin() + nodes_index) != nodes.end()) {
         NodeConfig *node = &nodes[nodes_index];
-        if (!(node->get_thread() > 1)) {
+        if (!(node->get_dist_nums() > 1)) {
             upstream_node = node;
         } else if (upstream_node) {
-            int threads = node->get_thread();
+            int dist_nums = node->get_dist_nums();
+            // preallocate space for new nodes
+            nodes.reserve(nodes.size() + dist_nums + 2);
+            // repoint to memory address after allocation
+            node = &nodes[nodes_index];
             upstream_node = nullptr;
-            // Insert a split node before the current node  
+            // creat and insert a split node before the current node  
             auto split_node = create_split_node(nodes.size(), 
                                                 node->get_input_streams()[0],
                                                 nodes.size(), 1);
             split_node.set_output_manager("split");
             node->change_input_stream_identifier(split_node.output_streams[0].
                                                  get_identifier());
-            nodes.insert(nodes.begin() + nodes_index, split_node);
-            
-            std::vector<StreamConfig> input_streams;
-            input_streams.push_back(nodes[nodes_index + 1].output_streams[0]);
+            // nodes.insert(nodes.begin() + nodes_index, split_node);
+            nodes.push_back(split_node);
 
-            // Insert copies of the current node
-            for (int i = 1; i < threads; ++i) {
-                node = &nodes[nodes_index + 1];
+            // store input streams for assemble node
+            std::vector<StreamConfig> input_streams;
+            // input_streams.push_back(nodes[nodes_index + 1].output_streams[0]);
+            input_streams.push_back(node->output_streams[0]);
+
+            // creat and insert copies of the current node
+            for (int i = 1; i < dist_nums; ++i) {
+                //node = &nodes[nodes_index + 1];
                 auto new_node = NodeConfig(*node);
                 new_node.set_id(nodes.size());
                 new_node.change_output_stream_identifier();
-                new_node.set_thread(1);
+                new_node.set_dist_nums(1);
                 new_node.set_scheduler(new_node.get_id());
-                /* increase scheduler count to avoid conflict */
-                // int scheduler_count = json.at("scheduler_count").get<int>();
-                // nlohmann::json new_json = {{"scheduler_count", ++scheduler_count}};
-                // auto &scheduler = json.at("scheduler_count");
-                // scheduler.update(new_json);
-                // graph_config.get_option().json_value_.at("/scheduler_count"_json_pointer) = ++scheduler_count;
                 input_streams.push_back(new_node.output_streams[0]);
-                nodes.insert(nodes.begin() + nodes_index + 1 + i, new_node);
+                // nodes.insert(nodes.begin() + nodes_index + 1 + i, new_node);
+                nodes.push_back(new_node);
             }
-            nodes[nodes_index + threads].set_thread(1);
-            // Insert assemble node after the copied nodes
+            // nodes[nodes_index + dist_nums].set_dist_nums(1);
+            node->set_dist_nums(1);
+
+            // creat and insert assemble node after the copied nodes
             auto assemble_node = create_assemble_node(nodes.size(), 
                                                       input_streams,
                                                       nodes.size(), 1);
-            nodes.insert(nodes.begin() + nodes_index + 1 + threads, assemble_node);
+            // nodes.insert(nodes.begin() + nodes_index + 1 + dist_nums, assemble_node);
+            nodes.push_back(assemble_node);
+            
             // link downstream node's inputstream and assemble node's outputstream
             for (auto &tem_node : nodes)
                 for (auto &input_stream : tem_node.input_streams)
                     if (input_stream.get_identifier() == 
-                        nodes[nodes_index + 1].output_streams[0].get_identifier() 
+                        // nodes[nodes_index + 1].output_streams[0].get_identifier() 
+                        node->output_streams[0].get_identifier() 
                         && tem_node.get_id() != assemble_node.get_id())
                         tem_node.change_input_stream_identifier((assemble_node.
                                                                  get_output_streams())[0].
                                                                  get_identifier());
 
-            // Update the index to skip the inserted nodes
-            nodes_index += threads + 1;
         }
         nodes_index++;
     }

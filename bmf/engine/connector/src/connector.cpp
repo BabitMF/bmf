@@ -58,7 +58,7 @@ BMFGraph::BMFGraph(const std::string &graph_config, bool is_path,
     bmf_engine::Optimizer::subgraph_preprocess(g_config, created_modules);
     
     // add split node and assemble node for distributed nodes
-    bmf_engine::Optimizer::process_multi_thread(g_config.nodes);
+    bmf_engine::Optimizer::process_distributed_node(g_config.nodes);
     
     // catch graph config at this time for further comparison.
     auto ori_g_config = g_config;

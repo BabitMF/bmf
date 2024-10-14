@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Babit Authors
+ * Copyright 2024 Babit Authors
  *
  * This file is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -77,7 +77,7 @@ int AssembleModule::process(Task &task) {
             if (packet.timestamp() == BMF_EOF) {
                 in_eof_[queue_index_] = true;
             }
-            BMFLOG_NODE(BMF_INFO, node_id_)
+            BMFLOG_NODE(BMF_DEBUG, node_id_)
                 << "get packet :" << packet.timestamp()
                 << " data:" << packet.type_info().name
                 << " in queue:" << queue_index_;

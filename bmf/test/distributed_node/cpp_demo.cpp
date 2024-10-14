@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Babit Authors
+ * Copyright 2024 Babit Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 void test_task() {
     int scheduler_cnt = 0;
-    int multi_nums = 3;
+    int dist_nums = 3;
     auto graph = bmf::builder::Graph(bmf::builder::NormalMode);
     /* decoder init */
     nlohmann::json decode_para = {
@@ -27,7 +27,7 @@ void test_task() {
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para), "", scheduler_cnt++);
     /* distributed ndoe init */
     nlohmann::json node_para = {
-        {"thread", multi_nums}
+        {"dist_nums", dist_nums}
     };
     auto video_copied = 
         graph.Module({video["video"]}, 

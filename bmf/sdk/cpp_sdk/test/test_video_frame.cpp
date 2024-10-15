@@ -28,6 +28,42 @@ using namespace bmf_sdk;
 
 // NOTE: all correctness of tensor operations are tested in hml/tests
 
+#ifdef BMF_ENABLE_FUZZTEST 
+#include <fuzztest/fuzztest.h>
+
+using namespace fuzztest;
+
+namespace { // helper functions
+auto AnyDtype() {
+    return ElementOf<ScalarType>({
+#define ADD_ELEMENT(_, name) k##name, 
+        HMP_FORALL_SCALAR_TYPES(ADD_ELEMENT)
+#undef ADD_ELEMENT
+    });
+}
+
+auto AnyPixelFormat() {
+    return ElementOf<PixelFormat>({
+#define ADD_ELEMENT(name) hmp::name,
+        HMP_FORALL_PIXEL_FORMATS(ADD_ELEMENT)
+#undef ADD_ELEMENT
+    });
+}
+
+auto AnyColorSpace() {
+    return ElementOf<ColorSpace>({
+#define ADD_ELEMENT(name) hmp::name,
+        HMP_FORALL_COLOR_SPACES(ADD_ELEMENT)
+#undef ADD_ELEMENT
+    });
+}
+
+auto SizeRange() {
+    return InRange(2, 7680); // max 8K
+}
+} // namespace
+#endif // BMF_ENABLE_FUZZTEST
+
 template <typename T>
 static bool check_pixel_value(const VideoFrame &vf, const T &v) {
     // ASSERT_TRUE(vf.is_image());
@@ -71,6 +107,25 @@ static VideoFrame decode_one_frame(const std::string &path) {
     std::tie(vf) = decoder();
     return vf;
 }
+
+#ifdef BMF_ENABLE_FUZZTEST 
+void fuzz_constructor(int width, int height, PixelFormat format, ColorSpace color_space) {
+    auto pix_info = PixelInfo(format, color_space);
+    VideoFrame vf;
+    EXPECT_NO_THROW(vf = VideoFrame::make(width, height, pix_info));
+    ASSERT_TRUE(vf);
+
+    // check invariants
+    EXPECT_EQ(vf.width(), width);
+    EXPECT_EQ(vf.height(), height);
+    EXPECT_TRUE(vf.device() == kCPU); // default
+    EXPECT_NO_THROW(vf.frame());
+    EXPECT_EQ(vf.frame().format(), format);
+}
+
+FUZZ_TEST(video_frame, fuzz_constructor)
+    .WithDomains(SizeRange(), SizeRange(), AnyPixelFormat(), AnyColorSpace());
+#endif // BMF_ENABLE_FUZZTEST
 
 TEST(video_frame, frame_constructors) {
     int width = 1920, height = 1080;
@@ -301,6 +356,42 @@ TEST(video_frame, private_data) {
     EXPECT_FALSE(valid); // pri_data is destructed
 }
 
+#ifdef BMF_ENABLE_FUZZTEST
+void fuzz_private_data_json_param(std::string json_str) {
+    auto RGB = PixelInfo(hmp::PF_RGB24, hmp::CS_BT709);
+    auto vf = VideoFrame::make(1920, 1080, RGB); //
+    auto json_sptr = vf.private_get<JsonParam>();
+    EXPECT_FALSE(json_sptr);
+
+    // somewhat trivial since JsonParam wraps nlohmann json anyway,
+    // TODO: Use some other json parse implementation here e.g. rapidjson
+    bool valid_json{false};
+    try {
+        auto parsed_json = nlohmann::json::parse(json_str);
+        valid_json = true;
+    } catch (nlohmann::json::parse_error& e) {
+        valid_json = false;
+    }
+
+    JsonParam ref;
+
+    if (valid_json) {
+        ref.parse(json_str);
+    } else {
+        EXPECT_THROW(ref.parse(json_str), nlohmann::json::parse_error);
+        return;
+    }
+
+    vf.private_attach(&ref); // copy it internally
+    auto data_sptr = vf.private_get<JsonParam>();
+    ASSERT_TRUE(data_sptr);
+}
+
+FUZZ_TEST(video_frame, fuzz_private_data_json_param)
+    .WithDomains(Arbitrary<std::string>())
+    .WithSeeds({"{\"v\": 42}"});
+#endif // BMF_ENABLE_FUZZTEST
+
 TEST(video_frame, private_data_json_param) {
     auto RGB = PixelInfo(hmp::PF_RGB24, hmp::CS_BT709);
     auto vf = VideoFrame::make(1920, 1080, RGB); //
@@ -334,6 +425,48 @@ TEST(video_frame, copy_props) {
     EXPECT_EQ(vf1.time_base().den, 2);
     EXPECT_EQ(vf1.time_base().num, 1);
 }
+
+#ifdef BMF_ENABLE_FUZZTEST 
+void fuzz_reformat_round_trip(PixelFormat dst_format, ColorSpace dst_color_space) {
+    auto ori_vf = decode_one_frame("../../files/big_bunny_10s_30fps.mp4");
+    ASSERT_EQ(ori_vf.frame().format(), hmp::PF_YUV420P);
+    EXPECT_EQ(ori_vf.height(), 1080);
+    EXPECT_EQ(ori_vf.width(), 1920);
+    ASSERT_FALSE(ori_vf.frame().pix_info().is_rgbx());
+    EXPECT_EQ(ori_vf.frame().nplanes(), 3);
+    EXPECT_EQ(ori_vf.frame().plane(0).stride(0), 1920);
+    EXPECT_EQ(ori_vf.frame().plane(1).stride(0), 1920 / 2);
+    EXPECT_EQ(ori_vf.frame().plane(2).stride(0), 1920 / 2);
+
+    // convert to arbitary format
+    auto dst_pix_info = PixelInfo(dst_format, dst_color_space);
+    VideoFrame dst_vf;
+    try {
+        dst_vf = ori_vf.reformat(dst_pix_info);
+    } catch (std::runtime_error &e) { // conversion not supported
+        return;
+    }
+    EXPECT_EQ(dst_vf.height(), 1080);
+    EXPECT_EQ(dst_vf.width(), 1920);
+    ASSERT_EQ(dst_vf.frame().format(), dst_format);
+    ASSERT_EQ(dst_vf.frame().pix_info().space(), dst_color_space);
+
+    // convert back to original format
+    auto ret_pix_info = PixelInfo(hmp::PF_YUV420P, ori_vf.frame().pix_info().space());
+    auto ret_vf = dst_vf.reformat(ret_pix_info);
+    ASSERT_EQ(ret_vf.frame().format(), hmp::PF_YUV420P);
+    EXPECT_EQ(ret_vf.height(), 1080);
+    EXPECT_EQ(ret_vf.width(), 1920);
+    ASSERT_FALSE(ret_vf.frame().pix_info().is_rgbx());
+    EXPECT_EQ(ret_vf.frame().nplanes(), 3);
+    EXPECT_EQ(ret_vf.frame().plane(0).stride(0), 1920);
+    EXPECT_EQ(ret_vf.frame().plane(1).stride(0), 1920 / 2);
+    EXPECT_EQ(ret_vf.frame().plane(2).stride(0), 1920 / 2);
+}
+
+FUZZ_TEST(video_frame, fuzz_reformat_round_trip)
+    .WithDomains(AnyPixelFormat(), AnyColorSpace());
+#endif // BMF_ENABLE_FUZZTEST
 
 TEST(video_frame, reformat) {
     auto ori_vf = decode_one_frame("../../files/big_bunny_10s_30fps.mp4");
@@ -530,9 +663,8 @@ TEST(video_frame, copy_frame_test) {
         }
     }
 }
-#endif
-
-#endif
+#endif // HMP_ENABLE_CUDA
+#endif // BMF_ENABLE_FFMPEG
 
 TEST(video_frame, yuv_frame_storage) {
     int width = 1920;

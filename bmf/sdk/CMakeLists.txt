@@ -96,6 +96,11 @@ endif()
 # tests
 if(BMF_ENABLE_TEST)
     file(GLOB TEST_SRCS cpp_sdk/test/*.cpp)
+
+    if(FUZZTEST_ENABLE_FUZZING_MODE)
+        fuzztest_setup_fuzzing_flags()
+    endif()
+
     add_executable(test_bmf_module_sdk ${TEST_SRCS})
 
     target_link_libraries(test_bmf_module_sdk
@@ -103,6 +108,10 @@ if(BMF_ENABLE_TEST)
             ${BMF_FFMPEG_TARGETS} bmf_module_sdk
             gtest
     )
+
+    if(BMF_ENABLE_FUZZTEST)
+        link_fuzztest(test_bmf_module_sdk)
+    endif()
 
     if(HMP_ENABLE_OPENCV)
         # need by ffmpeg for hwframe support

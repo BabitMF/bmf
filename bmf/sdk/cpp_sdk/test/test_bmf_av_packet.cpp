@@ -19,6 +19,41 @@
 
 using namespace bmf_sdk;
 
+#ifdef BMF_ENABLE_FUZZTEST
+#include <fuzztest/fuzztest.h>
+
+using namespace fuzztest;
+
+void fuzz_constructor(int samples) {
+    BMFAVPacket pkt1 = BMFAVPacket::make(samples);
+    EXPECT_EQ(pkt1.data().dtype(), kUInt8);
+    EXPECT_EQ(pkt1.data().dim(), 1);
+    EXPECT_EQ(pkt1.data().size(0), samples);
+    EXPECT_EQ(pkt1.nbytes(), samples);
+    EXPECT_TRUE(pkt1.data_ptr() != nullptr);
+}
+
+FUZZ_TEST(bmf_av_packet, fuzz_constructor)
+    .WithDomains(Positive<int>());
+
+void fuzz_copy_props(int samples, int time_base_denom, int pts, int sample_rate) {
+    auto pkt0 = BMFAVPacket::make(samples); 
+    pkt0.set_time_base(Rational(1, time_base_denom));
+    pkt0.set_pts(pts);
+
+    auto pkt1 = BMFAVPacket::make(samples);
+    pkt1.copy_props(pkt0);
+
+    EXPECT_EQ(pkt1.pts(), pts);
+    EXPECT_EQ(pkt1.time_base().den, time_base_denom);
+    EXPECT_EQ(pkt1.time_base().num, 1);
+}
+
+FUZZ_TEST(bmf_av_packet, fuzz_copy_props)
+    .WithDomains(Positive<int>(), Positive<int>(), Positive<int>(), Positive<int>());
+
+#endif
+
 TEST(bmf_av_packet, constructors) {
     BMFAVPacket pkt0;
     EXPECT_FALSE(pkt0);

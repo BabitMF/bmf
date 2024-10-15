@@ -24,6 +24,83 @@
 
 using namespace bmf_sdk;
 
+#ifdef BMF_ENABLE_FUZZTEST 
+#include <fuzztest/fuzztest.h>
+
+using namespace fuzztest;
+
+namespace { // helper functions
+auto AnyDtype() {
+    return ElementOf<ScalarType>({
+#define ADD_ELEMENT(_, name) k##name, 
+        HMP_FORALL_SCALAR_TYPES(ADD_ELEMENT)
+#undef ADD_ELEMENT
+    });
+}
+
+auto AnyPixelFormat() {
+    return ElementOf<PixelFormat>({
+#define ADD_ELEMENT(name) hmp::name,
+        HMP_FORALL_PIXEL_FORMATS(ADD_ELEMENT)
+#undef ADD_ELEMENT
+    });
+}
+
+auto AnyColorSpace() {
+    return ElementOf<ColorSpace>({
+#define ADD_ELEMENT(name) hmp::name,
+        HMP_FORALL_COLOR_SPACES(ADD_ELEMENT)
+#undef ADD_ELEMENT
+    });
+}
+
+auto SizeRange() {
+    return InRange(2, 7680); // max 8K
+}
+
+struct FuzzConvertParams {
+    int width;
+    int height;
+    PixelFormat format;
+    ColorSpace color_space;
+};
+
+auto FuzzConvertParamsDomain() {
+    return StructOf<FuzzConvertParams>(
+        SizeRange(),
+        SizeRange(),
+        AnyPixelFormat(),
+        AnyColorSpace()
+    );
+}
+
+void check_video_frame_invariants(const VideoFrame &vf, int width, int height, PixelFormat format, ColorSpace color_space) {
+    ASSERT_EQ(vf.frame().format(), format);
+    EXPECT_EQ(vf.height(), height);
+    EXPECT_EQ(vf.width(), width);
+    EXPECT_EQ(vf.frame().pix_info().space(), color_space);
+}
+} // namespace
+#endif // BMF_ENABLE_FUZZTEST
+
+namespace { // helper functions
+void check_vf_equal(VideoFrame& vf1, VideoFrame& vf2) {
+    EXPECT_EQ(vf1.dtype(), vf2.dtype());
+    EXPECT_EQ(vf1.width(), vf2.width());
+    EXPECT_EQ(vf1.height(), vf2.height());
+    EXPECT_EQ(vf1.frame().format(), vf2.frame().format());
+    EXPECT_EQ(vf1.frame().pix_info().space(), vf2.frame().pix_info().space());
+    EXPECT_EQ(vf1.frame().pix_info().range(), vf2.frame().pix_info().range());
+    EXPECT_EQ(vf1.device(), vf2.device());
+
+    // check data equal
+    for (int tensor_idx = 0; tensor_idx < vf1.frame().data().size(); ++tensor_idx) {
+        auto t1 = vf1.frame().data()[tensor_idx];
+        auto t2 = vf2.frame().data()[tensor_idx];
+    }
+}
+} // namespace
+
 TEST(media_description, construct) {
     MediaDesc dp;
     dp.width(1920)
@@ -68,6 +145,38 @@ TEST(media_description, has_value) {
     EXPECT_FALSE(dp.media_type.has_value());
     EXPECT_FALSE(dp.pixel_info.has_value());
 }
+
+#ifdef BMF_ENABLE_FUZZTEST
+void fuzz_convert_round_trip(FuzzConvertParams src, FuzzConvertParams dst) {
+    // construct videoframe
+    auto src_pix_info = PixelInfo(src.format, src.color_space);
+    auto src_vf = VideoFrame::make(src.width, src.height, src_pix_info);
+    check_video_frame_invariants(src_vf, src.width, src.height, src.format, src.color_space);
+
+    // convert to arbitrary type
+    MediaDesc dp;
+    dp.width(dst.width).height(dst.height).pixel_format(dst.format).color_space(dst.color_space);
+    VideoFrame dst_vf;
+    try {
+        dst_vf = bmf_convert(src_vf, MediaDesc{}, dp);
+    } catch (std::runtime_error&) {
+        // an exception is expected if the conversion format is invalid (unsupported)
+        return;
+    }
+    // since the conversion was successful, check invariants and and expect the return conversion to succeed
+    check_video_frame_invariants(dst_vf, dst.width, dst.height, dst.format, dst.color_space);
+
+    // return trip
+    MediaDesc rp; 
+    rp.width(src.width).height(src.height).pixel_info(src_pix_info);
+    auto ret_vf = bmf_convert(dst_vf, MediaDesc{}, rp);
+    check_video_frame_invariants(ret_vf, src.width, src.height, src.format, src.color_space);
+    // TODO: do some validation on the underlying tensor data
+}
+
+FUZZ_TEST(convert_backend, fuzz_convert_round_trip)
+    .WithDomains(FuzzConvertParamsDomain(), FuzzConvertParamsDomain());
+#endif // BMF_ENABLE_FUZZTEST
 
 TEST(convert_backend, format_cvt) {
     MediaDesc dp;

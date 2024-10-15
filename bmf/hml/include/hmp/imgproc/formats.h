@@ -86,6 +86,25 @@ enum ColorSpace {
     CS_NB
 };
 
+#define HMP_FORALL_COLOR_SPACES(_)                                             \
+    _(CS_RGB)                                                                  \
+    _(CS_BT709)                                                                \
+    _(CS_UNSPECIFIED)                                                          \
+    _(CS_RESERVED)                                                             \
+    _(CS_FCC)                                                                  \
+    _(CS_BT470BG)                                                              \
+    _(CS_SMPTE170M)                                                            \
+    _(CS_SMPTE240M)                                                            \
+    _(CS_YCGCO)                                                                \
+    _(CS_YCOCG)                                                                \
+    _(CS_BT2020_NCL)                                                           \
+    _(CS_BT2020_CL)                                                            \
+    _(CS_SMPTE2085)                                                            \
+    _(CS_CHROMA_DERIVED_NCL)                                                   \
+    _(CS_CHROMA_DERIVED_CL)                                                    \
+    _(CS_ICTCP)                                                                \
+    _(CS_NB)                                                               
+
 enum ColorRange { CR_UNSPECIFIED = 0, CR_MPEG = 1, CR_JPEG = 2, CR_NB };
 
 enum PixelFormat {

@@ -22,7 +22,7 @@ void test_task() {
     auto graph = bmf::builder::Graph(bmf::builder::NormalMode);
     /* decoder init */
     nlohmann::json decode_para = {
-        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}
+        {"input_path", "../../../files/big_bunny_10s_30fps.mp4"}
     };
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para), "", scheduler_cnt++);
     /* distributed ndoe init */
@@ -49,51 +49,50 @@ void test_task() {
 }
 
 void task() {
-    size_t multi_nums = 3;
+    size_t dist_nums = 3;
     int scheduler_cnt = 0;
     auto graph = bmf::builder::Graph(bmf::builder::NormalMode);
 
     nlohmann::json decode_para = {
-        {"input_path", "../../files/big_bunny_10s_30fps.mp4"}};
-    auto video = graph.Decode(bmf_sdk::JsonParam(decode_para), "", 0);
+        {"input_path", "../../../files/big_bunny_10s_30fps.mp4"}};
+    auto video = graph.Decode(bmf_sdk::JsonParam(decode_para), "", scheduler_cnt++);
 
     auto video_split = 
         graph.Module({video["video"]}, 
-            "assemble_module", bmf::builder::CPP,
+            "split_module", bmf::builder::CPP,
             bmf_sdk::JsonParam(), "SplitModule",
-            "/root/workspace/bmf_OSPP/output/bmf/cpp_modules/Module_split/libsplit.so", "split_module:SplitModule",
-            bmf::builder::Immediate, 0);
+            "./libsplit_module.so", "split_module:SplitModule",
+            bmf::builder::Immediate, scheduler_cnt++);
 
     std::vector<bmf::builder::Node> video_copied;
-    for (size_t i = 0; i < multi_nums; i++) {
+    for (size_t i = 0; i < dist_nums; i++) {
         video_copied.push_back(
-            graph.Module({video["video"]}, 
+            graph.Module({video_split}, 
                         "copy_module", bmf::builder::CPP,
                         bmf_sdk::JsonParam(), "CopyModule",
                         "./libcopy_module.so", "copy_module:CopyModule",
-                        bmf::builder::Immediate, 1)
+                        bmf::builder::Immediate, scheduler_cnt++)
         );
     }
 
-    video_copied.push_back(
+    auto video_assemble = 
         graph.Module({video_copied[0], video_copied[1], video_copied[2]}, 
                     "assemble_module", bmf::builder::CPP,
                     bmf_sdk::JsonParam(), "AssembleModule",
-                    "/root/workspace/bmf_OSPP/output/bmf/cpp_modules/Module_assemble/libassemble.so", "assemble_module:AssembleModule",
-                    bmf::builder::Immediate, 0)
-    );
+                    "./libassemble_module.so", "assemble_module:AssembleModule",
+                    bmf::builder::Immediate, scheduler_cnt++);
 
     nlohmann::json encode_para = {
-        {"output_path", "./rgb2video.mp4"},
+        {"output_path", "./output_video.mp4"},
     };
-    graph.Module({video_copied[3]},
+    graph.Module({video_assemble},
             "c_ffmpeg_encoder", bmf::builder::CPP,
             bmf_sdk::JsonParam(encode_para), "",
             "", "",
-            bmf::builder::Immediate, 2);
+            bmf::builder::Immediate, scheduler_cnt++);
 
     nlohmann::json graph_para = {{"dump_graph", 1},
-                                 {"scheduler_count", 6}};
+                                 {"scheduler_count", scheduler_cnt}};
     graph.SetOption(bmf_sdk::JsonParam(graph_para));
     graph.Run();
 }

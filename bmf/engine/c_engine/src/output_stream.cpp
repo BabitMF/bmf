@@ -93,5 +93,4 @@ int OutputStream::add_upstream_nodes(int node_id) {
     }
     return 0;
 }
-
 END_BMF_ENGINE_NS

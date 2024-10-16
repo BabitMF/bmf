@@ -29,7 +29,7 @@ class TestVideoCModule(BaseTestCase):
         graph = bmf.graph()
         scheduler_cnt = 1
 
-        input_video_path = "../../files/big_bunny_10s_30fps.mp4"
+        input_video_path = "../../../files/big_bunny_10s_30fps.mp4"
         output_path = "./output.mp4"
         expect_result = '../c_module/output.mp4|1080|1920|10.008|MOV,MP4,M4A,3GP,3G2,MJ2|1918880|2400520|h264|' \
                         '{"fps": "30.0662251656"}'
@@ -40,12 +40,12 @@ class TestVideoCModule(BaseTestCase):
         scheduler_cnt += 1
         # print(video["video"])
         # c module processing
-        thread = 3
+        dist_nums = 3
         copymodule = bmf.module(
             [video['video']],
             "cpp_copy_module",
             option={
-                "thread": thread,
+                "dist_nums": dist_nums,
             },
             module_path="./libcopy_module.so",
             entry="copy_module::CopyModule",
@@ -73,7 +73,7 @@ class TestVideoCModule(BaseTestCase):
         
         encode.node_.scheduler_ = scheduler_cnt
         scheduler_cnt += 1
-        graph.option_["scheduler_count"] = scheduler_cnt + thread
+        graph.option_["scheduler_count"] = scheduler_cnt + dist_nums
         graph.run()
         self.check_video_diff(output_path, expect_result)
 

@@ -161,10 +161,6 @@ class NodeConfig {
 
     std::string get_input_manager();
 
-    void set_output_manager(std::string output_manager_type);
-
-    std::string get_output_manager();
-
     void set_id(int id);
 
     int get_id();
@@ -198,7 +194,6 @@ class NodeConfig {
     // distributed_nums
     int dist_nums = 1;
     std::string input_manager = "immediate";
-    std::string output_manager = "default";
     std::string alias;
     std::string action;
 

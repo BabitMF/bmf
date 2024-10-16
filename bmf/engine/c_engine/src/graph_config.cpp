@@ -125,8 +125,7 @@ NodeMetaInfo::NodeMetaInfo(const NodeMetaInfo &other)
     : premodule_id(other.premodule_id),
       bundle(other.bundle),
       queue_size_limit(other.queue_size_limit),
-      callback_binding(other.callback_binding) {
-}
+      callback_binding(other.callback_binding) {}
 
 void NodeMetaInfo::init(nlohmann::json &node_meta) {
     if (node_meta.count("bundle_id"))
@@ -182,7 +181,6 @@ NodeConfig::NodeConfig(const NodeConfig &other)
       scheduler(other.scheduler),
       dist_nums(other.dist_nums),
       input_manager(other.input_manager),
-      output_manager(other.output_manager),
       alias(other.alias),
       action(other.action) {
     for(auto input_stream : other.input_streams) 
@@ -221,8 +219,6 @@ void NodeConfig::init(nlohmann::json &node_config) {
         dist_nums = option.json_value_.at("dist_nums").get<int>();
     if (node_config.count("input_manager"))
         input_manager = node_config.at("input_manager").get<std::string>();
-    if (node_config.count("output_manager"))
-        output_manager = node_config.at("output_manager").get<std::string>();
     if (node_config.count("alias"))
         alias = node_config.at("alias").get<std::string>();
     if (node_config.count("action"))
@@ -246,12 +242,6 @@ void NodeConfig::change_output_stream_identifier(size_t order) {
 }
 
 std::string NodeConfig::get_input_manager() { return input_manager; }
-
-void NodeConfig::set_output_manager(std::string output_manager_type) { 
-    output_manager = output_manager_type; 
-}
-
-std::string NodeConfig::get_output_manager() { return output_manager; }
 
 NodeMetaInfo NodeConfig::get_node_meta() { return meta; }
 
@@ -289,7 +279,6 @@ nlohmann::json NodeConfig::to_json() {
     json_node_config["scheduler"] = scheduler;
     // json_node_config["dist_nums"] = dist_nums;
     json_node_config["input_manager"] = input_manager;
-    json_node_config["output_manager"] = output_manager;
     json_node_config["module_info"] = module.to_json();
     json_node_config["meta_info"] = meta.to_json();
     json_node_config["option"] = option.json_value_;

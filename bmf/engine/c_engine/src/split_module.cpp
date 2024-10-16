@@ -49,7 +49,7 @@ int SplitModule::process(Task &task) {
             in_eof_[input_queue.first] = false;
     }
 
-    /* Data Splitting(verified) */
+    // Data Splitting
     Packet pkt;
     for (auto input_queue : task.get_inputs()) {
         while (task.pop_packet_from_input_queue(input_queue.first, pkt)) {

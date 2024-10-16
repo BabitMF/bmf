@@ -30,7 +30,7 @@ int AssembleModule::process(Task &task) {
             << "Input Queue size changed from " << last_input_num_ << " to "
             << task.get_inputs().size();
         last_input_num_ = task.get_inputs().size();
-        /* init queue_map_ */
+        // init queue_map_ 
         for (int i = 0; i < last_input_num_; i++) {
             std::shared_ptr<bmf_engine::SafeQueue<Packet>> tmp_queue = 
                 std::make_shared<bmf_engine::SafeQueue<Packet>>();
@@ -51,9 +51,9 @@ int AssembleModule::process(Task &task) {
         for (auto input_queue : task.get_inputs())
             in_eof_[input_queue.first] = false;
     }
-    /* assemble data from multi input queue */
+    // assemble data from multi input queue 
     auto tem_queue = task.get_inputs();
-    /* cache pkts into queue_map_ */
+    // cache pkts into queue_map_ 
     for (size_t i = 0; i < tem_queue.size(); i++) {
         while (!tem_queue[i]->empty()) {
             auto q = tem_queue[i];
@@ -64,14 +64,13 @@ int AssembleModule::process(Task &task) {
     }
     
     while (!queue_map_[queue_index_]->empty()) {
-        /* pass through pkts */
+        // pass through pkts 
         Packet packet;
         auto queue = queue_map_.find(queue_index_);
         
         if (in_eof_[queue_index_] == true)
             continue;
         
-        // if(task.pop_packet_from_input_queue(queue_index_, packet)) {
         if (queue->second->pop(packet)) {
             task.fill_output_packet(0, packet);
             if (packet.timestamp() == BMF_EOF) {

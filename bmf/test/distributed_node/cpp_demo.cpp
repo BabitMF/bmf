@@ -25,7 +25,7 @@ void test_task() {
         {"input_path", "../../../files/big_bunny_10s_30fps.mp4"}
     };
     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para), "", scheduler_cnt++);
-    /* distributed ndoe init */
+    // distributed ndoe init 
     nlohmann::json node_para = {
         {"dist_nums", dist_nums}
     };

@@ -42,8 +42,7 @@ StreamConfig::StreamConfig(nlohmann::json &stream_config) {
 StreamConfig::StreamConfig(const StreamConfig &other)
     : identifier(other.identifier),
       alias(other.alias),
-      notify(other.notify) {
-}
+      notify(other.notify) {}
 
 void StreamConfig::init(nlohmann::json &stream_config) {
     identifier = stream_config.at("identifier").get<std::string>();
@@ -86,8 +85,7 @@ ModuleConfig::ModuleConfig(const ModuleConfig &other)
     : module_name(other.module_name),
       module_type(other.module_type),
       module_path(other.module_path),
-      module_entry(other.module_entry) {
-}
+      module_entry(other.module_entry) {}
 
 void ModuleConfig::init(nlohmann::json &module_config) {
     if (module_config.count("name"))
@@ -180,8 +178,6 @@ NodeConfig::NodeConfig(const NodeConfig &other)
     : id(other.id),
       module(other.module),
       meta(other.meta),
-      // input_streams(other.input_streams),  // Deep copy of vector
-      // output_streams(other.output_streams),  // Deep copy of vector
       option(other.option),
       scheduler(other.scheduler),
       dist_nums(other.dist_nums),

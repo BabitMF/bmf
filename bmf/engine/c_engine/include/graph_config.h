@@ -139,8 +139,6 @@ class NodeConfig {
 
     NodeConfig(const NodeConfig &other);
 
-    // NodeConfig(NodeConfig &&other) noexcept;
-
     ModuleConfig get_module_info();
 
     NodeMetaInfo get_node_meta();

@@ -57,12 +57,15 @@ if(NOT APPLE AND NOT ANDROID)
     )
 endif()
 
-
 # tests
 if(BMF_ENABLE_TEST)
     file(GLOB TEST_SRCS test/*.cpp)
 
     list(FILTER TEST_SRCS EXCLUDE REGEX ".*test_go_module.cpp")
+
+    if(FUZZTEST_ENABLE_FUZZING_MODE)
+        fuzztest_setup_fuzzing_flags()
+    endif()
 
     add_executable(test_bmf_engine ${TEST_SRCS})
 
@@ -72,6 +75,10 @@ if(BMF_ENABLE_TEST)
             bmf_module_sdk engine
             gtest
     )
+
+    if(BMF_ENABLE_FUZZTEST)
+        link_fuzztest(test_bmf_engine)
+    endif()
 
     target_link_libraries(test_bmf_engine PRIVATE gtest_main)
 

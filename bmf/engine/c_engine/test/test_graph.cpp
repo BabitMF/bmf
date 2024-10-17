@@ -17,7 +17,7 @@
 #include "../include/graph.h"
 #include <bmf/sdk/log.h>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include <fstream>
 
@@ -25,6 +25,36 @@
 
 USE_BMF_ENGINE_NS
 USE_BMF_SDK_NS
+
+#ifdef BMF_ENABLE_FUZZTEST
+#include <fuzztest/fuzztest.h>
+#include <sstream>
+
+using namespace fuzztest;
+
+namespace {
+std::vector<std::string> GraphConfigSeeds() {
+    static const std::vector<std::string> seed_files{
+        "../../files/graph_start.json",
+        "../../files/graph_c.json",
+        "../../files/graph.json",
+        "../../files/graph_c.json",
+        "../../files/graph_passthru.json",
+        "../../files/filter_opt_c_graph.json",
+        "../../files/filter_opt_graph_c.json"
+    };
+    std::vector<std::string> seeds{};
+    for (const auto &seed_file : seed_files) {
+        std::ifstream file(seed_file);
+        std::stringstream ss;
+        ss << file.rdbuf();
+        seeds.emplace_back(ss.str());
+    }
+    return seeds;
+}
+} // namepsace
+#endif // BMF_ENABLE_FUZZTEST
+
 TEST(graph, start) {
     nlohmann::json graph_json;
     std::string config_file = "../../files/graph_start.json";
@@ -226,3 +256,34 @@ TEST(graph, c_decode_filter_encode) {
 //    }
 //    google::ShutdownGoogleLogging();
 //}
+
+#ifdef BMF_ENABLE_FUZZTEST
+void fuzz_graph_config(std::string config_str) {
+    nlohmann::json graph_json;
+    try {
+        graph_json = nlohmann::json::parse(config_str);
+    } catch (nlohmann::json::parse_error&) {
+        return;
+    }
+    // graph_json["option"]["dump_graph"] = 0; 
+    std::map<int, std::shared_ptr<Module>> pre_modules;
+    std::map<int, std::shared_ptr<ModuleCallbackLayer>> callback_bindings;
+    GraphConfig graph_config;
+    try {
+        graph_config = GraphConfig(graph_json);
+    } catch (std::logic_error&) { // logic errors are expected for invalid json config file
+        return; 
+    } catch(nlohmann::json::exception&) { // TODO: Fix Graph ctor so that json error is considered a bug
+        return;
+    } catch(...) { // any other error is not expected
+        ASSERT_TRUE(false);
+    }
+    std::shared_ptr<Graph> graph;
+    graph = std::make_shared<Graph>(graph_config, pre_modules, callback_bindings);
+    graph->start(); // non-blocking
+    graph->close();
+}
+
+FUZZ_TEST(graph, fuzz_graph_config)
+    .WithDomains(Arbitrary<std::string>().WithSeeds(GraphConfigSeeds()));
+#endif // BMF_ENABLE_FUZZTEST

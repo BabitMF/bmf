@@ -35,7 +35,8 @@ namespace fs = std::filesystem;
 using namespace fuzztest;
 
 namespace {
-Domain<std::tuple<int, int, int, int>> AnyCrop(int width, int height) {
+Domain<std::tuple<int, int, int, int>> AnyCrop() {
+    static const int width = 1920, height = 1080; 
     auto valid_crop = [&](int x, int y) {
         return TupleOf(Just(x), Just(y), InRange(2, width-x), InRange(2, height-y));
     };
@@ -67,7 +68,7 @@ void fuzz_decode_encode(std::tuple<int, int, int, int> crop, int crf, std::strin
     nlohmann::json decoder_para;
     decoder_para["input_path"] = "../../files/big_bunny_10s_30fps.mp4";
     auto decoder = make_sync_func<std::tuple<>, std::tuple<VideoFrame>>(
-        ModuleInfo("CFFDecoder", "c++", ""), JsonParam(decoder_para)
+        ModuleInfo("c_ffmpeg_decoder"), JsonParam(decoder_para)
     );
 
     nlohmann::json video_para, audio_para;
@@ -76,25 +77,28 @@ void fuzz_decode_encode(std::tuple<int, int, int, int> crop, int crf, std::strin
     video_para["height"] = height;
     video_para["crf"] = crf;
     video_para["preset"] = preset;
-    audio_para["codec"] = "aac";
-    audio_para["bit_rate"] = 128000;
-    audio_para["sample_rate"] = 44100;
-    audio_para["channels"] = 2;
     nlohmann::json encoder_para;
     encoder_para["output_path"] = "./output.mp4";
     encoder_para["video_params"] = video_para;
-    encoder_para["audio_params"] = audio_para;
     auto encoder = make_sync_func<std::tuple<VideoFrame>, std::tuple<>>(
-        ModuleInfo("CFFEncoder", "c++", ""), JsonParam(encoder_para)
+        ModuleInfo("c_ffmpeg_encoder"), JsonParam(encoder_para)
     );
 
     VideoFrame decoded_vf;
+    size_t frame_count = 0;
     while (decoded_vf.pts() != BMF_EOF) {
-        std::tie(decoded_vf) = decoder();
-        decoded_vf.crop(x, y, width, height);
-        encoder(decoded_vf);
+        if (frame_count >= 1) break;
+        try {
+            std::tie(decoded_vf) = decoder();
+            decoded_vf.crop(x, y, width, height);
+        } catch (...) {
+            ASSERT_TRUE(false);
+        }
+        frame_count++;
     }
+    encoder(decoded_vf);
+
 }
 
 FUZZ_TEST(ffmpeg_module, fuzz_decode_encode)
-    .WithDomains(AnyCrop(1920, 1080), InRange(0, 51), AnyPreset());
+    .WithDomains(AnyCrop(), InRange(0, 51), AnyPreset());

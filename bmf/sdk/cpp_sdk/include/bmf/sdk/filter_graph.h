@@ -36,6 +36,7 @@ extern "C" {
 #include <libavutil/bprint.h>
 #include <libswscale/swscale.h>
 #include <libavutil/opt.h>
+#include <libavutil/channel_layout.h>
 #include <libavutil/error.h>
 };
 

@@ -22,5 +22,14 @@ if(GLOG_INCLUDE_DIR AND GLOG_LIBRARY)
     endif()
 else()
     message("GLOG not found in system path, using builtin module")
-    add_subdirectory(3rd_party/glog)
+    if(EXISTS 3rd_party/glog) # for compatability with build_aarch64.sh 
+        add_subdirectory(3rd_party/glog)
+    else ()
+        FetchContent_Declare(
+            glog
+            GIT_REPOSITORY https://github.com/google/glog.git
+            GIT_TAG 47ad26d5c6c68300756777173b3c58c1af4daeba
+        )
+        FetchContent_MakeAvailable(glog)
+    endif()
 endif()

@@ -32,7 +32,7 @@ if(IOS)
     add_subdirectory(object-c)
 endif()
 
-## Assemble BMF runtime(put all libs, incs and other resources under ${BMF_ASSEMBE_ROOT})
+## Assemble BMF runtime(put all libs, incs and other resources under ${BMF_ASSEMBLE_ROOT})
 if(BMF_ENABLE_TEST)
     add_custom_target(bmf_assem ALL
         DEPENDS engine copy_module cvtcolor
@@ -196,9 +196,10 @@ add_custom_command(TARGET bmf_assem
 )
 
 if (BMF_LOCAL_DEPENDENCIES)
+    get_target_property(FMT_INCLUDE_DIR hmp FMT_INCLUDE_DIR)
     add_custom_command(TARGET bmf_assem
             POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory ${HML_ROOT}/third_party/fmt/include ${BMF_ASSEMBLE_ROOT}/bmf/include/
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${FMT_INCLUDE_DIR} ${BMF_ASSEMBLE_ROOT}/bmf/include/
     )
 endif()
 

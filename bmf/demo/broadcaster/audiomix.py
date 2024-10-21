@@ -16,7 +16,7 @@ from bmf import (
 from bmf.lib._bmf.sdk import Rational
 from bmf.lib._bmf import sdk
 
-import bmf.hml.hmp as mp
+import bmf.hmp as mp
 
 nb_samples = 1024
 channels = 2

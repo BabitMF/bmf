@@ -3,7 +3,7 @@ from math import pi, cos, tan, sqrt
 import numpy
 
 from bmf import *
-import bmf.hml.hmp as hmp
+import bmf.hmp as hmp
 
 import cvcuda
 

@@ -4,7 +4,7 @@ import unittest
 
 sys.path.append("../../..")
 import bmf
-import bmf.hml.hmp as mp
+import bmf.hmp as mp
 import os
 if os.name == 'nt':
     # We redefine timeout_decorator on windows

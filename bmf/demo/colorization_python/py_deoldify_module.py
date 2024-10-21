@@ -2,7 +2,7 @@ import bmf
 import numpy as np
 from bmf import ProcessResult, Packet, Timestamp, VideoFrame
 import PIL
-import bmf.hml.hmp as mp
+import bmf.hmp as mp
 
 from bmf.lib._bmf import sdk
 

@@ -7,7 +7,7 @@ from cuda import cudart
 
 sys.path.append("../../")
 from bmf import *
-import bmf.hml.hmp as mp
+import bmf.hmp as mp
 
 if sys.version_info.major == 2:
     from Queue import Queue

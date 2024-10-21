@@ -1,4 +1,4 @@
-import bmf.hml.hmp as mp
+import bmf.hmp as mp
 import bmf
 
 

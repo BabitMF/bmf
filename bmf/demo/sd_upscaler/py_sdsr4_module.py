@@ -2,7 +2,7 @@ import bmf
 import numpy as np
 from bmf import ProcessResult, Packet, Timestamp, VideoFrame
 from PIL import Image
-import bmf.hml.hmp as mp
+import bmf.hmp as mp
 from bmf.lib._bmf.sdk import ffmpeg
 
 from diffusers import StableDiffusionUpscalePipeline

@@ -16,7 +16,7 @@ from PIL import Image
 sys.path.append("../../")
 
 from bmf import *
-import bmf.hml.hmp as mp
+import bmf.hmp as mp
 from nms import NMS
 
 

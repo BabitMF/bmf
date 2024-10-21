@@ -4,7 +4,7 @@
 from bmf import Module, Log, Timestamp, ProcessResult, LogLevel, Packet, VideoFrame
 
 from bmf.lib._bmf.sdk import ffmpeg
-from bmf.hml import hmp as mp
+from bmf import hmp as mp
 
 import numpy as np
 

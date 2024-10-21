@@ -1,4 +1,4 @@
-import bmf.hml.hmp as mp
+import bmf.hmp as mp
 
 has_cuda = hasattr(mp, "cuda") and mp.device_count(mp.kCUDA) > 0
 

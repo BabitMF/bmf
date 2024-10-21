@@ -4,7 +4,7 @@ from typing import List, Optional
 import pdb
 
 from bmf import *
-import bmf.hml.hmp as mp
+import bmf.hmp as mp
 
 import numpy as np
 import torch

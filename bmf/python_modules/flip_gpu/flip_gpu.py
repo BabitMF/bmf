@@ -1,5 +1,5 @@
 from bmf import *
-import bmf.hml.hmp as hmp
+import bmf.hmp as hmp
 import cvcuda
 
 

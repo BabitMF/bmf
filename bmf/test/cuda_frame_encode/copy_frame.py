@@ -4,7 +4,7 @@
 from bmf import Module, Log, LogLevel, InputType, ProcessResult, Packet, Timestamp, scale_av_pts, av_time_base, VideoFrame
 
 from bmf.lib._bmf.sdk import Rational
-import bmf.hml.hmp as mp
+import bmf.hmp as mp
 
 
 class copy_frame(Module):

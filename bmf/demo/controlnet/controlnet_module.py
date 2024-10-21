@@ -5,7 +5,7 @@ import numpy as np
 import pdb
 
 from bmf import *
-import bmf.hml.hmp as mp
+import bmf.hmp as mp
 sys.path.append('./controlnet')
 from canny2image_TRT import hackathon
 

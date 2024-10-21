@@ -2,7 +2,7 @@ import sys
 import time
 import unittest
 import numpy as np
-import bmf.hml.hmp as mp
+import bmf.hmp as mp
 
 sys.path.append("../../..")
 import bmf

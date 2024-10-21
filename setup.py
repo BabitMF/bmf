@@ -192,7 +192,7 @@ setup(
         'bmf.builder',
         'bmf.cmd.python_wrapper',
         'bmf.ffmpeg_engine',
-        'bmf.hml.hmp',
+        'bmf.hmp',
         'bmf.modules',
         'bmf.python_sdk',
         'bmf.server',

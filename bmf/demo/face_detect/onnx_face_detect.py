@@ -1,6 +1,6 @@
 import onnxruntime as rt
 import numpy as np
-import bmf.hml.hmp as mp
+import bmf.hmp as mp
 import time
 import sys
 if sys.version_info.major == 2:

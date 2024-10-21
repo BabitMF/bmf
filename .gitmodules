@@ -1,48 +1,8 @@
-[submodule "3rd_party/glog"]
-	path = 3rd_party/glog
-	url = https://github.com/google/glog.git
-        ignore = dirty
 [submodule "3rd_party/gtest"]
 	path = 3rd_party/gtest
 	url = https://github.com/google/googletest.git
-        ignore = dirty
-[submodule "3rd_party/dlpack"]
-	path = 3rd_party/dlpack
-	url = https://github.com/dmlc/dlpack.git
         ignore = dirty
 [submodule "3rd_party/json"]
 	path = 3rd_party/json
 	url = https://github.com/nlohmann/json.git
         ignore = dirty
-[submodule "bmf/hml/third_party/gtest"]
-	path = bmf/hml/third_party/gtest
-	url = https://github.com/google/googletest.git
-        ignore = dirty
-[submodule "bmf/hml/third_party/pybind11"]
-	path = bmf/hml/third_party/pybind11
-	url = https://github.com/pybind/pybind11.git
-        ignore = dirty
-[submodule "bmf/hml/third_party/spdlog"]
-	path = bmf/hml/third_party/spdlog
-	url = https://github.com/gabime/spdlog.git
-        ignore = dirty
-[submodule "bmf/hml/third_party/backward"]
-	path = bmf/hml/third_party/backward
-	url = https://github.com/bombela/backward-cpp.git
-        ignore = dirty
-[submodule "bmf/hml/third_party/benchmark"]
-	path = bmf/hml/third_party/benchmark
-	url = https://github.com/google/benchmark.git
-        ignore = dirty
-[submodule "bmf/hml/third_party/dlpack"]
-	path = bmf/hml/third_party/dlpack
-	url = https://github.com/dmlc/dlpack.git
-        ignore = dirty
-[submodule "bmf/hml/third_party/fmt"]
-	path = bmf/hml/third_party/fmt
-	url = https://github.com/fmtlib/fmt.git
-        ignore = dirty
-[submodule "bmf/hml/third_party/fuzztest"]
-	path = bmf/hml/third_party/fuzztest
-	url = https://github.com/google/fuzztest.git
-		ignore = dirty

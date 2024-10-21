@@ -17,10 +17,17 @@ set(HMP_CORE_PRI_DEPS)
 set(BUILD_SHARED_LIBS_OLD ${BUILD_SHARED_LIBS})
 set(BUILD_SHARED_LIBS OFF)
 
+include(FetchContent)
+
 #### pybind11
 if(HMP_ENABLE_PYTHON)
     if (HMP_LOCAL_DEPENDENCIES)
-        add_subdirectory(third_party/pybind11)
+        FetchContent_Declare(
+            pybind11
+            GIT_REPOSITORY https://github.com/pybind/pybind11.git
+            GIT_TAG ca4d00ad3e2e0f410eeab3264d21b8a39397f362
+        )
+        FetchContent_MakeAvailable(pybind11)
     else ()
         find_package(pybind11 REQUIRED)
     endif()
@@ -28,7 +35,12 @@ endif()
 
 ##### fmt
 if (HMP_LOCAL_DEPENDENCIES)
-    add_subdirectory(third_party/fmt)
+    FetchContent_Declare(
+        fmt
+        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+        GIT_TAG 6ae402fd0bf4e6491dc7b228401d531057dbb094
+    )
+    FetchContent_MakeAvailable(fmt)
 else ()
     find_package(fmt REQUIRED)
     add_library(fmt ALIAS fmt::fmt)
@@ -66,7 +78,12 @@ endif()
 #### spdlog
 if(NOT "${CMAKE_SYSTEM_NAME}" MATCHES "Android|iOS" AND NOT EMSCRIPTEN)
     if (HMP_LOCAL_DEPENDENCIES)
-        add_subdirectory(third_party/spdlog)
+        FetchContent_Declare(
+            spdlog
+            GIT_REPOSITORY https://github.com/gabime/spdlog.git
+            GIT_TAG be14e60d9e8be31735dd9d2d132d8a4cd3482165
+        )
+        FetchContent_MakeAvailable(spdlog)
         set_target_properties(spdlog PROPERTIES
                 C_VISIBILITY_PRESET hidden
                 CXX_VISIBILITY_PRESET hidden
@@ -81,8 +98,16 @@ if(NOT "${CMAKE_SYSTEM_NAME}" MATCHES "Android|iOS" AND NOT EMSCRIPTEN)
 endif()
 
 #### dlpack
-if (NOT HMP_LOCAL_DEPENDENCIES)
+if (HMP_LOCAL_DEPENDENCIES)
+    FetchContent_Declare(
+        dlpack
+        GIT_REPOSITORY https://github.com/dmlc/dlpack.git
+        GIT_TAG ca4d00ad3e2e0f410eeab3264d21b8a39397f362
+    )
+    FetchContent_MakeAvailable(dlpack)
+else ()
     find_package(dlpack REQUIRED)
+    add_library(dlpack ALIAS dlpack::dlpack)
     list(APPEND HMP_CORE_PRI_DEPS dlpack::dlpack)
 endif()
 
@@ -95,8 +120,14 @@ if(NOT "${CMAKE_SYSTEM_NAME}" MATCHES "Android|iOS")
             set(STACK_DETAILS_AUTO_DETECT FALSE)
         endif()
 
-        add_subdirectory(third_party/backward)
-        list(APPEND HMP_CORE_PRI_DEPS backward ${BACKWARD_LIBRARIES})
+        FetchContent_Declare(
+            backward
+            GIT_REPOSITORY https://github.com/bombela/backward-cpp.git
+            GIT_TAG 872350775655ad610f66aea325c319950daa7c95
+        )
+        FetchContent_MakeAvailable(backward)
+
+        list(APPEND HMP_CORE_PRI_DEPS backward ${BACKWARD_LIBRARIES}) # assume BACKWARD_LIBRARIES is populated by FetchContent
     else ()
         find_package(Backward REQUIRED)
         list(APPEND HMP_CORE_PUB_DEPS Backward::Backward)
@@ -160,7 +191,12 @@ if(BMF_ENABLE_FUZZTEST AND HMP_LOCAL_DEPENDENCIES) # FuzzTest
     if(WIN32)
         set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
     endif()
-    add_subdirectory(third_party/fuzztest)
+    FetchContent_Declare(
+        fuzztest
+        GIT_REPOSITORY https://github.com/fuzztest/fuzztest.git
+        GIT_TAG 9f67235e7933e0f626f16977855ec99c0f64f4e0
+    )
+    FetchContent_MakeAvailable(fuzztest)
 else() # GTest
     # optional interface library (remove it when nvcc support c++17)
     add_library(optional INTERFACE)
@@ -172,7 +208,12 @@ else() # GTest
         if(WIN32)
             set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
         endif()
-        add_subdirectory(third_party/gtest)
+        FetchContent_Declare(
+            gtest
+            GIT_REPOSITORY https://github.com/google/googletest.git
+            GIT_TAG 3ff1e8b98a3d1d3abc24a5bacb7651c9b32faedd
+        )
+        FetchContent_MakeAvailable(gtest)
     else()
         find_package(GTest REQUIRED)
         add_library(gtest ALIAS GTest::gtest)
@@ -187,7 +228,12 @@ if (HMP_LOCAL_DEPENDENCIES)
     set(BENCHMARK_ENABLE_INSTALL OFF)
     set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
     if (NOT EMSCRIPTEN)
-        add_subdirectory(third_party/benchmark)
+        FetchContent_Declare(
+            benchmark
+            GIT_REPOSITORY https://github.com/google/benchmark.git
+            GIT_TAG f90215f1cc2c22d32d96e903ea031278681e4adb
+        )
+        FetchContent_MakeAvailable(benchmark) 
     endif()
 else ()
     find_package(benchmark REQUIRED)

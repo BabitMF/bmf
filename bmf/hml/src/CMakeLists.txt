@@ -97,10 +97,11 @@ target_include_directories(hmp
 if (HMP_LOCAL_DEPENDENCIES)
     target_include_directories(hmp
         PUBLIC
-            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third_party/spdlog/include>
-            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third_party/fmt/include>
-            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/third_party/dlpack/include>
+            $<BUILD_INTERFACE:${spdlog_SOURCE_DIR}/include>
+            $<BUILD_INTERFACE:${fmt_SOURCE_DIR}/include>
+            $<BUILD_INTERFACE:${dlpack_SOURCE_DIR}/include>
     )
+    set_target_properties(hmp PROPERTIES FMT_INCLUDE_DIR $<BUILD_INTERFACE:${fmt_SOURCE_DIR}/include>)
 endif()
 
 target_link_libraries(hmp

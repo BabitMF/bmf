@@ -25,7 +25,7 @@ if(HMP_ENABLE_PYTHON)
         FetchContent_Declare(
             pybind11
             GIT_REPOSITORY https://github.com/pybind/pybind11.git
-            GIT_TAG ca4d00ad3e2e0f410eeab3264d21b8a39397f362
+            GIT_TAG v2.13.6
         )
         FetchContent_MakeAvailable(pybind11)
     else ()
@@ -231,7 +231,7 @@ if (HMP_LOCAL_DEPENDENCIES)
         FetchContent_Declare(
             benchmark
             GIT_REPOSITORY https://github.com/google/benchmark.git
-            GIT_TAG f90215f1cc2c22d32d96e903ea031278681e4adb
+            GIT_TAG v1.6.2
         )
         FetchContent_MakeAvailable(benchmark) 
     endif()

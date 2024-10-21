@@ -110,7 +110,6 @@ jobs:
         BMF_PYTHON_VERSION: ${{ env.BMF_PYTHON_VERSION }}
         BMF_ARCHITECTURES: ${{ matrix.arch }}
       run: |
-        sed -i '' '/sigma_gn /s/^/\/\//g' bmf/hml/third_party/benchmark/src/complexity.cc
         wget https://www.python.org/ftp/python/3.9.13/python-3.9.13-macos11.pkg
         sudo installer -pkg python-3.9.13-macos11.pkg -target /
         ./scripts/build_ffmpeg.sh --arch=${{ matrix.arch }}

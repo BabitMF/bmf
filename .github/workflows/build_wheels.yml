@@ -132,9 +132,7 @@ jobs:
         CIBW_BUILD: ${{ matrix.py_ver_prefix }}-*
         CIBW_BUILD_VERBOSITY: 1
         CIBW_ARCHS_MACOS: ${{ matrix.macos_arch }}
-        CIBW_BEFORE_ALL_MACOS: >
-          sed -i '' '/sigma_gn /s/^/\/\//g' bmf/hml/third_party/benchmark/src/complexity.cc &&
-          brew list python@3.$(echo ${{ matrix.py_ver_prefix }} | cut -c 4-); if [ $? -eq 0 ]; then brew uninstall --ignore-dependencies python@3.$(echo ${{ matrix.py_ver_prefix }} | cut -c 4-); fi
+        CIBW_BEFORE_ALL_MACOS: brew list python@3.$(echo ${{ matrix.py_ver_prefix }} | cut -c 4-); if [ $? -eq 0 ]; then brew uninstall --ignore-dependencies python@3.$(echo ${{ matrix.py_ver_prefix }} | cut -c 4-); fi
         CIBW_BEFORE_BUILD: >
           ./scripts/build_ffmpeg.sh --arch=${{ matrix.macos_arch }} &&
           for xcode_python_root in /Applications/Xcode*/Contents/Developer/Library/Frameworks/Python3.framework;do if [ -d ${xcode_python_root} ]; then mv ${xcode_python_root} ${xcode_python_root}.bak; fi; done

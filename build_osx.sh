@@ -43,7 +43,12 @@ then
     BMF_PYVER="3.7"
     if [[ -z "${BMF_PYTHON_VERSION}" ]]
     then
-        echo "BMF_PYTHON_VERSION is not set, using default Python 3.7"
+        if command -v python3 > /dev/null 2>&1; then 
+            BMF_PYVER="$(python3 --version | cut -d ' ' -f 2 | awk -F '.' '{print $1"."$2}')"
+            echo "BMF_PYTHON_VERSION is not set, using the system Python version $BMF_PY_VER linked to python3"
+        else
+            echo "BMF_PYTHON_VERSION is not set, using default Python 3.7"
+        fi
     else
         echo "Compiling for Python ${BMF_PYTHON_VERSION}"
         BMF_PYVER="${BMF_PYTHON_VERSION}"

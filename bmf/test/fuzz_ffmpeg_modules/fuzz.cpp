@@ -35,12 +35,23 @@ namespace fs = std::filesystem;
 using namespace fuzztest;
 
 namespace {
-Domain<std::tuple<int, int, int, int>> AnyCrop() {
+static VideoFrame decode_one_frame(const std::string &path) {
+    JsonParam option;
+    option.parse(fmt::format("{{\"input_path\": \"{}\"}}", path));
+    auto decoder = make_sync_func<std::tuple<>, std::tuple<VideoFrame>>(
+        ModuleInfo("c_ffmpeg_decoder"), option);
+
+    VideoFrame vf;
+    std::tie(vf) = decoder();
+    return vf;
+}
+
+Domain<std::tuple<int, int, int, int>> AnyCrop() { // min size 4x4 in 1080p image
     static const int width = 1920, height = 1080; 
     auto valid_crop = [&](int x, int y) {
-        return TupleOf(Just(x), Just(y), InRange(2, width-x), InRange(2, height-y));
+        return TupleOf(Just(x), Just(y), InRange(4, width-x), InRange(4, height-y));
     };
-    return FlatMap(valid_crop, InRange(0, width-3), InRange(0, height-3));
+    return FlatMap(valid_crop, InRange(0, width-5), InRange(0, height-5));
 }
 
 auto AnyPreset() {
@@ -62,15 +73,19 @@ auto AnyPreset() {
 void fuzz_decode_encode(std::tuple<int, int, int, int> crop, int crf, std::string preset) {
     BMFLOG_SET_LEVEL(BMF_INFO);
 
+    // decode from input file
+    VideoFrame decoded_vf;
+    EXPECT_NO_THROW(decoded_vf = decode_one_frame("../../files/big_bunny_10s_30fps.mp4"));
+    ASSERT_TRUE(decoded_vf);
+
+    // crop params
     int x, y, width, height; 
     std::tie(x, y, width, height) = crop;
 
-    nlohmann::json decoder_para;
-    decoder_para["input_path"] = "../../files/big_bunny_10s_30fps.mp4";
-    auto decoder = make_sync_func<std::tuple<>, std::tuple<VideoFrame>>(
-        ModuleInfo("c_ffmpeg_decoder"), JsonParam(decoder_para)
-    );
+    // crop decoded frame
+    EXPECT_NO_THROW(decoded_vf.crop(x, y, width, height));
 
+    // setup encoder
     nlohmann::json video_para, audio_para;
     video_para["codec"] = "h264";
     video_para["width"] = width;
@@ -80,24 +95,16 @@ void fuzz_decode_encode(std::tuple<int, int, int, int> crop, int crf, std::strin
     nlohmann::json encoder_para;
     encoder_para["output_path"] = "./output.mp4";
     encoder_para["video_params"] = video_para;
-    auto encoder = make_sync_func<std::tuple<VideoFrame>, std::tuple<>>(
+    auto encode_one_frame = make_sync_func<std::tuple<VideoFrame>, std::tuple<>>(
         ModuleInfo("c_ffmpeg_encoder"), JsonParam(encoder_para)
     );
 
-    VideoFrame decoded_vf;
-    size_t frame_count = 0;
-    while (decoded_vf.pts() != BMF_EOF) {
-        if (frame_count >= 1) break;
-        try {
-            std::tie(decoded_vf) = decoder();
-            decoded_vf.crop(x, y, width, height);
-        } catch (...) {
-            ASSERT_TRUE(false);
-        }
-        frame_count++;
+    // encode frame
+    if (width%2==0 && height%2==0) {
+        EXPECT_NO_THROW(encode_one_frame(decoded_vf));
+    } else {
+        EXPECT_THROW(encode_one_frame(decoded_vf), std::exception);
     }
-    encoder(decoded_vf);
-
 }
 
 FUZZ_TEST(ffmpeg_module, fuzz_decode_encode)

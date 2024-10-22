@@ -1,5 +1,5 @@
 
-# hml version information
+# hmp version information
 set(HMP_VERSION_MAJOR @HMP_VERSION_MAJOR@)
 set(HMP_VERSION_MINOR @HMP_VERSION_MINOR@)
 set(HMP_VERSION_PATCH @HMP_VERSION_PATCH@)
@@ -15,7 +15,7 @@ if(_IMPORT_PREFIX STREQUAL "/")
 endif()
 
 
-# create imported target hml::hmp
+# create imported target hml::hmp for backwards compatibility with hml
 find_library(HMP_LIBRARY hmp HINTS ${_IMPORT_PREFIX}/lib)
 if(HMP_LIBRARY)
     add_library(hml::hmp SHARED IMPORTED)

@@ -78,7 +78,6 @@ endfunction()
 if(NOT IOS)
     copy_dir_to_bmf_module(builder)
     copy_dir_to_bmf_module(ffmpeg_engine)
-    copy_dir_to_bmf_module(hml/hmp)
     copy_dir_to_bmf_module(modules)
     copy_dir_to_bmf_module(python_sdk)
     copy_dir_to_bmf_module(server)
@@ -148,8 +147,8 @@ if (BMF_LOCAL_DEPENDENCIES)
                                                        ${BMF_ASSEMBLE_ROOT}/bmf/include)
 endif()
 
-# COPY hml related resources
-set(HML_ROOT ${PROJECT_SOURCE_DIR}/bmf/hml)
+# COPY hmp related resources
+set(HML_ROOT ${PROJECT_SOURCE_DIR}/bmf/hmp)
 
 add_custom_command(TARGET bmf_assem
     POST_BUILD
@@ -209,12 +208,19 @@ if(TARGET _hmp)
         POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:_hmp> ${BMF_ASSEMBLE_ROOT}/bmf/lib
     )
-endif()
 
-add_custom_command(TARGET bmf_assem
+    add_custom_command(TARGET bmf_assem
     POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${HML_ROOT}/hmp ${BMF_ASSEMBLE_ROOT}/bmf/hml/hmp
-)
+        COMMAND ${CMAKE_COMMAND} -E copy
+                    ${CMAKE_CURRENT_SOURCE_DIR}/hmp/__init__.py
+                    ${BMF_ASSEMBLE_ROOT}/bmf/hmp/)
+
+    add_custom_command(TARGET bmf_assem
+        POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy
+                        ${CMAKE_CURRENT_SOURCE_DIR}/hmp/tracer.py
+                        ${BMF_ASSEMBLE_ROOT}/bmf/hmp/)
+endif()
 
 
 if(IOS)

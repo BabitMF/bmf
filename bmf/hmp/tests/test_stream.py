@@ -1,6 +1,6 @@
 import pytest
-from hml_fixtures import has_cuda
-from hml_fixtures import mp
+from bmf.hmp.tests.hmp_fixtures import has_cuda
+from bmf.hmp.tests.hmp_fixtures import mp
 
 
 @pytest.mark.skipif(not has_cuda, reason="need cuda devices")

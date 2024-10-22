@@ -1,6 +1,6 @@
 import pytest
 import bmf.lib._hmp as mp
-from hml_fixtures import device_type, dtype
+from bmf.hmp.tests.hmp_fixtures import device_type, dtype
 try:
     import torch
 except ImportError:

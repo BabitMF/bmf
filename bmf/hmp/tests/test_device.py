@@ -1,6 +1,6 @@
 import pytest
-from hml_fixtures import device_type, has_cuda
-from hml_fixtures import mp
+from bmf.hmp.tests.hmp_fixtures import device_type, has_cuda
+from bmf.hmp.tests.hmp_fixtures import mp
 
 
 def test_device_create(device_type):

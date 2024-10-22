@@ -1,8 +1,8 @@
 import pytest
 import numpy as np
 import os
-from hml_fixtures import has_cuda, has_ffmpeg
-from hml_fixtures import mp, get_data_file
+from bmf.hmp.tests.hmp_fixtures import has_cuda, has_ffmpeg
+from bmf.hmp.tests.hmp_fixtures import mp, get_data_file
 from test_color_convert import yuv_rgb, infer_pix_info
 
 videos = [

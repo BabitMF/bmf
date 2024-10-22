@@ -2,8 +2,8 @@ import pytest
 import numpy as np
 import os
 import cv2
-from hml_fixtures import device_type, img_dtype, channel_format, channels
-from hml_fixtures import mp, lenna_image, to_np_dtype
+from bmf.hmp.tests.hmp_fixtures import device_type, img_dtype, channel_format, channels
+from bmf.hmp.tests.hmp_fixtures import mp, lenna_image, to_np_dtype
 import glob
 
 

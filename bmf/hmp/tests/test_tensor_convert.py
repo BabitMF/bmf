@@ -1,6 +1,6 @@
 import pytest
-from hml_fixtures import device_type, has_cuda, dtype, f_dtype, to_np_dtype, with_half
-from hml_fixtures import mp, scalar_types, device_types
+from bmf.hmp.tests.hmp_fixtures import device_type, has_cuda, dtype, f_dtype, to_np_dtype, with_half
+from bmf.hmp.tests.hmp_fixtures import mp, scalar_types, device_types
 import numpy as np
 
 

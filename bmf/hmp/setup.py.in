@@ -47,7 +47,7 @@ if __name__ == '__main__':
                 incs.append((rel_path, hdrs))
     
     #
-    cmake_module = [("lib/cmake/hml", [os.path.join(source_root, "cmake/hml-config.cmake")])]
+    cmake_module = [("lib/cmake/hmp", [os.path.join(source_root, "cmake/hmp-config.cmake")])]
 
     class pre_build_ext(build_ext.build_ext):
         def build_extension(self, ext):

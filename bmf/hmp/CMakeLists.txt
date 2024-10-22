@@ -75,8 +75,8 @@ configure_file(
     "${PROJECT_SOURCE_DIR}/include/hmp/config.h.in"
     "${PROJECT_SOURCE_DIR}/include/hmp/config.h")
 configure_file(
-    "${PROJECT_SOURCE_DIR}/cmake/hml-config.cmake.in"
-    "${PROJECT_SOURCE_DIR}/cmake/hml-config.cmake" @ONLY)
+    "${PROJECT_SOURCE_DIR}/cmake/hmp-config.cmake.in"
+    "${PROJECT_SOURCE_DIR}/cmake/hmp-config.cmake" @ONLY)
 
 add_subdirectory(src)
 if(HMP_ENABLE_PYTHON)

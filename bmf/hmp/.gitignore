@@ -5,4 +5,4 @@ output
 setup.py
 include/hmp/config.h
 setup.py
-cmake/hml-config.cmake
+cmake/hmp-config.cmake

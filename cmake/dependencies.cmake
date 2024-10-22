@@ -118,7 +118,7 @@ if(BMF_ENABLE_JNI)
     endif()
 endif()
 
-## HML
+## HMP
 # disable torch build, as -D_GLIBCXX_USE_CXX11_ABI=0 will make gtest build failed
 set(HMP_LOCAL_DEPENDENCIES ${BMF_LOCAL_DEPENDENCIES})
 set(HMP_ENABLE_TORCH ${BMF_ENABLE_TORCH}) 

@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
     setup_cfgs = {
             "version": "@HMP_BUILD_VERSION@",
-            "description": "HML(Heterogeneous Media Process Library)",
+            "description": "HMP(Heterogeneous Media Process Library)",
             "author": "Li Hong",
             "author_email": "lihong.red@bytedance.com",
             }

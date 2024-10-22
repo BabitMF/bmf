@@ -26,7 +26,7 @@
 
 using namespace bmf_sdk;
 
-// NOTE: all correctness of tensor operations are tested in hml/tests
+// NOTE: all correctness of tensor operations are tested in hmp/tests
 
 #ifdef BMF_ENABLE_FUZZTEST 
 #include <fuzztest/fuzztest.h>

@@ -56,7 +56,7 @@ pwd
 PROJECT_PATH="build_ios"
 
 INSTALL_PREFIX="build_ios/output/ios"
-POD_SPEC_NAME="hml"
+POD_SPEC_NAME="hmp"
 rm -rf $INSTALL_PREFIX
 
 cmake --build $PROJECT_PATH --target bmf_lite --config $BUILD_CONFIG -- -sdk iphoneos VALID_ARCHS="armv7 arm64"

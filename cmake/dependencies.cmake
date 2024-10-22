@@ -45,7 +45,7 @@ if(BMF_EANBLE_GLOG)
 endif()
 
 ## gtest
-# use target from hml
+# use target from hmp
 
 ## ffmepg
 if(BMF_ENABLE_FFMPEG)

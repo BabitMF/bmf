@@ -148,7 +148,7 @@ if (BMF_LOCAL_DEPENDENCIES)
 endif()
 
 # COPY hmp related resources
-set(HML_ROOT ${PROJECT_SOURCE_DIR}/bmf/hmp)
+set(HMP_ROOT ${PROJECT_SOURCE_DIR}/bmf/hmp)
 
 add_custom_command(TARGET bmf_assem
     POST_BUILD
@@ -191,7 +191,7 @@ endif()
 ## includes
 add_custom_command(TARGET bmf_assem
     POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${HML_ROOT}/include/ ${BMF_ASSEMBLE_ROOT}/bmf/include/
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${HMP_ROOT}/include/ ${BMF_ASSEMBLE_ROOT}/bmf/include/
 )
 
 if (BMF_LOCAL_DEPENDENCIES)
@@ -270,7 +270,7 @@ if(IOS)
                             ${IOS_ASSEMBLE_ROOT}/include/bmf/oc
         COMMAND
         ${CMAKE_COMMAND} -E copy_directory
-                            ${HML_ROOT}/object-c/include/hmp/oc
+                            ${HMP_ROOT}/object-c/include/hmp/oc
                             ${IOS_ASSEMBLE_ROOT}/include/hmp/oc
 
         WORKING_DIRECTORY ${IOS_ASSEMBLE_ROOT}

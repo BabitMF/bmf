@@ -211,6 +211,10 @@ if(TARGET _hmp)
 
     add_custom_command(TARGET bmf_assem
     POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${BMF_ASSEMBLE_ROOT}/bmf/hmp/)                    
+
+    add_custom_command(TARGET bmf_assem
+    POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
                     ${CMAKE_CURRENT_SOURCE_DIR}/hmp/__init__.py
                     ${BMF_ASSEMBLE_ROOT}/bmf/hmp/)

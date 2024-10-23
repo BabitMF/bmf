@@ -15,10 +15,14 @@ Here are some key features of BMF:
 
 - **Efficient data conversion:** BMF offers seamless data format conversions across popular frameworks (FFmpeg/Numpy/PyTorch/OpenCV/TensorRT), conversion between hardware devices (CPU/GPU), and color space and pixel format conversion.
 
+
+[**BMFLite**](./bmf_lite/README.md) is a client-side cross-platform, lightweight, more efficient client-side multimedia processing framework.
+So far, the BMFLite client-side algorithm is used in apps such as Douyin/Xigua, serving more than one billion users in live streaming/video playing/pictures/cloud games and other scenarios, and processing videos and pictures trillions of times every day.
+
 Dive deeper into BMF's capabilities on our [website](https://babitmf.github.io/) for more details.
 
 ## Quick Experience
-In this section, we will directly showcase the capabilities of the BMF framework around five dimensions: **Transcode**, **Edit**, **Meeting/Broadcaster**, **GPU acceleration**, and **AI Inference**. For all the demos provided below, corresponding implementations and documentation are available on Google Colab, allowing you to experience them intuitively.
+In this section, we will directly showcase the capabilities of the BMF framework around six dimensions: **Transcode**, **Edit**, **Meeting/Broadcaster**, **GPU acceleration**, **AI Inference**, and **client-side Framework**. For all the demos provided below, corresponding implementations and documentation are available on Google Colab, allowing you to experience them intuitively.
 
 ### Transcode
 This demo describes step-by-step how to use BMF to develop a transcoding program, including video transcoding, audio transcoding, and image transcoding. In it, you can familiarize yourself with how to use BMF and how to use FFmpeg-compatible options to achieve the capabilities you need.
@@ -96,8 +100,17 @@ This Demo shows a full-link face detect pipeline based on TensorRT acceleration,
 
 If you want to have a quick experiment, you can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/demo/face_detect/facedetect_demo_colab.ipynb)
 
+### Client-side Framework
 
+#### Edge AI models
+This case illustrates the procedures of integrating an external algorithm module into the BMFLite framework and management of its execution.
 
+<img src="bmf_lite/iOS/data/sd1.gif" alt="sr" width="250" height="360">
+
+#### Real-time denoise
+This example implements the denoise algorithm as a BMF module, showcasing a BMF pipeline that combines video capture, noise reduction and rendering.
+
+<img src="bmf_lite/android/app/src/main/res/effect-data/denoise.gif" alt="sr" width="250" height="360">
 
 ## Table of Contents
 

@@ -54,6 +54,16 @@ Domain<std::tuple<int, int, int, int>> AnyCrop() { // min size 4x4 in 1080p imag
     return FlatMap(valid_crop, InRange(0, width-5), InRange(0, height-5));
 }
 
+Domain<std::tuple<int, int, int, int>> AnyEvenCrop() { // min size 4x4 in 1080p image, even width/height crops only
+    static const int width = 1920, height = 1080; 
+    auto valid_crop = [&](int x, int y) {
+        int max_half_width = (width-x)/2, max_half_height = (height-y)/2;
+        auto double_lambda = [](int i) { return i*2; };
+        return TupleOf(Just(x), Just(y), Map(double_lambda, InRange(2, max_half_width)), Map(double_lambda, InRange(2, max_half_height)));
+    };
+    return FlatMap(valid_crop, InRange(0, width-5), InRange(0, height-5));
+}
+
 auto AnyPreset() {
     return ElementOf<std::string>({
         "ultrafast",
@@ -108,4 +118,4 @@ void fuzz_decode_encode(std::tuple<int, int, int, int> crop, int crf, std::strin
 }
 
 FUZZ_TEST(ffmpeg_module, fuzz_decode_encode)
-    .WithDomains(AnyCrop(), InRange(0, 51), AnyPreset());
+    .WithDomains(AnyEvenCrop(), InRange(0, 51), AnyPreset());

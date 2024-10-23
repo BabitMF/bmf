@@ -264,6 +264,7 @@ jobs:
         commands:
           # unit test
           - git submodule update --init --recursive
+          - sed -i '/sigma_gn /s/^/\/\//g' bmf/hml/third_party/benchmark/src/complexity.cc # ToDo: remove after FetchContent MR lands which will bump benchmark version to not need this patch
           - ./build.sh clang asan
           - apt-get update
           - apt-get install -y protobuf-compiler libgflags-dev libdw-dev libgoogle-glog-dev

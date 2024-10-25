@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifdef BMF_ENABLE_STAT
 #include <bmf/sdk/bmf_stat.h>
 #include <bmf/sdk/log.h>
 
@@ -24,11 +25,15 @@ BMFStat &BMFStat::GetInstance() {
 }
 
 BMFStat::BMFStat() {
-    std::string path = ""; // linux, win, ios, android
+    std::string path = "libbmf_data_reporter.so"; // linux, win, ios, android
     upload_lib =
-        SharedLibrary(path, SharedLibrary::LAZY | SharedLibrary::GLOBAL);
-    if (upload_lib.is_open())
+        SharedLibrary(path, SharedLibrary::LAZY | SharedLibrary::GLOBAL | SharedLibrary::DEEP_BIND);
+    if (upload_lib.is_open()) {
+        create_bmf_kafka_reporter create_func = upload_lib.symbol<create_bmf_kafka_reporter>("create_bmf_kafka_reporter");
+        reporter_ = create_func("0001_bmf_data_report_test", "bmq_boe_test3");
         BMFLOG(BMF_INFO) << "BMF stat upload lib was found and loaded";
+    }
+
     
     t_ = std::thread(&BMFStat::process_track_points, this);
 }
@@ -48,7 +53,7 @@ BMFStat::~BMFStat() {
 void BMFStat::push_info(JsonParam info) { stat_info.merge_patch(info); }
 
 int BMFStat::upload_info() {
-    if (upload_lib.is_open()) {
+    if (reporter_) {
         // send back the stat info base on the lib for different OS/environments
     }
     return 0;
@@ -85,8 +90,16 @@ void BMFStat::process_track_points() {
 }
 
 void BMFStat::report_stat(std::shared_ptr<TrackPoint> point) {
-    BMFLOG(BMF_INFO) << "data point tag: " << point->get_tag();
-    BMFLOG(BMF_INFO) << "data point content: " << point->to_json().dump();
+
+    if (reporter_) {
+        std::string data_tag = point->get_tag();
+        std::string data_content = point->to_json().dump();
+        BMFLOG(BMF_INFO) << "data point tag: " << point->get_tag();
+        BMFLOG(BMF_INFO) << "data point content: " << point->to_json().dump();
+        if (reporter_->produce(data_content)) {
+            reporter_->flush();
+        }
+    }
 
 }
 
@@ -100,3 +113,4 @@ int64_t BMFStat::task_id() {
 }
 
 } // namespace bmf_sdk
+#endif

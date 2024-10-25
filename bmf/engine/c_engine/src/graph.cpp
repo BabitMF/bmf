@@ -59,6 +59,7 @@ Graph::Graph(
     BMFLOG(BMF_INFO) << "BMF Commit: " << BMF_COMMIT;
     BMFLOG(BMF_INFO) << "start init graph";
 
+    #ifdef BMF_ENABLE_STAT
     auto sd = std::make_shared<GraphStartData>();
 
     graph_start_time_ = bmf_get_time();
@@ -67,7 +68,7 @@ Graph::Graph(
     sd->commit = BMF_COMMIT;
 
     bmf_stat_report(sd);
-
+    #endif
     BMF_TRACE(GRAPH_START, "Init");
     init(graph_config, pre_modules, callback_bindings);
     g_ptr.push_back(this);
@@ -863,6 +864,7 @@ int Graph::close() {
     g_ptr.clear();
 
     //report
+    #ifdef BMF_ENABLE_STAT
     auto sd = std::make_shared<GraphEndData>();
 
     sd->start_timestamp = graph_start_time_;
@@ -871,7 +873,7 @@ int Graph::close() {
     sd->err = exception_from_scheduler_ ? 1 : 0;
     sd->graph_str = graph_config_.to_json().dump();
     bmf_stat_report(sd);
-
+    #endif
     if (scheduler_->eptr_) {
         auto graph_info = status();
         std::cerr << "Graph status when exception occured: "

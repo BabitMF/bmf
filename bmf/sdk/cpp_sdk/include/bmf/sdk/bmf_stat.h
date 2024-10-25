@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifdef BMF_ENABLE_STAT
 #pragma once
 
 #include <bmf/sdk/json_param.h>
 #include <bmf/sdk/shared_library.h>
+#include <bmf/sdk/bmf_kafka_reporter_interface.h>
 
 #include <cstdint>
 #include <string>
@@ -25,6 +27,10 @@
 #include <queue>
 #include <memory>
 #include <condition_variable>
+
+typedef BMFKafkaReporterI* (*create_bmf_kafka_reporter_default)();
+typedef BMFKafkaReporterI* (*create_bmf_kafka_reporter)(const std::string &topic_str, const std::string &cluster_str);
+typedef void (*destroy_kafka_reporter)(BMFKafkaReporterI* reporter);
 
 BEGIN_BMF_SDK_NS
 
@@ -140,8 +146,11 @@ class BMF_SDK_API BMFStat {
     std::queue<std::shared_ptr<TrackPoint>> queue_;
     bool thread_quit_ = false;
     int64_t task_id_;
+    BMFKafkaReporterI *reporter_ = nullptr;
 };
 
 BMF_SDK_API void bmf_stat_report(std::shared_ptr<TrackPoint> track_point);
 
 END_BMF_SDK_NS
+
+#endif

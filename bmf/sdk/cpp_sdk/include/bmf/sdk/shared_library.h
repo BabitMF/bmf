@@ -44,7 +44,7 @@ class BMF_SDK_API SharedLibrary {
     std::shared_ptr<void> handler_;
 
   public:
-    enum Flags { LAZY = RTLD_LAZY, GLOBAL = RTLD_GLOBAL };
+    enum Flags { LAZY = RTLD_LAZY, GLOBAL = RTLD_GLOBAL, DEEP_BIND = RTLD_DEEPBIND };
 
     SharedLibrary() = default;
 

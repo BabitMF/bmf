@@ -44,6 +44,16 @@ endfunction()
 if(DEFINED ENV{FFMPEG_ROOT_PATH})
     set(FFMPEG_LIBRARY_DIR $ENV{FFMPEG_ROOT_PATH}/lib)
     set(FFMPEG_INCLUDE_DIR $ENV{FFMPEG_ROOT_PATH}/include)
+    if(EMSCRIPTEN)
+        set(CMAKE_FIND_ROOT_PATH /)
+        find_library(X264_LIB x264 PATHS $ENV{FFMPEG_ROOT_PATH}/lib)
+        if(X264_LIB)
+            message(STATUS "Found x264: ${X264_LIB}")
+        else()
+            message(WARNING "x264 library not found! Built-in decoder might failed to link")
+        endif()
+    endif()
+
 else()
     find_path(FFMPEG_INCLUDE_DIR libavcodec/avcodec.h
             HINTS /opt/conda /usr/

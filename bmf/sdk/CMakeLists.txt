@@ -19,15 +19,19 @@ if(BMF_ENABLE_MOBILE)
     list(FILTER CPP_SRCS EXCLUDE REGEX bmf_capi)
 endif()
 
-if(IOS)
-add_library(bmf_module_sdk
-    STATIC
-    ${CPP_SRCS} ${CPP_HDRS}
-)
+if(IOS OR EMSCRIPTEN)
+    add_library(bmf_module_sdk
+        STATIC
+        ${CPP_SRCS} ${CPP_HDRS}
+    )
+    if (EMSCRIPTEN)
+        # Currently,we need async feature to open external library larger than 8MB.
+        set_target_properties(bmf_module_sdk PROPERTIES LINK_FLAGS "-s ASYNCIFY -s 'ASYNCIFY_IMPORTS=[\"loadLibrary\"]'")
+    endif()
 else()
-add_library(bmf_module_sdk
-    ${CPP_SRCS} ${CPP_HDRS}
-)
+    add_library(bmf_module_sdk
+        ${CPP_SRCS} ${CPP_HDRS}
+    )
 endif()
 
 if(WIN32)

@@ -121,6 +121,12 @@ else()
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BMF_ASSEMBLE_ROOT}/bmf/bin)
 endif()
 
+if (EMSCRIPTEN)
+    # Add some flags for wasm
+    # -fPIC , USE_PTHREADS, SHARED_MEMORY for dynamic linking
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fPIC -s USE_PTHREADS=1 -s SHARED_MEMORY=1")
+    set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
+endif()
 
 ### dependencies
 if(NOT DEFINED BUILD_SHARED_LIBS)

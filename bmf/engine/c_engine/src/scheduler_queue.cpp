@@ -173,6 +173,9 @@ int SchedulerQueue::start() {
     std::string thread_name = "schedule_queue" + std::to_string(id_);
 #if __APPLE__
     pthread_setname_np(thread_name.c_str());
+#elif defined (EMSCRIPTEN) 
+    // TODO: We can not rename the thread currently
+    // See https://github.com/emscripten-core/emscripten/issues/12216 for detail
 #elif !defined(_WIN32)
     pthread_setname_np(handle, thread_name.c_str());
 #else // WIN32

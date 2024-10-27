@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Babit Authors
+ * Copyright 2024 Babit Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 #include <string>
 #include <stdexcept>
 #include <memory>
-#if defined __APPLE__ || defined __MINGW32__ || defined _WIN32
+#if defined __APPLE__ || defined __MINGW32__ || defined _WIN32 || defined EMSCRIPTEN
 #else
 #include <link.h>
 #endif
@@ -34,15 +34,7 @@ class BMF_SDK_API SharedLibrary {
 
     SharedLibrary() = default;
 
-    SharedLibrary(const std::string &path, int flags = LAZY) {
-        auto handler = dlopen(path.c_str(), flags);
-        if (!handler) {
-            std::string errstr = "Load library " + path + " failed, ";
-            errstr += dlerror();
-            throw std::runtime_error(errstr);
-        }
-        handler_ = std::shared_ptr<void>(handler, dlclose);
-    }
+    SharedLibrary(const std::string &path, int flags = LAZY);
 
     template <typename T> T symbol(const std::string &name) const {
         auto ptr = reinterpret_cast<T>(raw_symbol(name));

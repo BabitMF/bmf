@@ -15,11 +15,31 @@
  */
 
 #include <bmf/sdk/module_registry.h>
-
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
 BEGIN_BMF_SDK_NS
 ModuleRegistry::ConstructorRegistry &ModuleRegistry::Registry() {
     static ConstructorRegistry *real_registry = new ConstructorRegistry();
-    return *real_registry;
+    #ifdef EMSCRIPTEN
+        // A little hack here. 
+        // When we using wasm, there will be more than one ConstructorRegistry.
+        // And only the first ConstructorRegistry will be stored in `register_map`, so that
+        // all modules use only one register_map(But we may have some duplicate copies).
+        ConstructorRegistry *addr = reinterpret_cast<ConstructorRegistry *>(EM_ASM_PTR(
+        {
+            if (!Module["register_map"]) {
+            Module["register_map"] = $0;
+            return $0
+            } else {
+            return Module["register_map"];
+            }
+        },
+        real_registry));
+        return *addr;
+    #else
+        return *real_registry;
+    #endif
 }
 
 void ModuleRegistry::AddConstructor(std::string const &module_name,

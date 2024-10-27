@@ -26,6 +26,8 @@ namespace bmf_sdk {
 
 #ifdef _WIN32
 const fs::path s_bmf_repo_root = "C:\\Users\\Public\\bmf_mods";
+#elif EMSCRIPTEN
+const fs::path s_bmf_repo_root = "/bmf/";
 #else
 const fs::path s_bmf_repo_root = "/usr/local/share/bmf_mods/";
 #endif
@@ -563,11 +565,13 @@ void ModuleManager::init() {
 
         // locate BUILTIN_CONFIG.json
         std::vector<std::string> roots;
+        #ifndef EMSCRIPTEN
         auto lib_path = fs::path(SharedLibrary::this_line_location())
                             .lexically_normal().parent_path();
         roots.push_back(lib_path.string());
         roots.push_back(lib_path.parent_path().string());
         roots.push_back(fs::current_path().string());
+        #endif
 
         auto fn = std::string("BUILTIN_CONFIG.json");
         for (auto &p : roots) {
@@ -589,6 +593,7 @@ void ModuleManager::init() {
         inited = true;
         // initialize cpp/py/go loader lazily
     }
+    #ifndef EMSCRIPTEN
     set_repo_root((fs::path(SharedLibrary::this_line_location())
                        .lexically_normal()
                        .parent_path()
@@ -607,6 +612,7 @@ void ModuleManager::init() {
                        .parent_path() /
                    "go_modules")
                       .string());
+    #endif
     set_repo_root(s_bmf_repo_root.string());
     set_repo_root(fs::current_path().string());
 }

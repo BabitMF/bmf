@@ -55,14 +55,16 @@ endif()
 
 
 ### dependencies
-if(NOT DEFINED BUILD_SHARED_LIBS)
+if(NOT DEFINED BUILD_SHARED_LIBS AND NOT EMSCRIPTEN)
     set(BUILD_SHARED_LIBS TRUE)
 endif()
 
 include(cmake/dependencies.cmake)
 
 ## 
-enable_testing()
+if (NOT EMSCRIPTEN)
+    enable_testing()
+endif()
 
 ### 
 configure_file(
@@ -80,7 +82,7 @@ if(HMP_ENABLE_JNI)
     add_subdirectory(java)
 endif()
 
-if(NOT HMP_ENABLE_MOBILE AND NOT WIN32)
+if(NOT HMP_ENABLE_MOBILE AND NOT WIN32 AND NOT EMSCRIPTEN)
     add_subdirectory(perf)
 endif()
 

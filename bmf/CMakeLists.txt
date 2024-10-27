@@ -3,9 +3,13 @@ add_subdirectory(sdk)
 #add_subdirectory(go_module_sdk) #FIXME: compile failed
 add_subdirectory(engine)
 add_subdirectory(c_modules)
-add_subdirectory(python_modules)
-# XXX: no go modules now
-#add_subdirectory(go_modules)
+if (NOT EMSCRIPTEN)
+    add_subdirectory(python_modules)
+    # XXX: no go modules now
+    #add_subdirectory(go_modules)
+    add_subdirectory(cmd)
+endif()
+
 if(BMF_ENABLE_TEST)
     add_subdirectory(test/c_module)
     add_subdirectory(demo/gpu_module)
@@ -14,7 +18,6 @@ if(BMF_ENABLE_TEST)
     endif()
 endif(BMF_ENABLE_TEST)
 
-add_subdirectory(cmd)
 if(HMP_ENABLE_JNI)
     add_subdirectory(java)
 endif()
@@ -112,6 +115,10 @@ if(ANDROID)
         )
     endif()
 endif()
+
+# if (EMSCRIPTEN)
+#     add_subdirectory(demo/wasm)
+# endif()
 
 
 

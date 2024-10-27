@@ -17,9 +17,13 @@ if(BMF_ENABLE_MOBILE)
     list(FILTER SRCS EXCLUDE REGEX connector_capi)
 endif()
 
-add_library(engine ${SRCS} ${HDRS})
+if (NOT EMSCRIPTEN)
+    add_library(engine ${SRCS} ${HDRS})
+    target_compile_definitions(engine PRIVATE BMF_BUILD_SHARED_ENGINE)
+else()
+    add_library(engine STATIC ${SRCS} ${HDRS})
+endif()
 
-target_compile_definitions(engine PRIVATE BMF_BUILD_SHARED_ENGINE)
 
 if(WIN32)
     set_target_properties(engine PROPERTIES
@@ -103,10 +107,15 @@ if(BMF_ENABLE_PYTHON)
     endif()
 endif()
 
-add_library(bmf_go_loader SHARED src/loader/go_module_loader.cpp)
-target_link_libraries(bmf_go_loader
-    PRIVATE
-    bmf_module_sdk)
+if (NOT EMSCRIPTEN)
+    add_library(bmf_go_loader SHARED src/loader/go_module_loader.cpp)
+    target_link_libraries(bmf_go_loader
+        PRIVATE
+        bmf_module_sdk
+    )
+endif()
+
+
 
 if(WIN32)
     set_target_properties(bmf_go_loader PROPERTIES

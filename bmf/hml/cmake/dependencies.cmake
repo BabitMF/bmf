@@ -71,7 +71,7 @@ list(APPEND HMP_CORE_PUB_DEPS optional)
 
 
 #### spdlog
-if(NOT "${CMAKE_SYSTEM_NAME}" MATCHES "Android|iOS")
+if(NOT "${CMAKE_SYSTEM_NAME}" MATCHES "Android|iOS" AND NOT EMSCRIPTEN)
     if (HMP_LOCAL_DEPENDENCIES)
         add_subdirectory(third_party/spdlog)
         set_target_properties(spdlog PROPERTIES
@@ -178,7 +178,9 @@ if (HMP_LOCAL_DEPENDENCIES)
     set(BENCHMARK_ENABLE_TESTING OFF)
     set(BENCHMARK_ENABLE_INSTALL OFF)
     set(BENCHMARK_ENABLE_GTEST_TESTS OFF)
-    add_subdirectory(third_party/benchmark)
+    if (NOT EMSCRIPTEN)
+        add_subdirectory(third_party/benchmark)
+    endif()
 else ()
     find_package(benchmark REQUIRED)
 endif()

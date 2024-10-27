@@ -13,13 +13,22 @@ function(mac_update)
 endfunction()
 
 function(set_soname)
-    if(NOT APPLE AND NOT ANDROID)
+    if(NOT APPLE AND NOT ANDROID AND NOT EMSCRIPTEN)
         set_target_properties(${ARGV0} PROPERTIES
             VERSION "${BMF_VERSION_MAJOR}.${BMF_VERSION_MINOR}.${BMF_VERSION_PATCH}"
             SOVERSION "${BMF_VERSION_MAJOR}"
         )
     endif()
 endfunction()
+
+function(set_emscripten_side_module_property)
+    if (EMSCRIPTEN)
+        set_property(TARGET ${ARGV0} PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
+        target_link_options(${ARGV0} PRIVATE "-sSIDE_MODULE=2")
+        target_compile_options(${ARGV0} PRIVATE "-sSIDE_MODULE=2")
+    endif()
+endfunction()
+
 
 function(module_install)
     if(WIN32)
@@ -60,6 +69,8 @@ if(BMF_ENABLE_FFMPEG)
     )
 
     add_library(builtin_modules SHARED ${SRCS} ${HDRS})
+    set_emscripten_side_module_property(builtin_modules)
+
     target_include_directories(builtin_modules
         PUBLIC
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/bmf/c_modules/include>
@@ -76,13 +87,20 @@ if(BMF_ENABLE_FFMPEG)
         target_link_libraries(builtin_modules
             PRIVATE cuda::cuda)
     endif()
-
-    target_link_libraries(builtin_modules
-        PRIVATE
+    if (NOT EMSCRIPTEN)
+        target_link_libraries(builtin_modules
+                PRIVATE
+                ${BMF_FFMPEG_TARGETS}
+                bmf_module_sdk
+        )
+    else()
+        target_link_libraries(builtin_modules
+            PRIVATE
+            ${X264_LIB}
             ${BMF_FFMPEG_TARGETS}
             bmf_module_sdk
-    )
-
+        )
+    endif()
     set_soname(builtin_modules)
     mac_update(builtin_modules)
 
@@ -104,6 +122,7 @@ endif()
 set(PASS_THROUGH_HDRS include/pass_through_module.h)
 set(PASS_THROUGH_SRCS src/pass_through_module.cpp)
 add_library(pass_through SHARED ${PASS_THROUGH_HDRS} ${PASS_THROUGH_SRCS})
+set_emscripten_side_module_property(pass_through)
 target_include_directories(pass_through PUBLIC include)
 target_link_libraries(pass_through PRIVATE bmf_module_sdk)
 set_soname(pass_through)
@@ -114,6 +133,7 @@ module_install(pass_through)
 set(CLOCK_MODULE_HDRS include/clock_module.h include/fraction.hpp)
 set(CLOCK_MODULE_SRCS src/clock_module.cpp)
 add_library(clock SHARED ${CLOCK_MODULE_HDRS} ${CLOCK_MODULE_SRCS})
+set_emscripten_side_module_property(clock)
 target_include_directories(clock PUBLIC include)
 target_link_libraries(clock PRIVATE bmf_module_sdk)
 set_soname(clock)
@@ -124,6 +144,7 @@ module_install(clock)
 set(MOCK_DECODER_MODULE_HDRS include/mock_decoder.h)
 set(MOCK_DECODER_MODULE_SRCS src/mock_decoder.cpp)
 add_library(MockDecoder SHARED ${MOCK_DECODER_MODULE_HDRS} ${MOCK_DECODER_MODULE_SRCS})
+set_emscripten_side_module_property(MockDecoder)
 target_include_directories(MockDecoder PUBLIC include)
 target_link_libraries(MockDecoder PRIVATE bmf_module_sdk)
 set_soname(MockDecoder)
@@ -131,14 +152,16 @@ mac_update(MockDecoder)
 module_install(MockDecoder)
 
 # GoMockDecoder
-set(GOMOCK_DECODER_MODULE_HDRS include/go_mock_decoder.h)
-set(GOMOCK_DECODER_MODULE_SRCS src/go_mock_decoder.cpp)
-add_library(GoMockDecoder SHARED ${GOMOCK_DECODER_MODULE_HDRS} ${GOMOCK_DECODER_MODULE_SRCS})
-target_include_directories(GoMockDecoder PUBLIC include)
-target_link_libraries(GoMockDecoder PRIVATE bmf_module_sdk)
-set_soname(GoMockDecoder)
-mac_update(GoMockDecoder)
-module_install(GoMockDecoder)
+if (NOT EMSCRIPTEN)
+    set(GOMOCK_DECODER_MODULE_HDRS include/go_mock_decoder.h)
+    set(GOMOCK_DECODER_MODULE_SRCS src/go_mock_decoder.cpp)
+    add_library(GoMockDecoder SHARED ${GOMOCK_DECODER_MODULE_HDRS} ${GOMOCK_DECODER_MODULE_SRCS})
+    target_include_directories(GoMockDecoder PUBLIC include)
+    target_link_libraries(GoMockDecoder PRIVATE bmf_module_sdk)
+    set_soname(GoMockDecoder)
+    mac_update(GoMockDecoder)
+    module_install(GoMockDecoder)
+endif()
 
 # tests, commented
 if(BMF_ENABLE_TEST)

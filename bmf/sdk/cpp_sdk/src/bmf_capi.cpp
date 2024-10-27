@@ -21,16 +21,16 @@
     try {                                                                      \
         __VA_ARGS__                                                            \
     } catch (const std::exception &e) {                                        \
-        s_bmf_last_error = e.what();                                           \
+        s_bmf_last_error_2 = e.what();                                           \
     }
 
 using namespace bmf_sdk;
 
-thread_local std::string s_bmf_last_error;
+thread_local std::string s_bmf_last_error_2;
 
-void bmf_set_last_error(const char *errstr) { s_bmf_last_error = errstr; }
+void bmf_set_last_error(const char *errstr) { s_bmf_last_error_2 = errstr; }
 
-const char *bmf_last_error() { return s_bmf_last_error.c_str(); }
+const char *bmf_last_error() { return s_bmf_last_error_2.c_str(); }
 
 const char *bmf_sdk_version() { return BMF_SDK_VERSION; }
 
@@ -576,7 +576,7 @@ bmf_Packet *bmf_module_functor_call(bmf_ModuleFunctor mf,
         std::vector<Packet>
             opkts;
         try { opkts = (*mf)(ipkts); } catch (ProcessDone &e) {
-            s_bmf_last_error = e.what();
+            s_bmf_last_error_2 = e.what();
             *is_done = true;
             return nullptr;
         }
@@ -610,7 +610,7 @@ int bmf_module_functor_execute(bmf_ModuleFunctor mf, const bmf_Packet *inputs,
             mf->execute(ipkts, cleanup);
             return 0;
         } catch (ProcessDone &e) {
-            s_bmf_last_error = e.what();
+            s_bmf_last_error_2 = e.what();
             *is_done = true;
             return -1;
         })

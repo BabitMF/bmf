@@ -116,9 +116,9 @@ if(ANDROID)
     endif()
 endif()
 
-# if (EMSCRIPTEN)
-#     add_subdirectory(demo/wasm)
-# endif()
+if (EMSCRIPTEN)
+    add_subdirectory(demo/wasm)
+endif()
 
 
 
@@ -161,7 +161,7 @@ if (BMF_LOCAL_DEPENDENCIES)
 endif()
 
 ## copy symbol link of hmp and _jhmp
-if(NOT APPLE AND NOT ANDROID)
+if(NOT APPLE AND NOT ANDROID AND NOT EMSCRIPTEN)
     if(WIN32)
         add_custom_command(TARGET bmf_assem
             POST_BUILD

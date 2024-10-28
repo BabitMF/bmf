@@ -55,7 +55,11 @@ endif()
 
 
 ### dependencies
-if(NOT DEFINED BUILD_SHARED_LIBS AND NOT EMSCRIPTEN)
+if (EMSCRIPTEN)
+    set(BUILD_SHARED_LIBS FALSE)
+endif()
+
+if(NOT DEFINED BUILD_SHARED_LIBS)
     set(BUILD_SHARED_LIBS TRUE)
 endif()
 

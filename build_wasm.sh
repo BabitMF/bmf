@@ -27,7 +27,9 @@ source ./version.sh
 
 source ../emsdk/emsdk_env.sh
 mkdir -p build && cd build
-export FFMPEG_ROOT_PATH=/home/sam/ffmpeg.build/build/output
+# TODO:You may need specify a path to your ffmpeg library.
+export FFMPEG_ROOT_PATH=/path/to/your/ffmpeg/lib
+
 emcmake cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
     -DCOVERAGE=${COVERAGE_OPTION} \
     -DBMF_LOCAL_DEPENDENCIES=${LOCAL_BUILD} \
@@ -38,4 +40,5 @@ emcmake cmake .. -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
     -DBMF_ENABLE_FFMPEG=ON \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
     -DBMF_ENABLE_CUDA=OFF
+    
 emmake make -j4

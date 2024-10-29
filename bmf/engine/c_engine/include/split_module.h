@@ -17,6 +17,7 @@
 
 #include <bmf/sdk/module.h>
 #include <bmf/sdk/module_registry.h>
+#include "safe_queue.h"
 
 USE_BMF_SDK_NS
 class SplitModule : public Module {
@@ -36,6 +37,10 @@ class SplitModule : public Module {
     int last_output_num_;
 
     int stream_index_;
+
+    int queue_index_;
+
+    std::map<int, std::shared_ptr<bmf_engine::SafeQueue<Packet>>> queue_map_;
 };
 
 REGISTER_MODULE_CLASS(SplitModule)

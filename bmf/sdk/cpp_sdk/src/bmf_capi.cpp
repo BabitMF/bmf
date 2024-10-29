@@ -26,7 +26,12 @@
 
 using namespace bmf_sdk;
 
+#ifdef EMSCRIPTEN
+// We use static linking in wasm, so the s_bmf_last_error should declare as extern.
 extern thread_local std::string s_bmf_last_error;
+#else
+thread_local std::string s_bmf_last_error;
+#endif
 
 void bmf_set_last_error(const char *errstr) { s_bmf_last_error = errstr; }
 

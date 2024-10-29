@@ -18,6 +18,7 @@
 #include <bmf/sdk/module.h>
 #include <bmf/sdk/module_registry.h>
 #include "safe_queue.h"
+
 USE_BMF_SDK_NS
 class AssembleModule : public Module {
   public:

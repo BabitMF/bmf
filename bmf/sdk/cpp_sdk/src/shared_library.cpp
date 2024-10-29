@@ -17,33 +17,17 @@
 #include <bmf/sdk/common.h>
 #include <bmf/sdk/shared_library.h>
 
-namespace bmf_sdk {
-    #ifdef EMSCRIPTEN
-    #include <emscripten.h>
-    EM_JS(void, loadLibrary, (const char *name), {
-        Asyncify.handleAsync(async () => {
-            try {
-            var str = UTF8ToString(name);
-            await loadDynamicLibrary(str, {loadAsync: true, global: true, nodelete: true,fs : FS});
-            }
-            catch(error) {
-            console.log(error);
-            }
-        });
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+EM_JS(void, loadLibrary, (const char *name), {
+    Asyncify.handleAsync(async () => {
+        try {
+        var str = UTF8ToString(name);
+        await loadDynamicLibrary(str, {loadAsync: true, global: true, nodelete: true,fs : FS});
+        }
+        catch(error) {
+        console.log(error);
+        }
     });
-    #endif
-
-    SharedLibrary::SharedLibrary(const std::string &path, int flags) {
-        #ifndef EMSCRIPTEN
-            auto handler = dlopen(path.c_str(), flags);
-            if (!handler) {
-                std::string errstr = "Load library " + path + " failed, ";
-                errstr += dlerror();
-                throw std::runtime_error(errstr);
-            }
-            handler_ = std::shared_ptr<void>(handler, dlclose);
-        #else
-        loadLibrary(path.c_str());
-        #endif
-    }
-}
+});
+#endif

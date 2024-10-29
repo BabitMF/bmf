@@ -24,6 +24,20 @@
 #endif
 #include <dlfcn.h>
 
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void loadLibrary(const char *name);
+
+#ifdef __cplusplus
+}
+#endif
+#endif
+
 namespace bmf_sdk {
 
 class BMF_SDK_API SharedLibrary {
@@ -34,7 +48,19 @@ class BMF_SDK_API SharedLibrary {
 
     SharedLibrary() = default;
 
-    SharedLibrary(const std::string &path, int flags = LAZY);
+    SharedLibrary(const std::string &path, int flags = LAZY){
+        #ifndef EMSCRIPTEN
+            auto handler = dlopen(path.c_str(), flags);
+            if (!handler) {
+                std::string errstr = "Load library " + path + " failed, ";
+                errstr += dlerror();
+                throw std::runtime_error(errstr);
+            }
+            handler_ = std::shared_ptr<void>(handler, dlclose);
+        #else
+            loadLibrary(path.c_str());
+        #endif
+    }
 
     template <typename T> T symbol(const std::string &name) const {
         auto ptr = reinterpret_cast<T>(raw_symbol(name));

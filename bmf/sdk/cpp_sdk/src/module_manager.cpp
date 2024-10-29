@@ -571,8 +571,9 @@ void ModuleManager::init() {
         roots.push_back(lib_path.string());
         roots.push_back(lib_path.parent_path().string());
         roots.push_back(fs::current_path().string());
-        #endif
+        #else
         roots.push_back("/");
+        #endif
 
         auto fn = std::string("BUILTIN_CONFIG.json");
         for (auto &p : roots) {

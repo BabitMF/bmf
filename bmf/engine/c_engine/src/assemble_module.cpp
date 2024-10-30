@@ -26,7 +26,7 @@ AssembleModule::AssembleModule(int node_id, JsonParam json_param)
 
 int AssembleModule::process(Task &task) {
     if (task.get_inputs().size() != last_input_num_) {
-        BMFLOG_NODE(BMF_INFO, node_id_)
+        BMFLOG_NODE(BMF_DEBUG, node_id_)
             << "Input Queue size changed from " << last_input_num_ << " to "
             << task.get_inputs().size();
         last_input_num_ = task.get_inputs().size();
@@ -40,7 +40,7 @@ int AssembleModule::process(Task &task) {
         }
     }
     if (task.get_outputs().size() != last_output_num_) {
-        BMFLOG_NODE(BMF_INFO, node_id_)
+        BMFLOG_NODE(BMF_DEBUG, node_id_)
             << "Output Queue size changed from " << last_output_num_ << " to "
             << task.get_outputs().size();
         last_output_num_ = task.get_outputs().size();

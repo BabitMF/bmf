@@ -382,7 +382,8 @@ void process_distributed_node(std::vector<bmf_engine::NodeConfig> &nodes) {
         } else if (upstream_node) {
             int dist_nums = node->get_dist_nums();
             // preallocate space for new nodes
-            nodes.reserve(nodes.size() + dist_nums + 2);
+            // two internal nodes and dist_nums - 1 dist nodes
+            nodes.reserve(nodes.size() + dist_nums + 1);
             // repoint to memory address after allocation
             node = &nodes[nodes_index];
             upstream_node = nullptr;
@@ -401,7 +402,6 @@ void process_distributed_node(std::vector<bmf_engine::NodeConfig> &nodes) {
 
             // creat and insert copies of the current node
             for (int i = 1; i < dist_nums; ++i) {
-                //node = &nodes[nodes_index + 1];
                 auto new_node = NodeConfig(*node);
                 new_node.set_id(nodes.size());
                 new_node.change_input_stream_identifier(split_node.output_streams[i].
@@ -421,15 +421,17 @@ void process_distributed_node(std::vector<bmf_engine::NodeConfig> &nodes) {
             nodes.push_back(assemble_node);
             
             // link downstream node's inputstream and assemble node's outputstream
-            for (auto &tem_node : nodes)
-                for (auto &input_stream : tem_node.input_streams)
+            for (auto &tem_node : nodes) {
+                for (auto &input_stream : tem_node.input_streams) {
                     if (input_stream.get_identifier() == 
                         node->output_streams[0].get_identifier() &&
-                        tem_node.get_id() != assemble_node.get_id())
+                        tem_node.get_id() != assemble_node.get_id()) {
                         tem_node.change_input_stream_identifier((assemble_node.
-                                                                 get_output_streams())[0].
-                                                                 get_identifier());
-
+                                                                get_output_streams())[0].
+                                                                get_identifier());
+                    }
+                }
+            }               
         }
         nodes_index++;
     }

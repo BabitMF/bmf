@@ -427,8 +427,8 @@ void process_distributed_node(std::vector<bmf_engine::NodeConfig> &nodes) {
                         node->output_streams[0].get_identifier() &&
                         tem_node.get_id() != assemble_node.get_id()) {
                         tem_node.change_input_stream_identifier((assemble_node.
-                                                                get_output_streams())[0].
-                                                                get_identifier());
+                                                                 get_output_streams())[0].
+                                                                 get_identifier());
                     }
                 }
             }               

@@ -32,10 +32,10 @@ int AssembleModule::process(Task &task) {
         last_input_num_ = task.get_inputs().size();
         // init queue_map_ 
         for (int i = 0; i < last_input_num_; i++) {
-            std::shared_ptr<bmf_engine::SafeQueue<Packet>> tmp_queue = 
-                std::make_shared<bmf_engine::SafeQueue<Packet>>();
+            std::shared_ptr<std::queue<Packet>> tmp_queue = 
+                std::make_shared<std::queue<Packet>>();
             queue_map_.insert(
-                std::pair<int, std::shared_ptr<bmf_engine::SafeQueue<Packet>>>(
+                std::pair<int, std::shared_ptr<std::queue<Packet>>>(
                     i, tmp_queue));
         }
     }
@@ -71,18 +71,19 @@ int AssembleModule::process(Task &task) {
         if (in_eof_[queue_index_] == true)
             continue;
         
-        if (queue->second->pop(packet)) {
-            task.fill_output_packet(0, packet);
-            if (packet.timestamp() == BMF_EOF) {
-                in_eof_[queue_index_] = true;
-            }
-            BMFLOG_NODE(BMF_DEBUG, node_id_)
-                << "get packet :" << packet.timestamp()
-                << " data:" << packet.type_info().name
-                << " in queue:" << queue_index_;
+        packet = queue->second->front();
+        queue->second->pop();
 
-            queue_index_ = (queue_index_ + 1) % queue_map_.size();
+        task.fill_output_packet(0, packet);
+        if (packet.timestamp() == BMF_EOF) {
+            in_eof_[queue_index_] = true;
         }
+        BMFLOG_NODE(BMF_DEBUG, node_id_)
+            << "get packet :" << packet.timestamp()
+            << " data:" << packet.type_info().name
+            << " in queue:" << queue_index_;
+
+        queue_index_ = (queue_index_ + 1) % queue_map_.size();   
     }
 
     bool all_eof = true;

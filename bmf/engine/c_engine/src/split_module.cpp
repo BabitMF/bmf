@@ -21,13 +21,13 @@ SplitModule::SplitModule(int node_id, JsonParam json_param)
     last_input_num_ = 0;
     last_output_num_ = 0;
     stream_index_ = 0;
-    queue_index_ = 0;
+    in_eof_ = false;
     return;
 }
 
 int SplitModule::process(Task &task) {
     if (task.get_inputs().size() != last_input_num_) {
-        BMFLOG_NODE(BMF_INFO, node_id_)
+        BMFLOG_NODE(BMF_DEBUG, node_id_)
             << "Input Queue size changed from " << last_input_num_ << " to "
             << task.get_inputs().size();
         last_input_num_ = task.get_inputs().size();
@@ -38,79 +38,46 @@ int SplitModule::process(Task &task) {
         }
     }
     if (task.get_outputs().size() != last_output_num_) {
-        BMFLOG_NODE(BMF_INFO, node_id_)
+        BMFLOG_NODE(BMF_DEBUG, node_id_)
             << "Output Queue size changed from " << last_output_num_ << " to "
             << task.get_outputs().size();
         last_output_num_ = task.get_outputs().size();
-        // init queue_map_ 
-        for (int i = 0; i < last_output_num_; i++) {
-            std::shared_ptr<bmf_engine::SafeQueue<Packet>> tmp_queue = 
-                std::make_shared<bmf_engine::SafeQueue<Packet>>();
-            queue_map_.insert(
-                std::pair<int, std::shared_ptr<bmf_engine::SafeQueue<Packet>>>(
-                    i, tmp_queue));
-        }
     }
 
-    if (in_eof_.size() != task.get_inputs().size()) {
-        in_eof_.clear();
-        for (auto input_queue : task.get_inputs())
-            in_eof_[input_queue.first] = false;
-    }
+    auto input_queue = task.get_inputs()[0];
 
-    // Data cache into queue_map
-    auto tem_queue = task.get_inputs();
+    // Data Splitting
     Packet pkt;
-    while (!tem_queue[0]->empty()) {
-        Packet pkt = tem_queue[0]->front();
-        tem_queue[0]->pop();
-        queue_map_[stream_index_]->push(pkt);
-        if (pkt.timestamp() == EOS or pkt.timestamp() == BMF_EOF) {
-            /* add EOF pkt for multi downstream node */
+    
+    while (task.pop_packet_from_input_queue(0, pkt)) {
+        
+        if (in_eof_ == true)
+            continue;
+        // fill splitted pkt into multi output stream
+        task.fill_output_packet(stream_index_, pkt);
+        if (pkt.timestamp() == BMF_EOF) {
+            // fill eof packet for extra distributed node
             for (size_t i = 1; i < task.get_outputs().size(); i++) {
-                queue_map_[i]->push(Packet::generate_eof_packet());
+                task.fill_output_packet(i, Packet::generate_eof_packet());
             }
+            in_eof_ = true;
         }
+        BMFLOG_NODE(BMF_DEBUG, node_id_)
+            << "get packet :" << pkt.timestamp()
+            << " data:" << pkt.type_info().name
+            << " in queue:" << 0;
+
         stream_index_ = (stream_index_ + 1) % task.get_outputs().size();
     }
 
-    // Data Splitting
-    while (!queue_map_[queue_index_]->empty()) {
-        
-        if (in_eof_[queue_index_] == true)
-            continue;
-        
-        auto queue = queue_map_.find(queue_index_);
-        if (queue->second->pop(pkt)) {
-            // fill splitted pkt into multi output stream
-            task.fill_output_packet(queue_index_, pkt);
-            if (pkt.timestamp() == BMF_EOF) {
-                in_eof_[queue_index_] = true;
-            }
-            BMFLOG_NODE(BMF_DEBUG, node_id_)
-                << "get packet :" << pkt.timestamp()
-                << " data:" << pkt.type_info().name
-                << " in queue:" << queue_index_;
-
-            queue_index_ = (queue_index_ + 1) % task.get_outputs().size();
-        }
-    }
-
-    bool all_eof = true;
-    for (auto f_eof : in_eof_) {
-        if (f_eof.second == false) {
-            all_eof = false;
-            break;
-        }
-    }
-    if (all_eof)
+    if (in_eof_)
         task.set_timestamp(DONE);
 
     return 0;
 }
 
 int SplitModule::reset() {
-    in_eof_.clear();
+    in_eof_ = false;
     return 0;
 }
 

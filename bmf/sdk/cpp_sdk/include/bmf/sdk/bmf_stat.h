@@ -25,6 +25,7 @@
 #include <thread>
 #include <mutex>
 #include <queue>
+#include <map>
 #include <memory>
 #include <condition_variable>
 
@@ -60,6 +61,17 @@ class TrackPoint {
 #define TOJSON_MEMFUNC                                                         \
     nlohmann::json to_json() { return *this; }
 
+
+struct BMQData : public TrackPoint {
+    std::string get_tag() { return "BMQData"; }
+    int user_id;
+    std::map<std::string, std::string> outputs;
+
+    // macro to generate to_json and from_json function
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(BMQData, user_id, outputs)
+    TOJSON_MEMFUNC
+};
+
 struct GraphStartData : public TrackPoint {
     std::string get_tag() { return "GraphStartData"; }
     int64_t start_timestamp = -1;
@@ -67,8 +79,8 @@ struct GraphStartData : public TrackPoint {
     std::string commit;
 
     // macro to generate to_json and from_json function
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(GraphStartData, task_id, start_timestamp,
-                                   version)
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(GraphStartData, start_timestamp,
+                                   version, commit)
     TOJSON_MEMFUNC
 };
 
@@ -131,6 +143,7 @@ class BMF_SDK_API BMFStat {
     void push_track_point(std::shared_ptr<TrackPoint> track_point);
     void process_track_points();
     void report_stat(std::shared_ptr<TrackPoint> point);
+    bool set_user_id(int user_id);
 
   private:
     BMFStat(); // single instance
@@ -144,9 +157,11 @@ class BMF_SDK_API BMFStat {
     std::mutex mutex_;
     std::condition_variable cv_;
     std::queue<std::shared_ptr<TrackPoint>> queue_;
+    int user_id_ = 0;
     bool thread_quit_ = false;
     int64_t task_id_;
     BMFKafkaReporterI *reporter_ = nullptr;
+    BMQData bmq_data; 
 };
 
 BMF_SDK_API void bmf_stat_report(std::shared_ptr<TrackPoint> track_point);

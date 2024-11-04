@@ -19,6 +19,10 @@
 
 namespace bmf_sdk {
 
+static std::map<int, std::string> user_id_maps = {
+    {0, "market"}
+};
+
 BMFStat &BMFStat::GetInstance() {
     static BMFStat bmfst;
     return bmfst;
@@ -29,8 +33,8 @@ BMFStat::BMFStat() {
     upload_lib =
         SharedLibrary(path, SharedLibrary::LAZY | SharedLibrary::GLOBAL | SharedLibrary::DEEP_BIND);
     if (upload_lib.is_open()) {
-        create_bmf_kafka_reporter create_func = upload_lib.symbol<create_bmf_kafka_reporter>("create_bmf_kafka_reporter");
-        reporter_ = create_func("0001_bmf_data_report_test", "bmq_boe_test3");
+        create_bmf_kafka_reporter_default create_func = upload_lib.symbol<create_bmf_kafka_reporter_default>("create_bmf_kafka_reporter_default_online");
+        reporter_ = create_func();
         BMFLOG(BMF_INFO) << "BMF stat upload lib was found and loaded";
     }
 
@@ -47,6 +51,15 @@ BMFStat::~BMFStat() {
 
     if (t_.joinable()) {
         t_.join();
+    }
+
+    if (reporter_) {
+        auto start = std::chrono::steady_clock::now();
+        reporter_->flush();
+        auto end = std::chrono::steady_clock::now();
+        std::chrono::duration<double> elapsed = end - start;
+
+        BMFLOG(BMF_INFO) << "Produce flush Elapsed time: " << elapsed.count() << " seconds";
     }
 }
 
@@ -90,17 +103,26 @@ void BMFStat::process_track_points() {
 }
 
 void BMFStat::report_stat(std::shared_ptr<TrackPoint> point) {
-
-    if (reporter_) {
-        std::string data_tag = point->get_tag();
-        std::string data_content = point->to_json().dump();
-        BMFLOG(BMF_INFO) << "data point tag: " << point->get_tag();
-        BMFLOG(BMF_INFO) << "data point content: " << point->to_json().dump();
+    std::string data_tag = point->get_tag();
+    std::string data_content = point->to_json().dump();
+    bmq_data.outputs[data_tag] = data_content;
+    if (data_tag == "GraphEndData" && reporter_) {
+        std::string data_tag = bmq_data.get_tag();
+        std::string data_content = bmq_data.to_json().dump();
+        BMFLOG(BMF_INFO) << "data point tag: " << data_tag;
+        BMFLOG(BMF_INFO) << "data point content: " << data_content;
+        auto start = std::chrono::steady_clock::now();
         if (reporter_->produce(data_content)) {
-            reporter_->flush();
+            BMFLOG(BMF_INFO) << "msg reported successfully!";
+        } else {
+            BMFLOG(BMF_ERROR) << "msg reported failed!";
         }
-    }
+        auto end = std::chrono::steady_clock::now();
+        std::chrono::duration<double> elapsed = end - start;
 
+        BMFLOG(BMF_INFO) << "Produce message Elapsed time: " << elapsed.count() << " seconds";
+        bmq_data = BMQData();
+    }
 }
 
 void bmf_stat_report(std::shared_ptr<TrackPoint> track_point) {
@@ -110,6 +132,16 @@ void bmf_stat_report(std::shared_ptr<TrackPoint> track_point) {
 
 int64_t BMFStat::task_id() {
     return task_id_;
+}
+
+bool BMFStat::set_user_id(int user_id) {
+    if (user_id_maps.count(user_id)) {
+        user_id_ = user_id;
+        BMFLOG(BMF_INFO) << "The statistic will be reported to " << user_id_maps[user_id];
+        return true;
+    }
+    BMFLOG(BMF_WARNING) << "the user_id is invalid, The statistic will be reported to basic market!! If you want to report to your user business, please check your user id!";
+    return false;
 }
 
 } // namespace bmf_sdk

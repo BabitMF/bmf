@@ -167,6 +167,15 @@ void Graph::init(
 
     for (auto &node : source_nodes_)
         scheduler_->add_or_remove_node(node->get_id(), true);
+    
+    #ifdef BMF_ENABLE_STAT
+        auto &stat = BMFStat::GetInstance();
+        bool res = stat.set_user_id(graph_config.get_user_id());
+        if (!res) {
+            BMFLOG(BMF_WARNING) << "BMF stat user_id set failed!";
+        }
+    #endif
+
 }
 
 int Graph::get_hungry_check_func(std::shared_ptr<Node> &root_node,

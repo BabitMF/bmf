@@ -164,3 +164,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang") # AppleClang
         #list(APPEND BMF_STD_DEPS c++fs pthread)
     endif()
 endif()
+
+if(BMF_ENABLE_STAT)
+    add_definitions(-DBMF_ENABLE_STAT={BMF_ENABLE_STAT})
+endif()

@@ -504,6 +504,10 @@ void GraphConfig::init(nlohmann::json &graph_config) {
         for (auto s : graph_config.at("input_streams"))
             input_streams.emplace_back(StreamConfig(s));
     }
+    if (option.has_key("user_id")) {
+        option.get_int("user_id", user_id);
+    }
+    
 }
 
 JsonParam GraphConfig::get_option() { return option; }
@@ -518,6 +522,10 @@ std::vector<StreamConfig> GraphConfig::get_input_streams() {
 
 std::vector<StreamConfig> GraphConfig::get_output_streams() {
     return output_streams;
+}
+
+int GraphConfig::get_user_id() {
+    return user_id;
 }
 
 nlohmann::json GraphConfig::to_json() {
@@ -556,5 +564,7 @@ nlohmann::json GraphConfig::to_json() {
 
     return json_graph_config;
 }
+
+
 
 END_BMF_ENGINE_NS

@@ -223,10 +223,13 @@ class GraphConfig {
 
     nlohmann::json to_json();
 
+    int get_user_id();
+
     std::vector<NodeConfig> nodes;
     BmfMode mode;
     std::vector<StreamConfig> input_streams;
     std::vector<StreamConfig> output_streams;
+    int user_id = 0;
     JsonParam option;
 
   private:

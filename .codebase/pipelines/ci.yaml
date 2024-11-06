@@ -238,7 +238,7 @@ jobs:
           - (cd output/demo/video_enhance && pip install basicsr==1.4.2 realesrgan && (sed -i '8s/from torchvision.transforms.functional_tensor import rgb_to_grayscale/from torchvision.transforms.functional import rgb_to_grayscale/' /usr/local/lib/python3.8/dist-packages/basicsr/data/degradations.py) && python3 enhance_demo.py)
           - (cd output/demo/aesthetic_assessment && pip install onnxruntime && python3 aesthetic_assessment_demo.py)
           - (cd output/demo/face_detect && cp ../../models/version-RFB-640.onnx . && trtexec --onnx=version-RFB-640.onnx --buildOnly --saveEngine=version-RFB-640.engine && cp version-RFB-640.engine ../../models && python3 detect_trt_sample.py)
-          - (cd output/demo/colorization_python && git clone https://github.com/eefengwei/DeOldify.git DeOldify && pip3 install -r ./DeOldify/requirements-colab.txt && pip3 install Ipython && mkdir -p ./DeOldify/models && wget -c https://huggingface.co/spensercai/DeOldify/resolve/main/ColorizeVideo_gen.pth -O ./DeOldify/models/ColorizeVideo_gen.pth && python3 deoldify_demo.py)
+          - (cd output/demo/colorization_python && git clone https://github.com/eefengwei/DeOldify.git DeOldify && pip install "numpy>=2.0.0,<3.0.0" && pip3 install -r ./DeOldify/requirements-colab.txt && pip3 install Ipython && mkdir -p ./DeOldify/models && wget -c https://huggingface.co/spensercai/DeOldify/resolve/main/ColorizeVideo_gen.pth -O ./DeOldify/models/ColorizeVideo_gen.pth && python3 deoldify_demo.py)
 
   clang_build_test:
     name: clang_build_test

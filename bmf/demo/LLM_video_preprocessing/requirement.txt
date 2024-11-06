@@ -1,0 +1,4 @@
+easyocr
+pydantic
+BabitMF==0.0.11
+onnxruntime

@@ -19,7 +19,7 @@ This demo uses BMF framework to construct a simple broadcast service. The servic
     
 - streamhub module
 
-     Each input stream is equipped with a jitter buffer to enable smooth and uniform output. In order to mix multiple streams and display them on the same screen, ti is necessary to align the timestamps and frame rates. Streamhub module binds all input stream frames together based on the background audio and video timestamps, and outputs them as a whole to the audiomix and videolayout module.
+     Each input stream is equipped with a jitter buffer to enable smooth and uniform output. In order to mix multiple streams and display them on the same screen, it is necessary to align the timestamps and frame rates. Streamhub module binds all input stream frames together based on the background audio and video timestamps, and outputs them as a whole to the audiomix and videolayout module.
 
 - audiomix module
 

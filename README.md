@@ -74,6 +74,10 @@ If you want to have a quick experiment, you can try it on [![Open In Colab](http
 
 ### AI inference
 
+#### LLM preprocessing
+
+The [prototype]() of how to build a video preprocessing for LLM training data in Bytedance, which serves billions of clip processing each day.
+
 #### Deoldify
 
 This demo shows how to integrate the state of art AI algorithms into the BMF video processing pipeline. The famous open source colorization algorithm [DeOldify](https://github.com/jantic/DeOldify) is wrapped as a BMF pyhton module in less than 100 lines of codes. The final effect is illustrated below, with the original video on the left side and the colored video on the right. 

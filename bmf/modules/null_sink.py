@@ -1,5 +1,5 @@
 from bmf import Module, Log, LogLevel, InputType, ProcessResult, Packet, Timestamp, scale_av_pts, av_time_base, \
-    BmfCallBackType
+    BmfCallBackType, VideoFrame
 
 
 class null_sink(Module):
@@ -14,12 +14,12 @@ class null_sink(Module):
         for (input_id, input_packets) in task.get_inputs().items():
             while not input_packets.empty():
                 pkt = input_packets.get()
-                if pkt.get_timestamp() == Timestamp.EOF:
+                if pkt.timestamp == Timestamp.EOF:
                     Log.log_node(LogLevel.DEBUG, task.get_node(),
                                  "Receive EOF")
                     task.set_timestamp(Timestamp.DONE)
-                elif pkt.get_timestamp() != Timestamp.UNSET:
+                elif pkt.timestamp != Timestamp.UNSET:
                     Log.log_node(LogLevel.DEBUG, task.get_node(),
-                                 "process data", pkt.get_data(), 'time',
-                                 pkt.get_timestamp())
+                                 "process data", pkt.get(VideoFrame), 'time',
+                                 pkt.timestamp)
         return ProcessResult.OK

@@ -19,10 +19,6 @@
 
 namespace bmf_sdk {
 
-static std::map<int, std::string> user_id_maps = {
-    {0, "market"}
-};
-
 BMFStat &BMFStat::GetInstance() {
     static BMFStat bmfst;
     return bmfst;
@@ -58,8 +54,9 @@ BMFStat::~BMFStat() {
         reporter_->flush();
         auto end = std::chrono::steady_clock::now();
         std::chrono::duration<double> elapsed = end - start;
-
         BMFLOG(BMF_INFO) << "Produce flush Elapsed time: " << elapsed.count() << " seconds";
+        destroy_kafka_reporter del_func = upload_lib.symbol<destroy_kafka_reporter>("destroy_kafka_reporter");
+        del_func(reporter_);
     }
 }
 
@@ -135,12 +132,11 @@ int64_t BMFStat::task_id() {
 }
 
 bool BMFStat::set_user_id(int user_id) {
-    if (user_id_maps.count(user_id)) {
+    search_user_id_func search_func = upload_lib.symbol<search_user_id_func>("search_user_id");
+    if (search_func(user_id)) {
         user_id_ = user_id;
-        BMFLOG(BMF_INFO) << "The statistic will be reported to " << user_id_maps[user_id];
         return true;
     }
-    BMFLOG(BMF_WARNING) << "the user_id is invalid, The statistic will be reported to basic market!! If you want to report to your user business, please check your user id!";
     return false;
 }
 

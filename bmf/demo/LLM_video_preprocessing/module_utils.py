@@ -69,6 +69,9 @@ class SyncModule(bmf.Module):
                     output_queue.put(pkt)
                 return bmf.ProcessResult.OK
 
+            output_queue = task.get_outputs().get(0, None)
+            if output_queue:
+                output_queue.put(pkt)
             pkt_data = pkt.get(VideoFrame)
             if pkt_data is not None:
                 self._in_packets.append(pkt)

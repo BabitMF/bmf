@@ -3,6 +3,8 @@
 # python
 
 if(BMF_ENABLE_PYTHON)
+    cmake_minimum_required(VERSION 3.15...3.29 FATAL_ERROR)
+    set(PYBIND11_FINDPYTHON ON)
     if(CMAKE_SYSTEM_NAME STREQUAL "Android")
         find_package(Python ${BMF_PYENV} EXACT REQUIRED COMPONENTS Development) # python dist
     else()

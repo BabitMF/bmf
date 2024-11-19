@@ -222,23 +222,40 @@ jobs:
     envs:
       NVIDIA_VISIBLE_DEVICES: all
       NVIDIA_DRIVER_CAPABILITIES: all
+      Force_Bash_As_Shell: "1"
     steps:
       - uses: actions/setup-proxy
       - name: build_env
         commands:
-          - rm -rf /root/bmf
-          - git submodule update --init --recursive
-          - ./build.sh
-          - export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$(pwd)/output/bmf/lib"
-          - export PYTHONPATH="${PYTHONPATH}:$(pwd)/output/bmf/lib:$(pwd)/output"
-          - (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz --no-check-certificate && tar xvf files.tar.gz && rm -rf files.tar.gz)
-          - (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/models.tar.gz --no-check-certificate && tar xvf models.tar.gz && rm -rf models.tar.gz)
-          - (cd output/demo/gpu_module                    && python3 test_gpu_module.py)
-          - (cd output/demo/video_frame_extraction && cmake . && make -j8 && python3 video_frame_extraction.py)
-          - (cd output/demo/video_enhance && pip install basicsr==1.4.2 realesrgan && (sed -i '8s/from torchvision.transforms.functional_tensor import rgb_to_grayscale/from torchvision.transforms.functional import rgb_to_grayscale/' /usr/local/lib/python3.8/dist-packages/basicsr/data/degradations.py) && python3 enhance_demo.py)
-          - (cd output/demo/aesthetic_assessment && pip install onnxruntime && python3 aesthetic_assessment_demo.py)
-          - (cd output/demo/face_detect && cp ../../models/version-RFB-640.onnx . && trtexec --onnx=version-RFB-640.onnx --buildOnly --saveEngine=version-RFB-640.engine && cp version-RFB-640.engine ../../models && python3 detect_trt_sample.py)
-          - (cd output/demo/colorization_python && git clone https://github.com/eefengwei/DeOldify.git DeOldify && pip install "numpy>=2.0.0,<3.0.0" && pip3 install -r ./DeOldify/requirements-colab.txt && pip3 install Ipython && mkdir -p ./DeOldify/models && wget -c https://huggingface.co/spensercai/DeOldify/resolve/main/ColorizeVideo_gen.pth -O ./DeOldify/models/ColorizeVideo_gen.pth && python3 deoldify_demo.py)
+          - export current_dir=$(pwd)
+          - |
+            commands="
+            rm -rf /root/bmf
+            git submodule update --init --recursive
+            ./build.sh
+            export LD_LIBRARY_PATH=\"\${LD_LIBRARY_PATH}:${current_dir}/output/bmf/lib\"
+            export PYTHONPATH=\"\${PYTHONPATH}:${current_dir}/output/bmf/lib:${current_dir}/output\"
+            (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz --no-check-certificate && tar xvf files.tar.gz && rm -rf files.tar.gz)
+            (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/models.tar.gz --no-check-certificate && tar xvf models.tar.gz && rm -rf models.tar.gz)
+            (cd output/demo/gpu_module                    && python3 test_gpu_module.py)
+            (cd output/demo/video_frame_extraction && cmake . && make -j8 && python3 video_frame_extraction.py)
+            (cd output/demo/video_enhance && pip install basicsr==1.4.2 realesrgan && (sed -i '8s/from torchvision.transforms.functional_tensor import rgb_to_grayscale/from torchvision.transforms.functional import rgb_to_grayscale/' /usr/local/lib/python3.8/dist-packages/basicsr/data/degradations.py) && python3 enhance_demo.py)
+            (cd output/demo/aesthetic_assessment && pip install onnxruntime && python3 aesthetic_assessment_demo.py)
+            (cd output/demo/face_detect && cp ../../models/version-RFB-640.onnx . && trtexec --onnx=version-RFB-640.onnx --buildOnly --saveEngine=version-RFB-640.engine && cp version-RFB-640.engine ../../models && python3 detect_trt_sample.py)
+            ./build.sh clean
+            wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+            chmod a+x Miniconda3-latest-Linux-x86_64.sh
+            ./Miniconda3-latest-Linux-x86_64.sh -b
+            export PATH=\"/root/miniconda3/bin:\$PATH\"
+            source /root/miniconda3/bin/activate
+            conda create -n myenv python=3.12 numpy=2.0 -y
+            conda init
+            conda activate myenv
+            ./build.sh
+            export LD_LIBRARY_PATH=/root/miniconda3/envs/myenv/lib/python3.12/site-packages/nvidia/nvjitlink/lib:\${LD_LIBRARY_PATH}
+            (cd output/demo/colorization_python && git clone https://github.com/eefengwei/DeOldify.git DeOldify && pip3 install -r ./DeOldify/requirements-colab.txt && pip3 install Ipython && mkdir -p ./DeOldify/models && wget -c https://huggingface.co/spensercai/DeOldify/resolve/main/ColorizeVideo_gen.pth -O ./DeOldify/models/ColorizeVideo_gen.pth && python3 deoldify_demo.py)
+            "
+          - bash -c "$commands"
 
   clang_build_test:
     name: clang_build_test

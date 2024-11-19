@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15...3.29 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
 # Cross Compile
 # cmake -DCMAKE_TOOLCHAIN_FILE=cmake/aarch64-toolchain.cmake

@@ -24,33 +24,33 @@
 USE_BMF_ENGINE_NS
 USE_BMF_SDK_NS
 
-int init_node(std::shared_ptr<Node> &node) {
+std::shared_ptr<CallBackForTest> init_node(std::shared_ptr<Node> &node) {
     int node_id = 1;
     JsonParam json_param;
     json_param.load("../../files/node.json");
     NodeConfig node_config = NodeConfig(json_param);
-    CallBackForTest callback_for_test;
+    std::shared_ptr<CallBackForTest> callback_for_test_ptr = std::make_shared<CallBackForTest>();
     NodeCallBack callback;
     callback.scheduler_cb =
-        callback_for_test.callback_scheduler_to_schedule_node_;
-    callback.throttled_cb = callback_for_test.callback_add_or_remove_node_;
-    callback.sched_required = callback_for_test.callback_add_or_remove_node_;
+        callback_for_test_ptr->callback_scheduler_to_schedule_node_;
+    callback.throttled_cb = callback_for_test_ptr->callback_add_or_remove_node_;
+    callback.sched_required = callback_for_test_ptr->callback_add_or_remove_node_;
     std::shared_ptr<Module> pre_allocated_modules = NULL;
     BmfMode mode = BmfMode::NORMAL_MODE;
     node = std::make_shared<Node>(node_id, node_config, callback,
                                   pre_allocated_modules, mode, nullptr);
-    return 0;
+    return callback_for_test_ptr;
 }
 
 TEST(node, schedule_node) {
     std::shared_ptr<Node> node;
-    init_node(node);
+    auto callback_smart_ptr = init_node(node);
     //    node->schedule_node();
 }
 
 TEST(node, process_node) {
     std::shared_ptr<Node> node;
-    init_node(node);
+    auto callback_smart_ptr = init_node(node);
     Task task = Task();
     node->process_node(task);
 }

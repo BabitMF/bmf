@@ -160,49 +160,49 @@ TEST(module_manager, load_module) {
 
     // load builtin module(ffmpeg-based)
     {
-        auto facotry = M.load_module("c_ffmpeg_decoder");
-        ASSERT_TRUE(facotry != nullptr);
-        auto module = facotry->make(1);
+        auto factory = M.load_module("c_ffmpeg_decoder");
+        ASSERT_TRUE(factory != nullptr);
+        auto module = factory->make(1);
         EXPECT_TRUE(module != nullptr);
     }
 
     // load builtin module(c++)
     {
-        auto facotry = M.load_module("pass_through");
-        ASSERT_TRUE(facotry != nullptr);
-        auto module = facotry->make(1);
+        auto factory = M.load_module("pass_through");
+        ASSERT_TRUE(factory != nullptr);
+        auto module = factory->make(1);
         EXPECT_TRUE(module != nullptr);
     }
 
     // load builtin module(python)
     {
-        auto facotry = M.load_module("cpu_gpu_trans_module");
-        ASSERT_TRUE(facotry != nullptr);
-        auto module = facotry->make(1);
+        auto factory = M.load_module("cpu_gpu_trans_module");
+        ASSERT_TRUE(factory != nullptr);
+        auto module = factory->make(1);
         EXPECT_TRUE(module != nullptr);
     }
 
     // load sys repo module(c++)
     {
-        auto facotry = M.load_module("cpp_copy_module");
-        ASSERT_TRUE(facotry != nullptr);
-        auto module = facotry->make(1);
+        auto factory = M.load_module("cpp_copy_module");
+        ASSERT_TRUE(factory != nullptr);
+        auto module = factory->make(1);
         EXPECT_TRUE(module != nullptr);
     }
 
     // load sys repo module(python)
     {
-        auto facotry = M.load_module("python_copy_module");
-        ASSERT_TRUE(facotry != nullptr);
-        auto module = facotry->make(1);
+        auto factory = M.load_module("python_copy_module");
+        ASSERT_TRUE(factory != nullptr);
+        auto module = factory->make(1);
         EXPECT_TRUE(module != nullptr);
     }
 #ifndef _WIN32
     // load sys repo module(go)
     {
-        auto facotry = M.load_module("go_copy_module");
-        ASSERT_TRUE(facotry != nullptr);
-        auto module = facotry->make(1);
+        auto factory = M.load_module("go_copy_module");
+        ASSERT_TRUE(factory != nullptr);
+        auto module = factory->make(1);
         EXPECT_TRUE(module != nullptr);
     }
 #endif

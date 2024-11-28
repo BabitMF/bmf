@@ -5,7 +5,7 @@ With over 4 years of testing and improvements, BMF has been tailored to adeptly 
 
 Here are some key features of BMF:
 
-- **Cross-Platform Support:** Native compatibility with Linux, Windows, and Mac OS, as well as optimization for both x86 and ARM CPUs.
+- **Cross-Platform Support:** Native compatibility with Linux, Windows, and macOS, as well as optimization for both x86 and ARM CPUs.
 
 - **Easy to use:** BMF provides Python, Go, and C++ APIs, allowing developers the flexibility to code in their favourite languages.
 

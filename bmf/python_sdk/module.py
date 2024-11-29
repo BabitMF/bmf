@@ -100,7 +100,7 @@ class Module:
     #  @param opt_reset dict value of option
     def dynamic_reset(self, opt_reset=None):
         ###@}
-        pass
+        self.option_ = opt_reset
 
     ## @ingroup PyMdSDK
     ## @ingroup pyMdClass

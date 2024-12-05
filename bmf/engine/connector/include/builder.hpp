@@ -53,7 +53,7 @@ enum GraphMode {
     ServerMode,
     GeneratorMode,
     SubGraphMode,
-    UpdateMode,
+    PushDataMode,
 };
 enum InputManagerType { Immediate, Default, Server, FrameSync, ClockSync };
 enum ModuleType { CPP, C, Python, Go };
@@ -236,6 +236,7 @@ class RealGraph : public std::enable_shared_from_this<RealGraph> {
                         bool dumpGraph, bool needMerge);
 
     int Run(bool dumpGraph, bool needMerge);
+    int Close();
     Packet Generate(std::string streamName, bool block = true);
     int FillPacket(std::string stream_name, Packet packet, bool block = false);
     std::shared_ptr<RealStream> InputStream(std::string streamName, std::string notify, std::string alias);
@@ -636,6 +637,8 @@ class BMF_ENGINE_API Graph {
     void Start(bool dumpGraph = true, bool needMerge = true);
 
     void Start(std::vector<Stream>& generateStreams, bool dumpGraph = true, bool needMerge = true);
+
+    int Close();
 
     std::string Dump();
 

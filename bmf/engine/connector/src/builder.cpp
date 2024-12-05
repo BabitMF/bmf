@@ -376,8 +376,8 @@ nlohmann::json RealGraph::Dump() {
     case SubGraphMode:
         info["mode"] = "Subgraph";
         break;
-    case UpdateMode:
-        info["mode"] = "Update";
+    case PushDataMode:
+        info["mode"] = "Pushdata";
         break;
     }
     for (auto &nd : nodes_)
@@ -431,6 +431,10 @@ void RealGraph::Start(
     bool dumpGraph, bool needMerge) {
     outputStreams_.insert(outputStreams_.end(), streams.begin(), streams.end());
     Start(dumpGraph, needMerge);
+}
+
+int RealGraph::Close() {
+    return graphInstance_->close();
 }
 
 bmf::BMFGraph RealGraph::Instantiate(bool dumpGraph, bool needMerge) {
@@ -787,6 +791,10 @@ int Graph::Run(bool dumpGraph, bool needMerge) {
     return graph_->Run(dumpGraph, needMerge);
 }
 
+void Graph::Start(bool dumpGraph, bool needMerge) {
+    graph_->Start(dumpGraph, needMerge);
+}
+
 void Graph::Start(std::vector<Stream> &generateStreams, bool dumpGraph,
                   bool needMerge) {
     std::vector<std::shared_ptr<internal::RealStream>> generateRealStreams;
@@ -794,6 +802,10 @@ void Graph::Start(std::vector<Stream> &generateStreams, bool dumpGraph,
     for (auto &s : generateStreams)
         generateRealStreams.emplace_back(s.baseP_);
     graph_->Start(generateRealStreams, dumpGraph, needMerge);
+}
+
+int Graph::Close() {
+    return graph_->Close();
 }
 
 Packet Graph::Generate(std::string streamName, bool block) {

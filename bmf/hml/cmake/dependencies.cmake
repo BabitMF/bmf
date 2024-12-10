@@ -193,7 +193,7 @@ if(BMF_ENABLE_FUZZTEST AND HMP_LOCAL_DEPENDENCIES) # FuzzTest
     endif()
     FetchContent_Declare(
         fuzztest
-        GIT_REPOSITORY https://github.com/fuzztest/fuzztest.git
+        GIT_REPOSITORY https://github.com/google/fuzztest
         GIT_TAG 9f67235e7933e0f626f16977855ec99c0f64f4e0
     )
     FetchContent_MakeAvailable(fuzztest)

@@ -240,6 +240,7 @@ class RealGraph : public std::enable_shared_from_this<RealGraph> {
 
     int Run(bool dumpGraph, bool needMerge);
     int Close();
+    int ForceClose();
     Packet Generate(std::string streamName, bool block = true);
     int FillPacket(std::string stream_name, Packet packet, bool block = false);
     std::shared_ptr<RealStream> InputStream(std::string streamName, std::string notify, std::string alias);
@@ -646,6 +647,7 @@ class BMF_ENGINE_API Graph {
     void Start(std::vector<Stream>& generateStreams, bool dumpGraph = true, bool needMerge = true);
 
     int Close();
+    int ForceClose();
 
     std::string Dump();
 

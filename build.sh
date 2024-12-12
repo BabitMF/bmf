@@ -126,6 +126,15 @@ then
     (cd 3rd_party/ && wget https://github.com/BabitMF/bmf/releases/download/files/breakpad.tar.xz && tar xvf breakpad.tar.xz)
 fi
 
+BMF_PYVER="3"
+if [[ -z "${BMF_PYTHON_VERSION}" ]]
+then
+    echo "BMF_PYTHON_VERSION is not set, using default Python 3"
+else
+    echo "Compiling for Python ${BMF_PYTHON_VERSION}"
+    BMF_PYVER="${BMF_PYTHON_VERSION}"
+fi
+
 # Generate BMF version
 source ./version.sh
 
@@ -227,7 +236,7 @@ else
         -DCOVERAGE=${COVERAGE_OPTION} \
         -DSANITIZERS=${SANITIZERS} \
         -DFUZZTEST_ENABLE_FUZZING_MODE=${FUZZING_MODE} \
-        -DBMF_PYENV=$(python3 -c "import sys; print('{}.{}'.format(sys.version_info.major, sys.version_info.minor))") \
+        -DBMF_PYENV=${BMF_PYVER} \
         -DBMF_LOCAL_DEPENDENCIES=${LOCAL_BUILD} \
         -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
         -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ${cmake_args} ..

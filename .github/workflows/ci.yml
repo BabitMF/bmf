@@ -43,7 +43,7 @@ jobs:
         echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(pwd)/output/bmf/lib:/usr/local/lib" >> $GITHUB_ENV
         echo "PYTHONPATH=$(pwd)/output/bmf/lib:$(pwd)/output" >> $GITHUB_ENV
         echo "PATH=${PATH}:$(pwd)/output/bmf/bin" >> $GITHUB_ENV
-        echo "HMP_TEST_DATA_ROOT=$(pwd)/bmf/hml/tests/data" >> $GITHUB_ENV
+        echo "HMP_TEST_DATA_ROOT=$(pwd)/bmf/hmp/tests/data" >> $GITHUB_ENV
 
     - name: test
       id: test
@@ -76,8 +76,8 @@ jobs:
         (cd output/test/complex_edit_case       && python3 test_complex_case.py)
         (cd output/test/complex_edit_case       && python3 test_compare_with_edit.py)
         # test hmp
-        (cd bmf/hml/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
-        (cd bmf/hml/tests                       && pytest)
+        (cd bmf/hmp/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
+        (cd bmf/hmp/tests                       && pytest)
   
   build_and_test_win:
     name: build and test win
@@ -120,7 +120,7 @@ jobs:
           export PATH=$(pwd)/3rd_party/win_rootfs/x64/usr/bin:$(pwd)/3rd_party/win_rootfs/x64/usr/lib:$(pwd)/output/bmf/bin:$(pwd)/output/bmf/lib:${PATH}
           echo $PATH
           echo $(pwd)
-          export HMP_TEST_DATA_ROOT=$(pwd)/bmf/hml/tests/data
+          export HMP_TEST_DATA_ROOT=$(pwd)/bmf/hmp/tests/data
           run_bmf_graph
           ffmpeg
           module_manager
@@ -153,8 +153,8 @@ jobs:
           (cd output/test/push_data_into_graph    && python test_push_data.py)
           (cd output/test/complex_edit_case       && python test_complex_case.py)
           (cd output/test/complex_edit_case       && python test_compare_with_edit.py)
-          (cd bmf/hml/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
-          (cd bmf/hml/tests                       && python -m pytest)
+          (cd bmf/hmp/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
+          (cd bmf/hmp/tests                       && python -m pytest)
           '@
 
           echo $bashCommand | & $bashPath

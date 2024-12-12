@@ -10,8 +10,8 @@ LOCAL_BUILD=1
 git submodule update --init --recursive
 
 # need to edit some files
-backward_hpp=bmf/hml/third_party/backward/backward.hpp
-backward_config=bmf/hml/third_party/backward/BackwardConfig.cmake
+backward_hpp=bmf/hmp/third_party/backward/backward.hpp
+backward_config=bmf/hmp/third_party/backward/BackwardConfig.cmake
 sed -i 's/#ifdef __CLANG_UNWIND_H/#if defined __CLANG_UNWIND_H \&\& !defined EMSCRIPTEN/' $backward_hpp
 if ! grep -q "EMSCRIPTEN" $backward_config; then
     # if we have never edited before..

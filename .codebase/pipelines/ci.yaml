@@ -40,7 +40,7 @@ jobs:
           - export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(pwd)/output/bmf/lib:/usr/local/lib
           - export PYTHONPATH=$(pwd)/output/bmf/lib:$(pwd)/output
           - export PATH=${PATH}:$(pwd)/output/bmf/bin
-          - export HMP_TEST_DATA_ROOT=$(pwd)/bmf/hml/tests/data
+          - export HMP_TEST_DATA_ROOT=$(pwd)/bmf/hmp/tests/data
           - $(pwd)/output/bmf/bin/module_manager install python_copy_module python my_module:my_module $(pwd)/output/test/customize_module v0.0.1
           - $(pwd)/output/bmf/bin/module_manager install cpp_copy_module c++ libcopy_module:CopyModule $(pwd)/output/test/c_module/lib v0.0.1
           - (cd $(pwd)/output/test/go_module && go build -buildmode c-shared -o lib/go_copy_module.so test_go_module.go)
@@ -69,8 +69,8 @@ jobs:
           - (cd output/test/complex_edit_case       && python3 test_compare_with_edit.py)
           - (cd output/test/test_merge_filters      && python3 test.py)
           # test hmp
-          - (cd bmf/hml/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
-          - (cd bmf/hml/tests                       && pytest)
+          - (cd bmf/hmp/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
+          - (cd bmf/hmp/tests                       && pytest)
       - name: run_go_test
         commands:
           - mkdir go
@@ -83,7 +83,7 @@ jobs:
           - export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(pwd)/output/bmf/lib:/usr/local/lib
           - export PYTHONPATH=$(pwd)/output/bmf/lib:$(pwd)/output:$(pwd)/output/test
           - export PATH=${PATH}:$(pwd)/output/bmf/bin
-          - export HMP_TEST_DATA_ROOT=$(pwd)/bmf/hml/tests/data
+          - export HMP_TEST_DATA_ROOT=$(pwd)/bmf/hmp/tests/data
           - mkdir -p $GOPATH/src/main
           - cp -r $PWD/bmf/test/test_go/* $GOPATH/src/main
           - cd $GOPATH/src/main
@@ -124,7 +124,7 @@ jobs:
           - export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(pwd)/output/bmf/lib:/usr/local/lib
           - export PYTHONPATH=$(pwd)/output/bmf/lib:$(pwd)/output
           - export PATH=${PATH}:$(pwd)/output/bmf/bin
-          - export HMP_TEST_DATA_ROOT=$(pwd)/bmf/hml/tests/data
+          - export HMP_TEST_DATA_ROOT=$(pwd)/bmf/hmp/tests/data
           - $(pwd)/output/bmf/bin/module_manager install python_copy_module python my_module:my_module $(pwd)/output/test/customize_module v0.0.1
           - $(pwd)/output/bmf/bin/module_manager install cpp_copy_module c++ libcopy_module:CopyModule $(pwd)/output/test/c_module/lib v0.0.1
           - (cd $(pwd)/output/test/go_module && go build -buildmode c-shared -o lib/go_copy_module.so test_go_module.go)
@@ -151,8 +151,8 @@ jobs:
           - (cd output/test/complex_edit_case       && python3 test_complex_case.py)
           - (cd output/test/complex_edit_case       && python3 test_compare_with_edit.py)
           # test hmp
-          - (cd bmf/hml/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
-          - (cd bmf/hml/tests                       && pytest)
+          - (cd bmf/hmp/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
+          - (cd bmf/hmp/tests                       && pytest)
   windows_job:
     name: BMF Windows CI
     image: "windows_2019_msys2:latest"
@@ -210,8 +210,8 @@ jobs:
           (cd output/test/push_data_into_graph    && python test_push_data.py)
           (cd output/test/complex_edit_case       && python test_complex_case.py)
           (cd output/test/complex_edit_case       && python test_compare_with_edit.py)
-          (cd bmf/hml/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
-          (cd bmf/hml/tests                       && python -m pytest)
+          (cd bmf/hmp/tests/data                  && ./gen.sh $(pwd)/../../../../output/files)
+          (cd bmf/hmp/tests                       && python -m pytest)
           '@
         - echo $bashCommand | & $bashPath
   
@@ -296,7 +296,7 @@ jobs:
           - export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$(pwd)/output/bmf/lib:/usr/local/lib
           - export PYTHONPATH=$(pwd)/output/bmf/lib:$(pwd)/output
           - export PATH=${PATH}:$(pwd)/output/bmf/bin
-          - export HMP_TEST_DATA_ROOT=$(pwd)/bmf/hml/tests/data
+          - export HMP_TEST_DATA_ROOT=$(pwd)/bmf/hmp/tests/data
           - export ASAN_OPTIONS="exitcode=0" # TODO: fix the memory leaks and remove this environment variable
           - $(pwd)/output/bmf/bin/module_manager install python_copy_module python my_module:my_module $(pwd)/output/test/customize_module v0.0.1
           - $(pwd)/output/bmf/bin/module_manager install cpp_copy_module c++ libcopy_module:CopyModule $(pwd)/output/test/c_module/lib v0.0.1

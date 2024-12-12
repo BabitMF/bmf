@@ -146,7 +146,7 @@ if(NOT DEFINED BUILD_SHARED_LIBS)
     set(BUILD_SHARED_LIBS TRUE)  # build shared sdk by default
 endif()
 
-include(cmake/dependencies.cmake) # also includes bmf/hml/cmake/dependencies.cmake
+include(cmake/dependencies.cmake) # also includes bmf/hmp/cmake/dependencies.cmake
 
 if(BMF_USE_MEDIACODEC)
     add_definitions("-DBMF_USE_MEDIACODEC")

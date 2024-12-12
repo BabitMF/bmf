@@ -8,7 +8,7 @@ add_library(bmf_module_sdk_oc ${IOS_OC_SRCS} ${IOS_OC_HEADERS})
 target_include_directories(bmf_module_sdk_oc 
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/bmf/hml/object-c/include>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/bmf/hmp/object-c/include>
     )
 
 target_link_libraries(bmf_module_sdk_oc
@@ -21,7 +21,7 @@ if(BMF_ENABLE_TEST)
     target_link_libraries(test_bmf_module_sdk_oc PRIVATE bmf_module_sdk_oc)
 
     target_include_directories(test_bmf_module_sdk_oc PRIVATE
-            ${PROJECT_SOURCE_DIR}/bmf/hml/object-c/include
+            ${PROJECT_SOURCE_DIR}/bmf/hmp/object-c/include
     )
 
     if(APPLE)

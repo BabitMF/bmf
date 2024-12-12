@@ -4,7 +4,7 @@ import bmf
 
 from bmf import VideoFrame
 from bmf.lib._bmf.sdk import ffmpeg
-import bmf.hml.hmp as mp
+import bmf.hmp as mp
 
 
 def generate_out_packets(packet, np_arr, out_fmt):

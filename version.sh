@@ -2,7 +2,7 @@
 if [[ $OS == *Windows* ]]; then
     BMF_BUILD_VERSION=$(python setup.py --version)
 else
-    if[[ -z $BMF_PYENV ]]
+    if [[ -z $BMF_PYENV ]]
         BMF_BUILD_VERSION=$(python${BMF_PYVER} setup.py --version)
     else
         BMF_BUILD_VERSION=$(python3 setup.py --version)

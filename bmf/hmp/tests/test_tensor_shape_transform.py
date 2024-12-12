@@ -1,6 +1,6 @@
 import pytest
-from bmf.hmp.tests.hmp_fixtures import device_type, has_cuda, dtype, to_np_dtype
-from bmf.hmp.tests.hmp_fixtures import mp
+from hmp_fixtures import device_type, has_cuda, dtype, to_np_dtype
+from hmp_fixtures import mp
 import numpy as np
 from itertools import permutations
 

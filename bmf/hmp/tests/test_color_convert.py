@@ -1,8 +1,8 @@
 import pytest
 import numpy as np
 import os
-from bmf.hmp.tests.hmp_fixtures import device_type
-from bmf.hmp.tests.hmp_fixtures import mp, TEST_DATA_ROOT
+from hmp_fixtures import device_type
+from hmp_fixtures import mp, TEST_DATA_ROOT
 import glob
 
 

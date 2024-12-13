@@ -238,7 +238,7 @@ else
         -DCOVERAGE=${COVERAGE_OPTION} \
         -DSANITIZERS=${SANITIZERS} \
         -DFUZZTEST_ENABLE_FUZZING_MODE=${FUZZING_MODE} \
-        -DBMF_PYENV=${BMF_PYVER} \
+        -DBMF_PYENV=$(python${BMF_PYVER} -c "import sys; print('{}.{}'.format(sys.version_info.major, sys.version_info.minor))") \
         -DBMF_LOCAL_DEPENDENCIES=${LOCAL_BUILD} \
         -DBMF_BUILD_VERSION=${BMF_BUILD_VERSION} \
         -DBMF_BUILD_COMMIT=${BMF_BUILD_COMMIT} ${cmake_args} ..

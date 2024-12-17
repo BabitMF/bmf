@@ -30,7 +30,7 @@ jobs:
           - apt-get update
           - apt-get install -y protobuf-compiler libgflags-dev libdw-dev libgoogle-glog-dev
           - pip3 install --upgrade pip
-          - pip3 install timeout_decorator onnxruntime==1.18.0 numpy==1.26.4 requests opencv-python
+          - pip3 install timeout_decorator onnxruntime==1.18.0 numpy==1.26.4 requests opencv-python librosa
           - echo "build finished"
       - name: run_test
         commands:
@@ -54,6 +54,7 @@ jobs:
           - (cd output/demo/transcode               && python3 test_transcode.py)
           - (cd output/demo/edit                    && python3 test_edit.py)
           - (cd output/demo/predict                 && python3 predict_sample.py)
+          - (cd output/demo/audio_robot_effect      && python3 test_robot_effect.py)
           - (cd output/test/audio_copy              && python3 test_simple.py)
           - (cd output/test/pre_module              && python3 test_pre_module.py)
           - (cd output/test/sync_mode               && python3 test_sync_mode.py)
@@ -197,6 +198,7 @@ jobs:
           (cd output/demo/transcode               && python test_transcode.py)
           (cd output/demo/edit                    && python test_edit.py)
           (cd output/demo/predict                 && python predict_sample.py)
+          (cd output/demo/audio_robot_effect      && python test_robot_effect.py)
           (cd output/test/audio_copy              && python test_simple.py)
           (cd output/test/pre_module              && python test_pre_module.py)
           (cd output/test/sync_mode               && python test_sync_mode.py)

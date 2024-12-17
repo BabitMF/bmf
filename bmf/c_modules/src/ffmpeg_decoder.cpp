@@ -1016,6 +1016,11 @@ Packet CFFDecoder::generate_audio_packet(AVFrame *frame) {
     std::string stream_frame_number_str = std::to_string(stream_frame_number_);
     av_dict_set(&frame->metadata, "stream_frame_number",
                 stream_frame_number_str.c_str(), 0);
+    
+    // undefined or unspecified layout
+    if (frame->channel_layout == 0 && frame->channels > 0){
+        frame->channel_layout = av_get_default_channel_layout(frame->channels);
+    }
 
     auto audio_frame = ffmpeg::to_audio_frame(frame, true);
     audio_frame.set_time_base(Rational(out_tb.num, out_tb.den));

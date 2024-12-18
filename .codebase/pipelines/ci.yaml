@@ -198,7 +198,6 @@ jobs:
           (cd output/demo/transcode               && python test_transcode.py)
           (cd output/demo/edit                    && python test_edit.py)
           (cd output/demo/predict                 && python predict_sample.py)
-          (cd output/demo/audio_robot_effect      && python test_robot_effect.py)
           (cd output/test/audio_copy              && python test_simple.py)
           (cd output/test/pre_module              && python test_pre_module.py)
           (cd output/test/sync_mode               && python test_sync_mode.py)

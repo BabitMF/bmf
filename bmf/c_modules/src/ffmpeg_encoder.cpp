@@ -1061,6 +1061,13 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
         if (frame and frame->pts != AV_NOPTS_VALUE) {
             video_first_pts_ = frame->pts;
         }
+        if (frame) {
+            enc_ctxs_[idx]->color_range = frame->color_range;
+            enc_ctxs_[idx]->color_primaries = frame->color_primaries;
+            enc_ctxs_[idx]->color_trc = frame->color_trc;
+            enc_ctxs_[idx]->colorspace = frame->colorspace;
+            enc_ctxs_[idx]->chroma_sample_location = frame->chroma_location;
+        }
         enc_ctxs_[idx]->pix_fmt = pix_fmt_;
         if (width_ && height_) {
             enc_ctxs_[idx]->width = width_;

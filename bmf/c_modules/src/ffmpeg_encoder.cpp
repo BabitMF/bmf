@@ -1480,7 +1480,7 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
 
         #ifdef BMF_FFMPEG_VERSION
             #if BMF_FFMPEG_VERSION < 50
-                out_stream->time_base = enc_ctxs_[idx]->time_base;
+                out_stream->codec->time_base = enc_ctxs_[idx]->time_base;
             #endif
         #endif
     }

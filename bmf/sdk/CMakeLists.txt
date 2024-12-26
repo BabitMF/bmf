@@ -8,6 +8,8 @@ file(GLOB GO_SRCS go_sdk/src/*.cpp)
 file(GLOB CPP_HDRS cpp_sdk/include/*.h)
 file(GLOB GO_HDRS go_sdk/include/*.h)
 
+add_definitions(-DPYBIND11_NO_ASSERT_GIL_HELD_INCREF_DECREF)
+
 if($ENV{SCRIPT_EXEC_MODE} MATCHES "win")
     file(GLOB DLSRCS
         $ENV{WIN_XCOMPILE_ROOT}/$ENV{WIN_XCOMPILE_ARCH}/usr/src/dlfcn.c

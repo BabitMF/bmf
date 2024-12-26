@@ -96,11 +96,11 @@ jobs:
           echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" | sed 's/[^0-9A-Za-z]/^&/g'
           eval "$(./win_env/vcvarsall.sh x64)"
           export INCLUDE="${INCLUDE};C:\\msys64\\usr\\local\\include"
-          wget https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2024-03-20-13-14/ffmpeg-n4.4.4-92-g01fc3034ee-win64-gpl-shared-4.4.zip
+          wget https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2024-03-31-17-28/ffmpeg-n4.4.4-94-g5d07afd482-win64-gpl-shared-4.4.zip
           pacman -S unzip --noconfirm
-          unzip ffmpeg-n4.4.4-92-g01fc3034ee-win64-gpl-shared-4.4.zip
+          unzip ffmpeg-n4.4.4-94-g5d07afd482-win64-gpl-shared-4.4.zip
           mkdir -p /usr/local
-          cp -r ffmpeg-n4.4.4-92-g01fc3034ee-win64-gpl-shared-4.4/* /usr/local/
+          cp -r ffmpeg-n4.4.4-94-g5d07afd482-win64-gpl-shared-4.4/* /usr/local/
           ls /usr/lib
           ls /usr/include
           ls /usr/bin

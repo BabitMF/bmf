@@ -119,40 +119,40 @@ TEST(module_manager, resolve_module_info) {
     }
 
     // resolve module info from sys repo(c++)
-    // {
-    //     auto info = M.resolve_module_info("cpp_copy_module");
-    //     ASSERT_TRUE(info != nullptr);
-    //     EXPECT_EQ(info->module_type, "c++");
-    //     EXPECT_EQ(info->module_name, "cpp_copy_module");
-    //     EXPECT_TRUE(fs::exists(info->module_path));
-    //     std::string module_entry;
-    //     #ifdef _WIN32
-    //     module_entry = "copy_module.CopyModule";
-    //     #else
-    //     module_entry = "libcopy_module.CopyModule";
-    //     #endif
-    //     EXPECT_EQ(info->module_entry, module_entry);
-    // }
+    {
+        auto info = M.resolve_module_info("cpp_copy_module");
+        ASSERT_TRUE(info != nullptr);
+        EXPECT_EQ(info->module_type, "c++");
+        EXPECT_EQ(info->module_name, "cpp_copy_module");
+        EXPECT_TRUE(fs::exists(info->module_path));
+        std::string module_entry;
+        #ifdef _WIN32
+        module_entry = "copy_module.CopyModule";
+        #else
+        module_entry = "libcopy_module.CopyModule";
+        #endif
+        EXPECT_EQ(info->module_entry, module_entry);
+    }
 
     // resolve module info from sys repo(python)
-    // {
-    //     auto info = M.resolve_module_info("python_copy_module");
-    //     ASSERT_TRUE(info != nullptr);
-    //     EXPECT_EQ(info->module_type, "python");
-    //     EXPECT_EQ(info->module_name, "python_copy_module");
-    //     EXPECT_TRUE(fs::exists(info->module_path));
-    //     EXPECT_EQ(info->module_entry, "my_module.my_module");
-    // }
+    {
+        auto info = M.resolve_module_info("python_copy_module");
+        ASSERT_TRUE(info != nullptr);
+        EXPECT_EQ(info->module_type, "python");
+        EXPECT_EQ(info->module_name, "python_copy_module");
+        EXPECT_TRUE(fs::exists(info->module_path));
+        EXPECT_EQ(info->module_entry, "my_module.my_module");
+    }
 
     // resolve module info from sys repo(go)
-    // {
-    //     auto info = M.resolve_module_info("go_copy_module");
-    //     ASSERT_TRUE(info != nullptr);
-    //     EXPECT_EQ(info->module_type, "go");
-    //     EXPECT_EQ(info->module_name, "go_copy_module");
-    //     EXPECT_TRUE(fs::exists(info->module_path));
-    //     EXPECT_EQ(info->module_entry, "go_copy_module.PassThrough");
-    // }
+    {
+        auto info = M.resolve_module_info("go_copy_module");
+        ASSERT_TRUE(info != nullptr);
+        EXPECT_EQ(info->module_type, "go");
+        EXPECT_EQ(info->module_name, "go_copy_module");
+        EXPECT_TRUE(fs::exists(info->module_path));
+        EXPECT_EQ(info->module_entry, "go_copy_module.PassThrough");
+    }
 }
 
 TEST(module_manager, load_module) {
@@ -175,36 +175,36 @@ TEST(module_manager, load_module) {
     }
 
     // load builtin module(python)
-    // {
-    //     auto factory = M.load_module("cpu_gpu_trans_module");
-    //     ASSERT_TRUE(factory != nullptr);
-    //     auto module = factory->make(1);
-    //     EXPECT_TRUE(module != nullptr);
-    // }
+    {
+        auto factory = M.load_module("cpu_gpu_trans_module");
+        ASSERT_TRUE(factory != nullptr);
+        auto module = factory->make(1);
+        EXPECT_TRUE(module != nullptr);
+    }
 
     // load sys repo module(c++)
-    // {
-    //     auto factory = M.load_module("cpp_copy_module");
-    //     ASSERT_TRUE(factory != nullptr);
-    //     auto module = factory->make(1);
-    //     EXPECT_TRUE(module != nullptr);
-    // }
+    {
+        auto factory = M.load_module("cpp_copy_module");
+        ASSERT_TRUE(factory != nullptr);
+        auto module = factory->make(1);
+        EXPECT_TRUE(module != nullptr);
+    }
 
     // load sys repo module(python)
-    // {
-    //     auto factory = M.load_module("python_copy_module");
-    //     ASSERT_TRUE(factory != nullptr);
-    //     auto module = factory->make(1);
-    //     EXPECT_TRUE(module != nullptr);
-    // }
+    {
+        auto factory = M.load_module("python_copy_module");
+        ASSERT_TRUE(factory != nullptr);
+        auto module = factory->make(1);
+        EXPECT_TRUE(module != nullptr);
+    }
 #ifndef _WIN32
     // load sys repo module(go)
-    // {
-    //     auto factory = M.load_module("go_copy_module");
-    //     ASSERT_TRUE(factory != nullptr);
-    //     auto module = factory->make(1);
-    //     EXPECT_TRUE(module != nullptr);
-    // }
+    {
+        auto factory = M.load_module("go_copy_module");
+        ASSERT_TRUE(factory != nullptr);
+        auto module = factory->make(1);
+        EXPECT_TRUE(module != nullptr);
+    }
 #endif
 }
 

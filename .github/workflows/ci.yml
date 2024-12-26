@@ -30,6 +30,12 @@ jobs:
         #apt install -y nasm yasm
         sudo scripts/build_ffmpeg.sh nasm yasm x264 x265 opus
 
+    - name: Start tmate session for debugging
+      uses: mxschmitt/action-tmate@v3
+      with:
+        limit-access-to-actor: true  
+        timeout-minutes: 120         
+
     - name: build
       id: build
       run: |

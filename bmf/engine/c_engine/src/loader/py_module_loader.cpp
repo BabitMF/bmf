@@ -185,6 +185,7 @@ class PyModuleFactory : public ModuleFactoryI {
 
     std::shared_ptr<Module> make(int32_t node_id,
                                  const JsonParam &json_param) override {
+        py::gil_scoped_acquire gil;
         auto [module_cls, _] = factory_();
         return std::make_shared<bmf_sdk::PyModule>(module_cls, node_id,
                                                    json_param);
@@ -263,7 +264,6 @@ bmf_import_py_module(const char *module_path, const char *module,
         std::string cls_s(cls);
         std::string register_info_func = "register_" + cls_s + "_info";
         auto module_factory = [=]() -> std::tuple<py::object, py::object> {
-            py::gil_scoped_acquire gil;
             auto py_module = py::module_::import(temp_module_name.c_str());
             auto module_cls = py_module.attr(cls_s.c_str());
             py::object module_info_register = py::none();
@@ -273,6 +273,7 @@ bmf_import_py_module(const char *module_path, const char *module,
             }
             return std::make_tuple(module_cls, module_info_register);
         };
+        
 
         return new bmf_sdk::PyModuleFactory(module_factory);
     } catch (std::exception &e) {

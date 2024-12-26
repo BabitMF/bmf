@@ -99,8 +99,8 @@ BMFGraph::BMFGraph(const std::string &graph_config, bool is_path,
                 throw std::logic_error("Trying to bind an unexisted callback.");
             callback_bindings[nd.id]->add_callback(
                 cb.first,
-                *internal::ConnectorMapping::ModuleCallbackInstanceMapping()
-                     .get(cb.second));
+                std::move(*internal::ConnectorMapping::ModuleCallbackInstanceMapping()
+                     .get(cb.second)));
         }
     }
 

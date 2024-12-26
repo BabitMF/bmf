@@ -17,6 +17,12 @@ jobs:
       uses: actions/checkout@v3
       with:
         submodules: 'recursive'
+        
+    - name: Start tmate session for debugging
+      uses: mxschmitt/action-tmate@v3
+      with:
+        sudo: true
+        limit-access-to-actor: true 
 
     - name: prepare libraries
       run: |
@@ -28,13 +34,7 @@ jobs:
         #apt install -y ffmpeg libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavresample-dev libavutil-dev libpostproc-dev libswresample-dev libswscale-dev
         # When running unit tests, nasm/yasm installed via apt will cause the indicators to be misaligned, so it needs to be compiled from source code
         #apt install -y nasm yasm
-        sudo scripts/build_ffmpeg.sh nasm yasm x264 x265 opus
-
-    - name: Start tmate session for debugging
-      uses: mxschmitt/action-tmate@v3
-      with:
-        limit-access-to-actor: true  
-        timeout-minutes: 120         
+        sudo scripts/build_ffmpeg.sh nasm yasm x264 x265 opus         
 
     - name: build
       id: build

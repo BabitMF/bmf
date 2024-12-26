@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#define PYBIND11_NO_ASSERT_GIL_HELD_INCREF_DECREF
 #include <gtest/gtest.h>
 #include <bmf/sdk/module_registry.h>
 #include <bmf/sdk/module_manager.h>

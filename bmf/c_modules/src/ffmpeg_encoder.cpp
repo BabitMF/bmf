@@ -1478,11 +1478,11 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
             }
         }
 
-        /**
-        * @deprecated codec has been deprecated since ffmpeg 5.0
-        * use out_stream->time_base instead of out_stream->codec->time_base.
-        */
-        out_stream->time_base = enc_ctxs_[idx]->time_base;
+        #ifdef BMF_FFMPEG_VERSION
+            #if BMF_FFMPEG_VERSION < 50
+                out_stream->time_base = enc_ctxs_[idx]->time_base;
+            #endif
+        #endif
     }
 
     out_stream->time_base = enc_ctxs_[idx]->time_base;

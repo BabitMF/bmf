@@ -213,11 +213,13 @@ function install_cuda_linux() {
     then
         original_ld_lib_path=$LD_LIBRARY_PATH
         unset LD_LIBRARY_PATH
-        dnf install epel-release -y
-        dnf update -y
-        yum config-manager --add-repo http://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo
-        dnf install kernel-devel -y
-        dnf install cuda-12-2 -y
+        dnf install epel-release wget -y
+        dnf install dkms -y
+        wget https://developer.download.nvidia.com/compute/cuda/12.2.0/local_installers/cuda-repo-rhel8-12-2-local-12.2.0_535.54.03-1.x86_64.rpm
+        rpm -i cuda-repo-rhel8-12-2-local-12.2.0_535.54.03-1.x86_64.rpm
+        dnf clean all
+        dnf -y module install nvidia-driver:latest-dkms
+        dnf -y install cuda
         export LD_LIBRARY_PATH=$original_ld_lib_path
     fi
     export PATH=${PATH}:/usr/local/cuda/bin

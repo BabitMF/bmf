@@ -108,10 +108,12 @@ jobs:
         PKG_CONFIG_PATH: "$(pwd)/ffmpeg_${{ matrix.arch }}/lib/pkgconfig"
         CMAKE_ARGS: "-DHAVE_STD_REGEX=ON -DRUN_HAVE_STD_REGEX=1"
         BMF_PYTHON_VERSION: ${{ env.BMF_PYTHON_VERSION }}
+        BMF_PYVER: ${{ env.BMF_PYTHON_VERSION }}
         BMF_ARCHITECTURES: ${{ matrix.arch }}
       run: |
         wget https://www.python.org/ftp/python/3.9.13/python-3.9.13-macos11.pkg
         sudo installer -pkg python-3.9.13-macos11.pkg -target /
+        brew install binutils
         ./scripts/build_ffmpeg.sh --arch=${{ matrix.arch }}
         ./build_osx.sh
         tar czf ${{ env.BINARY_NAME }}.tar.gz --directory=. output

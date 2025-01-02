@@ -40,11 +40,11 @@ jobs:
             arch: ppc64le
             py_ver_prefix: cp39
             device: cpu
-          - os: macos-12
+          - os: macos-13
             arch: x86_64
             py_ver_prefix: cp39
             device: cpu
-          - os: macos-12
+          - os: macos-13
             arch: arm64
             py_ver_prefix: cp39
             device: cpu

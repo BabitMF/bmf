@@ -318,53 +318,52 @@ TEST(cpp_transcode, transcode_with_null_audio) {
                                     " \"30.0662251656\"}");
 }
 
-// TEST(cpp_transcode, transcode_cb) {
-//     std::string output_file = "./cb.mp4";
-//     BMF_CPP_FILE_REMOVE(output_file);
+TEST(cpp_transcode, transcode_cb) {
+    std::string output_file = "./cb.mp4";
+    BMF_CPP_FILE_REMOVE(output_file);
 
-//     nlohmann::json graph_para = {
-//         {"dump_graph", 0}
-//     };
-//     auto graph = bmf::builder::Graph(bmf::builder::NormalMode,
-//     bmf_sdk::JsonParam(graph_para));
+    nlohmann::json graph_para = {
+        {"dump_graph", 0}
+    };
+    auto graph = bmf::builder::Graph(bmf::builder::NormalMode,
+    bmf_sdk::JsonParam(graph_para));
 
-//     nlohmann::json decode_para = {
-//         {"input_path", "../../files/big_bunny_10s_30fps.mp4"},
-//     };
-//     auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
-//     nlohmann::json encode_para = {
-//         {"output_path", output_file},
-//         {"video_params", {
-//             {"codec", "h264"},
-//             {"width", 320},
-//             {"height", 240},
-//             {"crf", 23},
-//             {"preset", "veryfast"}
-//         }},
-//         {"audio_params", {
-//             {"codec", "aac"},
-//             {"bit_rate", 128000},
-//             {"sample_rate", 44100},
-//             {"channels", 2}
-//         }}
-//     };
-//     auto cb = [](void *, BMFCBytes) -> BMFCBytes {
-//         BMFLOG(BMF_INFO) << "test cb cpp";
-//         uint8_t bytes[] = {97, 98, 99, 100, 101, 0};
-//         return BMFCBytes{bytes, 6};
-//     };
-//     BMFCallbackInstance cb_ = nullptr;
-//     create_callback(cb, nullptr, &cb_);
-//     graph.Encode(video["video"], video["audio"],
-//     bmf_sdk::JsonParam(encode_para)).AddCallback(0, *cb_);
-//     //std::cout << testing::internal::GetCapturedStdout();
-//     graph.Run();
-//     BMF_CPP_FILE_CHECK(
-//         output_file,
-//         "../transcode/cb.mp4|240|320|7.615000|MOV,MP4,M4A,3GP,3G2,MJ2|366635|348991|h264|{\"fps\":
-//         \"30.0662251656\"}"
-//     );
-// }
+    nlohmann::json decode_para = {
+        {"input_path", "../../files/big_bunny_10s_30fps.mp4"},
+    };
+    auto video = graph.Decode(bmf_sdk::JsonParam(decode_para));
+    nlohmann::json encode_para = {
+        {"output_path", output_file},
+        {"video_params", {
+            {"codec", "h264"},
+            {"width", 320},
+            {"height", 240},
+            {"crf", 23},
+            {"preset", "veryfast"}
+        }},
+        {"audio_params", {
+            {"codec", "aac"},
+            {"bit_rate", 128000},
+            {"sample_rate", 44100},
+            {"channels", 2}
+        }}
+    };
+
+    auto callback = [](bmf_sdk::CBytes input) -> bmf_sdk::CBytes  {
+        std::string strInfo;
+        strInfo.assign(reinterpret_cast<const char*>(input.buffer), input.size);
+        BMFLOG(BMF_INFO) << "====Callback==== " << strInfo;
+        return bmf_sdk::CBytes{input.buffer, input.size};
+    };
+
+    graph.Encode(video["video"], video["audio"],
+    bmf_sdk::JsonParam(encode_para)).AddCallback(0, callback);
+    graph.Run();
+    BMF_CPP_FILE_CHECK(output_file, "../transcode/"
+                                "cb.mp4|240|320|10.0|MOV,MP4,"
+                                "M4A,3GP,3G2,MJ2|192235|240486|h264|{\"fps\":"
+                                " \"30.0662251656\"}");
+}
 
 TEST(cpp_transcode, transcode_hls) {
     std::string output_file = "./file000.ts";

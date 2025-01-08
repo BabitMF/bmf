@@ -16,6 +16,7 @@ function change_bin_deps() {
     do
         new_dep="@executable_path/../lib/"$(basename ${old_dep})
         install_name_tool -change ${old_dep} ${new_dep} $1
+        echo "Updating $old_dep -> $new_dep"
     done
 }
 
@@ -24,27 +25,36 @@ function change_lib_deps() {
     do
         new_dep="@loader_path/"$(basename ${old_dep})
         install_name_tool -change ${old_dep} ${new_dep} $1
+        echo "Updating $old_dep -> $new_dep"
     done
 
     otool -L $1 | awk '{if(NF>1){print($1)}}' | grep "ffmpeg" | while read old_dep
     do
         new_dep="@rpath/"$(basename ${old_dep})
         install_name_tool -change ${old_dep} ${new_dep} $1
+        echo "Updating $old_dep -> $new_dep"
     done
 
     otool -L $1 | awk '{if(NF>1){print($1)}}' | grep "Python" | while read old_dep
     do
-        new_dep="@executable_path/../../../../Python"
+        PYTHON_VERSION=$(python3 --version 2>&1 | awk '{print $2}' | cut -d '.' -f 1,2)
+        #new_dep="@executable_path/../lib/libpython${PYTHON_VERSION}.dylib"
+        new_dep="@rpath/Python"
         install_name_tool -change ${old_dep} ${new_dep} $1
+        install_name_tool -add_rpath "@executable_path/../../../../" $1
+        install_name_tool -add_rpath "@executable_path" $1
+        echo "Updating $old_dep -> $new_dep"
     done
 }
 
 cd ${bmf_root}/bmf
 for bin in `find bin -maxdepth 1 -not -type d`
 do
+    echo "Processing: $bin"
     change_bin_deps ${bin}
 done
 for lib in `find lib -maxdepth 1 -not -type d`
 do
+    echo "Processing: $lib"
     change_lib_deps ${lib}
 done

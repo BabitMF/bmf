@@ -143,9 +143,8 @@ jobs:
         path: ./wheelhouse/*.whl
 
     - name: Setup tmate session
-      if: ${{ failure() }}
       uses: mxschmitt/action-tmate@v3
-
+      timeout-minutes: 300
   upload_all_to_pypi:
     needs: [build_manylinux_wheels, build_macos_wheels]
     runs-on: ubuntu-latest # pypa/gh-action-pypi-publish only support linux

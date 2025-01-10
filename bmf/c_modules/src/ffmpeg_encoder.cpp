@@ -244,7 +244,7 @@ int CFFEncoder::init() {
     if (input_option_.has_key("min_frames"))
         input_option_.get_long("min_frames", ost_[0].min_frames);
 
-    /** @addtogroup EncM
+    /** @addtogroup video_params or audio_params
      * @{
      * @arg codec: param in video_params or audio_params to specify the name of
      * the codec which libavcodec included. exp. "h264", "bytevc1", "jpg",
@@ -268,7 +268,7 @@ int CFFEncoder::init() {
             codec_names_[0] = codec;
         }
     }
-    /** @addtogroup EncM
+    /** @addtogroup video_params
      * @{
      * @arg width: param in video_params to specify the video width
      * @arg height: param in video_params to specify the video height
@@ -1128,7 +1128,7 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
                     has_complex_filtergraph_ = true;
             }
         }
-        /** @addtogroup EncM
+        /** @addtogroup video_params
          * @{
          * @arg threads: specify the number of threads for encoder, "auto" by
          * default
@@ -1137,7 +1137,7 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
             av_dict_set(&enc_opts, "threads", "auto", 0);
         }
 
-        /** @addtogroup EncM
+        /** @addtogroup video_params
          * @{
          * @arg psnr: to set encoder provide psnr information
          * @} */
@@ -1149,7 +1149,7 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
                 enc_ctxs_[0]->flags |= AV_CODEC_FLAG_PSNR;
         }
 
-        /** @addtogroup EncM
+        /** @addtogroup video_params
          * @{
          * @arg in_time_base: to set time base manually
          * @} */
@@ -1166,7 +1166,7 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
             }
         }
 
-        /** @addtogroup EncM
+        /** @addtogroup video_params
          * @{
          * @arg vsync: to set the video sync method on frame rate, "auto" by
          * default.
@@ -1186,7 +1186,7 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
             else if (!av_strcasecmp(s_vsync.c_str(), "drop"))
                 vsync_method_ = VSYNC_DROP;
         }
-        /** @addtogroup EncM
+        /** @addtogroup video_params
          * @{
          * @arg max_fr: to set the frame rate
          * @} */
@@ -1204,9 +1204,9 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
             if (vsync_method_ == VSYNC_AUTO)
                 vsync_method_ = VSYNC_VFR;
         }
-        /** @addtogroup EncM
+        /** @addtogroup video_params
          * @{
-         * @arg max_fr: to set the frame rate, similar as ffmpeg
+         * @arg r: to set the frame rate, similar as ffmpeg
          * @} */
         if (video_params_.has_key("r")) {
             double fr;
@@ -1265,7 +1265,7 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
                 enc_ctxs_[idx]->sample_aspect_ratio;
         }
 
-        /** @addtogroup EncM
+        /** @addtogroup video_params
          * @{
          * @arg qscal: to set the qscale for the encoder global_quality
          * @} */
@@ -1279,7 +1279,7 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
             enc_ctxs_[idx]->global_quality = FF_QP2LAMBDA * qscale;
         }
 
-        /** @addtogroup EncM
+        /** @addtogroup video_params
          * @{
          * @arg vtag: to set the vtag for output stream
          * @} */
@@ -1288,7 +1288,7 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
             video_params_.erase("vtag");
         }
 
-        /** @addtogroup EncM
+        /** @addtogroup video_params
          * @{
          * @arg bit_rate or b: to set the bitrate for video encode
          * @} */
@@ -1315,7 +1315,7 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
         enc_ctxs_[idx]->channel_layout =
             av_get_default_channel_layout(enc_ctxs_[idx]->channels);
 
-        /** @addtogroup EncM
+        /** @addtogroup audio_params
          * @{
          * @arg channels: to set the channels for input audio
          * @} */
@@ -1341,7 +1341,7 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
             }
         }
 
-        /** @addtogroup EncM
+        /** @addtogroup audio_params
          * @{
          * @arg bit_rate or b: to set the bit_rate for audio encode
          * @} */
@@ -1350,7 +1350,7 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
             audio_params_.erase("bit_rate");
         }
 
-        /** @addtogroup EncM
+        /** @addtogroup audio_params
          * @{
          * @arg sample_rate: to set the sample_rate for audio encode
          * @} */
@@ -1395,7 +1395,7 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
             enc_ctxs_[idx]->global_quality = FF_QP2LAMBDA * qscale;
         }
 
-        /** @addtogroup EncM
+        /** @addtogroup audio_params
          * @{
          * @arg atag: to set the atag for output stream
          * @} */

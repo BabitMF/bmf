@@ -393,6 +393,16 @@ class BMF_SDK_API TraceLogger {
                              << queue_map_[i].total_count();
         }
     }
+    template <typename T>
+    bool find_key_substring_in_map(const std::map<std::string, T>& m, const std::string& keystring, std::string& mapkey) {
+        for (const auto& kv : m) {
+            if (kv.first.find(keystring) != std::string::npos) {
+                mapkey = kv.first;
+                return true;
+            }
+        }
+        return false;
+    }
 };
 
 // Global singleton of the TraceLogger
@@ -500,7 +510,7 @@ inline void BMF_TRACE_THROUGHPUT(int stream_id, int node_id, int queue_size) {
         info.set("size", queue_size);
         threadTracer.trace_info(
             THROUGHPUT, ("Stream" + std::to_string(stream_id)).c_str(), NONE,
-            info.get(), ("Node" + std::to_string(node_id)).c_str());
+            info.get(), ("Node_" + std::to_string(node_id) + "_").c_str());
     }
 }
 

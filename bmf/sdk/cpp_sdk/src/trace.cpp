@@ -351,9 +351,10 @@ void TraceLogger::format_logs(bool include_info) {
                             std::string line_name = linelog["name"];
                             std::string stream_name =
                                 line_name.substr(0, line_name.find(":"));
-                            std::string node_name = line_name.substr(
+                            std::string match_node_name = line_name.substr(
                                 line_name.find(":") + 1, line_name.length());
-                            if (throughput.count(node_name)) {
+                            std::string node_name = "";
+                            if (find_key_substring_in_map(throughput, match_node_name, node_name)) {
                                 if (!throughput[node_name].count(stream_name)) {
                                     throughput[node_name][stream_name] =
                                         std::make_pair(0, 0);

@@ -1,7 +1,7 @@
 from bmf import *
 from bmf.lib._bmf import sdk
 import numpy as np
-import bmf.hml.hmp as mp
+import bmf.hmp as mp
 import librosa
 
 if sys.version_info.major == 2:

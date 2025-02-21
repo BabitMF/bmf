@@ -500,31 +500,6 @@ bool ModuleManager::initialize_loader(const std::string &module_type) {
             return mptr;
         };
         return true;
-    } else if (module_type == "go") {
-        auto lib_name = std::string(SharedLibrary::default_prefix()) +
-                        "bmf_go_loader" + SharedLibrary::default_extension();
-        auto loader_path =
-            fs::path(SharedLibrary::this_line_location())
-                .lexically_normal().parent_path() / lib_name;
-        auto lib = std::make_shared<SharedLibrary>(
-            loader_path.string(), SharedLibrary::LAZY | SharedLibrary::GLOBAL);
-
-        self->loaders["go"] = [=](const ModuleInfo &info) -> ModuleFactoryI * {
-            auto import_func =
-                lib->symbol<ModuleFactoryI *(*)(const char *, const char *,
-                                                char **)>(
-                    "bmf_import_go_module");
-            char *errstr = nullptr;
-            auto mptr = import_func(info.module_path.c_str(),
-                                    info.module_name.c_str(), &errstr);
-            if (errstr != nullptr) {
-                auto err = std::string(errstr);
-                free(errstr);
-                throw std::runtime_error(err);
-            }
-            return mptr;
-        };
-        return true;
     } else {
         return false;
     }

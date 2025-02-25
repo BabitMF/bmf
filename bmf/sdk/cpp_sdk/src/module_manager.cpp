@@ -30,6 +30,7 @@ const fs::path s_bmf_repo_root = "C:\\Users\\Public\\bmf_mods";
 const fs::path s_bmf_repo_root = "/bmf/";
 #else
 const fs::path s_bmf_repo_root = "/usr/local/share/bmf_mods/";
+const fs::path s_bmf_mods_path = "/opt/tiger/bmf_mods/";
 #endif
 
 static void string_split(std::vector<std::string> &tokens,
@@ -591,6 +592,7 @@ void ModuleManager::init() {
                       .string());
     #endif
     set_repo_root(s_bmf_repo_root.string());
+    set_repo_root(s_bmf_mods_path.string());
     set_repo_root(fs::current_path().string());
 }
 

@@ -246,6 +246,18 @@ static SimpleFilterGraph init_reformat_filter(AVFrame *av_frame,
     return simple_filter_graph;
 }
 
+static SimpleFilterGraph init_reformat_filter(const VideoFrame &vf,
+                                              const std::string &format,
+                                              std::string flags) {
+    SimpleFilterGraph simple_filter_graph;
+    AVFrame *av_frame = from_video_frame(vf, false);
+    std::string filter_desc = flags.empty() ? "" : ("sws_flags=" + flags + ";");
+    filter_desc += "[i0_0]format=pix_fmts=" + format + "[o0_0]";
+    simple_filter_graph.init(av_frame, filter_desc);
+    av_frame_free(&av_frame);
+    return simple_filter_graph;
+}
+
 static SimpleFilterGraph init_filter(AVFrame *av_frame,
                                               const std::string &filter_str) {
     SimpleFilterGraph simple_filter_graph;

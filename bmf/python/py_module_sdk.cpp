@@ -218,14 +218,26 @@ struct PyPacketQueue {
 void bmf_ffmpeg_bind(py::module &m) {
     using namespace bmf_sdk;
     auto ff = m.def_submodule("ffmpeg");
-    ff.def("reformat", [](VideoFrame &vf, const std::string &format_str) {
-        auto new_vf = ffmpeg::reformat(vf, format_str);
-        return py::cast(new_vf);
-    });
     ff.def("siso_filter", [](VideoFrame &vf, const std::string &filter_str) {
         auto new_vf = ffmpeg::siso_filter(vf, filter_str);
         return py::cast(new_vf);
     });
+
+    py::class_<SimpleFilterGraph>(ff, "SimpleFilterGraph")
+        .def(py::init<>());
+
+    ff.def("init_reformat_filter", [](const VideoFrame& vf, const std::string& format,
+                                      const std::string& flags = "") {
+        return bmf_sdk::ffmpeg::init_reformat_filter(vf, format, flags);
+    }, py::arg("vf"), py::arg("format"), py::arg("flags") = "");
+
+    ff.def("reformat", [](const VideoFrame& vf, const std::string& format_str,
+                         SimpleFilterGraph filter_graph = SimpleFilterGraph(),
+                         const std::string& flags = "") {
+        return bmf_sdk::ffmpeg::reformat(vf, format_str, filter_graph, flags);
+    }, py::arg("vf"), py::arg("format_str"),
+       py::arg("filter_graph") = SimpleFilterGraph(),
+       py::arg("flags") = "");
 }
 #endif
 

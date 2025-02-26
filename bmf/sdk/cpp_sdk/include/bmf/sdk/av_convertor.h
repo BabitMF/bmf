@@ -27,8 +27,6 @@ class AVConvertor : public Convertor {
         try {
             // returns either a cloned AVFrame or a new AVFrame
             AVFrame *frame = ffmpeg::from_video_frame(src, false);
-            // free existing AVFrame of VideoFrame, if it exists
-            av_frame_free((AVFrame**)src.private_get<AVFrame>());
             // attach the AVFrame to the VideoFrame
             src.private_attach<AVFrame>(frame);
             // free the AVFrame that has been cloned

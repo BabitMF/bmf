@@ -254,7 +254,7 @@ jobs:
             conda activate myenv
             ./build.sh
             export LD_LIBRARY_PATH=/root/miniconda3/envs/myenv/lib/python3.12/site-packages/nvidia/nvjitlink/lib:\${LD_LIBRARY_PATH}
-            (cd output/demo/colorization_python && git clone https://github.com/eefengwei/DeOldify.git DeOldify && pip3 install -r ./DeOldify/requirements-colab.txt && pip3 install Ipython && mkdir -p ./DeOldify/models && wget -c https://huggingface.co/spensercai/DeOldify/resolve/main/ColorizeVideo_gen.pth -O ./DeOldify/models/ColorizeVideo_gen.pth && python3 deoldify_demo.py)
+            (cd output/demo/colorization_python && git clone https://github.com/eefengwei/DeOldify.git DeOldify && pip3 install -r ./DeOldify/requirements-colab.txt && pip3 install Ipython && pip3 install torch==2.5 torchvision torchaudio && mkdir -p ./DeOldify/models && wget -c https://huggingface.co/spensercai/DeOldify/resolve/main/ColorizeVideo_gen.pth -O ./DeOldify/models/ColorizeVideo_gen.pth && python3 deoldify_demo.py)
             "
           - bash -c "$commands"
 

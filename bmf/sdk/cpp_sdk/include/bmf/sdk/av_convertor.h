@@ -25,14 +25,13 @@ class AVConvertor : public Convertor {
     AVConvertor() {}
     int media_cvt(VideoFrame &src, const MediaDesc &dp) override {
         try {
-            // returns either the attached AVFrame or a new AVFrame
+            // returns either a cloned AVFrame or a new AVFrame
             AVFrame *frame = ffmpeg::from_video_frame(src, false);
-            // if the private data is the same as the AVFrame, can just return
-            if (src.private_get<AVFrame>() == frame) {
-                return 0;
-            }
+            // free existing AVFrame of VideoFrame, if it exists
+            av_frame_free((AVFrame**)src.private_get<AVFrame>());
             // attach the AVFrame to the VideoFrame
             src.private_attach<AVFrame>(frame);
+            // free the AVFrame that has been cloned
             av_frame_free(&frame);
         } catch (std::exception &e) {
             BMFLOG(BMF_ERROR) << "convert to AVFrame err: " << e.what();

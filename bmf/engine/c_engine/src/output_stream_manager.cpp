@@ -57,7 +57,8 @@ OutputStreamManager::OutputStreamManager(
 int OutputStreamManager::post_process(Task &task) {
     for (auto &t : task.outputs_queue_) {
         auto q = std::make_shared<SafeQueue<Packet>>(t.second);
-        output_streams_[t.first]->propagate_packets(q);
+        if (output_streams_.find(t.first) != output_streams_.end())
+            output_streams_[t.first]->propagate_packets(q);
     }
     return 0;
 }

@@ -25,7 +25,7 @@ void coreBind(py::module &m);
 void tensorBind(py::module &m);
 void ffmpegBind(py::module &m);
 void imageBind(py::module &m);
-
+void numpyBind(py::module &m);
 void cudaBind(py::module &m);
 
 static std::map<const char *, int> sHMPConfigs{
@@ -84,6 +84,8 @@ PYBIND11_MODULE(_hmp, m) {
     imageBind(m);
 
     ffmpegBind(m);
+
+    numpyBind(m);
 
     cudaBind(m);
 }

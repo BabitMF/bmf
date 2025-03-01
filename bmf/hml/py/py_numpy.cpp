@@ -113,3 +113,8 @@ HMP_API py::array tensor_to_numpy(const Tensor &tensor) {
     return py::array(dtype, shape, strides, tensor.unsafe_data(),
                      py::cast(tensor));
 }
+
+void numpyBind(py::module &m){
+    m.def("scalarTypeToNumpyDtype", &scalarTypeToNumpyDtype);
+    m.def("numpyDtypeToScalarType", &numpyDtypeToScalarType);
+}

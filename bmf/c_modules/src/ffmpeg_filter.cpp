@@ -584,7 +584,7 @@ int CFFFilter::process(Task &task) {
                 frame = ffmpeg::from_video_frame(video_frame, false);
             } else if (packet.is<AudioFrame>()) {
                 auto &audio_frame = packet.get<AudioFrame>();
-                frame = ffmpeg::from_audio_frame(audio_frame, true);
+                frame = ffmpeg::from_audio_frame(audio_frame, false);
             } else {
                 return PROCESS_ERROR;
             }

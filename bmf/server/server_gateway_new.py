@@ -67,7 +67,7 @@ class ServerGatewayNew:
             # currently, we think each job will produce only one result packet, which contains return value in its data
             if pkt is not None and pkt.defined():
                 # one more access result
-                if pkt.class_name == "std::string":
+                if pkt.class_name in ("bmf_sdk::JsonParam", "std::string"):
                     self.result_id += 1
                     # get result
                     if self.result_id in self.alias_dict:
@@ -75,7 +75,11 @@ class ServerGatewayNew:
                     else:
                         res_name = "res_" + str(self.result_id)
                     # save result
-                    self.result_dict[res_name] = pkt.get(str)
+                    if pkt.class_name == "bmf_sdk::JsonParam":
+                        self.result_dict[res_name] = pkt.get(dict)
+                    elif pkt.class_name == "std::string":
+                        self.result_dict[res_name] = pkt.get(str)
+                        
                     if not self.block_event.is_set():
                         self.block_event.set()
                         self.block_event.clear()

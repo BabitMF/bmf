@@ -6,6 +6,7 @@ option(BMF_MODULE_ENABLE_FLIP_GPU "" ON)
 option(BMF_MODULE_ENABLE_GAMMA_GPU "" ON)
 option(BMF_MODULE_ENABLE_ROTATE_GPU "" ON)
 option(BMF_MODULE_ENABLE_SCALE_GPU "" ON)
+option(BMF_MODULE_ENABLE_UPLOAD "" ON)
 
 function(copy_python_builtin_module)
     file(GLOB files ${ARGV0}/*)
@@ -39,4 +40,8 @@ endif()
 
 if(BMF_MODULE_ENABLE_SCALE_GPU)
     copy_python_builtin_module(scale_gpu)
+endif()
+
+if(BMF_MODULE_ENABLE_UPLOAD)
+    copy_python_builtin_module(upload)
 endif()

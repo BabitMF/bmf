@@ -28,6 +28,7 @@
 extern "C" {
 #include <libswscale/swscale.h>
 #include <libavutil/pixdesc.h>
+#include <libavutil/frame.h>
 }
 
 namespace bmf_sdk {
@@ -42,6 +43,28 @@ template <> struct OpaqueDataInfo<AVFrame> {
             av_frame_free(&avf);
         });
     }
+    static void copy_props(AVFrame *dst, AVFrame* src) {
+        av_frame_copy_props(dst, src);
+    }
+};
+
+template<> class OpaqueDataHandler<AVFrame> : public PrivateHandle {
+public:
+    explicit OpaqueDataHandler(const OpaqueData& data) : data_(data) {}
+
+    void copy_props(const PrivateHandle &other) {
+        auto p = dynamic_cast<const OpaqueDataHandler<AVFrame>*>(&other);
+        AVFrame *src = (AVFrame*)p->get_data().get();
+        AVFrame *dst = (AVFrame*)data_.get();
+        av_frame_copy_props(dst, src);
+    }
+
+    const OpaqueData& get_data() const {
+        return data_;
+    }
+
+private:
+    OpaqueData data_;
 };
 
 template <> struct OpaqueDataInfo<AVPacket> {
@@ -248,7 +271,7 @@ static SimpleFilterGraph init_reformat_filter(AVFrame *av_frame,
 
 static SimpleFilterGraph init_reformat_filter(const VideoFrame &vf,
                                               const std::string &format,
-                                              std::string flags) {
+                                              std::string flags = "") {
     SimpleFilterGraph simple_filter_graph;
     AVFrame *av_frame = from_video_frame(vf, false);
     std::string filter_desc = flags.empty() ? "" : ("sws_flags=" + flags + ";");

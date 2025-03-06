@@ -21,7 +21,13 @@
 
 namespace bmf_sdk {
 
-using OpaqueData = std::shared_ptr<const void>;
+class PrivateHandle {
+public:
+    virtual void copy_props(const PrivateHandle& other){}
+    virtual ~PrivateHandle() = default;
+};
+
+using OpaqueData = std::shared_ptr<void>;
 
 /**
  * @brief OpaqueDataInfo for type T, two interface should be implemented
@@ -56,6 +62,19 @@ struct OpaqueDataKey {
     };
 };
 
+template<typename T>
+class OpaqueDataHandler : public PrivateHandle {
+public:
+    explicit OpaqueDataHandler(const OpaqueData& data) : data_(data) {}
+
+    const OpaqueData& get_data() const {
+        return data_;
+    }
+
+private:
+    OpaqueData data_;
+};
+
 class BMF_SDK_API OpaqueDataSet {
   public:
     OpaqueDataSet() = default;
@@ -81,7 +100,8 @@ class BMF_SDK_API OpaqueDataSet {
     void private_attach(const T *data, Args &&...args) {
         using Info = OpaqueDataInfo<T>;
         auto opaque = Info::construct(data, std::forward<Args>(args)...);
-        set_private_data(Info::key, opaque);
+        std::shared_ptr<PrivateHandle> handler = std::make_shared<OpaqueDataHandler<T>>(opaque);
+        set_private_data(Info::key, handler);
     }
 
     /**
@@ -93,7 +113,10 @@ class BMF_SDK_API OpaqueDataSet {
      */
     template <typename T> const T *private_get() const {
         using Info = OpaqueDataInfo<T>;
-        return static_cast<const T *>(private_data(Info::key).get());
+        auto oh = std::dynamic_pointer_cast<OpaqueDataHandler<T>>(private_data(Info::key));
+        if (oh) 
+            return static_cast<const T *>(oh->get_data().get());
+        return nullptr;
     }
 
     /**
@@ -119,11 +142,11 @@ class BMF_SDK_API OpaqueDataSet {
      * @param key
      * @param data
      */
-    virtual void set_private_data(int key, const OpaqueData &data);
-    virtual const OpaqueData &private_data(int key) const;
+    virtual void set_private_data(int key, const std::shared_ptr<PrivateHandle> &data);
+    virtual const std::shared_ptr<PrivateHandle>& private_data(int key) const;
 
   private:
-    OpaqueData opaque_set_[OpaqueDataKey::kNumKeys] = {nullptr};
+    std::shared_ptr<PrivateHandle> opaque_set_[OpaqueDataKey::kNumKeys] = {nullptr};
 }; //
 
 class BMF_SDK_API SequenceData {

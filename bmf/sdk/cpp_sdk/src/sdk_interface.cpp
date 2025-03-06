@@ -23,7 +23,7 @@
 
 namespace bmf_sdk {
 
-void OpaqueDataSet::set_private_data(int key, const OpaqueData &data) {
+void OpaqueDataSet::set_private_data(int key, const std::shared_ptr<PrivateHandle> &data) {
     HMP_REQUIRE(key < OpaqueDataKey::kNumKeys,
                 "Private key {} is out of range, need less than {}", key,
                 OpaqueDataKey::kNumKeys);
@@ -31,7 +31,7 @@ void OpaqueDataSet::set_private_data(int key, const OpaqueData &data) {
     opaque_set_[key] = data;
 }
 
-const OpaqueData &OpaqueDataSet::private_data(int key) const {
+const std::shared_ptr<PrivateHandle>& OpaqueDataSet::private_data(int key) const {
     HMP_REQUIRE(key < OpaqueDataKey::kNumKeys,
                 "Private key {} is out of range, need less than {}", key,
                 OpaqueDataKey::kNumKeys);
@@ -47,7 +47,13 @@ void OpaqueDataSet::private_merge(const OpaqueDataSet &from) {
 }
 
 OpaqueDataSet &OpaqueDataSet::copy_props(const OpaqueDataSet &from) {
-    private_merge(from);
+    for (size_t i = 0; i < OpaqueDataKey::kNumKeys; ++i) {
+        auto od = opaque_set_[i];
+        auto od_from = from.private_data(i);
+        if (od && od_from) {
+            od->copy_props(*od_from);
+        }
+    }
     return *this;
 }
 

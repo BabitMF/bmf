@@ -17,7 +17,10 @@ set(HMP_CORE_PRI_DEPS)
 set(BUILD_SHARED_LIBS_OLD ${BUILD_SHARED_LIBS})
 set(BUILD_SHARED_LIBS OFF)
 
+set(FETCHCONTENT_BASE_DIR ${CMAKE_SOURCE_DIR}/custom_deps)
+
 include(FetchContent)
+
 
 #### pybind11
 if(HMP_ENABLE_PYTHON)

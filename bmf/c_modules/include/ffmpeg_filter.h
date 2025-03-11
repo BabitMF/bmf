@@ -37,6 +37,7 @@ class CFFFilter : public Module {
     bool copy_ts_;
     std::vector<bool> in_eof_;
     std::vector<bool> out_eof_;
+    std::vector<bool> out_eof_send_;
     std::map<int, FilterConfig> config_;
     int64_t stream_start_time_;
     int64_t stream_first_dts_;

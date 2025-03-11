@@ -552,6 +552,7 @@ int CFFFilter::process(Task &task) {
         if (out_eof_.size() == 0) {
             for (int i = 0; i < num_output_streams_; i++) {
                 out_eof_.push_back(false);
+                out_eof_send_.push_back(false);
             }
         }
     }
@@ -598,8 +599,21 @@ int CFFFilter::process(Task &task) {
         return ret;
     };
 
+    for (int index = 0; index < num_output_streams_; index++) {
+        if (out_eof_[index])
+        {
+            if(out_eof_send_[index])
+                continue;
+            Packet packet = Packet::generate_eof_packet();
+            task.fill_output_packet(index, packet);
+            out_eof_send_[index] = true;  
+        }
+    }
+
     if (check_finished()) {
         for (int index = 0; index < num_output_streams_; index++) {
+            if(out_eof_send_[index])
+                continue;
             Packet packet = Packet::generate_eof_packet();
             task.fill_output_packet(index, packet);
         }
@@ -625,6 +639,7 @@ int CFFFilter::reset() {
     }
     for (int i = 0; i < num_output_streams_; i++) {
         out_eof_[i] = false;
+        out_eof_send_[i] = false;
     }
     all_input_eof_ = false;
     all_output_eof_ = false;

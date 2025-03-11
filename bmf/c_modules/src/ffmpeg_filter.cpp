@@ -611,12 +611,6 @@ int CFFFilter::process(Task &task) {
     }
 
     if (check_finished()) {
-        for (int index = 0; index < num_output_streams_; index++) {
-            if(out_eof_send_[index])
-                continue;
-            Packet packet = Packet::generate_eof_packet();
-            task.fill_output_packet(index, packet);
-        }
         task.set_timestamp(DONE);
         // clear input_cache
         for (auto input : input_cache_) {

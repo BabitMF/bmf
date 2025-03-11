@@ -16,6 +16,7 @@
 #pragma once
 
 #include <vector>
+#include <fmt/ranges.h>
 #include <hmp/core/ref_ptr.h>
 #include <hmp/core/buffer.h>
 #include <hmp/core/scalar.h>
@@ -198,7 +199,7 @@ template <> struct fmt::formatter<hmp::SizeArray> {
         return ctx.begin();
     }
 
-    auto format(hmp::SizeArray c, fmt::format_context &ctx) {
+    auto format(hmp::SizeArray c, fmt::format_context &ctx) const {
         return fmt::format_to(ctx.out(), "({})", fmt::join(c, ", "));
     }
 };

@@ -15,6 +15,8 @@
  */
 #pragma once
 
+#include <type_traits>
+
 // FIXME: do not include this file in header files
 
 #include <fmt/format.h>
@@ -28,15 +30,33 @@ template <typename T> struct hasStringfy {
     static constexpr bool value = !std::is_same<ret_type, void>::value;
 };
 
+template <> struct hasStringfy<void> {
+    using ret_type = void;
+    static constexpr bool value = false;
+};
+
 } // namespace hmp
 
-template <typename T, typename Char>
-struct fmt::formatter<T, Char, fmt::enable_if_t<hmp::hasStringfy<T>::value>> {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
-        return ctx.begin();
-    }
+namespace fmt {
 
-    auto format(const T &c, fmt::format_context &ctx) {
-        return fmt::format_to(ctx.out(), "{}", hmp::stringfy(c));
+#if FMT_VERSION < 110000
+template <typename T>
+using buffered_context = buffer_context<T>;
+#endif
+
+template <typename T, typename Char>
+struct formatter<T, Char, enable_if_t<hmp::hasStringfy<T>::value>> : formatter<basic_string_view<Char>> {
+    auto format(const T &c, buffered_context<Char> &ctx) const {
+        return formatter<basic_string_view<Char>>::format(hmp::stringfy(c), ctx);
     }
 };
+
+template <typename T>
+struct formatter<T, std::enable_if_t<std::is_enum_v<T> && !hmp::hasStringfy<T>::value, char>> :
+    formatter<int> {
+    auto format(const T& a, format_context& ctx) const {
+        return formatter<int>::format((int)a, ctx);
+    }
+};
+
+} // namespace fmt

@@ -308,24 +308,26 @@ Packet CFFFilter::convert_avframe_to_packet(AVFrame *frame, int index) {
         av_dict_set(&frame->metadata, "copyts", "1", 0);
 
     av_dict_set(&frame->metadata, "has_complex_filtergraph", "1", 0);
-    
+
     if (frame->width > 0) {
-        auto video_frame = ffmpeg::to_video_frame(frame);
-        video_frame.set_time_base(Rational(tb.num, tb.den));
-        video_frame.set_pts(frame->pts);
-        auto packet = Packet(video_frame);
+        double pkt_time = 0;
         if (orig_pts_time_cache_.size() > 0) {
             if (orig_pts_time_cache_.count(frame->coded_picture_number) > 0) {
                 av_dict_set(
                     &frame->metadata, "orig_pts_time",
                     orig_pts_time_cache_[frame->coded_picture_number].c_str(),
                     0);
-                packet.set_time(std::stod(
-                    orig_pts_time_cache_[frame->coded_picture_number]));
+                pkt_time = std::stod(
+                    orig_pts_time_cache_[frame->coded_picture_number]);
                 orig_pts_time_cache_.erase(frame->coded_picture_number);
             }
         }
+        auto video_frame = ffmpeg::to_video_frame(frame);
+        video_frame.set_time_base(Rational(tb.num, tb.den));
+        video_frame.set_pts(frame->pts);
+        auto packet = Packet(video_frame);
         packet.set_timestamp(frame->pts * av_q2d(tb) * 1000000);
+        packet.set_time(pkt_time);
         return packet;
     } else {
         auto audio_frame = ffmpeg::to_audio_frame(frame);

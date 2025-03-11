@@ -107,6 +107,11 @@ static AVFrame *from_video_frame(const VideoFrame &vf,
                        std::to_string(vf.time_base().den);
     av_dict_set(&avf->metadata, "time_base", s_tb.c_str(), 0);
 
+    //copy VideoFrame metadata to AVFrame
+    for (auto &item : vf.metadata()) {
+        av_dict_set(&avf->metadata, item.first.c_str(), item.second.c_str(), 0);
+    }
+
     if (avf->hw_frames_ctx) {
         // FIXME: the caller may need to sync stream between vf and avf,
         // we can't do that in this func, as vf does not actually own
@@ -134,6 +139,10 @@ static VideoFrame to_video_frame(const AVFrame *avf, bool attach = true) {
     //
     vf.set_stream(hmp::ffmpeg::av_hw_frames_ctx_to_stream(avf->hw_frames_ctx,
                                                           "to_video_frame"));
+    AVDictionaryEntry *entry = NULL;
+    while ((entry = av_dict_get(avf->metadata, "", entry, AV_DICT_IGNORE_SUFFIX))) {
+        vf.insert_metadata_item(std::string(entry->key), std::string(entry->value));
+    }
 
     return vf;
 }
@@ -161,6 +170,11 @@ static AVFrame *from_audio_frame(const AudioFrame &af,
                        std::to_string(af.time_base().den);
     av_dict_set(&aaf->metadata, "time_base", s_tb.c_str(), 0);
 
+    //copy VideoFrame metadata to AVFrame
+    for (auto &item : af.metadata()) {
+        av_dict_set(&aaf->metadata, item.first.c_str(), item.second.c_str(), 0);
+    }
+
     return aaf;
 }
 
@@ -173,7 +187,10 @@ static AudioFrame to_audio_frame(const AVFrame *aaf, bool attach = true) {
     }
     af.set_pts(aaf->pts);
     af.set_sample_rate(aaf->sample_rate);
-
+    AVDictionaryEntry *entry = NULL;
+    while ((entry = av_dict_get(aaf->metadata, "", entry, AV_DICT_IGNORE_SUFFIX))) {
+        af.insert_metadata_item(std::string(entry->key), std::string(entry->value));
+    }
     return af;
 }
 

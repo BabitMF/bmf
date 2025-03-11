@@ -16,6 +16,7 @@
 #pragma once
 
 #include <memory>
+#include <unordered_map>
 #include <bmf/sdk/hmp_import.h>
 #include <bmf/sdk/rational.h>
 
@@ -177,6 +178,18 @@ class BMF_SDK_API SequenceData {
      */
     void set_time_base(Rational time_base) { time_base_ = time_base; }
 
+    const std::unordered_map<std::string, std::string>& metadata() const {
+        return metadata_;
+    }
+
+    void set_metadata(const std::unordered_map<std::string, std::string>& metadata) {
+        metadata_= metadata;
+    }
+
+    void insert_metadata_item(std::string key, std::string value) {
+        metadata_[key] = value;
+    }
+
     //
     bool operator>(const SequenceData &other) { return pts_ > other.pts_; }
 
@@ -198,6 +211,7 @@ class BMF_SDK_API SequenceData {
     // TODO: make all shared
     Rational time_base_;
     int64_t pts_ = 0;
+    std::unordered_map<std::string, std::string> metadata_;
 }; //
 
 // support async execution

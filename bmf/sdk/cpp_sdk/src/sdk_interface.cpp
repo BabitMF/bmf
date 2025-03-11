@@ -60,6 +60,7 @@ OpaqueDataSet &OpaqueDataSet::copy_props(const OpaqueDataSet &from) {
 SequenceData &SequenceData::copy_props(const SequenceData &from) {
     set_time_base(from.time_base());
     set_pts(from.pts());
+    set_metadata(from.metadata());
     return *this;
 }
 

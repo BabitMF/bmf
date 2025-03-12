@@ -4,7 +4,7 @@ It first extract frames from an input video at 1 fps, converts them into PIL for
 
 ## Requirements
 - NOTE this demo requires CUDA support
-- It may be possible to replace `to.('cuda')` and `.cuda()` calls with `.to("cpu")` for cpus or `.to("mps")` for apple cpus but more modifications will be needed elsewhere
+- It may be possible to replace `to.("cuda")` and `.cuda()` calls with `.to("cpu")` for cpus or `.to("mps")` for apple cpus but more modifications will be needed elsewhere
 
 ## Installation
 
@@ -38,6 +38,8 @@ python test_llm_caption.py
 ## Output
 
 Note that the last batch may not have the same number of frames as `batch_size` due to remainders in imperfect division
+
+A json file named `result.json` by default will be created in the current working directory with the following schema:
 ```json
 {
     "video_title": "<title>",
@@ -66,5 +68,3 @@ Running on Nvidia L4 with 24GB memory:
 - Single threaded on `big_bunny_1min_30fps.mp4` resulted in out of memory on batch sizes 10 and bigger.
 - Two threaded on `big_bunny_1min_30fps.mp4` resulted in out of memory on batch sizes 5 and greater. Performance was slower than single threaded due to context switches and GIL
 - Four threaded resulted in out of memory on any batch size
-
-

@@ -54,10 +54,10 @@ int PassThroughModule::process(Task &task) {
             if (packet.timestamp() == BMF_EOF) {
                 in_eof_[input_queue.first] = true;
             }
-            BMFLOG_NODE(BMF_INFO, node_id_)
-                << "get packet :" << packet.timestamp()
-                << " data:" << packet.type_info().name
-                << " in queue:" << input_queue.first;
+            // BMFLOG_NODE(BMF_INFO, node_id_)
+            //     << "get packet :" << packet.timestamp()
+            //     << " data:" << packet.type_info().name
+            //     << " in queue:" << input_queue.first;
         }
     }
 

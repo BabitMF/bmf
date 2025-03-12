@@ -144,6 +144,12 @@ int Node::dec_pending_task() {
     return 0;
 }
 
+void Node::set_enable_hungry_check(bool enable) {
+    enable_hungry_check_ = enable;
+}
+
+bool Node::get_enable_hungry_check() { return enable_hungry_check_; }
+
 bool Node::is_source() { return is_source_; }
 
 int Node::get_id() { return id_; }

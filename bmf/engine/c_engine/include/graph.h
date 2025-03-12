@@ -136,6 +136,7 @@ class Graph {
 
     bool paused_ = false;
     bool server_mode_ = false;
+    bool enable_hungry_check_ = false;
     //    struct sigaction term_,intrpt_;
     BmfMode mode_;
     GraphConfig graph_config_;

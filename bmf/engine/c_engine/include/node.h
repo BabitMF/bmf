@@ -135,6 +135,10 @@ class Node {
 
     int64_t get_last_timestamp();
 
+    void set_enable_hungry_check(bool enable);
+
+    bool get_enable_hungry_check();
+
     long long dur;
 
     bool wait_pause_;
@@ -182,6 +186,7 @@ class Node {
     std::condition_variable pause_event_;
     NodeCallBack callback_;
     std::map<int, std::vector<std::function<bool()>>> hungry_check_func_;
+    bool enable_hungry_check_ = false;
 };
 END_BMF_ENGINE_NS
 

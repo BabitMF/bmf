@@ -126,10 +126,19 @@ void Graph::init(
                                              scheduler_count_, time_out);
     BMFLOG(BMF_INFO) << "scheduler count" << scheduler_count_;
 
+    if (graph_config.get_option().json_value_.count("hungry_check")) {
+        enable_hungry_check_ =
+            graph_config.get_option().json_value_.at("hungry_check").get<int>() != 0;
+        BMFLOG(BMF_INFO) << "Graph enable hungry check: " << enable_hungry_check_;
+    }
+
     // create all nodes and output streams
     init_nodes();
-    // retrieve all hungry check functions for all sources
-    get_hungry_check_func_for_sources();
+
+    if (enable_hungry_check_){
+        // retrieve all hungry check functions for all sources
+        get_hungry_check_func_for_sources();
+    }
 
     // Init all graph input stream
     // graph input stream contains an output stream manager
@@ -232,6 +241,8 @@ int Graph::init_nodes() {
             // if no input stream, it's a source node
             source_nodes_.push_back(node);
         }
+
+        node->set_enable_hungry_check(enable_hungry_check_);
     }
 
     // create connections

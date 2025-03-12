@@ -200,7 +200,7 @@ bool ImmediateInputStreamManager::fill_task_input(Task &task) {
         if (callback_.get_node_cb) {
             std::shared_ptr<Node> node_ptr;
             callback_.get_node_cb(node_id_, node_ptr);
-            if (node_ptr) {
+            if (node_ptr && node_ptr->get_enable_hungry_check()) {
                 bool hungry = true;
                 std::vector<std::function<bool()> > hungry_funcs;
                 node_ptr->get_hungry_check_func(input_stream.first, hungry_funcs);

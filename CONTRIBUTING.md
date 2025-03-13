@@ -11,12 +11,14 @@ We use [git-flow](https://nvie.com/posts/a-successful-git-branching-model/) as o
 We are using [Github Issues](https://github.com/BabitMF/bmf/issues) for our public bugs. We keep a close eye on this and try to make it clear when we have an internal fix in progress. Before filing a new task, try to make sure your problem doesn't already exist.
 
 ### 2. Reporting New Issues
+It is recommended that you keep the title concise yet clear. In the main body, you should elaborate on the issue you discovered, including the BMF version you are using (e.g., v0.0.12) and the complete code required to reproduce the issue. If you can also provide your thoughts on the issue's root cause, that would be even better.
 
 ### 3. Security Bugs
 Please do not report the safe disclosure of bugs to public issues. Contact us by [Support Email](mailto:conduct@BabitMF.io)
 
 ## How to Get in Touch
 - [Email](mailto:conduct@BabitMF.io)
+- [Feishu Group](https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=4cev1bee-4d94-42c8-972b-4ae4a12c9da1)
 
 ## Submit a Pull Request
 Before you submit your Pull Request (PR) consider the following guidelines:
@@ -28,22 +30,24 @@ Before you submit your Pull Request (PR) consider the following guidelines:
     ```
     git checkout -b my-fix-branch develop
     ```
-6. Create your patch, including appropriate test cases.
+6. Create your patch. See our [Patch Guidelines](#patch-guidelines) for details
 
-7. Follow our [Style Guides](#code-style-guides).
-
-8. Commit your changes using a descriptive commit message that follows [AngularJS Git Commit Message Conventions](https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit).
-   Adherence to these conventions is necessary because release notes are automatically generated from these messages.
-
-9. Push your branch to GitHub:
+7. Push your branch to GitHub:
     ```
     git push origin my-fix-branch
     ```
-10. In GitHub, send a pull request to `bmf:develop` with a clear and unambiguous title.
+8. In GitHub, send a pull request to `bmf:master` with a clear and unambiguous title.
 
 ## Contribution Prerequisites
 - You are familiar with [Github](https://github.com)
 - Maybe you need familiar with [Actions](https://github.com/features/actions)(our default workflow tool).
+
+## Patch Guidelines
+- If you add some code inside the framework, please include appropriate test cases
+- Commit your changes using a descriptive commit message that follows [AngularJS Git Commit Message Conventions](https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit).
+- Do not commit unrelated changes together.
+- Cosmetic changes should be kept in separate patches.
+- Follow our [Style Guides](#code-style-guides).
 
 ## Code Style Guides
 
@@ -57,3 +61,5 @@ After clang-format installed(version 16.0.6, can be installed by: pip install cl
     pip install yapf==0.40.1
     yapf --in-place --recursive --style="{indent_width: 4}"
     ```
+
+

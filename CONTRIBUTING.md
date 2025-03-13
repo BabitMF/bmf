@@ -38,6 +38,8 @@ Before you submit your Pull Request (PR) consider the following guidelines:
     ```
 8. In GitHub, send a pull request to `bmf:master` with a clear and unambiguous title.
 
+9. Typically, we review your patch within a week after submission. If the patch involves significant changes, it may take more time. Therefore, if you haven't received any response after a week, please initiate a request for review.
+
 ## Contribution Prerequisites
 - You are familiar with [Github](https://github.com)
 - Maybe you need familiar with [Actions](https://github.com/features/actions)(our default workflow tool).

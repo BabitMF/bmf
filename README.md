@@ -165,7 +165,7 @@ This example implements the denoise algorithm as a BMF module, showcasing a BMF 
   - [GPU Hardware Acceleration](https://babitmf.github.io/docs/bmf/multiple_features/gpu_hardware_acc/)
   - [BMF Tools](https://babitmf.github.io/docs/bmf/multiple_features/tools/)
 
-- APIs
+- [APIs](https://babitmf.github.io/docs/bmf/api/)
   - [API in Python](https://babitmf.github.io/docs/bmf/api/api_in_python/)
   - [API in Cpp](https://babitmf.github.io/docs/bmf/api/api_in_cpp/)
   - [API in Go](https://babitmf.github.io/docs/bmf/api/api_in_go/)

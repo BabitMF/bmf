@@ -45,8 +45,8 @@ class llm_caption(Module):
 
         # where to write the output
         self.output_path = "caption.json"
-        if option and "output_path" in option.keys():
-            self.output_path = option["output_path"]
+        if option and "result_path" in option.keys():
+            self.output_path = option["result_path"]
         print("Writing output to: ", self.output_path)
         # wipe the file first
         with open(self.output_path, "w") as file:

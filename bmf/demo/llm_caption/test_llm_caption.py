@@ -13,7 +13,7 @@ def main():
             }
         }
     })
-    video['video'].module('llm_caption', {"output_path": "result.json",
+    video['video'].module('llm_caption', {"result_path": "result.json",
                                                    "batch_size": 6,
                                                    "multithreading": False,
                                                    # "max_threads": 2,

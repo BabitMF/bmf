@@ -8,24 +8,33 @@ It first extract frames from an input video at 1 fps, converts them into PIL for
 
 ## Installation
 
-Tested with Debian 10 and python 3.8.2 version and Nvidia L4 GPU.
-1. Install bmf library with pip
+Tested with Debian 10 and python 3.8.2 and 3.10.0 version and Nvidia L4 GPU.
+
+1. Install ffmpeg
+```
+apt install ffmpeg
+```
+2. Install bmf library with pip
 ```
 pip install BabitMF-GPU
 ```
-2. Clone deepseek-vl2 repo
+3. Clone deepseek-vl2 repo
 ```
 git clone https://github.com/deepseek-ai/DeepSeek-VL2.git
 ```
-3. Install model driver, cd into repo and pip install dependencies
+4. Install model driver, cd into repo and pip install dependencies. Use `pip install .` if on 3.10.0
 ```
 cd DeepSeek-VL2; pip install -e .
 ```
-4. Install the model in the DeepSeek-VL2 repo, using `deepseek-ai/deepseek-vl2-tiny` in this case
+5. Install the model in the DeepSeek-VL2 repo, using `deepseek-ai/deepseek-vl2-tiny` in this case
 ```
 git clone https://huggingface.co/deepseek-ai/deepseek-vl2-tiny
 ```
-5. Run the demo
+6. For Python version >=3.10.0 only: to resolve Numpy is not available runtime error, additionally run
+```
+pip install 'numpy<2'
+```
+7. Run the demo
 ```
 python test_llm_caption.py
 ```

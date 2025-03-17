@@ -7,7 +7,6 @@ from transformers import AutoModelForCausalLM
 from deepseek_vl2.models import DeepseekVLV2Processor, DeepseekVLV2ForCausalLM
 import os
 import json
-import cv2
 import time
 import threading
 
@@ -16,14 +15,6 @@ def convert_to_pil(pkt):
     rgb = mp.PixelInfo(mp.kPF_RGB24)
     numpy_vf = vf.reformat(rgb).frame().plane(0).numpy()
     return Image.fromarray(numpy_vf)
-
-# unused
-def get_duration(video_path):
-    capture = cv2.VideoCapture(video_path)
-    fps = capture.get(cv2.CAP_PROP_FPS)
-    frame_count = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
-    capture.release()
-    return frame_count // fps
 
 def read_json(file_path):
     if os.path.getsize(file_path) == 0:

@@ -3,8 +3,14 @@
   "input_file": "big_bunny_10s_30fps.mp4",
   "output_path": "clip_output",
   "output_configs": [
-    {"res":"orig", "type":"jpg"}, 
-    {"res":"480", "type":"mp4"}
+    {
+      "res": "orig",
+      "type": "jpg"
+    },
+    {
+      "res": "480",
+      "type": "mp4"
+    }
   ],
   "ocr_crop": {
     "pre_module": true

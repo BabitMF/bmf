@@ -8,6 +8,7 @@ import torch
 from clip_process import ClipProcess
 import argparse
 import os
+import json
 
 logger = logging.getLogger('main')
 
@@ -26,7 +27,7 @@ def get_timeline_list(pts_list, last):
         timelines.append([current,last])
     return timelines
 
-def video_processing_demo(input_file, mode, config):
+def video_processing_demo(input_file, modes, config):
     media_info = MediaInfo("ffprobe", input_file)
     duration = media_info.video_duration()
     logger.info(f"duration:{duration}")
@@ -34,27 +35,41 @@ def video_processing_demo(input_file, mode, config):
     pts_list = get_split_info(input_file, scene_thres)
     timelines = get_timeline_list(pts_list, duration)
     logger.info(f"timelines:{timelines}")
-    cp = ClipProcess(input_file, timelines, mode, config)
+    cp = ClipProcess(input_file, timelines, modes, config)
     cp.process()
 
+def load_config(path):
+    if os.path.exists(path):
+        with open(path, 'r') as file:
+            return json.load(file)
+    else:
+        return {}
+
 def demo_run(args):
-    if args.input_file == '':
-        print("input file needed")
-        return -1
-    model_path = "../../models/aes_transonnx_update3.onnx"
-    if not os.path.exists(model_path):
-        print(
-            "please download model first, use 'wget https://github.com/BabitMF/bmf/releases/download/files/models.tar.gz && tar zxvf models.tar.gz -C ../../' "
-        )
-        exit(0)
     torch.set_num_threads(4)
-    mode = "ocr_crop,aesmod_module"
-    config = {"output_configs":[{"res":"orig", "type":"jpg"}, {"res":"480", "type":"mp4"}]}
-    video_processing_demo(args.input_file, mode, config)
+    config = load_config(args.config) if args.config else {}
+    if "input_file" not in config:
+        print(f"Input file not specified in {args.config}")
+        return -1
+    input_file = config["input_file"]
+    if not os.path.exists(input_file):
+        print(f"Input file does not exist {input_file}")
+        return -1
+    if "mode" not in config:
+        print(f"Mode not specified in {args.config}")
+        return -1
+
+    modes = set(config["mode"].split(","))
+    if "aesmod_module" in modes and not os.path.exists("../../models/aes_transonnx_update3.onnx"):
+        print("To use aesmod_module, download the model first", \
+              "'wget https://github.com/BabitMF/bmf/releases/download/files/models.tar.gz && tar zxvf models.tar.gz -C ../../' ")
+        return -1
+
+    video_processing_demo(input_file, modes, config)
 
 if __name__ == '__main__':
     logger.setLevel(logging.INFO)
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_file', type=str, help="input local file", default = '')
+    parser.add_argument('config', type=str, help="path to JSON config file")
     args = parser.parse_args()
     demo_run(args)

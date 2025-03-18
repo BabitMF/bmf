@@ -1,0 +1,25 @@
+{
+  "mode": "aesmod_module,ocr_crop,llm_caption",
+  "input_file": "big_bunny_10s_30fps.mp4",
+  "output_path": "clip_output",
+  "output_configs": [
+    {"res":"orig", "type":"jpg"}, 
+    {"res":"480", "type":"mp4"}
+  ],
+  "ocr_crop": {
+    "pre_module": true
+  },
+  "aesmod_module": {
+    "entry": "aesmod_module.BMFAesmod",
+    "module_path": "../aesthetic_assessment/",
+    "pre_module": false
+  },
+  "llm_caption": {
+    "module_path": "../llm_caption/",
+    "pre_module": false,
+    "options": {
+      "batch_size": 6,
+      "multithreading": false
+    }
+  }
+}

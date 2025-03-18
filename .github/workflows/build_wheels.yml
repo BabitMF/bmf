@@ -90,7 +90,7 @@ jobs:
           auditwheel -v repair $(ldd ${tmp_dir}/bmf/lib/* | awk '{if(NF>1){print $1}}' | grep "avdevice\|avfilter\|avformat\|avcodec\|postproc\|swresample\|swscale\|avutil\|cuda\|libnpp\|libxcb\|libXau\|libbz2\|bmf_module_sdk\|engine\|hmp" | sort | uniq | awk '{printf(" --exclude %s", $1);}') -w {dest_dir} {wheel} &&
           rm -rf ${tmp_dir}
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         path: ./wheelhouse/*.whl
 
@@ -138,7 +138,7 @@ jobs:
           for xcode_python_root in /Applications/Xcode*/Contents/Developer/Library/Frameworks/Python3.framework;do if [ -d ${xcode_python_root} ]; then mv ${xcode_python_root} ${xcode_python_root}.bak; fi; done
         CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         path: ./wheelhouse/*.whl
 

@@ -127,6 +127,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
+        name: build binaries with ${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.py_ver_prefix}}-${{ matrix.device }}
         path: ${{ env.BINARY_NAME }}.tar.gz
 
     - name: Setup tmate session

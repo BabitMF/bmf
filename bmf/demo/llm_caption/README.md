@@ -43,6 +43,7 @@ python test_llm_caption.py
 - `result_path`: specifies where the json file will be stored, `result.json` by default in current working directory
 - `multithreading`: specifies if the model should do inferences with multiple threads - `false` by defualt. Setting to be `true` and `max_threads: 1` give similar performance to setting `multithreading: false` / omitting this option
 - `max_threads`: specifies how many threads can inference concurrently - requires lots of memory when using multiple threads with large `batch_size` and starts to block for a thread to finish when `max_threads` is reached
+- `pass_through`: `false` by default, specifies whether output packets from a previous module should be propagated / passed through this module to preserve the output
 
 ## Output
 

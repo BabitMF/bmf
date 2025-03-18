@@ -25,7 +25,8 @@
     "pre_module": false,
     "options": {
       "batch_size": 6,
-      "multithreading": false
+      "multithreading": false,
+      "pass_through": true
     }
   }
 }

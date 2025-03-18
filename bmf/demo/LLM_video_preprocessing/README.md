@@ -45,7 +45,7 @@ An example configuration file is given in the demo - `module_config.json`.
 - `mode`: an ordered comma separated string of modules to use. The first module will take input, the output is passed into the next.
 - `input_file`: the input path of the input video.
 - `output_path`: a path to the **directory** where outputs will be written into, if the directory does not exist, one will be created. This is a **global configuration**, and will pass a prefixed path into `result_path` option for each module. If the option for that module does not exist, or is under a different name, the output for that module may be written to wherever its default location is, unless otherwise specified with an optional argument for that module.
-- `output_configs`: configurations for how the final output for the module should be written if any. In the example, a different resolution is specified for each file type but there is no output because `llm_caption` does not produce output packets. Remove `llm_caption` to see the output of `aesmod_module`.
+- `output_configs`: configurations for how the final output for the module should be written if any. In the current configuration, a different resolution is specified for each file type.
 
 **Optional**:
 

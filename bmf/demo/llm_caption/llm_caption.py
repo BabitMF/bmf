@@ -51,6 +51,11 @@ class llm_caption(Module):
         # wipe the file first
         with open(self.output_path, "w") as file:
             pass
+        
+        # whether output from previous nodes should be propagated out
+        self.pass_through = False
+        if option and "pass_through" in option.keys():
+            self.pass_through = option["pass_through"]
 
         # first frame extracted is always black
         self.skip_first = True
@@ -273,6 +278,7 @@ class llm_caption(Module):
     def process(self, task):
         """Handles main event loop which contains list of extracted frames at specified fps"""
         input_queue = task.get_inputs()[0]
+        output_queue = task.get_outputs()[0]
         while not input_queue.empty():
             pkt = input_queue.get()
 
@@ -295,6 +301,8 @@ class llm_caption(Module):
 
             # converts to PIL image, for direct inference to model
             if pkt.is_(VideoFrame):
+                if self.pass_through:
+                    output_queue.put(pkt)
                 pil_image = convert_to_pil(pkt)
                 self.buffer.append(pil_image)
                 # batch size reached, send to model

@@ -1,5 +1,5 @@
 import torch
-from bmf import VideoFrame, Module, Timestamp, ProcessResult
+from bmf import VideoFrame, Module, Timestamp, ProcessResult, Packet
 import bmf.hml.hmp as mp
 from PIL import Image
 import numpy as np
@@ -283,6 +283,9 @@ class llm_caption(Module):
                     self.spawn_thread_and_reset()
                 self.clean_up()
                 task.set_timestamp(Timestamp.DONE)
+
+                for key in task.get_outputs():
+                    task.get_outputs()[key].put(Packet.generate_eof_packet())
                 break
 
             # skip first frame as its black
@@ -297,6 +300,5 @@ class llm_caption(Module):
                 # batch size reached, send to model
                 if len(self.buffer) == self.batch_size:
                     self.spawn_thread_and_reset()
-
         # normal termination
         return ProcessResult.OK

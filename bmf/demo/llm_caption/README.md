@@ -24,9 +24,9 @@ git clone https://github.com/deepseek-ai/DeepSeek-VL2.git
 ```
 4. Install model driver, cd into repo and pip install dependencies. Use `pip install .` if on 3.10.0
 ```
-cd DeepSeek-VL2; pip install -e .
+(cd DeepSeek-VL2 && pip install -e .)
 ```
-5. Install the model in the DeepSeek-VL2 repo, using `deepseek-ai/deepseek-vl2-tiny` in this case
+5. Install the model outside the cloned repo, using `deepseek-ai/deepseek-vl2-tiny` in this case
 ```
 git clone https://huggingface.co/deepseek-ai/deepseek-vl2-tiny
 ```
@@ -34,13 +34,13 @@ git clone https://huggingface.co/deepseek-ai/deepseek-vl2-tiny
 ```
 pip install 'numpy<2'
 ```
-7. Run the demo
+7. Run the demo after changing input to file path of a video
 ```
 python test_llm_caption.py
 ```
 ## Configuration 
 - `batch_size`: specifies how many images to be attached to a single prompt, `4` by default
-- `output_path`: specifies where the json file will be stored, `result.json` by default in current working directory
+- `result_path`: specifies where the json file will be stored, `result.json` by default in current working directory
 - `multithreading`: specifies if the model should do inferences with multiple threads - `false` by defualt. Setting to be `true` and `max_threads: 1` give similar performance to setting `multithreading: false` / omitting this option
 - `max_threads`: specifies how many threads can inference concurrently - requires lots of memory when using multiple threads with large `batch_size` and starts to block for a thread to finish when `max_threads` is reached
 

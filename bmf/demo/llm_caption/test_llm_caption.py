@@ -2,7 +2,7 @@ import bmf
 from llm_caption import llm_caption
 
 def main():
-    input_path = "../big_bunny_1min_30fps.mp4"
+    input_path = "../LLM_video_preprocessing/big_bunny_10s_30fps.mp4"
     graph = bmf.graph({"dump_graph": 0})
     video = graph.decode({
         "input_path": input_path,

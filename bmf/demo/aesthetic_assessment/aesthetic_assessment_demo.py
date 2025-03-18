@@ -58,7 +58,7 @@ if __name__ == "__main__":
     outp_path = "res2.json"
 
     option = dict()
-    option["output_path"] = outp_path
+    option["result_path"] = outp_path
 
     # check model path
     model_path = "../../models/aes_transonnx_update3.onnx"

@@ -1,5 +1,5 @@
 # README
-This demo illustrates the use of deepseek-vl2 for captioning (describing) a video input.
+This demo illustrates the use of vision LLMs for captioning (describing) a video input.
 It first extract frames from an input video at 1 fps, converts them into PIL format and offline inferences them in batches of `batch_size`. The result is written to a json file, and each individual description of each batch is further inferenced again to give a summary and a title.
 
 ## Requirements
@@ -8,17 +8,22 @@ It first extract frames from an input video at 1 fps, converts them into PIL for
 
 ## Installation
 
-Tested with Debian 10 and python 3.8.2 and 3.10.0 version and Nvidia L4 GPU.
+There are three LLM's currently supported, deepseek-vl2 (python >=3.8), deepseek-janus (python >=3.8) and qwen2-vl (python >=3.9 and beta release of transformers). Your own LLM can be implemented by defining the class variables and extending `ModelFactory` in `model_loader.py`. Installation steps is tested with Debian 10 and python 3.8.2 and 3.10.0 version and Nvidia L4 GPU.
 
 1. Install ffmpeg
 ```
-apt install ffmpeg
+sudo apt install ffmpeg
 ```
 2. Install bmf library with pip
 ```
 pip install BabitMF-GPU
 ```
-3. Clone deepseek-vl2 repo
+3. The next steps depend on which LLM is used, documentation for each is here:
+- Deepseek-vl2: https://huggingface.co/deepseek-ai/deepseek-vl2-tiny
+- Deepseek-Janus: https://huggingface.co/deepseek-ai/Janus-Pro-1B
+- Qwen2-vl: https://huggingface.co/Qwen/Qwen2-VL-2B-Instruct
+
+For example, to use deepseek-vl2:
 ```
 git clone https://github.com/deepseek-ai/DeepSeek-VL2.git
 ```
@@ -39,6 +44,7 @@ pip install 'numpy<2'
 python test_llm_caption.py
 ```
 ## Configuration 
+- `model`: A unique identifier for which model to use, defaulting to `Deepseek_Janus`. Currently: `Deepseek_VL2`, `Deepseek_Janus`, `Qwen2_VL` are supported.
 - `batch_size`: specifies how many images to be attached to a single prompt, `4` by default
 - `result_path`: specifies where the json file will be stored, `result.json` by default in current working directory
 - `multithreading`: specifies if the model should do inferences with multiple threads - `false` by defualt. Setting to be `true` and `max_threads: 1` give similar performance to setting `multithreading: false` / omitting this option
@@ -68,12 +74,12 @@ A json file named `result.json` by default will be created in the current workin
     "summary": "<summary>"
 }
 ```
-Summary for `big_bunny_1min_30fps.mp4`:
+Summary for `big_bunny_1min_30fps.mp4` on deepseek-vl2-tiny:
 
 The images depict a serene landscape with trees, grass, and a small stream. They depict a scene from a video where a large, dark-colored creature is sleeping inside a grassy mound with a tree growing out of it. The creature appears to be resting or sleeping, and the environment is lush and green, suggesting a natural or forest setting. These images depict a bear resting in a grassy area with rocks and greenery around it. These images depict a scene from an animated film or series featuring anthropomorphic animals in a natural setting. The character appears to be a large, rotund rabbit with long ears, standing in front of a tree with its arms raised in a celebratory or triumphant gesture. The background shows a lush, green landscape with grass, rocks, and trees, suggesting a peaceful and idyllic environment. The lighting indicates it might be either dawn or dusk, adding a warm and serene atmosphere to the scene.
 ## Performance
 
-Running on Nvidia L4 with 24GB memory:
+Running deepseek-vl2 on Nvidia L4 with 24GB memory:
 
 - Single threaded on `big_bunny_1min_30fps.mp4` resulted in out of memory on batch sizes 10 and bigger.
 - Two threaded on `big_bunny_1min_30fps.mp4` resulted in out of memory on batch sizes 5 and greater. Performance was slower than single threaded due to context switches and GIL

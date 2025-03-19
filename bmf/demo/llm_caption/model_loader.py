@@ -79,7 +79,8 @@ class Deepseek(ModelFactory, ABC):
         # remove the special marking at the end of the answer and return it
         return (tokenizer.decode(outputs[0].cpu().tolist(), skip_special_tokens=True), inference_time)
 
-# model specific prompts, formats and imports
+# tested with python 3.8
+# 3B params
 class Deepseek_VL2(Deepseek):
     def __init__(self):
         """Initialises deepseek vl2 model, documentation: https://huggingface.co/deepseek-ai/deepseek-vl2-tiny"""
@@ -98,7 +99,8 @@ class Deepseek_VL2(Deepseek):
         self.title_prompt = "Create a fitting title of a video with this summary: "
         self.summary_prompt = "The text describes a video, explain in detail what happens: "
 
-# model specific prompts, formats and imports
+# tested with python 3.8
+# 1B params
 class Deepseek_Janus(Deepseek):
     def __init__(self):
         """Initialises deepseek Janus model, documentation: https://huggingface.co/deepseek-ai/Janus-Pro-1B"""
@@ -118,6 +120,8 @@ class Deepseek_Janus(Deepseek):
         self.summary_prompt = "Summarise in detail what happens in this video summary: "
 
 # requires python >= 3.9 and newest beta release of transformers - follow documentation
+# 2B params
+# could not get 7B to run on L4 24gb memory
 class Qwen2_VL(ModelFactory):
     def __init__(self):
         """Initialises Qwen2 vl model, documentation: https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct"""

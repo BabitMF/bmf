@@ -14,8 +14,9 @@ def main():
         }
     })
     video['video'].module('llm_caption', {"result_path": "result.json",
-                                                   "batch_size": 6,
+                                                   "batch_size": 1,
                                                    "multithreading": False,
+                                                   "model": "Qwen2_VL"
                                                    # "max_threads": 2,
                                           }).run()
 

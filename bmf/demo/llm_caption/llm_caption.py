@@ -27,6 +27,17 @@ def write_json(data, file_path):
     with open(file_path, "w") as file:
         json.dump(data, file, indent=4)
 
+def init_model(model_name):
+    if model_name == "Deepseek_VL2":
+        return Deepseek_VL2()
+    elif model_name == "Deepseek_Janus":
+        return Deepseek_Janus()
+    elif model_name == "Qwen2_VL":
+        return Qwen2_VL()
+    else:
+        # default to janus
+        return Deepseek_Janus()
+
 class llm_caption(Module):
 
     def __init__(self, node, option=None):

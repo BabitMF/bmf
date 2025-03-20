@@ -199,7 +199,7 @@ class Module:
     ## @ingroup pyMdClass
     ###@{
     #  @brief report user_df data to the graph
-    #  @return graph config
+    #  @return dict of user_df data
     
     @check_return_type
     def report_user_df_data(self) -> dict:

@@ -31,7 +31,6 @@
 typedef BMFKafkaReporterI* (*create_bmf_kafka_reporter_default)();
 typedef BMFKafkaReporterI* (*create_bmf_kafka_reporter)(const std::string &topic_str, const std::string &cluster_str);
 typedef void (*destroy_kafka_reporter)(BMFKafkaReporterI* reporter);
-typedef bool (*search_user_id_func)(int user_id);
 
 BEGIN_BMF_SDK_NS
 

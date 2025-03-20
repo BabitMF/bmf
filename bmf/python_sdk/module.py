@@ -56,6 +56,14 @@ class InputType:
     PICTURELIST = 2
     VIDEOLIST = 3
 
+def check_return_type(func):
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        if result is not None:
+            if not isinstance(result, func.__annotations__['return']):
+                raise TypeError(f"Expected {func.__annotations__['return']} but got {type(result)}")
+        return result
+    return wrapper
 
 class Module:
     """
@@ -183,5 +191,17 @@ class Module:
     #  @brief get the graph config of the module
     #  @return graph config
     def get_graph_config(self):
+        ###@}
+        return None
+
+
+    ## @ingroup PyMdSDK
+    ## @ingroup pyMdClass
+    ###@{
+    #  @brief report user_df data to the graph
+    #  @return graph config
+    
+    @check_return_type
+    def report_user_df_data(self) -> dict:
         ###@}
         return None

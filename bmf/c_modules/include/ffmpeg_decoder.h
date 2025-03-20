@@ -237,6 +237,8 @@ class CFFDecoder : public Module {
     int read_packet(uint8_t *buf, int buf_size);
 
     int pkt_ts(AVPacket *pkt, int index);
+
+    bool report_user_df_data(JsonParam &json_param);
 };
 /** @page ModuleDecoder Build-in Decode Module
  * @ingroup DecM

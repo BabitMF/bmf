@@ -172,6 +172,28 @@ class PyModule : public Module {
             json_param = JsonParam(json_str);
         });
     }
+
+    bool report_user_df_data(JsonParam &json_param) override {
+        py::gil_scoped_acquire gil;
+        try {            
+            auto ret = call_func("report_user_df_data");
+            if (!ret.is_none()) {
+                if (!py::isinstance<py::dict>(ret)) {
+                    throw std::runtime_error("report_user_df_data must return dict type");
+                }
+                
+                json_param = std::move(py::cast<JsonParam>(ret));
+                return true;
+            }
+        } catch (const std::exception &e) {
+            BMFLOG(BMF_ERROR) << "Python report_user_df_data error: " << e.what();
+            throw;
+        }
+        return false;
+    }
+
+
+
 };
 #pragma GCC visibility pop
 

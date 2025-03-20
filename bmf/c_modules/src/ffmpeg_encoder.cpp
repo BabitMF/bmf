@@ -2120,6 +2120,42 @@ void CFFEncoder::set_callback(
     callback_endpoint_ = callback_endpoint;
 }
 
+bool CFFEncoder::report_user_df_data(JsonParam &json_param) {
+    nlohmann::json a_data, v_data, ot_if;
+    AVCodecParameters *codec_par;
+    bool has_data = false;
+    if (output_stream_[0] && output_stream_[0]->codecpar) {
+        has_data = true;
+        AVStream *video_stream_ = output_stream_[0];;
+        codec_par = output_stream_[0]->codecpar;
+        v_data["codec_type"] = av_get_media_type_string(codec_par->codec_type);
+        v_data["codec_name"] = avcodec_get_name(codec_par->codec_id);
+        v_data["width"] = codec_par->width;
+        v_data["height"] = codec_par->height;
+        v_data["pix_fmt"] = av_get_pix_fmt_name((AVPixelFormat)codec_par->format);
+        v_data["color_space"] = codec_par->color_space == AVCOL_SPC_UNSPECIFIED ? "unknown" : av_color_space_name(codec_par->color_space);
+        v_data["avg_frame_rate"] = av_q2d(output_stream_[0]->avg_frame_rate);
+        ot_if["video_stream"] = v_data;
+    }
+    if (output_stream_[1] && output_stream_[1]->codecpar) {
+        has_data = true;
+        AVStream *audio_stream_ = output_stream_[1];
+        codec_par = audio_stream_->codecpar;
+        a_data["codec_type"] = av_get_media_type_string(codec_par->codec_type);
+        a_data["codec_name"] = avcodec_get_name(codec_par->codec_id);
+        a_data["sample_rate"] = codec_par->sample_rate;
+        a_data["channels"] = codec_par->channels;
+        a_data["sample_fmt"] = av_get_sample_fmt_name((AVSampleFormat)codec_par->format);
+        a_data["channel_layout"] = codec_par->channel_layout;
+        ot_if["audio_stream"] = a_data;
+    }
+    if (has_data){
+        json_param.json_value_["ot_if"] = ot_if;
+    }
+    
+    return has_data;
+}
+
 REGISTER_MODULE_CLASS(CFFEncoder)
 REGISTER_MODULE_INFO(CFFEncoder, info) {
     info.module_description = "Builtin FFmpeg-based encoding module.";

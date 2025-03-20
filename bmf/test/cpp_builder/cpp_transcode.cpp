@@ -52,7 +52,6 @@ TEST(cpp_transcode, transcode_simple) {
                  bmf_sdk::JsonParam(encode_para));
 
     graph.Run();
-
     BMF_CPP_FILE_CHECK(output_file, "../transcode/"
                                     "simple.mp4|240|320|10.008|MOV,MP4,M4A,3GP,"
                                     "3G2,MJ2|192235|240486|h264|{\"fps\": "

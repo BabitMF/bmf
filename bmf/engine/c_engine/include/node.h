@@ -22,6 +22,7 @@
 #include <bmf/sdk/module.h>
 #include <bmf/sdk/exception_factory.h>
 #include <bmf/sdk/error_define.h>
+#include <bmf/sdk/bmf_stat.h>
 
 #include "module_factory.h"
 #include "graph_config.h"
@@ -187,6 +188,10 @@ class Node {
     NodeCallBack callback_;
     std::map<int, std::vector<std::function<bool()>>> hungry_check_func_;
     bool enable_hungry_check_ = false;
+
+    // used for BMFStat
+    bool enable_stat_ = false;
+    ModuleData module_stat_data_;
 };
 END_BMF_ENGINE_NS
 

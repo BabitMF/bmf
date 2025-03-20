@@ -209,6 +209,8 @@ class CFFEncoder : public Module {
     int streamcopy(AVPacket *ipkt, AVPacket *opkt, int idx);
 
     void update_io_frame_matchinfo(AVFrame *inFrm, OutputStream*ost);
+    
+    bool report_user_df_data(JsonParam &json_param);
 };
 
 /** @page ModuleEncoder Build-in Encode Module

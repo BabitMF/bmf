@@ -505,7 +505,7 @@ void GraphConfig::init(nlohmann::json &graph_config) {
             input_streams.emplace_back(StreamConfig(s));
     }
     if (option.has_key("user_id")) {
-        option.get_int("user_id", user_id);
+        option.get_string("user_id", user_id);
     }
     
 }
@@ -524,7 +524,7 @@ std::vector<StreamConfig> GraphConfig::get_output_streams() {
     return output_streams;
 }
 
-int GraphConfig::get_user_id() {
+std::string GraphConfig::get_user_id() {
     return user_id;
 }
 

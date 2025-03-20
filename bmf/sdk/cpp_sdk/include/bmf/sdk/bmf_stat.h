@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifdef BMF_ENABLE_STAT
 #pragma once
 
 #include <bmf/sdk/json_param.h>
@@ -106,31 +105,12 @@ struct ModuleData : public TrackPoint {
     int64_t max_processing_time = 0;
     int64_t min_processing_time = INT64_MAX;
     int process_cnts = 0;
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ModuleData, node_id, avg_processing_time,
+    int64_t total_process_time = 0;
+    std::string user_df;
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ModuleData, module_name, node_id, avg_processing_time,
                                    max_processing_time, min_processing_time,
-                                   process_cnts)
+                                   process_cnts, total_process_time, user_df)
     TOJSON_MEMFUNC
-};
-
-struct ModuleFFDecoderData : public TrackPoint {
-    std::string get_tag() { return "ModuleFFDecoderData"; }
-    int width = 0;
-    int height = 0;
-    std::string option;
-};
-
-class CalcContext {
-  public:
-    void add_sample();
-    int64_t get_avg_value();
-    int64_t get_min_value();
-    int64_t get_max_value();
-
-  private:
-    int num = 0;
-    int sum = 0;
-    int min = 0;
-    int max = 0;
 };
 
 class BMF_SDK_API BMFStat {
@@ -144,7 +124,8 @@ class BMF_SDK_API BMFStat {
     void push_track_point(std::shared_ptr<TrackPoint> track_point);
     void process_track_points();
     void report_stat(std::shared_ptr<TrackPoint> point);
-    bool set_user_id(int user_id);
+    void set_user_id(const std::string& user_id);
+    bool is_enabled();
 
   private:
     BMFStat(); // single instance
@@ -158,15 +139,16 @@ class BMF_SDK_API BMFStat {
     std::mutex mutex_;
     std::condition_variable cv_;
     std::queue<std::shared_ptr<TrackPoint>> queue_;
-    int user_id_ = 0;
+    std::string user_id_;
     bool thread_quit_ = false;
     int64_t task_id_;
     BMFKafkaReporterI *reporter_ = nullptr;
+    bool is_enabled_ = false;
+    std::vector<std::shared_ptr<TrackPoint>> module_data_list;
     BMQData bmq_data; 
 };
 
 BMF_SDK_API void bmf_stat_report(std::shared_ptr<TrackPoint> track_point);
+BMF_SDK_API bool bmf_stat_enabled();
 
 END_BMF_SDK_NS
-
-#endif

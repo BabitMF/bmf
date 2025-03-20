@@ -128,6 +128,7 @@ Node::Node(int node_id, NodeConfig &node_config, NodeCallBack &node_callback,
 
     wait_pause_ = false;
     need_opt_reset_ = false;
+    enable_stat_ = bmf_stat_enabled();
 }
 
 int Node::inc_pending_task() {
@@ -163,6 +164,15 @@ void Node::set_source(bool flag) { is_source_ = flag; }
 int Node::close() {
     mutex_.lock();
     // callback_.throttled_cb(id_, false);
+    if (enable_stat_ && module_stat_data_.process_cnts > 0 && mode_ != BmfMode::SERVER_MODE) {
+        module_stat_data_.avg_processing_time = module_stat_data_.total_process_time / module_stat_data_.process_cnts;
+        JsonParam user_df;
+        if (module_->report_user_df_data(user_df))
+            module_stat_data_.user_df = user_df.dump();
+        module_stat_data_.node_id = id_;
+        module_stat_data_.module_name = module_name_;
+        bmf_stat_report(std::make_shared<ModuleData>(std::move(module_stat_data_)));
+    }
     for (auto &input_stream : input_stream_manager_->input_streams_)
         if (input_stream.second->is_full())
             input_stream.second->clear_queue();
@@ -173,11 +183,21 @@ int Node::close() {
     BMFLOG_NODE(BMF_INFO, id_) << "close node";
     callback_.sched_required(id_, true);
     mutex_.unlock();
+
     return 0;
 }
 
 int Node::reset() {
     mutex_.lock();
+    if (enable_stat_ && module_stat_data_.process_cnts > 0 && mode_ == BmfMode::SERVER_MODE) {
+        module_stat_data_.avg_processing_time = module_stat_data_.total_process_time / module_stat_data_.process_cnts;
+        JsonParam user_df;
+        if (module_->report_user_df_data(user_df))
+            module_stat_data_.user_df = user_df.dump();
+        module_stat_data_.node_id = id_;
+        module_stat_data_.module_name = module_name_;
+        bmf_stat_report(std::make_shared<ModuleData>(std::move(module_stat_data_)));
+    }
     // reset module of this node
     module_->reset();
     // remove from source nodes
@@ -356,7 +376,18 @@ int Node::process_node(Task &task) {
 
         BMF_TRACE_PROCESS(module_name_.c_str(), "process", START);
         state_ = NodeState::RUNNING;
-        result = module_->process(task);
+        if (enable_stat_) {
+            auto start = std::chrono::high_resolution_clock::now();
+            result = module_->process(task);
+            auto end = std::chrono::high_resolution_clock::now();
+            auto process_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+            module_stat_data_.process_cnts += 1;
+            module_stat_data_.total_process_time += process_time.count();
+            module_stat_data_.max_processing_time = std::max(module_stat_data_.max_processing_time, process_time.count());
+            module_stat_data_.min_processing_time = std::min(module_stat_data_.min_processing_time, process_time.count());
+        } else {
+            result = module_->process(task);
+        }
         state_ = NodeState::PENDING;
         BMF_TRACE_PROCESS(module_name_.c_str(), "process", END);
         if (result != 0)

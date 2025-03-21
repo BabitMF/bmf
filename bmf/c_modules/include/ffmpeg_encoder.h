@@ -55,9 +55,9 @@ typedef struct OutputStream {
     std::shared_ptr<AVStream> input_stream;
     int64_t filter_in_rescale_delta_last;
     //io frame index match
-    int inputFrmUsed;
-    int outputNums;
-    FILE*ioFrmMatch;
+    int input_frame_used;
+    int output_nums;
+    FILE *io_frame_match;
     int pre_sn;
 } OutputStream;
 

@@ -121,7 +121,7 @@ int CFFEncoder::init() {
     ost_[0].filter_in_rescale_delta_last =
         ost_[1].filter_in_rescale_delta_last = AV_NOPTS_VALUE;
     ost_[0].max_frames = ost_[1].max_frames = INT64_MAX;
-    ost_[0].inputFrmUsed = ost_[1].inputFrmUsed = -1;
+    ost_[0].input_frame_used = ost_[1].input_frame_used = -1;
     ost_[0].pre_sn = ost_[1].pre_sn = -1;
 
     /** @addtogroup EncM
@@ -660,11 +660,11 @@ void CFFEncoder::update_io_frame_matchinfo(AVFrame *inFrm, OutputStream *ost) {
         return;
     }
 
-    if (!ost->ioFrmMatch) {
+    if (!ost->io_frame_match) {
         char ioFile[1024] = { 0 };
         snprintf(ioFile, sizeof(ioFile), "%s_iofrm.txt", output_path_.c_str());
-        ost->ioFrmMatch = fopen(ioFile, "wb");
-        if (!ost->ioFrmMatch) {
+        ost->io_frame_match = fopen(ioFile, "wb");
+        if (!ost->io_frame_match) {
             BMFLOG_NODE(BMF_ERROR, node_id_) << "open ioFrmMatch file failed;";
             io_frm_match_ = false;
             return;
@@ -672,12 +672,12 @@ void CFFEncoder::update_io_frame_matchinfo(AVFrame *inFrm, OutputStream *ost) {
     }
 
     // flush last
-    if (!inFrm && ost->ioFrmMatch) {
-        if (ost->inputFrmUsed != -1 && ost->outputNums) {
-            fprintf(ost->ioFrmMatch, "inputFrm:%d,outputNums:%d\n", ost->inputFrmUsed, ost->outputNums);
+    if (!inFrm && ost->io_frame_match) {
+        if (ost->input_frame_used != -1 && ost->output_nums) {
+            fprintf(ost->io_frame_match, "inputFrm:%d,outputNums:%d\n", ost->input_frame_used, ost->output_nums);
         }
-        fclose(ost->ioFrmMatch);
-        ost->ioFrmMatch = NULL;
+        fclose(ost->io_frame_match);
+        ost->io_frame_match = NULL;
         io_frm_match_ = false;
         return;
     }
@@ -691,29 +691,29 @@ void CFFEncoder::update_io_frame_matchinfo(AVFrame *inFrm, OutputStream *ost) {
     if (frame_index < 0)
         return;
 
-    if (ost->inputFrmUsed == -1) {
+    if (ost->input_frame_used == -1) {
         //first time we output [0, ost->inputFrmUsed), because frame_index maybe gt 0
         for (int i = 0; i < frame_index; ++i) {
-            fprintf(ost->ioFrmMatch,"inputFrm:%d,outputNums:%d\n", i, 0);
+            fprintf(ost->io_frame_match,"inputFrm:%d,outputNums:%d\n", i, 0);
         }
-        ost->outputNums = 1;
+        ost->output_nums = 1;
 
-    } else if (ost->inputFrmUsed == frame_index) {
-        ost->outputNums++;
+    } else if (ost->input_frame_used == frame_index) {
+        ost->output_nums++;
 
     } else {
-        if (ost->ioFrmMatch)
+        if (ost->io_frame_match)
         {
-            fprintf(ost->ioFrmMatch,"inputFrm:%d,outputNums:%d\n", ost->inputFrmUsed, ost->outputNums);
-            for (int i = 1; i < frame_index - ost->inputFrmUsed; i++)
+            fprintf(ost->io_frame_match,"inputFrm:%d,outputNums:%d\n", ost->input_frame_used, ost->output_nums);
+            for (int i = 1; i < frame_index - ost->input_frame_used; i++)
             {
-                fprintf(ost->ioFrmMatch,"inputFrm:%d,outputNums:%d\n", ost->inputFrmUsed + i, 0);
+                fprintf(ost->io_frame_match,"inputFrm:%d,outputNums:%d\n", ost->input_frame_used + i, 0);
             }
-            fflush(ost->ioFrmMatch);
+            fflush(ost->io_frame_match);
         }
-        ost->outputNums = 1;
+        ost->output_nums = 1;
     }
-    ost->inputFrmUsed = frame_index;
+    ost->input_frame_used = frame_index;
     return;
 }
 

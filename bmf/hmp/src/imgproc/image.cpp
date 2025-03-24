@@ -138,21 +138,21 @@ Frame Frame::crop(int left, int top, int w, int h) const {
     HMP_REQUIRE(top < bottom && bottom <= height,
                 "Frame::crop expect top({}) < bottom({}) and bottom <= {}", top,
                 bottom, height);
-
-    // normalize
-    double left_d = double(left) / width;
-    double right_d = double(right) / width;
-    double bottom_d = double(bottom) / height;
-    double top_d = double(top) / height;
-
     //
     TensorList out;
-    for (auto &d : data_) {
-        auto l = int(std::round(left_d * d.size(1)));
-        auto r = int(std::round(right_d * d.size(1)));
-        auto b = int(std::round(bottom_d * d.size(0)));
-        auto t = int(std::round(top_d * d.size(0)));
+    int plane_w, plane_h, plane_x, plane_y;
+    for(int i = 0; i < data_.size(); ++i) {
+        plane_w = pix_desc_.infer_width(w, i);
+        plane_h = pix_desc_.infer_height(h, i);
+        plane_x = pix_desc_.infer_width(left, i);
+        plane_y = pix_desc_.infer_height(top, i);
 
+        auto l = plane_x;
+        auto r = plane_x + plane_w;
+        auto t = plane_y;
+        auto b = plane_y + plane_h;
+
+        auto &d = data_[i];
         out.push_back(d.slice(0, t, b).slice(1, l, r));
     }
 

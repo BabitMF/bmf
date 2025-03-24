@@ -18,5 +18,5 @@ def init_model(model_name):
         return Qwen2_5_VL_7b()
     else:
         # default to janus
-        return Deepseek_Janus()
+        return Deepseek_Janus_7b()
 

@@ -16,7 +16,7 @@ def main():
     video['video'].module('llm_caption', {"result_path": "result.json",
                                                    "batch_size": 5,
                                                    "multithreading": False,
-                                                   "model": "Deepseek_VL2"
+                                                   "model": "Deepseek_Janus_3b"
                                                    # "max_threads": 2,
                                           }).run()
 

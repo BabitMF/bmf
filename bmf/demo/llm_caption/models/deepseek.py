@@ -111,7 +111,7 @@ class Deepseek_Janus_3b(Deepseek):
             model_function="language_model.generate",
             image_embed_format="<image_placeholder>",
             image_prompt=" Do not repeat the prompt, these images are frames of a video, what do they depict? Include as much detail as possible, do not talk about in frames and structure your response with 'The video depicts'",
-            title_prompt="Create a title for a video with this summary: ",
+            title_prompt="Respond with only a short title. Create a fitting title for a video with a description: ",
             summary_prompt="Summarise in detail what happens in this video summary: "
         )
         print("Using Deepseek_Janus_3b")
@@ -127,7 +127,7 @@ class Deepseek_Janus_7b(Deepseek):
             model_function="language_model.generate",
             image_embed_format="<image_placeholder>",
             image_prompt=" Do not repeat the prompt, these images are frames of a video, what do they depict? Include as much detail as possible, do not talk about in frames and structure your response with 'The video depicts'",
-            title_prompt="Create a title for a video with this summary: ",
+            title_prompt="Respond with only a short title, do not repeat the description, do not label the title, do not respond with a sentence. Create a creative and fitting title for a video with a description: ",
             summary_prompt="Summarise in detail what happens in this video summary: "
         )
         print("Using Deepseek_Janus_7b")

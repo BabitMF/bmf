@@ -9,6 +9,7 @@ import os
 import json
 import time
 import threading
+import model_loader
 
 def convert_to_pil(pkt):
     vf = pkt.get(VideoFrame)
@@ -27,22 +28,14 @@ def write_json(data, file_path):
     with open(file_path, "w") as file:
         json.dump(data, file, indent=4)
 
-def init_model(model_name):
-    if model_name == "Deepseek_VL2":
-        return Deepseek_VL2()
-    elif model_name == "Deepseek_Janus":
-        return Deepseek_Janus()
-    elif model_name == "Qwen2_VL":
-        return Qwen2_VL()
-    else:
-        # default to janus
-        return Deepseek_Janus()
-
 class llm_caption(Module):
 
     def __init__(self, node, option=None):
-        # initialise model
-        self.init_model()
+        # initialise model, default to deepseek janus
+        option["model"] = option.get("model", "")
+        # initialise model from model loader
+        self.model = model_loader.init_model(option["model"])
+
         # list of PIL images to be inferenced - cannot exceed BATCH_SIZE
         self.buffer = []
         # concatenated answer of each summary on a batch

@@ -9,7 +9,13 @@ class Qwen(ModelFactory, ABC):
         from qwen_vl_utils import process_vision_info
         from transformers import AutoTokenizer, AutoProcessor
         # load model from class import
-        self.model = model_class.from_pretrained(model_path, torch_dtype="auto", device_map="auto")
+        # requires flash attention 2 from pip install flash-attn --no-build-isolation
+        # to reduce memory
+        # can also downscale images see https://github.com/QwenLM/Qwen2.5-VL/tree/main
+        self.model = model_class.from_pretrained(model_path, 
+                                                 torch_dtype="auto", 
+                                                 device_map="auto", 
+                                                 attn_implementation="flash_attention_2")
         # load auto processor from model path
         self.processor = AutoProcessor.from_pretrained(model_path)
         self.vision = process_vision_info
@@ -82,7 +88,7 @@ class Qwen2_VL(Qwen):
         print("Using Qwen2_VL")
 
 # 3b params, qwen2.5 model
-class Qwen2_5_VL(Qwen):
+class Qwen2_5_VL_3b(Qwen):
     def __init__(self):
         """Initialises Qwen2.5 VL model, documentation: https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct"""
         from transformers import Qwen2_5_VLForConditionalGeneration
@@ -90,4 +96,15 @@ class Qwen2_5_VL(Qwen):
             model_class=Qwen2_5_VLForConditionalGeneration,
             model_path="Qwen/Qwen2.5-VL-3B-Instruct"
         )
-        print("Using Qwen2_5_VL")
+        print("Using Qwen2_5_VL_3b")
+
+# 7b params, qwen2.5 model
+class Qwen2_5_VL_7b(Qwen):
+    def __init__(self):
+        """Initialises Qwen2.5 VL model, documentation: https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct"""
+        from transformers import Qwen2_5_VLForConditionalGeneration
+        super().__init__(
+            model_class=Qwen2_5_VLForConditionalGeneration,
+            model_path="Qwen/Qwen2.5-VL-7B-Instruct"
+        )
+        print("Using Qwen2_5_VL_7b")

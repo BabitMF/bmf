@@ -3,7 +3,6 @@ from abc import ABC, abstractmethod
 from utils.timer import timer
 from transformers import AutoModelForCausalLM
 import torch
-# wrapper class for deep seek modules, since call_model is very similar
 class Deepseek(ModelFactory, ABC):
     def __init__(self, processor_class, 
                  model_path,
@@ -13,7 +12,10 @@ class Deepseek(ModelFactory, ABC):
                  title_prompt,
                  summary_prompt):
         super().__init__()
-        self.vl_chat_processor = processor_class.from_pretrained(model_path)
+        self.vl_chat_processor = processor_class.from_pretrained(model_path,
+                                                 torch_dtype="auto", 
+                                                 device_map="auto", 
+                                                 attn_implementation="flash_attention_2")
         self.vl_gpt = AutoModelForCausalLM.from_pretrained(model_path, trust_remote_code=True)
         self.vl_gpt = self.vl_gpt.to(torch.bfloat16).cuda().eval()
         self.model_function = self.get_nested_attr(self.vl_gpt, model_function)
@@ -82,7 +84,6 @@ class Deepseek(ModelFactory, ABC):
         # remove the special marking at the end of the answer and return it
         return (tokenizer.decode(outputs[0].cpu().tolist(), skip_special_tokens=True), inference_time)
 
-# tested with python 3.8
 # 3B params
 class Deepseek_VL2(Deepseek):
     def __init__(self):
@@ -99,9 +100,8 @@ class Deepseek_VL2(Deepseek):
         )
         print("Using Deepseek_VL2")
 
-# tested with python 3.8
 # 1B params
-class Deepseek_Janus(Deepseek):
+class Deepseek_Janus_3b(Deepseek):
     def __init__(self):
         """Initialises deepseek Janus model, documentation: https://huggingface.co/deepseek-ai/Janus-Pro-1B"""
         from janus.models import MultiModalityCausalLM, VLChatProcessor
@@ -114,4 +114,20 @@ class Deepseek_Janus(Deepseek):
             title_prompt="Create a title for a video with this summary: ",
             summary_prompt="Summarise in detail what happens in this video summary: "
         )
-        print("Using Deepseek_Janus")
+        print("Using Deepseek_Janus_3b")
+
+# 7B params
+class Deepseek_Janus_7b(Deepseek):
+    def __init__(self):
+        """Initialises deepseek Janus model, documentation: https://huggingface.co/deepseek-ai/Janus-Pro-1B"""
+        from janus.models import MultiModalityCausalLM, VLChatProcessor
+        super().__init__(
+            processor_class=VLChatProcessor,
+            model_path="deepseek-ai/Janus-Pro-7B",
+            model_function="language_model.generate",
+            image_embed_format="<image_placeholder>",
+            image_prompt=" Do not repeat the prompt, these images are frames of a video, what do they depict? Include as much detail as possible, do not talk about in frames and structure your response with 'The video depicts'",
+            title_prompt="Create a title for a video with this summary: ",
+            summary_prompt="Summarise in detail what happens in this video summary: "
+        )
+        print("Using Deepseek_Janus_7b")

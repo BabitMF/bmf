@@ -1,8 +1,16 @@
+import os
+import sys
 import bmf
-from llm_caption import llm_caption
 
-def main():
-    input_path = "../LLM_video_preprocessing/big_bunny_10s_30fps.mp4"
+def main(args):
+    input_path = args[1]
+    model_name = args[2]
+    batch_size = int(args[3])
+    output_path = args[4]
+
+    parent_dir = os.path.abspath(os.path.join(os.getcwd(), '..'))
+    sys.path.append(parent_dir) 
+
     graph = bmf.graph({"dump_graph": 0})
     video = graph.decode({
         "input_path": input_path,
@@ -13,12 +21,14 @@ def main():
             }
         }
     })
-    video['video'].module('llm_caption', {"result_path": "result.json",
-                                                   "batch_size": 5,
+    video['video'].module('llm_caption', {"result_path": output_path,
+                                                   "batch_size": batch_size,
                                                    "multithreading": False,
-                                                   "model": "Deepseek_VL2"
+                                                   "model": model_name
                                                    # "max_threads": 2,
                                           }).run()
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)
+
+

@@ -9,7 +9,7 @@ import os
 import json
 import time
 import threading
-import model_loader
+from models.model_loader import init_model
 
 def convert_to_pil(pkt):
     vf = pkt.get(VideoFrame)
@@ -34,7 +34,7 @@ class llm_caption(Module):
         # initialise model, default to deepseek janus
         option["model"] = option.get("model", "")
         # initialise model from model loader
-        self.model = model_loader.init_model(option["model"])
+        self.model = init_model(option["model"])
 
         # list of PIL images to be inferenced - cannot exceed BATCH_SIZE
         self.buffer = []

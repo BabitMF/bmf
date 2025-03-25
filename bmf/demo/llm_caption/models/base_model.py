@@ -5,6 +5,7 @@ class ModelFactory(ABC):
     def __init__(self):
         # needed by all models
         os.environ["TOKENIZERS_PARALLELISM"] = "false"
+        self.zero_shot_cot_prompt = "Q: {q} Let's think step by step"
     
     @abstractmethod
     def call_model(self, images):

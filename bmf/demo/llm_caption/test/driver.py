@@ -6,8 +6,8 @@ def prep_dir(dir_name):
     os.makedirs(dir_name, exist_ok=True)
 
 def main():
-    MODELS = ["Deepseek_VL2", "Deepseek_Janus_3b", "Deepseek_Janus_7b", "Qwen2_VL", "Qwen2_5_VL_3b", "Qwen2_5_VL_7b"]
-    PYTHONV = ["3.8", "3.8", "3.8", "3.10", "3.10", "3.10"]
+    MODELS = ["Deepseek_VL2", "Deepseek_Janus_3b", "Deepseek_Janus_7b", "Qwen2_VL", "Qwen2_5_VL_3b", "Qwen2_5_VL_7b", "LLaVA_One_Vision", "LLaVA_Next_Video"]
+    PYTHONV = ["3.8" * 3] + ["3.10" * 5]
     INPUTPATH = "/home/allen.fang/big_bunny_1min_30fps.mp4"
 
     BATCHSIZE = 1 

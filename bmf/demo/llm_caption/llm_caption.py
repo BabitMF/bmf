@@ -196,7 +196,7 @@ class llm_caption(Module):
         data["summary"] = self.call_model(conversation, [])
 
         # get a corresponding title
-        data["video_title"], _ = self.model.call_model(self.model.title_prompt + self.combined_answer, [])
+        data["video_title"], _ = self.model.call_model(self.model.title_prompt + data["summary"], [])
         # average inference
         data["average_inference"] = round(self.total_inferencing_time / data["frames_analysed"], 4)
 
@@ -208,7 +208,7 @@ class llm_caption(Module):
     def call_model(self, id, buffer):
         """Creates and embeds the images into the prompt. buffer is either self.buffer or a thread's own buffer"""
         # get the reponse of the inference, using model's own image prompt
-        answer, time = self.model.call_model(self.model.image_prompt, buffer)
+        answer, time = self.model.call_model(self.model.zero_shot_cot_prompt.format(q=self.model.image_prompt), buffer)
 
         # if its multithreaded, release semaphore count to allow another thread
         # then append the result to result list

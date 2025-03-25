@@ -28,15 +28,23 @@ template <typename T> struct hasStringfy {
     static constexpr bool value = !std::is_same<ret_type, void>::value;
 };
 
+template <> struct hasStringfy<void> {
+    static constexpr bool value = false;
+};
+
 } // namespace hmp
 
-template <typename T, typename Char>
-struct fmt::formatter<T, Char, fmt::enable_if_t<hmp::hasStringfy<T>::value>> {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
-        return ctx.begin();
+template <typename T>
+struct fmt::formatter<T, fmt::enable_if_t<hmp::hasStringfy<T>::value, char>> : fmt::formatter<string_view> {
+    auto format(const T &c, fmt::format_context &ctx) const {
+        return formatter<string_view>::format(hmp::stringfy(c), ctx);
     }
+};
 
-    auto format(const T &c, fmt::format_context &ctx) {
-        return fmt::format_to(ctx.out(), "{}", hmp::stringfy(c));
+template <typename T>
+struct fmt::formatter<T, std::enable_if_t<std::is_enum_v<T> && !hmp::hasStringfy<T>::value, char>> :
+    fmt::formatter<int> {
+    auto format(const T& a, format_context& ctx) const {
+        return formatter<int>::format((int)a, ctx);
     }
 };

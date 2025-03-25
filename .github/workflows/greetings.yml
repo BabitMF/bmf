@@ -16,12 +16,10 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           issue-message: |
             Thank you for your feedback! We have received your question and will deal with it later.
-            If any developer is interested in this issue, please leave a message "claim this issue" below the issue. Welcome to participate in open source co-construction!
-            We are very grateful to every contributor. 
-            To communicate with official developers, you can download the Feishu app and scan the QR code to join the Feishu group！
+            If any developer is interested in this issue, please feel free to claim it. 
+            We are extremely grateful to every contributor, and we currently have an ongoing open-source rewards program — every valid merge request qualifies for a reward!
+            If you have any questions or need further assistance, please don't hesitate to reach out to us.
             Thank you again for your support!
-            ![feishu-qr-code](https://raw.githubusercontent.com/hulibruce/bot_test/refs/heads/main/QRcode.png)
-            感谢您的反馈！我们已经收到您的问题，并会在稍后处理。
-            如果有开发者对这个问题感兴趣，请在问题下方留言“认领此问题”。欢迎参与开源共建！
-            如需与官方开发者沟通，可以下载飞书应用并扫描二维码加入飞书群！
-            再次感谢您的支持！
+            [Join our Feishu Group](https://applink.larkoffice.com/client/chat/chatter/add_by_link?link_token=57dhb755-be95-4729-89f2-8500599dccdd)
+            [Learn more about our rewards program](https://bytedance.larkoffice.com/docx/YJSVdaSaIo6pmgxf9WgcZcvwnge)
+          

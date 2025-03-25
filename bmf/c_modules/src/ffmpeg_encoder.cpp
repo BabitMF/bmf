@@ -1164,10 +1164,8 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
         }
 
         out_stream->time_base = input_stream->time_base;
-        #ifdef BMF_FFMPEG_VERSION
-            #if BMF_FFMPEG_VERSION < 50
+        #if LIBAVFORMAT_VERSION_MAJOR < 59
                 out_stream->codec->time_base = input_stream->time_base;
-            #endif
         #endif
         ret = 0;
         if (num_input_streams_ == codec_init_touched_num_)
@@ -1605,10 +1603,8 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
             }
         }
 
-        #ifdef BMF_FFMPEG_VERSION
-            #if BMF_FFMPEG_VERSION < 50
+        #if LIBAVFORMAT_VERSION_MAJOR < 59
                 out_stream->codec->time_base = enc_ctxs_[idx]->time_base;
-            #endif
         #endif
     }
 

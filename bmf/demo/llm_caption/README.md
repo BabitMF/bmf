@@ -8,7 +8,7 @@ It first extract frames from an input video at 1 fps, converts them into PIL for
 
 ## Installation
 
-There are three LLM's currently supported, deepseek-vl2 (python >=3.8), deepseek-janus (python >=3.8) and qwen2-vl (python >=3.9 and beta release of transformers). Your own LLM can be implemented by defining the class variables and extending `ModelFactory` in `model_loader.py`. Installation steps is tested with Debian 10 and python 3.8.2 and 3.10.0 version and Nvidia L4 GPU.
+There are 3 families of LLM's currently supported, deepseek (python >=3.8), qwen (beta release of transformers), and LLaVA (transformers >= 4.45.0). Your own LLM can be implemented by defining the class variables and extending `ModelFactory` in `model_loader.py`. Installation steps is tested with Debian 10 and python 3.8.2 and 3.10.0 version and Nvidia L4 GPU.
 
 1. Install ffmpeg
 ```
@@ -18,10 +18,7 @@ sudo apt install ffmpeg
 ```
 pip install BabitMF-GPU
 ```
-3. The next steps depend on which LLM is used, documentation for each is here:
-- Deepseek-vl2: https://huggingface.co/deepseek-ai/deepseek-vl2-tiny
-- Deepseek-Janus: https://huggingface.co/deepseek-ai/Janus-Pro-1B
-- Qwen2-vl: https://huggingface.co/Qwen/Qwen2-VL-2B-Instruct
+3. The next steps depend on which LLM is used, documentation for each is located under the docstring in `models/model_name.py`
 
 For example, to use deepseek-vl2:
 ```
@@ -64,6 +61,7 @@ A json file named `result.json` by default will be created in the current workin
         {
             "batch_id": <1>,
             "frames": <number>,
+            "time": <time>,
             "description": "<description>",
         },
         {
@@ -71,7 +69,8 @@ A json file named `result.json` by default will be created in the current workin
         }
     ],
     "frames_analysed": <amount>,
-    "summary": "<summary>"
+    "summary": "<summary>",
+    "average_inference": <time>
 }
 ```
 Summary for `big_bunny_1min_30fps.mp4` on deepseek-vl2-tiny:

@@ -101,7 +101,7 @@ class Deepseek_VL2(Deepseek):
         print("Using Deepseek_VL2")
 
 # 1B params
-class Deepseek_Janus_3b(Deepseek):
+class Deepseek_Janus_1b(Deepseek):
     def __init__(self):
         """Initialises deepseek Janus model, documentation: https://huggingface.co/deepseek-ai/Janus-Pro-1B"""
         from janus.models import MultiModalityCausalLM, VLChatProcessor

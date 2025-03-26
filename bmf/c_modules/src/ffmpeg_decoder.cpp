@@ -786,6 +786,9 @@ int CFFDecoder::get_rotate_desc(std::string &filter_desc, AVFrame *frame) {
                     filter_desc = "scale_npp=format=yuv420p,transpose_npp=clock,scale_npp=format=nv12";
                 }
 
+            } else if (fabs(theta - 180) < 1.0) {
+                // emulate 180° rotation by applying transpose_npp=clock twice
+                filter_desc = "scale_npp=format=yuv420p,transpose_npp=clock,transpose_npp=clock,scale_npp=format=nv12";
             } else if (fabs(theta - 270) < 1.0) {
                 if (displaymatrix[3] < 0) {
                     filter_desc = "scale_npp=format=yuv420p,transpose_npp=clock_flip,scale_npp=format=nv12";

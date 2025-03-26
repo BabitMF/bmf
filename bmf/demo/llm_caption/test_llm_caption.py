@@ -1,10 +1,13 @@
 import bmf
 from llm_caption import llm_caption
 import sys
+import torch
 
 def main(args):
     input_path = "../LLM_video_preprocessing/big_bunny_10s_30fps.mp4"
     graph = bmf.graph({"dump_graph": 0})
+
+    torch.multiprocessing.set_start_method("spawn")
 
     model = "Qwen_2_5_VL_3b"
     if len(args) == 2:

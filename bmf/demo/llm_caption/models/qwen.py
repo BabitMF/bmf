@@ -46,7 +46,7 @@ class Qwen(ModelFactory, ABC):
 
     @timer
     def _call_model(self, inputs):
-        return self.model.generate(**inputs, max_new_tokens=128)
+        return self.model.generate(**inputs, max_new_tokens=512)
 
     def call_model(self, prompt, images):
         # changes prompt in place
@@ -66,7 +66,7 @@ class Qwen(ModelFactory, ABC):
         inputs = inputs.to("cuda")
 
         generated_ids, inference_time = self._call_model(inputs)
-        print(f"Inference time on batch with {(str(len(images)) + ' frames') if len(images) != 0 else 'title/summary'}: ", round(inference_time, 2))
+        self.log_time(inference_time, len(images))
 
         generated_ids_trimmed = [
             out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)

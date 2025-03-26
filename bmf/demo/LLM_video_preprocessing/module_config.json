@@ -1,5 +1,6 @@
 {
-  "mode": "aesmod_module,ocr_crop,llm_caption",
+  "mode": "ocr_crop,llm_caption",
+  "input_file": "big_bunny_10s_30fps.mp4",
   "output_path": "clip_output",
   "output_configs": [
     {
@@ -25,7 +26,8 @@
     "options": {
       "batch_size": 6,
       "multithreading": false,
-      "pass_through": true
+      "pass_through": true,
+      "model": "Deepseek_VL2"
     }
   }
 }

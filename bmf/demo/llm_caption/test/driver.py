@@ -7,7 +7,7 @@ def prep_dir(dir_name):
 
 def main():
     MODELS = ["Deepseek_VL2", "Deepseek_Janus_1b", "Deepseek_Janus_7b", "Qwen2_VL", "Qwen2_5_VL_3b", "Qwen2_5_VL_7b", "LLaVA_One_Vision", "LLaVA_Next_Video"]
-    PYTHONV = ["3.8" * 3] + ["3.10" * 5]
+    PYTHONV = ["3.8"] * 3 + ["3.10"] * 5
     INPUTPATH = "/home/allen.fang/big_bunny_1min_30fps.mp4"
 
     BATCHSIZE = 1 
@@ -38,7 +38,8 @@ def main():
             except subprocess.CalledProcessError as e:
                 with open(OUTPUTPATH + ".log", "w") as file:
                     file.write(f"Command failed with return code {e.returncode}\n")
-                    file.write(f"Error output:\n{e.stderr}\n")
+                    file.write(f"Error output:\n")
+                    file.write("\n".join(e.stderr.splitlines()) + "\n")
                 print("Failed, timestamp:", datetime.now().strftime("%H:%M:%S"))
             except Exception as e:
                 with open(OUTPUTPATH + ".log", "w") as file:

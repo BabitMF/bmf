@@ -79,7 +79,7 @@ class Deepseek(ModelFactory, ABC):
         inputs_embeds = self.vl_gpt.prepare_inputs_embeds(**prepare_inputs)
 
         outputs, inference_time = self._call_model(inputs_embeds, prepare_inputs, tokenizer)
-        print(f"Inference time on batch with {(str(len(images)) + ' frames') if len(images) != 0 else 'title/summary'}: ", round(inference_time, 2))
+        self.log_time(inference_time, len(images))
 
         # remove the special marking at the end of the answer and return it
         return (tokenizer.decode(outputs[0].cpu().tolist(), skip_special_tokens=True), inference_time)

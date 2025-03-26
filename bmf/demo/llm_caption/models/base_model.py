@@ -5,8 +5,12 @@ class ModelFactory(ABC):
     def __init__(self):
         # needed by all models
         os.environ["TOKENIZERS_PARALLELISM"] = "false"
-        self.zero_shot_cot_prompt = "Q: {q} Let's think step by step"
+        self.zero_shot_cot_prompt = "{q} Let's think step by step"
     
     @abstractmethod
     def call_model(self, images):
         pass
+
+    def log_time(self, time, number_frames):
+        print(f"Inference time on batch with {(str(number_frames) + ' frames') if number_frames != 0 else 'title/summary'}: ", round(time, 2))
+

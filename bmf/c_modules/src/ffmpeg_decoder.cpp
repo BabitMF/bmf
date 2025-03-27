@@ -787,8 +787,18 @@ int CFFDecoder::get_rotate_desc(std::string &filter_desc, AVFrame *frame) {
                 }
 
             } else if (fabs(theta - 180) < 1.0) {
-                // emulate 180° rotation by applying transpose_npp=clock twice
-                filter_desc = "scale_npp=format=yuv420p,transpose_npp=clock,transpose_npp=clock,scale_npp=format=nv12";
+                if (displaymatrix[0] < 0 && displaymatrix[4] < 0) {
+                    //hflip + vflip
+                    filter_desc = "scale_npp=format=yuv420p,transpose_npp=clock,transpose_npp=clock,scale_npp=format=nv12";
+                }else if (displaymatrix[0] > 0 && displaymatrix[4] < 0) {
+                    //vflip
+                    filter_desc = "scale_npp=format=yuv420p,transpose_npp=clock_flip,transpose_npp=clock,scale_npp=format=nv12";
+                }else if (displaymatrix[0] < 0 && displaymatrix[4] > 0) {
+                    //hflip
+                    filter_desc = "scale_npp=format=yuv420p,transpose_npp=clock,transpose_npp=clock_flip,scale_npp=format=nv12";
+                }else{
+                    //no rotation and flip do nothing
+                }
             } else if (fabs(theta - 270) < 1.0) {
                 if (displaymatrix[3] < 0) {
                     filter_desc = "scale_npp=format=yuv420p,transpose_npp=clock_flip,scale_npp=format=nv12";
@@ -798,9 +808,7 @@ int CFFDecoder::get_rotate_desc(std::string &filter_desc, AVFrame *frame) {
 
             } else {
                 BMFLOG_NODE(BMF_ERROR, node_id_) << "theta is not supported: " << theta;
-
             }
-
         } else {
             BMFLOG_NODE(BMF_ERROR, node_id_) << "device type is not supported, type: " << int(ctx->device_ctx->type);
         }

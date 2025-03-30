@@ -247,4 +247,16 @@ class CFFEncoder : public Module {
  * @arg module name: c_ffmpeg_encoder\n
  * @}
  */
+
+/** @defgroup video_params Video Parameters
+ * @ingroup DecM
+ * Parameters related to video encoding.
+ * @{
+ * @} */
+
+/** @defgroup audio_params Audio Parameters
+ * @ingroup DecM
+ * Parameters related to audio encoding.
+ * @{
+ * @} */
 #endif

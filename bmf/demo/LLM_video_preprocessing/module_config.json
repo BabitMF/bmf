@@ -1,6 +1,5 @@
 {
   "mode": "aesmod_module,ocr_crop,llm_caption",
-  "input_file": "big_bunny_10s_30fps.mp4",
   "output_path": "clip_output",
   "output_configs": [
     {

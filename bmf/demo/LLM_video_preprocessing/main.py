@@ -48,12 +48,8 @@ def load_config(path):
 def demo_run(args):
     torch.set_num_threads(4)
     config = load_config(args.config) if args.config else {}
-    if "input_file" not in config:
-        print(f"Input file not specified in {args.config}")
-        return -1
-    input_file = config["input_file"]
-    if not os.path.exists(input_file):
-        print(f"Input file does not exist {input_file}")
+    if not os.path.exists(args.input_file):
+        print(f"Input file does not exist {args.input_file}")
         return -1
     if "mode" not in config:
         print(f"Mode not specified in {args.config}")
@@ -65,11 +61,12 @@ def demo_run(args):
               "'wget https://github.com/BabitMF/bmf/releases/download/files/models.tar.gz && tar zxvf models.tar.gz -C ../../' ")
         return -1
 
-    video_processing_demo(input_file, modes, config)
+    video_processing_demo(args.input_file, modes, config)
 
 if __name__ == '__main__':
     logger.setLevel(logging.INFO)
     parser = argparse.ArgumentParser()
     parser.add_argument('config', type=str, help="path to JSON config file")
+    parser.add_argument('input_file', type=str, help="path to video file")
     args = parser.parse_args()
     demo_run(args)

@@ -1,9 +1,9 @@
-from models.base_model import ModelFactory
+from models.base_model import BaseVisionModel 
 from abc import ABC, abstractmethod
 from utils.timer import timer
 # requires python >= 3.9 and newest beta release of transformers - follow documentation in docstrings
 # wrapper class for qwen family
-class Qwen(ModelFactory, ABC):
+class Qwen(BaseVisionModel, ABC):
     def __init__(self, model_class, model_path):
         super().__init__()
         from qwen_vl_utils import process_vision_info
@@ -13,6 +13,7 @@ class Qwen(ModelFactory, ABC):
         # to reduce memory
         # can also downscale images see https://github.com/QwenLM/Qwen2.5-VL/tree/main
         self.model = model_class.from_pretrained(model_path, 
+                                                 load_in_4bit=True,
                                                  torch_dtype="auto", 
                                                  device_map="auto", 
                                                  attn_implementation="flash_attention_2")

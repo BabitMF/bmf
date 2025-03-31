@@ -1,9 +1,9 @@
-from models.base_model import ModelFactory
+from models.base_model import BaseVisionModel
 from abc import ABC, abstractmethod
 from utils.timer import timer
 from transformers import AutoModelForCausalLM
 import torch
-class Deepseek(ModelFactory, ABC):
+class Deepseek(BaseVisionModel, ABC):
     def __init__(self, processor_class, 
                  model_path,
                  model_function,
@@ -13,6 +13,7 @@ class Deepseek(ModelFactory, ABC):
                  summary_prompt):
         super().__init__()
         self.vl_chat_processor = processor_class.from_pretrained(model_path,
+                                                 load_in_4bit=True,
                                                  torch_dtype="auto", 
                                                  device_map="auto", 
                                                  attn_implementation="flash_attention_2")

@@ -1,9 +1,9 @@
-from models.base_model import ModelFactory
+from models.base_model import BaseVisionModel
 from abc import ABC, abstractmethod
 from utils.timer import timer
 import torch
 # tested with python3.10 and transformers >= 4.45.0 for one vision, >= 4.42.0 for next video
-class LLaVA(ModelFactory, ABC):
+class LLaVA(BaseVisionModel, ABC):
     def __init__(self, processor_class,
                  model_class, 
                  model_path,

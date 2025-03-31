@@ -10,6 +10,7 @@ import json
 import time
 import threading
 from models.model_loader import init_model
+import time
 
 def convert_to_pil(pkt):
     vf = pkt.get(VideoFrame)
@@ -89,6 +90,8 @@ class llm_caption(Module):
         print("Multithreading: ", self.multithreading)
         if self.multithreading:
             print("Max threads: ", max_threads)
+
+        self.start_time = time.time()
 
     def log_result(self, answer, time):
         """Is only called when not multithreaded: each call to the model is logged to the disk directly"""
@@ -199,6 +202,8 @@ class llm_caption(Module):
         data["video_title"], _ = self.model.call_model(self.model.title_prompt + data["summary"], [])
         # average inference
         data["average_inference"] = round(self.total_inferencing_time / data["frames_analysed"], 4)
+        # total turnaround time
+        data["turnaround_time"] = round(time.time() - self.start_time, 4)
 
         # write the updated json to the output
         write_json(data, self.output_path)

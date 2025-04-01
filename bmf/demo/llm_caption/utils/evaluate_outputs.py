@@ -49,7 +49,7 @@ def process_results(ground_truth):
             for model in MODELS:
                 # if there is an error file skip it
                 if os.path.exists(os.path.join(prefix, model + ".log")):
-                    model_to_results[model] = [None, None, None, None]
+                    model_to_results[model] = [None] * 6
                     continue
                 # get data
                 data = read_json(os.path.join(prefix, model))
@@ -80,19 +80,28 @@ def _prep_figure1_2(result):
         iteration_to_batch[iteration] = model_to_score_and_batch_size
     return iteration_to_batch
 
-def _prep_figure3_4(result):
+def _prep_figure3_4_5_6(result):
     model_to_batch_size_to_avgs = defaultdict(lambda: defaultdict(list))
     model_to_batch_size_to_turnaround = defaultdict(lambda: defaultdict(list))
+    model_to_batch_size_to_rouge = defaultdict(lambda: defaultdict(list))
+    model_to_batch_size_to_meteor = defaultdict(lambda: defaultdict(list))
     for iteration, batch_to_model in result.items():
         for batch_size, model_to_results in batch_to_model.items():
             for model, results in model_to_results.items():
+                rouge_score = results[2]
+                meteor_score = results[3]
                 avg_inf = results[-2]
                 turnaround = results[-1]
-                if avg_inf is None or turnaround is None:
+                if any(x is None for x in [rouge_score, meteor_score, avg_inf, turnaround]):
                     continue
                 model_to_batch_size_to_avgs[model][batch_size].append(avg_inf)
                 model_to_batch_size_to_turnaround[model][batch_size].append(turnaround)
-    return model_to_batch_size_to_avgs, model_to_batch_size_to_turnaround
+                model_to_batch_size_to_rouge[model][batch_size].append(rouge_score)
+                model_to_batch_size_to_meteor[model][batch_size].append(meteor_score)
+    return model_to_batch_size_to_avgs, \
+            model_to_batch_size_to_turnaround, \
+            model_to_batch_size_to_rouge, \
+            model_to_batch_size_to_meteor
 
 def _create_figure1(iteration_to_batch):
     os.makedirs("figures/bert", exist_ok=True)
@@ -226,6 +235,40 @@ def _create_figure4_combined(model_to_batch_size_to_turnaround):
     plt.savefig(f"figures/turnaround_time_combined/combined.png")
     plt.close()
 
+def _create_figure5_combined(model_to_batch_size_to_rouge):
+    os.makedirs("figures/rouge_combined", exist_ok=True)
+    plt.figure()
+    for model, batch_size_to_rouge in model_to_batch_size_to_rouge.items():
+        input = []
+        for batch_size, scores in batch_size_to_rouge.items():
+            average_rouge = sum(scores) / len(scores)
+            input.append((batch_size, average_rouge))
+        input.sort()
+        plt.plot([x[0] for x in input], [x[1] for x in input], label=model)
+    plt.xlabel("Batch Size")
+    plt.ylabel("Average ROUGE score")
+    plt.title(f"Average ROUGE score against Batch Size")
+    plt.legend()
+    plt.savefig(f"figures/rouge_combined/combined.png")
+    plt.close()
+
+def _create_figure6_combined(model_to_batch_size_to_meteor):
+    os.makedirs("figures/meteor_combined", exist_ok=True)
+    plt.figure()
+    for model, batch_size_to_meteor in model_to_batch_size_to_meteor.items():
+        input = []
+        for batch_size, scores in batch_size_to_meteor.items():
+            average_rouge = sum(scores) / len(scores)
+            input.append((batch_size, average_rouge))
+        input.sort()
+        plt.plot([x[0] for x in input], [x[1] for x in input], label=model)
+    plt.xlabel("Batch Size")
+    plt.ylabel("Average METEOR score")
+    plt.title(f"Average METEOR score against Batch Size")
+    plt.legend()
+    plt.savefig(f"figures/meteor_combined/combined.png")
+    plt.close()
+
 def create_figures(result):
     # prepare results for figure 1 and 2
     iteration_to_batch = _prep_figure1_2(result)
@@ -235,8 +278,11 @@ def create_figures(result):
     # all scores against batch size (filtered by model) and averaged across all iterations
     _create_figure2(iteration_to_batch)
 
-    # prepare results for figure 3 and 4
-    model_to_batch_size_to_avgs, model_to_batch_size_to_turnaround = _prep_figure3_4(result)
+    # prepare results for figure 3,4,5,6
+    model_to_batch_size_to_avgs, \
+    model_to_batch_size_to_turnaround, \
+    model_to_batch_size_to_rouge, \
+    model_to_batch_size_to_meteor = _prep_figure3_4_5_6(result)
     # average inference time per frame against batch size
     # filtered by model
     _create_figure3(model_to_batch_size_to_avgs)
@@ -247,6 +293,11 @@ def create_figures(result):
     _create_figure4(model_to_batch_size_to_turnaround)
     # combined
     _create_figure4_combined(model_to_batch_size_to_turnaround)
+
+    # rouge score against batch size (all models shown)
+    _create_figure5_combined(model_to_batch_size_to_rouge)
+    # meteor score against batch size (all models shown)
+    _create_figure6_combined(model_to_batch_size_to_meteor)
 
 def main(args):
     if os.path.exists("result.pkl"):

@@ -193,7 +193,38 @@ def _create_figure3_combined(model_to_batch_size_to_avgs):
     plt.close()
         
 def _create_figure4(model_to_batch_size_to_turnaround):
-    pass
+    os.makedirs("figures/turnaround_time", exist_ok=True)
+    for model, batch_size_to_avgs in model_to_batch_size_to_turnaround.items():
+        plt.figure()
+        input = []
+        for batch_size, averages in batch_size_to_avgs.items():
+            average_turnaround = sum(averages) / len(averages)
+            input.append((batch_size, average_turnaround))
+        input.sort()
+        plt.plot([x[0] for x in input], [x[1] for x in input])
+        plt.xlabel("Batch Size")
+        plt.xticks(range(input[0][0], input[-1][0] + 1))
+        plt.ylabel("Average Turnaround Time")
+        plt.title(f"Average Turnaround Time against Batch Size for {model}")
+        plt.savefig(f"figures/turnaround_time/{model}.png")
+        plt.close()
+        
+def _create_figure4_combined(model_to_batch_size_to_turnaround):
+    os.makedirs("figures/turnaround_time_combined", exist_ok=True)
+    plt.figure()
+    for model, batch_size_to_turnaround in model_to_batch_size_to_turnaround.items():
+        input = []
+        for batch_size, averages in batch_size_to_turnaround.items():
+            average_turnaround = sum(averages) / len(averages)
+            input.append((batch_size, average_turnaround))
+        input.sort()
+        plt.plot([x[0] for x in input], [x[1] for x in input], label=model)
+    plt.xlabel("Batch Size")
+    plt.ylabel("Average Turnaround Time")
+    plt.title(f"Average Turnaround Time against Batch Size")
+    plt.legend()
+    plt.savefig(f"figures/turnaround_time_combined/combined.png")
+    plt.close()
 
 def create_figures(result):
     # prepare results for figure 1 and 2
@@ -206,15 +237,16 @@ def create_figures(result):
 
     # prepare results for figure 3 and 4
     model_to_batch_size_to_avgs, model_to_batch_size_to_turnaround = _prep_figure3_4(result)
-    # average inference time per frame against batch size (filtered by model)
+    # average inference time per frame against batch size
+    # filtered by model
     _create_figure3(model_to_batch_size_to_avgs)
+    # combined
     _create_figure3_combined(model_to_batch_size_to_avgs)
     # total inference time (turnaround time) against batch size (filtered by model)
+    # filtered by model
     _create_figure4(model_to_batch_size_to_turnaround)
-
-    # best n average inference time per frame (time against model)
-
-    # slowest n average inference time per frame (time against model)
+    # combined
+    _create_figure4_combined(model_to_batch_size_to_turnaround)
 
 def main(args):
     if os.path.exists("result.pkl"):

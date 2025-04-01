@@ -69,6 +69,31 @@ def process_results(ground_truth):
         iteration_to_batch[iteration] = batch_to_model
     return iteration_to_batch
 
+def _prep_figure1_2(result):
+    os.makedirs("figures", exist_ok=True)
+    iteration_to_batch = defaultdict(lambda: defaultdict(list))
+    for iteration, batch_results in result.items():
+        model_to_score_and_batch_size = defaultdict(list)
+        for batch_count, model_to_results in batch_results.items():
+            for model, stats in model_to_results.items():
+                model_to_score_and_batch_size[model].append(stats[:4] + [batch_count])
+        iteration_to_batch[iteration] = model_to_score_and_batch_size
+    return iteration_to_batch
+
+def _prep_figure3_4(result):
+    model_to_batch_size_to_avgs = defaultdict(lambda: defaultdict(list))
+    model_to_batch_size_to_turnaround = defaultdict(lambda: defaultdict(list))
+    for iteration, batch_to_model in result.items():
+        for batch_size, model_to_results in batch_to_model.items():
+            for model, results in model_to_results.items():
+                avg_inf = results[-2]
+                turnaround = results[-1]
+                if avg_inf is None or turnaround is None:
+                    continue
+                model_to_batch_size_to_avgs[model][batch_size].append(avg_inf)
+                model_to_batch_size_to_turnaround[model][batch_size].append(turnaround)
+    return model_to_batch_size_to_avgs, model_to_batch_size_to_turnaround
+
 def _create_figure1(iteration_to_batch):
     os.makedirs("figures/bert", exist_ok=True)
     for model in MODELS:
@@ -93,6 +118,7 @@ def _create_figure1(iteration_to_batch):
         plt.title(f"Scores vs Batch Size for {model}")
         plt.legend()
         plt.savefig(f"figures/bert/{model}.png")
+        plt.close()
 
 def _create_figure2(iteration_to_batch):
     os.makedirs("figures/all_scores", exist_ok=True)
@@ -129,29 +155,66 @@ def _create_figure2(iteration_to_batch):
         plt.title(f"Average Scores vs Batch Size for {model}")
         plt.legend()
         plt.xticks(range(int(min(batch_sizes)), int(max(batch_sizes)) + 1))
-        plt.savefig(f"figures/all_scores/{model}_average.png")
+        plt.savefig(f"figures/all_scores/{model}.png")
+        plt.close()
 
+def _create_figure3(model_to_batch_size_to_avgs):
+    os.makedirs("figures/average_inference", exist_ok=True)
+    for model, batch_size_to_avgs in model_to_batch_size_to_avgs.items():
+        plt.figure()
+        input = []
+        for batch_size, averages in batch_size_to_avgs.items():
+            average_of_averages = sum(averages) / len(averages)
+            input.append((batch_size, average_of_averages))
+        input.sort()
+        plt.plot([x[0] for x in input], [x[1] for x in input])
+        plt.xlabel("Batch Size")
+        plt.xticks(range(input[0][0], input[-1][0] + 1))
+        plt.ylabel("Average Inference Time per Frame")
+        plt.title(f"Average Inference Time against Batch Size for {model}")
+        plt.savefig(f"figures/average_inference/{model}.png")
+        plt.close()
+        
+def _create_figure3_combined(model_to_batch_size_to_avgs):
+    os.makedirs("figures/average_inference_combined", exist_ok=True)
+    plt.figure()
+    for model, batch_size_to_avgs in model_to_batch_size_to_avgs.items():
+        input = []
+        for batch_size, averages in batch_size_to_avgs.items():
+            average_of_averages = sum(averages) / len(averages)
+            input.append((batch_size, average_of_averages))
+        input.sort()
+        plt.plot([x[0] for x in input], [x[1] for x in input], label=model)
+    plt.xlabel("Batch Size")
+    plt.ylabel("Average Inference Time per Frame")
+    plt.title(f"Average Inference Time against Batch Size (combined)")
+    plt.legend()
+    plt.savefig(f"figures/average_inference_combined/combined.png")
+    plt.close()
+        
+def _create_figure4(model_to_batch_size_to_turnaround):
+    pass
 
 def create_figures(result):
-    # prepare results
-    os.makedirs("figures", exist_ok=True)
-    iteration_to_batch = defaultdict(lambda: defaultdict(list))
-    for iteration, batch_results in result.items():
-        model_to_score_and_batch_size = defaultdict(list)
-        for batch_count, model_to_results in batch_results.items():
-            for model, stats in model_to_results.items():
-                model_to_score_and_batch_size[model].append(stats[:4] + [batch_count])
-        iteration_to_batch[iteration] = model_to_score_and_batch_size
-    
+    # prepare results for figure 1 and 2
+    iteration_to_batch = _prep_figure1_2(result)
     # bert score against batch size (filtered by model)
     # maps model name to (bert score, batch size)
     _create_figure1(iteration_to_batch)
-        
     # all scores against batch size (filtered by model) and averaged across all iterations
     _create_figure2(iteration_to_batch)
 
-    # inference time
-    # total inference time
+    # prepare results for figure 3 and 4
+    model_to_batch_size_to_avgs, model_to_batch_size_to_turnaround = _prep_figure3_4(result)
+    # average inference time per frame against batch size (filtered by model)
+    _create_figure3(model_to_batch_size_to_avgs)
+    _create_figure3_combined(model_to_batch_size_to_avgs)
+    # total inference time (turnaround time) against batch size (filtered by model)
+    _create_figure4(model_to_batch_size_to_turnaround)
+
+    # best n average inference time per frame (time against model)
+
+    # slowest n average inference time per frame (time against model)
 
 def main(args):
     if os.path.exists("result.pkl"):

@@ -141,6 +141,9 @@ class RealNode : public std::enable_shared_from_this<RealNode> {
 
     void AddCallback(long long key, bmf::BMFCallback callbackInstance);
 
+    void AddCallback(long long key, 
+                     std::function<bmf_sdk::CBytes(bmf_sdk::CBytes)> callback);
+
     nlohmann::json Dump();
 
     std::shared_ptr<RealNode>
@@ -450,6 +453,9 @@ class BMF_ENGINE_API Node {
 
     void AddCallback(long long key,
                                   const bmf::BMFCallback &callbackInstance);
+
+    void AddCallback(long long key, 
+                     std::function<bmf_sdk::CBytes(bmf_sdk::CBytes)> callback);
 
     void Start();
 

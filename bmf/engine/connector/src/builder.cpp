@@ -133,9 +133,12 @@ nlohmann::json RealNode::NodeMetaInfo::Dump() {
     nlohmann::json info;
 
     info["premodule_id"] = preModuleUID_;
-    info["callback_bindings"] = nlohmann::json::object();
+    info["callback_binding"] = 
+        nlohmann::json(std::vector<std::string>());
     for (auto &kv : callbackBinding_) {
-        info["callback_bindings"][kv.first] = kv.second;
+        info["callback_binding"].push_back(
+            std::to_string(kv.first) + ":" + std::to_string(kv.second)
+        );
     }
 
     return info;
@@ -227,6 +230,12 @@ void RealNode::AddCallback(long long key, bmf::BMFCallback callbackInstance) {
     metaInfo_.callbackInstances_[key] =
         std::make_shared<bmf::BMFCallback>(callbackInstance);
     metaInfo_.callbackBinding_[key] = callbackInstance.uid();
+}
+void RealNode::AddCallback(long long key, std::function<bmf_sdk::CBytes(bmf_sdk::CBytes)> callback) {
+    auto cb = bmf::BMFCallback(callback);
+    metaInfo_.callbackInstances_[key] =
+        std::make_shared<bmf::BMFCallback>(cb);
+    metaInfo_.callbackBinding_[key] = cb.uid();
 }
 
 std::shared_ptr<RealNode>
@@ -664,6 +673,11 @@ void Node::SetPreModule(const bmf::BMFModule &preModuleInstance) {
 void Node::AddCallback(long long key,
                        const bmf::BMFCallback &callbackInstance) {
     baseP_->AddCallback(key, callbackInstance);
+}
+
+void Node::AddCallback(long long key, 
+                       std::function<bmf_sdk::CBytes(bmf_sdk::CBytes)> callback) {
+    baseP_->AddCallback(key, callback);
 }
 
 void Node::Start() { Stream(0).Start(); }

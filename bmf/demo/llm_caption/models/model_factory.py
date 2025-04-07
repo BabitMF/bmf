@@ -4,6 +4,7 @@ from models.hugging_face.llava import LLaVA_One_Vision, LLaVA_Next_Video
 
 from models.vllm.deepseek_vllm import Deepseek_VL2_VLLM
 from models.vllm.qwen_vllm import Qwen2_VL_VLLM, Qwen2_5_VL_3b_VLLM, Qwen2_5_VL_7b_VLLM
+from models.vllm.llava_vllm import LLaVA_Next_Video_VLLM, LLaVA_One_Vision_VLLM
 # only entry point exposed to llm_caption.py
 # calls this to create the model class
 class ModelFactory:
@@ -16,8 +17,8 @@ class ModelFactory:
             "Qwen2_VL": Qwen2_VL_VLLM,
             "Qwen2_5_VL_3b": Qwen2_5_VL_3b_VLLM,
             "Qwen2_5_VL_7b": Qwen2_5_VL_7b_VLLM,
-            # "LLaVA_One_Vision": LLaVA_VLLM,
-            # "LLaVA_Next_Video": LLaVA_VLLM
+            "LLaVA_One_Vision": LLaVA_One_Vision_VLLM,
+            "LLaVA_Next_Video": LLaVA_Next_Video_VLLM
         },
         "hugging_face": {
             "Deepseek_VL2": Deepseek_VL2,

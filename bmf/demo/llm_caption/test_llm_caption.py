@@ -7,6 +7,9 @@ def main(args):
     input_path = "../LLM_video_preprocessing/big_bunny_10s_30fps.mp4"
     graph = bmf.graph({"dump_graph": 0})
 
+    # needed for vllm backend
+    torch.cuda.current_device()
+
     model = "Qwen2_5_VL_3b"
     if len(args) == 2:
         model = args[1]
@@ -20,9 +23,10 @@ def main(args):
         }
     })
     video['video'].module('llm_caption', {"result_path": "result.json",
-                                                   "batch_size": 5,
+                                                   "batch_size": 4,
                                                    "multithreading": False,
-                                                   "model": model
+                                                   "model": model,
+                                                   "backend": "vllm"
                                                    # "max_threads": 2,
                                           }).run()
 

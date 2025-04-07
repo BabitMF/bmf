@@ -28,22 +28,24 @@ def write_json(data, file_path):
 class llm_caption(Module):
 
     def __init__(self, node, option=None):
+        # how many images can be inferenced in a single prompt
+        self.batch_size = 4
+        if option and "batch_size" in option.keys():
+            self.batch_size = option["batch_size"]
+
         # initialise model, default to deepseek janus
         option["model"] = option.get("model", "")
+        # get backend, defaults to using vllm
+        option["backend"] = option.get("backend", "vllm")
         # initialise model from model loader
-        self.model_factory = ModelFactory(option["model"])
+        self.model_factory = ModelFactory(option["model"], option["backend"], self.batch_size)
         self.model = self.model_factory.get_model()
+        print("Batch size: ", self.batch_size)
 
         # list of PIL images to be inferenced - cannot exceed BATCH_SIZE
         self.buffer = []
         # concatenated answer of each summary on a batch
         self.combined_answer = ""
-
-        # how many images can be inferenced in a single prompt
-        self.batch_size = 4
-        if option and "batch_size" in option.keys():
-            self.batch_size = option["batch_size"]
-        print("Batch size: ", self.batch_size)
 
         # where to write the output
         self.output_path = "caption.json"

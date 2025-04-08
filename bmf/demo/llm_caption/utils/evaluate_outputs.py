@@ -135,7 +135,7 @@ def _create_figure1(iteration_to_batch, prefix):
             ax.set_ylim(bottom=current_ylim[0], top=1)
         plt.title(f"Scores vs Batch Size for {model}")
         plt.legend()
-        plt.savefig(f"figures/bert/{model}.png")
+        plt.savefig(f"figures/bert_{prefix}/{model}.png")
         plt.close()
 
 def _create_figure2(iteration_to_batch, prefix):
@@ -173,7 +173,7 @@ def _create_figure2(iteration_to_batch, prefix):
         plt.title(f"Average Scores vs Batch Size for {model}")
         plt.legend()
         plt.xticks(range(int(min(batch_sizes)), int(max(batch_sizes)) + 1))
-        plt.savefig(f"figures/all_scores/{model}.png")
+        plt.savefig(f"figures/all_scores_{prefix}/{model}.png")
         plt.close()
 
 def _create_figure3(model_to_batch_size_to_avgs, prefix):
@@ -190,7 +190,7 @@ def _create_figure3(model_to_batch_size_to_avgs, prefix):
         plt.xticks(range(input[0][0], input[-1][0] + 1))
         plt.ylabel("Average Inference Time per Frame")
         plt.title(f"Average Inference Time against Batch Size for {model}")
-        plt.savefig(f"figures/average_inference/{model}.png")
+        plt.savefig(f"figures/average_inference_{prefix}/{model}.png")
         plt.close()
         
 def _create_figure3_combined(model_to_batch_size_to_avgs, prefix):
@@ -207,7 +207,7 @@ def _create_figure3_combined(model_to_batch_size_to_avgs, prefix):
     plt.ylabel("Average Inference Time per Frame")
     plt.title(f"Average Inference Time against Batch Size (combined)")
     plt.legend()
-    plt.savefig(f"figures/average_inference_combined/combined.png")
+    plt.savefig(f"figures/average_inference_combined_{prefix}/combined.png")
     plt.close()
         
 def _create_figure4(model_to_batch_size_to_turnaround, prefix):
@@ -224,11 +224,11 @@ def _create_figure4(model_to_batch_size_to_turnaround, prefix):
         plt.xticks(range(input[0][0], input[-1][0] + 1))
         plt.ylabel("Average Turnaround Time")
         plt.title(f"Average Turnaround Time against Batch Size for {model}")
-        plt.savefig(f"figures/turnaround_time/{model}.png")
+        plt.savefig(f"figures/turnaround_time_{prefix}/{model}.png")
         plt.close()
         
 def _create_figure4_combined(model_to_batch_size_to_turnaround, prefix):
-    os.makedirs(f"figures/turnaround_time_combined", exist_ok=True)
+    os.makedirs(f"figures/turnaround_time_combined_{prefix}", exist_ok=True)
     plt.figure()
     for model, batch_size_to_turnaround in model_to_batch_size_to_turnaround.items():
         input = []
@@ -241,7 +241,7 @@ def _create_figure4_combined(model_to_batch_size_to_turnaround, prefix):
     plt.ylabel("Average Turnaround Time")
     plt.title(f"Average Turnaround Time against Batch Size")
     plt.legend()
-    plt.savefig(f"figures/turnaround_time_combined/combined.png")
+    plt.savefig(f"figures/turnaround_time_combined_{prefix}/combined.png")
     plt.close()
 
 def _create_figure5_combined(model_to_batch_size_to_rouge, prefix):
@@ -258,7 +258,7 @@ def _create_figure5_combined(model_to_batch_size_to_rouge, prefix):
     plt.ylabel("Average ROUGE score")
     plt.title(f"Average ROUGE score against Batch Size")
     plt.legend()
-    plt.savefig(f"figures/rouge_combined/combined.png")
+    plt.savefig(f"figures/rouge_combined_{prefix}/combined.png")
     plt.close()
 
 def _create_figure6_combined(model_to_batch_size_to_meteor, prefix):
@@ -275,7 +275,28 @@ def _create_figure6_combined(model_to_batch_size_to_meteor, prefix):
     plt.ylabel("Average METEOR score")
     plt.title(f"Average METEOR score against Batch Size")
     plt.legend()
-    plt.savefig(f"figures/meteor_combined/combined.png")
+    plt.savefig(f"figures/meteor_combined_{prefix}/combined.png")
+    plt.close()
+
+def _create_figure7(model_to_batch_size_to_avgs_hf, model_to_batch_size_to_avgs_vllm):
+    os.makedirs(f"figures/hf_vs_vllm", exist_ok=True)
+    plt.figure()
+    # only plot models that are common to both
+    common_models = set(model_to_batch_size_to_avgs_hf) & set(model_to_batch_size_to_avgs_vllm)
+    for model_to_batch_size_to_avgs, line_style in [(model_to_batch_size_to_avgs_hf, '-'), (model_to_batch_size_to_avgs_vllm, '--')]:
+        for model in common_models:
+            batch_size_to_avgs = model_to_batch_size_to_avgs[model]
+            input = []
+            for batch_size, averages in batch_size_to_avgs.items():
+                average_of_averages = sum(averages) / len(averages)
+                input.append((batch_size, average_of_averages))
+            input.sort()
+            plt.plot([x[0] for x in input], [x[1] for x in input], label=model, linestyle=linestyle)
+    plt.xlabel("Batch Size")
+    plt.ylabel("Average Inference Time per Frame")
+    plt.title(f"Average Inference Time against Batch Size (HF vs vLLM)")
+    plt.legend()
+    plt.savefig(f"figures/hf_vs_vllm/combined.png")
     plt.close()
 
 def create_figures(result, prefix):
@@ -319,6 +340,9 @@ def main(args):
             pickle.dump(result, f)
     create_figures(result[0], "hf")
     create_figures(result[1], "vllm")
+
+    # inference time against batch size (filtered by common models) and both hf and vlm are shown
+    _create_figure7(*[_prep_figure3_4_5_6(r)[0] for r in result])
 
 if __name__ == "__main__":
     main(sys.argv)

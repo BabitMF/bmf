@@ -54,6 +54,8 @@ def process_results(ground_truth):
             batch_to_model = create_default_batch()
             batch_count = 1
             while (prefix := os.path.join(dir, f"BATCH_{batch_count}")) and os.path.exists(prefix):
+                # if backend == "vllm" and batch_count == 19:
+                #     break
                 model_to_results = defaultdict(list)
                 for model in dic["MODELS"]:
                     # if there is an error file skip it
@@ -114,7 +116,7 @@ def _prep_figure3_4_5_6(result):
 
 def _create_figure1(iteration_to_batch, prefix):
     os.makedirs(f"figures/bert_{prefix}", exist_ok=True)
-    for model in MODELS:
+    for model in MASTER[prefix]["MODELS"]:
         plt.figure()
         for iteration in iteration_to_batch:
             filter = iteration_to_batch[iteration][model]
@@ -140,7 +142,7 @@ def _create_figure1(iteration_to_batch, prefix):
 
 def _create_figure2(iteration_to_batch, prefix):
     os.makedirs(f"figures/all_scores_{prefix}", exist_ok=True)
-    for model in MODELS:
+    for model in MASTER[prefix]["MODELS"]:
         # maps batch size to score types that maps to scores
         batch_size_to_score_type = defaultdict(lambda: defaultdict(list))
         for iteration in iteration_to_batch:
@@ -291,7 +293,7 @@ def _create_figure7(model_to_batch_size_to_avgs_hf, model_to_batch_size_to_avgs_
                 average_of_averages = sum(averages) / len(averages)
                 input.append((batch_size, average_of_averages))
             input.sort()
-            plt.plot([x[0] for x in input], [x[1] for x in input], label=model, linestyle=linestyle)
+            plt.plot([x[0] for x in input], [x[1] for x in input], label=model, linestyle=line_style)
     plt.xlabel("Batch Size")
     plt.ylabel("Average Inference Time per Frame")
     plt.title(f"Average Inference Time against Batch Size (HF vs vLLM)")
@@ -338,7 +340,7 @@ def main(args):
         result = process_results(truth)
         with open("result.pkl", 'wb') as f:
             pickle.dump(result, f)
-    create_figures(result[0], "hf")
+    create_figures(result[0], "hugging_face")
     create_figures(result[1], "vllm")
 
     # inference time against batch size (filtered by common models) and both hf and vlm are shown

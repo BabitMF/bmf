@@ -11,11 +11,13 @@ class BaseVLLMVisionModel(BaseVisionModel, ABC):
                  image_prompt, 
                  title_prompt, 
                  summary_prompt,
+                 max_model_len=None,
                  overrides=None):
         super().__init__()
         self.model = LLM(model=model_name,
                          limit_mm_per_prompt={"image": batch_size},
                          max_num_seqs=1,
+                         max_model_len=max_model_len,
                          hf_overrides=overrides)
         self.sample_params = SamplingParams(max_tokens=512)
         self.prompt_template = {

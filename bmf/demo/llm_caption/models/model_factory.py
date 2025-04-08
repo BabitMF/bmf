@@ -40,7 +40,7 @@ class ModelFactory:
         model = self.MODEL_MAP[backend].get(model_name, None)
         # check if model exists
         if model is None:
-            raise ValueError(f"Unknown model: {model_name}, Valid models: {list(self.MODEL_MAP.keys())}")
+            raise ValueError(f"Unknown model: {model_name}, Valid models: {list(self.MODEL_MAP[backend].keys())}")
         # if vllm backend, give batch size as it needs a max multimodal input size
         if backend == 'vllm':
             self.model = model(batch_size)

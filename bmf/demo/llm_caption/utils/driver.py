@@ -2,6 +2,7 @@ import os
 import subprocess
 from datetime import datetime
 import time
+import sys
 
 def prep_dir(dir_name):
     os.makedirs(dir_name, exist_ok=True)
@@ -12,12 +13,19 @@ def format_time(seconds):
     seconds = seconds % 60
     return f"{int(hours)}h {int(minutes)}m {int(seconds)}s"
 
-def main():
+def main(args):
     start = time.time()
-    MODELS = ["Deepseek_VL2", "Deepseek_Janus_1b", "Deepseek_Janus_7b", "Qwen2_VL", "Qwen2_5_VL_3b", "Qwen2_5_VL_7b", "LLaVA_One_Vision", "LLaVA_Next_Video"]
-    PYTHONV = ["3.8"] * 3 + ["3.10"] * 5
+    if args[1] == "hf":
+        MODELS = ["Deepseek_VL2", "Deepseek_Janus_1b", "Deepseek_Janus_7b", "Qwen2_VL", "Qwen2_5_VL_3b", "Qwen2_5_VL_7b", "LLaVA_One_Vision", "LLaVA_Next_Video"]
+        PYTHONV = ["3.8"] * 3 + ["3.10"] * 5
+    elif args[1] == "vllm":
+        MODELS = ["Deepseek_VL2", "Qwen2_VL", "Qwen2_5_VL_3b", "Qwen2_5_VL_7b", "LLaVA_One_Vision"]
+        PYTHONV = ["3.10"] * 5
+    else:
+        print("Specify a backend to test: 'hf' or 'vllm'")
+        return 1
     INPUTPATH = "/home/allen.fang/big_bunny_1min_30fps.mp4"
-    MASTER = "test4"
+    MASTER = "vllm"
     prep_dir(MASTER)
 
     BATCHSIZE = 1
@@ -60,5 +68,5 @@ def main():
     print("Finished in", format_time(time.time() - start))
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)
 

@@ -1,6 +1,7 @@
 import os
 import sys
 import bmf
+import torch
 
 def main(args):
     input_path = args[1]
@@ -8,6 +9,7 @@ def main(args):
     batch_size = int(args[3])
     output_path = args[4]
 
+    torch.cuda.current_device()
     parent_dir = os.path.abspath(os.path.join(os.getcwd(), '..'))
     sys.path.append(parent_dir) 
 

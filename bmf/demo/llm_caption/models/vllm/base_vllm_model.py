@@ -35,6 +35,8 @@ class BaseVLLMVisionModel(BaseVisionModel, ABC):
         return self.model.generate(prompt, sampling_params=self.sample_params)
 
     def call_model(self, prompt, images):
+        # resize images into 360 by 420
+        images = [image.resize((360, 420)) for image in images]
         self.prompt_template["multi_modal_data"]["image"] = images
         self.prompt_template["prompt"] = self.prompt_format.format(q=prompt, i=self.image_embed * len(images))
 
@@ -47,9 +49,6 @@ class BaseVLLMVisionModel(BaseVisionModel, ABC):
             response, inference_time = self._call_model([self.prompt_template])
 
         self.log_time(inference_time, len(images))
-        formatted = ""
-        for r in response:
-            formatted += r.outputs[0].text.encode('utf-8').decode('unicode_escape')
-        return formatted, inference_time
+        return response[0].outputs[0].text, inference_time
 
 

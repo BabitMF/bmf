@@ -6,8 +6,16 @@ import json
 import pickle
 import sys
 
-MODELS = ["Deepseek_VL2", "Deepseek_Janus_1b", "Deepseek_Janus_7b", "Qwen2_VL", "Qwen2_5_VL_3b", "Qwen2_5_VL_7b", "LLaVA_One_Vision", "LLaVA_Next_Video"]
-DIRS = ["test", "test1", "test2", "test3", "test4"]
+MASTER = {
+    "hugging_face": {
+        "MODELS": ["Deepseek_VL2", "Deepseek_Janus_1b", "Deepseek_Janus_7b", "Qwen2_VL", "Qwen2_5_VL_3b", "Qwen2_5_VL_7b", "LLaVA_One_Vision", "LLaVA_Next_Video"],
+        "DIRS": ["test", "test1", "test2", "test3", "test4"],
+    },
+    "vllm": {
+        "MODELS": ["Deepseek_VL2", "Qwen2_VL", "Qwen2_5_VL_3b", "Qwen2_5_VL_7b", "LLaVA_One_Vision"],
+        "DIRS": ["vllm"] 
+    }
+}
 
 def get_truth():
     ground_truth = None
@@ -36,38 +44,39 @@ def process_results(ground_truth):
     bleu = load("bleu")
     rouge = load("rouge")
     meteor = load("meteor")
-    # maps iteration count to a dictionary
-    # this dictionary maps batch size, to another dictionary
-    # this other dictionary maps model name to (bert score against summary, inference time per frame, total turnaround time)
-    iteration_to_batch = defaultdict(create_default_batch)
-
-    for iteration, dir in enumerate(DIRS):
-        batch_to_model = create_default_batch()
-        batch_count = 1
-        while (prefix := os.path.join(dir, f"BATCH_{batch_count}")) and os.path.exists(prefix):
-            model_to_results = defaultdict(list)
-            for model in MODELS:
-                # if there is an error file skip it
-                if os.path.exists(os.path.join(prefix, model + ".log")):
-                    model_to_results[model] = [None] * 6
-                    continue
-                # get data
-                data = read_json(os.path.join(prefix, model))
-                # get all score's f score
-                bert_score = bertscore.compute(predictions=[data["summary"]], references=ground_truth, lang="en")["f1"][0] if data["summary"] else None
-                try:
-                    bleu_score = bleu.compute(predictions=[data["summary"]], references=ground_truth)["bleu"] if data["summary"] else None
-                except:
-                    bleu_score = None
-                rouge_score = rouge.compute(predictions=[data["summary"]], references=ground_truth)["rouge1"] if data["summary"] else None 
-                meteor_score = meteor.compute(predictions=[data["summary"]], references=ground_truth)["meteor"] if data["summary"] else None 
-                scores = [bert_score, bleu_score, rouge_score, meteor_score]
-
-                model_to_results[model] = scores + [data["average_inference"], data["turnaround_time"]]
-            batch_to_model[batch_count] = model_to_results
-            batch_count += 1
-        iteration_to_batch[iteration] = batch_to_model
-    return iteration_to_batch
+    result = []
+    for backend, dic in MASTER.items():
+        # maps iteration count to a dictionary
+        # this dictionary maps batch size, to another dictionary
+        # this other dictionary maps model name to (bert score against summary, inference time per frame, total turnaround time)
+        iteration_to_batch = defaultdict(create_default_batch)
+        for iteration, dir in enumerate(dic["DIRS"]):
+            batch_to_model = create_default_batch()
+            batch_count = 1
+            while (prefix := os.path.join(dir, f"BATCH_{batch_count}")) and os.path.exists(prefix):
+                model_to_results = defaultdict(list)
+                for model in dic["MODELS"]:
+                    # if there is an error file skip it
+                    if os.path.exists(os.path.join(prefix, model + ".log")):
+                        model_to_results[model] = [None] * 6
+                        continue
+                    # get data
+                    data = read_json(os.path.join(prefix, model))
+                    # get all score's f score
+                    bert_score = bertscore.compute(predictions=[data["summary"]], references=ground_truth, lang="en")["f1"][0] if data["summary"] else None
+                    try:
+                        bleu_score = bleu.compute(predictions=[data["summary"]], references=ground_truth)["bleu"] if data["summary"] else None
+                    except:
+                        bleu_score = None
+                    rouge_score = rouge.compute(predictions=[data["summary"]], references=ground_truth)["rouge1"] if data["summary"] else None 
+                    meteor_score = meteor.compute(predictions=[data["summary"]], references=ground_truth)["meteor"] if data["summary"] else None 
+                    scores = [bert_score, bleu_score, rouge_score, meteor_score]
+                    model_to_results[model] = scores + [data["average_inference"], data["turnaround_time"]]
+                batch_to_model[batch_count] = model_to_results
+                batch_count += 1
+            iteration_to_batch[iteration] = batch_to_model
+        result.append(iteration_to_batch)
+    return result
 
 def _prep_figure1_2(result):
     os.makedirs("figures", exist_ok=True)
@@ -103,8 +112,8 @@ def _prep_figure3_4_5_6(result):
             model_to_batch_size_to_rouge, \
             model_to_batch_size_to_meteor
 
-def _create_figure1(iteration_to_batch):
-    os.makedirs("figures/bert", exist_ok=True)
+def _create_figure1(iteration_to_batch, prefix):
+    os.makedirs(f"figures/bert_{prefix}", exist_ok=True)
     for model in MODELS:
         plt.figure()
         for iteration in iteration_to_batch:
@@ -129,8 +138,8 @@ def _create_figure1(iteration_to_batch):
         plt.savefig(f"figures/bert/{model}.png")
         plt.close()
 
-def _create_figure2(iteration_to_batch):
-    os.makedirs("figures/all_scores", exist_ok=True)
+def _create_figure2(iteration_to_batch, prefix):
+    os.makedirs(f"figures/all_scores_{prefix}", exist_ok=True)
     for model in MODELS:
         # maps batch size to score types that maps to scores
         batch_size_to_score_type = defaultdict(lambda: defaultdict(list))
@@ -167,8 +176,8 @@ def _create_figure2(iteration_to_batch):
         plt.savefig(f"figures/all_scores/{model}.png")
         plt.close()
 
-def _create_figure3(model_to_batch_size_to_avgs):
-    os.makedirs("figures/average_inference", exist_ok=True)
+def _create_figure3(model_to_batch_size_to_avgs, prefix):
+    os.makedirs(f"figures/average_inference_{prefix}", exist_ok=True)
     for model, batch_size_to_avgs in model_to_batch_size_to_avgs.items():
         plt.figure()
         input = []
@@ -184,8 +193,8 @@ def _create_figure3(model_to_batch_size_to_avgs):
         plt.savefig(f"figures/average_inference/{model}.png")
         plt.close()
         
-def _create_figure3_combined(model_to_batch_size_to_avgs):
-    os.makedirs("figures/average_inference_combined", exist_ok=True)
+def _create_figure3_combined(model_to_batch_size_to_avgs, prefix):
+    os.makedirs(f"figures/average_inference_combined_{prefix}", exist_ok=True)
     plt.figure()
     for model, batch_size_to_avgs in model_to_batch_size_to_avgs.items():
         input = []
@@ -201,8 +210,8 @@ def _create_figure3_combined(model_to_batch_size_to_avgs):
     plt.savefig(f"figures/average_inference_combined/combined.png")
     plt.close()
         
-def _create_figure4(model_to_batch_size_to_turnaround):
-    os.makedirs("figures/turnaround_time", exist_ok=True)
+def _create_figure4(model_to_batch_size_to_turnaround, prefix):
+    os.makedirs(f"figures/turnaround_time_{prefix}", exist_ok=True)
     for model, batch_size_to_avgs in model_to_batch_size_to_turnaround.items():
         plt.figure()
         input = []
@@ -218,8 +227,8 @@ def _create_figure4(model_to_batch_size_to_turnaround):
         plt.savefig(f"figures/turnaround_time/{model}.png")
         plt.close()
         
-def _create_figure4_combined(model_to_batch_size_to_turnaround):
-    os.makedirs("figures/turnaround_time_combined", exist_ok=True)
+def _create_figure4_combined(model_to_batch_size_to_turnaround, prefix):
+    os.makedirs(f"figures/turnaround_time_combined", exist_ok=True)
     plt.figure()
     for model, batch_size_to_turnaround in model_to_batch_size_to_turnaround.items():
         input = []
@@ -235,8 +244,8 @@ def _create_figure4_combined(model_to_batch_size_to_turnaround):
     plt.savefig(f"figures/turnaround_time_combined/combined.png")
     plt.close()
 
-def _create_figure5_combined(model_to_batch_size_to_rouge):
-    os.makedirs("figures/rouge_combined", exist_ok=True)
+def _create_figure5_combined(model_to_batch_size_to_rouge, prefix):
+    os.makedirs(f"figures/rouge_combined_{prefix}", exist_ok=True)
     plt.figure()
     for model, batch_size_to_rouge in model_to_batch_size_to_rouge.items():
         input = []
@@ -252,8 +261,8 @@ def _create_figure5_combined(model_to_batch_size_to_rouge):
     plt.savefig(f"figures/rouge_combined/combined.png")
     plt.close()
 
-def _create_figure6_combined(model_to_batch_size_to_meteor):
-    os.makedirs("figures/meteor_combined", exist_ok=True)
+def _create_figure6_combined(model_to_batch_size_to_meteor, prefix):
+    os.makedirs(f"figures/meteor_combined_{prefix}", exist_ok=True)
     plt.figure()
     for model, batch_size_to_meteor in model_to_batch_size_to_meteor.items():
         input = []
@@ -269,14 +278,14 @@ def _create_figure6_combined(model_to_batch_size_to_meteor):
     plt.savefig(f"figures/meteor_combined/combined.png")
     plt.close()
 
-def create_figures(result):
+def create_figures(result, prefix):
     # prepare results for figure 1 and 2
     iteration_to_batch = _prep_figure1_2(result)
     # bert score against batch size (filtered by model)
     # maps model name to (bert score, batch size)
-    _create_figure1(iteration_to_batch)
+    _create_figure1(iteration_to_batch, prefix)
     # all scores against batch size (filtered by model) and averaged across all iterations
-    _create_figure2(iteration_to_batch)
+    _create_figure2(iteration_to_batch, prefix)
 
     # prepare results for figure 3,4,5,6
     model_to_batch_size_to_avgs, \
@@ -285,19 +294,19 @@ def create_figures(result):
     model_to_batch_size_to_meteor = _prep_figure3_4_5_6(result)
     # average inference time per frame against batch size
     # filtered by model
-    _create_figure3(model_to_batch_size_to_avgs)
+    _create_figure3(model_to_batch_size_to_avgs, prefix)
     # combined
-    _create_figure3_combined(model_to_batch_size_to_avgs)
+    _create_figure3_combined(model_to_batch_size_to_avgs, prefix)
     # total inference time (turnaround time) against batch size (filtered by model)
     # filtered by model
-    _create_figure4(model_to_batch_size_to_turnaround)
+    _create_figure4(model_to_batch_size_to_turnaround, prefix)
     # combined
-    _create_figure4_combined(model_to_batch_size_to_turnaround)
+    _create_figure4_combined(model_to_batch_size_to_turnaround, prefix)
 
     # rouge score against batch size (all models shown)
-    _create_figure5_combined(model_to_batch_size_to_rouge)
+    _create_figure5_combined(model_to_batch_size_to_rouge, prefix)
     # meteor score against batch size (all models shown)
-    _create_figure6_combined(model_to_batch_size_to_meteor)
+    _create_figure6_combined(model_to_batch_size_to_meteor, prefix)
 
 def main(args):
     if os.path.exists("result.pkl"):
@@ -308,7 +317,8 @@ def main(args):
         result = process_results(truth)
         with open("result.pkl", 'wb') as f:
             pickle.dump(result, f)
-    create_figures(result)
+    create_figures(result[0], "hf")
+    create_figures(result[1], "vllm")
 
 if __name__ == "__main__":
     main(sys.argv)

@@ -402,6 +402,9 @@ void module_sdk_bind(py::module &m) {
         .def("copy_props", &VideoFrame::copy_props, py::arg("from"),
              py::arg("copy_private") = false)
         .def("reformat", &VideoFrame::reformat, py::arg("pix_info"))
+        .def("clone", [](const VideoFrame& self) {
+            return VideoFrame(self); // call copy construct function
+        })
         .def("as_contiguous_storage", &VideoFrame::as_contiguous_storage);
     PACKET_REGISTER_BMF_SDK_TYPE(VideoFrame)
 

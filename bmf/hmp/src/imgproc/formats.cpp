@@ -220,6 +220,14 @@ static PixelFormatDesc::Private sPixelFormatMetas[]{
         PixelFormat::PF_BGRA32, kUInt8, 1, {0x114, 0x00, 0x00, 0x0}}, //
     PixelFormatDesc::Private{
         PixelFormat::PF_RGBA64, kUInt16, 1, {0x114, 0x00, 0x00, 0x0}}, //
+    PixelFormatDesc::Private{
+        PixelFormat::PF_YUVA422P, kUInt8, 4, {0x111, 0x121, 0x121, 0x111}},
+    PixelFormatDesc::Private{
+        PixelFormat::PF_YUVA444P, kUInt8, 4, {0x111, 0x111, 0x111, 0x111}},
+    PixelFormatDesc::Private{
+        PixelFormat::PF_NV16, kUInt8, 2, {0x111, 0x122, 0x00, 0x0}},
+    PixelFormatDesc::Private{
+        PixelFormat::PF_NV24, kUInt8, 2, {0x111, 0x112, 0x00, 0x0}},
 };
 
 #define RC(v) ((v)&0xf)

@@ -138,6 +138,12 @@ enum PixelFormat {
     PF_YUV422P10LE = 66,
     PF_YUV420P10LE = 64,
     PF_YUV444P10LE = 68,
+
+    PF_YUVA422P = 80,
+    PF_YUVA444P = 81,
+
+    PF_NV16 = 103,
+    PF_NV24 = 191,
 };
 
 #define HMP_FORALL_PIXEL_FORMATS(_)                                            \
@@ -159,7 +165,11 @@ enum PixelFormat {
     _(PF_P010LE)                                                               \
     _(PF_P016LE)                                                               \
     _(PF_YUV422P10LE)                                                          \
-    _(PF_YUV420P10LE)
+    _(PF_YUV420P10LE)                                                          \
+    _(PF_YUVA422P)                                                             \
+    _(PF_YUVA444P)                                                             \
+    _(PF_NV16)                                                                 \
+    _(PF_NV24)
 
 HMP_API std::string stringfy(const PixelFormat &format);
 PixelFormat HMP_API get_pixel_format(std::string pixfmt);

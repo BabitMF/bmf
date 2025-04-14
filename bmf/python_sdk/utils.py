@@ -106,6 +106,10 @@ def get_commit():
     ###@}
     return _bmf.get_commit()
 
+def get_config():
+    ###@}
+    return _bmf.get_config()
+
 
 ## @ingroup pyAPIVer
 ###@{

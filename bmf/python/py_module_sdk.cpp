@@ -218,6 +218,12 @@ struct PyPacketQueue {
 void bmf_ffmpeg_bind(py::module &m) {
     using namespace bmf_sdk;
     auto ff = m.def_submodule("ffmpeg");
+
+    ff.def("to_format_str", [](hmp::PixelFormat format){
+        //BMFLOG(BMF_INFO) << "pf format: " << format;
+        return hmp::ffmpeg::hmp_to_ffmpeg_format_str(format);
+    });
+
     ff.def("siso_filter", [](VideoFrame &vf, const std::string &filter_str) {
         auto new_vf = ffmpeg::siso_filter(vf, filter_str);
         return py::cast(new_vf);

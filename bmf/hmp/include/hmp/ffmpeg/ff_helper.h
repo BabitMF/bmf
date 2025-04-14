@@ -17,6 +17,7 @@
 
 #include <hmp/imgproc.h>
 #include <hmp/format.h>
+#include <libavutil/pixfmt.h>
 
 extern "C" {
 #include <libavcodec/avcodec.h>
@@ -30,6 +31,12 @@ extern "C" {
 
 namespace hmp {
 namespace ffmpeg {
+
+static const char* hmp_to_ffmpeg_format_str(hmp::PixelFormat format) {
+    int value = format;
+    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get((enum AVPixelFormat)value);
+    return desc->name;
+}
 
 static PixelInfo make_pixel_info(const AVCodecParameters &codecpar) {
     return PixelInfo(

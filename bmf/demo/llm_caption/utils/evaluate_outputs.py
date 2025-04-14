@@ -135,7 +135,7 @@ def _create_figure1(iteration_to_batch, prefix):
         current_ylim = ax.get_ylim()
         if current_ylim[1] > 1:
             ax.set_ylim(bottom=current_ylim[0], top=1)
-        plt.title(f"Scores vs Batch Size for {model}")
+        plt.title(f"Scores vs Batch Size for {model} ({prefix})")
         plt.legend()
         plt.savefig(f"figures/bert_{prefix}/{model}.png")
         plt.close()
@@ -172,7 +172,7 @@ def _create_figure2(iteration_to_batch, prefix):
 
         plt.xlabel("Batch Size")
         plt.ylabel("Average Score (F1)")
-        plt.title(f"Average Scores vs Batch Size for {model}")
+        plt.title(f"Average Scores vs Batch Size for {model} ({prefix})")
         plt.legend()
         plt.xticks(range(int(min(batch_sizes)), int(max(batch_sizes)) + 1))
         plt.savefig(f"figures/all_scores_{prefix}/{model}.png")
@@ -191,7 +191,7 @@ def _create_figure3(model_to_batch_size_to_avgs, prefix):
         plt.xlabel("Batch Size")
         plt.xticks(range(input[0][0], input[-1][0] + 1))
         plt.ylabel("Average Inference Time per Frame")
-        plt.title(f"Average Inference Time against Batch Size for {model}")
+        plt.title(f"Average Inference Time against Batch Size for {model} ({prefix})")
         plt.savefig(f"figures/average_inference_{prefix}/{model}.png")
         plt.close()
         
@@ -207,7 +207,11 @@ def _create_figure3_combined(model_to_batch_size_to_avgs, prefix):
         plt.plot([x[0] for x in input], [x[1] for x in input], label=model)
     plt.xlabel("Batch Size")
     plt.ylabel("Average Inference Time per Frame")
-    plt.title(f"Average Inference Time against Batch Size (combined)")
+    ax = plt.gca()
+    current_xlim = ax.get_xlim()
+    if current_xlim[1] > 60:
+        ax.set_xlim(right=60)
+    plt.title(f"Average Inference Time against Batch Size (combined {prefix})")
     plt.legend()
     plt.savefig(f"figures/average_inference_combined_{prefix}/combined.png")
     plt.close()
@@ -225,7 +229,7 @@ def _create_figure4(model_to_batch_size_to_turnaround, prefix):
         plt.xlabel("Batch Size")
         plt.xticks(range(input[0][0], input[-1][0] + 1))
         plt.ylabel("Average Turnaround Time")
-        plt.title(f"Average Turnaround Time against Batch Size for {model}")
+        plt.title(f"Average Turnaround Time against Batch Size for {model} ({prefix})")
         plt.savefig(f"figures/turnaround_time_{prefix}/{model}.png")
         plt.close()
         
@@ -241,7 +245,11 @@ def _create_figure4_combined(model_to_batch_size_to_turnaround, prefix):
         plt.plot([x[0] for x in input], [x[1] for x in input], label=model)
     plt.xlabel("Batch Size")
     plt.ylabel("Average Turnaround Time")
-    plt.title(f"Average Turnaround Time against Batch Size")
+    ax = plt.gca()
+    current_xlim = ax.get_xlim()
+    if current_xlim[1] > 60:
+        ax.set_xlim(right=60)
+    plt.title(f"Average Turnaround Time against Batch Size ({prefix})")
     plt.legend()
     plt.savefig(f"figures/turnaround_time_combined_{prefix}/combined.png")
     plt.close()
@@ -258,7 +266,11 @@ def _create_figure5_combined(model_to_batch_size_to_rouge, prefix):
         plt.plot([x[0] for x in input], [x[1] for x in input], label=model)
     plt.xlabel("Batch Size")
     plt.ylabel("Average ROUGE score")
-    plt.title(f"Average ROUGE score against Batch Size")
+    ax = plt.gca()
+    current_xlim = ax.get_xlim()
+    if current_xlim[1] > 60:
+        ax.set_xlim(right=60)
+    plt.title(f"Average ROUGE score against Batch Size ({prefix})")
     plt.legend()
     plt.savefig(f"figures/rouge_combined_{prefix}/combined.png")
     plt.close()
@@ -275,7 +287,11 @@ def _create_figure6_combined(model_to_batch_size_to_meteor, prefix):
         plt.plot([x[0] for x in input], [x[1] for x in input], label=model)
     plt.xlabel("Batch Size")
     plt.ylabel("Average METEOR score")
-    plt.title(f"Average METEOR score against Batch Size")
+    ax = plt.gca()
+    current_xlim = ax.get_xlim()
+    if current_xlim[1] > 60:
+        ax.set_xlim(right=60)
+    plt.title(f"Average METEOR score against Batch Size ({prefix})")
     plt.legend()
     plt.savefig(f"figures/meteor_combined_{prefix}/combined.png")
     plt.close()
@@ -293,9 +309,26 @@ def _create_figure7(model_to_batch_size_to_avgs_hf, model_to_batch_size_to_avgs_
                 average_of_averages = sum(averages) / len(averages)
                 input.append((batch_size, average_of_averages))
             input.sort()
-            plt.plot([x[0] for x in input], [x[1] for x in input], label=model, linestyle=line_style)
+
+            import itertools
+            # Get consistent colours from matplotlib's default color cycle
+            color_cycle = itertools.cycle(plt.rcParams["axes.prop_cycle"].by_key()["color"])
+            # Assign one unique colour per model
+            model_to_color = {model: next(color_cycle) for model in sorted(common_models)}
+            plt.plot(
+                [x[0] for x in input],
+                [x[1] for x in input],
+                label=f"{model} ({'HF' if model_to_batch_size_to_avgs is model_to_batch_size_to_avgs_hf else 'vLLM'})",
+                linestyle=line_style,
+                color=model_to_color[model]  # consistent colour per model
+            )
+
     plt.xlabel("Batch Size")
     plt.ylabel("Average Inference Time per Frame")
+    ax = plt.gca()
+    current_xlim = ax.get_xlim()
+    if current_xlim[1] > 60:
+        ax.set_xlim(right=60)
     plt.title(f"Average Inference Time against Batch Size (HF vs vLLM)")
     plt.legend()
     plt.savefig(f"figures/hf_vs_vllm/combined.png")

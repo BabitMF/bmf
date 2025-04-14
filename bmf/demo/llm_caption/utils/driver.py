@@ -25,7 +25,7 @@ def main(args):
         print("Specify a backend to test: 'hf' or 'vllm'")
         return 1
     INPUTPATH = "/home/allen.fang/big_bunny_1min_30fps.mp4"
-    MASTER = "vllm"
+    MASTER = "vllm1"
     prep_dir(MASTER)
 
     BATCHSIZE = 1

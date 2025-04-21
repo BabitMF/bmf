@@ -65,10 +65,11 @@ class TrackPoint {
 struct BMQData : public TrackPoint {
     std::string get_tag() { return "BMQData"; }
     int user_id;
+    std::string data_type = "stable"; // "stable" or "real"
     std::map<std::string, std::string> outputs;
 
     // macro to generate to_json and from_json function
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(BMQData, user_id, outputs)
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(BMQData, user_id, data_type, outputs)
     TOJSON_MEMFUNC
 };
 

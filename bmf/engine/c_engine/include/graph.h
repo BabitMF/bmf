@@ -159,6 +159,7 @@ class Graph {
     
     int64_t graph_start_time_ = -1;
     int64_t graph_end_time_ = -1;
+    std::string uuid_;
 
 };
 

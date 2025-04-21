@@ -55,6 +55,17 @@ if(BMF_EANBLE_GLOG)
     endif()
 endif()
 
+## stduuid
+set(UUID_SYSTEM_GENERATOR ON CACHE BOOL "Override system generator" FORCE)
+set(FETCHCONTENT_BASE_DIR ${CMAKE_SOURCE_DIR}/custom_deps)
+include(FetchContent)
+FetchContent_Declare(
+  stduuid
+  GIT_REPOSITORY https://github.com/mariusbancila/stduuid.git
+  GIT_TAG        v1.2.3 
+)
+FetchContent_MakeAvailable(stduuid)
+
 ## gtest
 # use target from hmp
 

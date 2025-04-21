@@ -55,7 +55,7 @@ class Node {
   public:
     Node(int node_id, NodeConfig &node_config, NodeCallBack &callback,
          std::shared_ptr<Module> pre_allocated_modules, BmfMode mode,
-         std::shared_ptr<ModuleCallbackLayer> callbacks);
+         std::shared_ptr<ModuleCallbackLayer> callbacks, const std::string &graph_uuid = "");
 
     int process_node(Task &task);
 
@@ -192,6 +192,7 @@ class Node {
     // used for BMFStat
     bool enable_stat_ = false;
     ModuleData module_stat_data_;
+    std::string graph_uuid_;
 };
 END_BMF_ENGINE_NS
 

@@ -31,9 +31,9 @@ USE_BMF_SDK_NS
 
 Node::Node(int node_id, NodeConfig &node_config, NodeCallBack &node_callback,
            std::shared_ptr<Module> pre_allocated_module, BmfMode mode,
-           std::shared_ptr<ModuleCallbackLayer> callbacks)
+           std::shared_ptr<ModuleCallbackLayer> callbacks, const std::string &graph_uuid)
     : id_(node_id), node_config_(node_config), callback_(node_callback),
-      mode_(mode), module_callbacks_(callbacks) {
+      mode_(mode), module_callbacks_(callbacks), graph_uuid_(graph_uuid) {
     type_ = node_config_.get_module_info().module_name;
     module_name_ = type_;
     node_name_ = "Node_" + std::to_string(id_) + "_" + module_name_;
@@ -171,6 +171,7 @@ int Node::close() {
             module_stat_data_.user_df = user_df.dump();
         module_stat_data_.node_id = id_;
         module_stat_data_.module_name = module_name_;
+        module_stat_data_.graph_uuid = graph_uuid_;
         bmf_stat_report(std::make_shared<ModuleData>(std::move(module_stat_data_)));
     }
     for (auto &input_stream : input_stream_manager_->input_streams_)
@@ -196,6 +197,7 @@ int Node::reset() {
             module_stat_data_.user_df = user_df.dump();
         module_stat_data_.node_id = id_;
         module_stat_data_.module_name = module_name_;
+        module_stat_data_.graph_uuid = graph_uuid_;
         bmf_stat_report(std::make_shared<ModuleData>(std::move(module_stat_data_)));
     }
     // reset module of this node

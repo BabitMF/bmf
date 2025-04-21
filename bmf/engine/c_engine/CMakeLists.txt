@@ -48,6 +48,7 @@ endif()
 target_link_libraries(engine
     PRIVATE
         bmf_module_sdk
+        stduuid
 )
 
 if(NOT APPLE AND NOT ANDROID)

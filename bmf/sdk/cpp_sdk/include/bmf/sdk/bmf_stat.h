@@ -55,6 +55,7 @@ class TrackPoint {
     virtual nlohmann::json to_json() = 0;
 
     int64_t task_id = -1;
+    std::string graph_uuid;
 };
 
 #define TOJSON_MEMFUNC                                                         \
@@ -76,9 +77,8 @@ struct GraphStartData : public TrackPoint {
     int64_t start_timestamp = -1;
     std::string version;
     std::string commit;
-
     // macro to generate to_json and from_json function
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(GraphStartData, start_timestamp,
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(GraphStartData, graph_uuid, start_timestamp,
                                    version, commit)
     TOJSON_MEMFUNC
 };
@@ -91,7 +91,7 @@ struct GraphEndData : public TrackPoint {
     int err = 0;
     std::string graph_str;
     // macro to generate to_json and from_json function
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(GraphEndData, task_id, start_timestamp,
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(GraphEndData, task_id, graph_uuid, start_timestamp,
                                    end_timestamp, err, graph_str)
     TOJSON_MEMFUNC
 };
@@ -100,13 +100,13 @@ struct ModuleData : public TrackPoint {
     std::string get_tag() { return "ModuleData"; }
     std::string module_name;
     int node_id;
-    int64_t avg_processing_time = 0;
+    float avg_processing_time = 0;
     int64_t max_processing_time = 0;
     int64_t min_processing_time = INT64_MAX;
     int process_cnts = 0;
     int64_t total_process_time = 0;
     std::string user_df;
-    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ModuleData, module_name, node_id, avg_processing_time,
+    NLOHMANN_DEFINE_TYPE_INTRUSIVE(ModuleData, graph_uuid, module_name, node_id, avg_processing_time,
                                    max_processing_time, min_processing_time,
                                    process_cnts, total_process_time, user_df)
     TOJSON_MEMFUNC

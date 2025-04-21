@@ -165,7 +165,11 @@ int Node::close() {
     mutex_.lock();
     // callback_.throttled_cb(id_, false);
     if (enable_stat_ && module_stat_data_.process_cnts > 0 && mode_ != BmfMode::SERVER_MODE) {
-        module_stat_data_.avg_processing_time = module_stat_data_.total_process_time / module_stat_data_.process_cnts;
+        module_stat_data_.avg_processing_time = 
+        static_cast<float>(
+            static_cast<double>(module_stat_data_.total_process_time) / 
+            module_stat_data_.process_cnts
+        );
         JsonParam user_df;
         if (module_->report_user_df_data(user_df))
             module_stat_data_.user_df = user_df.dump();
@@ -191,7 +195,11 @@ int Node::close() {
 int Node::reset() {
     mutex_.lock();
     if (enable_stat_ && module_stat_data_.process_cnts > 0 && mode_ == BmfMode::SERVER_MODE) {
-        module_stat_data_.avg_processing_time = module_stat_data_.total_process_time / module_stat_data_.process_cnts;
+        module_stat_data_.avg_processing_time = 
+        static_cast<float>(
+            static_cast<double>(module_stat_data_.total_process_time) / 
+            module_stat_data_.process_cnts
+        );
         JsonParam user_df;
         if (module_->report_user_df_data(user_df))
             module_stat_data_.user_df = user_df.dump();

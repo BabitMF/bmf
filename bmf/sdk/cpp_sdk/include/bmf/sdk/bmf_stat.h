@@ -48,6 +48,21 @@ inline uint64_t bmf_get_time() {
     return us;
 }
 
+class StatTimer {
+public:
+    StatTimer(bool enable_stat) : enabled_(enable_stat) {
+        if(enabled_) start_ = bmf_get_time();
+    }
+
+    double elapsed() const {
+        return enabled_ ? (bmf_get_time() - start_) : 0.0;
+    }
+
+private:
+    bool enabled_;
+    double start_;
+};
+
 class TrackPoint {
   public:
     int64_t get_task_id() { return task_id; }
@@ -107,9 +122,12 @@ struct ModuleData : public TrackPoint {
     int process_cnts = 0;
     int64_t total_process_time = 0;
     std::string user_df;
+    int64_t init_time = 0;
+    int64_t create_time = 0;
+    bool is_premodule = false;
     NLOHMANN_DEFINE_TYPE_INTRUSIVE(ModuleData, graph_uuid, module_name, node_id, avg_processing_time,
                                    max_processing_time, min_processing_time,
-                                   process_cnts, total_process_time, user_df)
+                                   process_cnts, total_process_time, user_df, init_time, create_time, is_premodule)
     TOJSON_MEMFUNC
 };
 

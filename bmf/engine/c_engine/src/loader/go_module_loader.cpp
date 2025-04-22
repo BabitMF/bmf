@@ -134,6 +134,7 @@ class GoModuleFactory : public ModuleFactoryI {
 
     std::shared_ptr<Module> make(int32_t node_id,
                                  const JsonParam &json_param) override {
+        StatTimer timer(bmf_stat_enabled());  
         auto option = json_param.dump();
         auto construct_func =
             lib_->symbol<int32_t (*)(const char *, int32_t, const char *)>(
@@ -147,8 +148,9 @@ class GoModuleFactory : public ModuleFactoryI {
             throw std::runtime_error("Unknown error when construct module " +
                                      cls_);
         }
-
-        return std::make_shared<GoModule>(id, lib_);
+        auto module = std::make_shared<GoModule>(id, lib_);
+        module->create_time_ = timer.elapsed();
+        return module;
     }
 
     const bool module_info(ModuleInfo &info) const override {

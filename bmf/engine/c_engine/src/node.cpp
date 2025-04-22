@@ -55,7 +55,7 @@ Node::Node(int node_id, NodeConfig &node_config, NodeCallBack &node_callback,
            queue_size_limit_);
     task_processed_cnt_ = 0;
     is_premodule_ = false;
-
+    StatTimer timer(bmf_stat_enabled());  
     if (pre_allocated_module == nullptr) {
         is_premodule_ = false;
         JsonParam node_option_param = node_config_.get_option();
@@ -77,7 +77,8 @@ Node::Node(int node_id, NodeConfig &node_config, NodeCallBack &node_callback,
             module_->init();
         module_->node_id_ = node_id;
     }
-
+    module_stat_data_.init_time = timer.elapsed();
+    
     module_->set_callback([this](int64_t key, CBytes para) -> CBytes {
         return this->module_callbacks_->call(key, para);
     });
@@ -128,7 +129,6 @@ Node::Node(int node_id, NodeConfig &node_config, NodeCallBack &node_callback,
 
     wait_pause_ = false;
     need_opt_reset_ = false;
-    enable_stat_ = bmf_stat_enabled();
 }
 
 int Node::inc_pending_task() {
@@ -176,6 +176,8 @@ int Node::close() {
         module_stat_data_.node_id = id_;
         module_stat_data_.module_name = module_name_;
         module_stat_data_.graph_uuid = graph_uuid_;
+        module_stat_data_.create_time = module_->create_time_;
+        module_stat_data_.is_premodule = is_premodule_;
         bmf_stat_report(std::make_shared<ModuleData>(std::move(module_stat_data_)));
     }
     for (auto &input_stream : input_stream_manager_->input_streams_)

@@ -21,6 +21,7 @@
 #include <bmf/sdk/module_registry.h>
 #include <bmf/sdk/module_manager.h>
 #include <bmf/sdk/shared_library.h>
+#include <bmf/sdk/bmf_stat.h>
 
 namespace bmf_sdk {
 
@@ -91,9 +92,11 @@ class CPPModuleFactory : public ModuleFactoryI {
 
     std::shared_ptr<Module> make(int32_t node_id = -1,
                                  const JsonParam &json_param = {}) override {
+        StatTimer timer(bmf_stat_enabled());                         
         BMFLOG(BMF_INFO) << "Constructing c++ module" << std::endl;
         auto module =
             ModuleRegistry::ConstructModule(class_name_, node_id, json_param);
+        module->create_time_ = timer.elapsed();
         BMFLOG(BMF_INFO) << "c++ module constructed" << std::endl;
         return module;
     }

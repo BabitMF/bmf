@@ -18,6 +18,7 @@
 #include <bmf/sdk/module.h>
 #include <bmf/sdk/module_tag.h>
 #include <bmf/sdk/compat/path.h>
+#include <bmf/sdk/bmf_stat.h>
 #include <mutex>
 
 namespace bmf_sdk {

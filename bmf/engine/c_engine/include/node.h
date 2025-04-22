@@ -190,7 +190,7 @@ class Node {
     bool enable_hungry_check_ = false;
 
     // used for BMFStat
-    bool enable_stat_ = false;
+    bool enable_stat_ = bmf_stat_enabled();
     ModuleData module_stat_data_;
     std::string graph_uuid_;
 };

@@ -192,8 +192,6 @@ class PyModule : public Module {
         return false;
     }
 
-
-
 };
 #pragma GCC visibility pop
 
@@ -207,10 +205,13 @@ class PyModuleFactory : public ModuleFactoryI {
 
     std::shared_ptr<Module> make(int32_t node_id,
                                  const JsonParam &json_param) override {
+        StatTimer timer(bmf_stat_enabled());                             
         py::gil_scoped_acquire gil;
         auto [module_cls, _] = factory_();
-        return std::make_shared<bmf_sdk::PyModule>(module_cls, node_id,
+        auto module = std::make_shared<bmf_sdk::PyModule>(module_cls, node_id,
                                                    json_param);
+        module->create_time_ = timer.elapsed();
+        return module;
     }
 
     const bool module_info(ModuleInfo &info) const override {

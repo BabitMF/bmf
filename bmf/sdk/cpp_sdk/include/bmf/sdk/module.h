@@ -150,6 +150,9 @@ class BMF_SDK_API Module {
     virtual ~Module(){};
 
     int32_t node_id_ = -1;
+
+    // use for bmf_stat
+    int64_t create_time_ = 0;
 };
 
 } // namespace bmf_sdk

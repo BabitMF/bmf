@@ -29,8 +29,8 @@ struct BMF_SDK_API Rational {
         den = d;
     }
 
-    int num = -1; ///< Numerator
-    int den = -1; ///< Denominator
+    int num = 1; ///< Numerator
+    int den = 1; ///< Denominator
 };
 END_BMF_SDK_NS
 

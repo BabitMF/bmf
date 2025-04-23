@@ -102,15 +102,16 @@ static AVFrame *from_video_frame(const VideoFrame &vf,
     auto avf = hmp::ffmpeg::to_video_frame(vf.frame(), avf_ref);
     avf->pts = vf.pts();
 
-    // FIXME: remove after encoder&decoder update
-    std::string s_tb = std::to_string(vf.time_base().num) + "," +
-                       std::to_string(vf.time_base().den);
-    av_dict_set(&avf->metadata, "time_base", s_tb.c_str(), 0);
-
     //copy VideoFrame metadata to AVFrame
     for (auto &item : vf.metadata()) {
         av_dict_set(&avf->metadata, item.first.c_str(), item.second.c_str(), 0);
     }
+
+    //set time_base after restore metadata, then we could override previous time_base
+    std::string s_tb = std::to_string(vf.time_base().num) + "," +
+                       std::to_string(vf.time_base().den);
+    av_dict_set(&avf->metadata, "time_base", s_tb.c_str(), 0);
+
 
     if (avf->hw_frames_ctx) {
         // FIXME: the caller may need to sync stream between vf and avf,

@@ -911,6 +911,18 @@ int Graph::force_close() {
         node.second->close();
     }
     scheduler_->close();
+    //report
+    if (bmf_stat_enabled()) {
+        auto sd = std::make_shared<GraphEndData>();
+
+        sd->start_timestamp = graph_start_time_;
+        graph_end_time_ = bmf_get_time();
+        sd->end_timestamp = graph_end_time_;
+        sd->err = exception_from_scheduler_ ? 1 : 0;
+        sd->graph_str = graph_config_.to_json().dump();
+        sd->graph_uuid = uuid_;
+        bmf_stat_report(sd);
+    }
     return 0;
 }
 

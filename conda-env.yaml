@@ -11,6 +11,7 @@ dependencies:
   - gcc =13.2
   - gxx =13.2
   - setuptools
+  - libuuid
 
   # Run
   - python

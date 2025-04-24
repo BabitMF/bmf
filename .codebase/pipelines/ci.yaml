@@ -232,6 +232,7 @@ jobs:
           - |
             commands="
             rm -rf /root/bmf
+            apt update
             git submodule update --init --recursive
             ./build.sh
             export LD_LIBRARY_PATH=\"\${LD_LIBRARY_PATH}:${current_dir}/output/bmf/lib\"

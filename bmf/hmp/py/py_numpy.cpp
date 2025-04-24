@@ -61,7 +61,7 @@ static py::dtype scalarTypeToNumpyDtype(const ScalarType scalar_type) {
 
 static ScalarType numpyDtypeToScalarType(py::dtype dtype) {
 #define TO_SCALAR_TYPE(scalar_t, scalar_type)                                  \
-    if (py::dtype::of<scalar_t>().is(dtype)) {                                 \
+    if (py::dtype::of<scalar_t>().num() == dtype.num()) {                                 \
         return ::hmp::ScalarType::scalar_type;                                 \
     }
     HMP_FORALL_SCALAR_TYPES(TO_SCALAR_TYPE)

@@ -46,7 +46,7 @@ function install_dependencies_macos() {
 
 function build_nasm_unix() {
     cd $1
-    curl -O -L https://www.nasm.us/pub/nasm/releasebuilds/2.15.05/nasm-2.15.05.tar.bz2
+    curl -O -L https://download.automotivelinux.org/AGL/mirror/nasm-2.15.05.tar.bz2
     tar xjvf nasm-2.15.05.tar.bz2
     cd nasm-2.15.05
     ./autogen.sh

@@ -162,6 +162,12 @@ int64_t BMFStat::task_id() {
 
 void BMFStat::set_user_id(const std::string& user_id) {
     user_id_ = user_id;
+    try {
+        bmq_data.user_id = std::stoi(user_id_);
+    } catch (const std::exception& e) {
+        BMFLOG(BMF_ERROR) << "Invalid user_id conversion: " << e.what();
+        bmq_data.user_id = 0; // 设置默认值或错误处理
+    }
 }
 
 bool BMFStat::is_enabled() {

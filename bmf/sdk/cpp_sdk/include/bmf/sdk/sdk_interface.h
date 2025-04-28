@@ -167,6 +167,21 @@ class BMF_SDK_API SequenceData {
     int64_t pts() const { return pts_; }
 
     /**
+     * @brief Get pkt duration
+     *
+     * @return int64_t
+     */
+    int64_t pkt_duration() const { return pkt_duration_; }
+
+    /**
+     * @brief Set pkt duration
+     * time_base and pkt_duration together define the duration of this frame, so we need
+     * to set them together if time_base is changed.
+     * @param pkt_duration
+     */
+    void set_pkt_duration(int64_t pkt_duration) { pkt_duration_ = pkt_duration; }
+
+    /**
      * @brief Get the time base object
      *
      * @return Rational
@@ -211,6 +226,7 @@ class BMF_SDK_API SequenceData {
     // TODO: make all shared
     Rational time_base_;
     int64_t pts_ = 0;
+    int64_t pkt_duration_ = 0;
     std::unordered_map<std::string, std::string> metadata_;
 }; //
 

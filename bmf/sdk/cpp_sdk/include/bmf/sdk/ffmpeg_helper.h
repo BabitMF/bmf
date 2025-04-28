@@ -99,8 +99,13 @@ static AVFrame *from_video_frame(const VideoFrame &vf,
             "No AVFrame found in VideoFrame as private_data");
     }
 
+    int64_t pkt_duration = vf.pkt_duration();
+
     auto avf = hmp::ffmpeg::to_video_frame(vf.frame(), avf_ref);
     avf->pts = vf.pts();
+    if(pkt_duration > 0) {
+        avf->pkt_duration = pkt_duration;
+    }
 
     //copy VideoFrame metadata to AVFrame
     for (auto &item : vf.metadata()) {

@@ -370,6 +370,8 @@ void module_sdk_bind(py::module &m) {
         .def_property("pts", &SequenceData::pts, &SequenceData::set_pts)
         .def_property("time_base", &SequenceData::time_base,
                       &SequenceData::set_time_base)
+        .def_property("pkt_duration", &SequenceData::pkt_duration,
+                        &SequenceData::set_pkt_duration)
         .def("copy_props", &SequenceData::copy_props, py::arg("from"));
 
     // Future

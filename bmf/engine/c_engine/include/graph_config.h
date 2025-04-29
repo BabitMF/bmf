@@ -229,7 +229,7 @@ class GraphConfig {
     BmfMode mode;
     std::vector<StreamConfig> input_streams;
     std::vector<StreamConfig> output_streams;
-    std::string user_id = "market";
+    std::string user_id = "0"; // market as default
     JsonParam option;
 
   private:

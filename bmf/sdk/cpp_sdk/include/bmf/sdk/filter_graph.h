@@ -62,6 +62,7 @@ class FilterGraph {
     std::map<int, FilterConfig> in_configs_;
     std::map<int, FilterConfig> out_configs_;
     bool b_init_;
+    std::map<int, int64_t> next_pts_map;
 
   public:
     AVFilterGraph *filter_graph_;
@@ -439,8 +440,18 @@ class FilterGraph {
             return -1;
         }
 
-        ret = av_buffersrc_add_frame_flags(buffer_src_ctx_[in_idx], frame,
+        if (frame == NULL && next_pts_map.find(in_idx) != next_pts_map.end()) {
+            ret = av_buffersrc_close(buffer_src_ctx_[in_idx], next_pts_map[in_idx], AV_BUFFERSRC_FLAG_PUSH);
+
+        } else {
+            ret = av_buffersrc_add_frame_flags(buffer_src_ctx_[in_idx], frame,
                                            AV_BUFFERSRC_FLAG_PUSH);
+            if (frame) {
+                int64_t duration = frame->pkt_duration > 0 ? frame->pkt_duration : 1;
+                next_pts_map[in_idx] = frame->pts + duration;
+            }
+        }
+
         if (ret < 0) {
             av_log(NULL, AV_LOG_ERROR, "Error while feeding the filtergraph\n");
             return ret;
@@ -536,10 +547,13 @@ class FilterGraph {
         return 0;
     };
 
-    int get_the_most_failed_nb_request() {
-        int index = -1;
-        int most_failed_request = 0;
+    int get_the_most_failed_nb_request(std::vector<bool>& push_eofs) {
+        int index = 0;
+        int most_failed_request = -1;
         for (int i = 0; i < buffer_src_ctx_.size(); i++) {
+            if (push_eofs[i]) {
+                continue;
+            }
             int failed_request =
                 av_buffersrc_get_nb_failed_requests(buffer_src_ctx_[i]);
             if (failed_request > most_failed_request) {
@@ -603,9 +617,18 @@ class FilterGraph {
     int push_frame(AVFrame *frame, int index) {
         int ret = 0;
         if ((ret = check_input_property(frame, index)) >= 0) {
-            ret = av_buffersrc_add_frame_flags(buffer_src_ctx_[index], frame,
-                                               AV_BUFFERSRC_FLAG_PUSH |
-                                                   AV_BUFFERSRC_FLAG_KEEP_REF);
+            if (frame == NULL && next_pts_map.find(index) != next_pts_map.end()) {
+                ret = av_buffersrc_close(buffer_src_ctx_[index], next_pts_map[index], AV_BUFFERSRC_FLAG_PUSH | AV_BUFFERSRC_FLAG_KEEP_REF);
+
+            } else {
+                ret = av_buffersrc_add_frame_flags(buffer_src_ctx_[index], frame,
+                                                   AV_BUFFERSRC_FLAG_PUSH |
+                                                       AV_BUFFERSRC_FLAG_KEEP_REF);
+                if (frame) {
+                    int64_t duration = frame->pkt_duration > 0 ? frame->pkt_duration : 1;
+                    next_pts_map[index] = frame->pts + duration;
+                }
+            }
             if (ret < 0) {
                 if (ret != AVERROR_EOF) {
                     BMFLOG(BMF_ERROR) << "add frame error: " << ret;

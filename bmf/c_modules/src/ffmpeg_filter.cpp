@@ -433,6 +433,8 @@ int CFFFilter::process_filter_graph(Task &task) {
                     ret = filter_graph_->push_frame(frame, choose_index);
                     if (frame) {
                         av_frame_free(&frame);
+                    } else if(choose_index >=0 && choose_index < num_input_streams_){
+                        push_eof_[choose_index] = true;
                     }
                     if (ret < 0) {
                         BMFLOG_NODE(BMF_INFO, node_id_) << "init push frame, ret: " << ret;
@@ -449,6 +451,7 @@ int CFFFilter::process_filter_graph(Task &task) {
             int ret =
                 filter_graph_->reap_filters(output_frames, push_frame_flag);
             push_frame_flag = 0;
+            int get_num = output_frames.size();
             for (auto output_frame : output_frames) {
                 for (int index = 0; index < output_frame.second.size();
                      index++) {
@@ -465,6 +468,14 @@ int CFFFilter::process_filter_graph(Task &task) {
                     task.fill_output_packet(output_frame.first, packet);
                 }
             }
+
+            if (check_input_finished() && get_num == 0) {
+                for (int i = 0; i < num_output_streams_; i++) {
+                    out_eof_[i] = true;
+                }
+                return 0;
+            }
+
             if (check_finished()) {
                 return 0;
             }
@@ -474,7 +485,7 @@ int CFFFilter::process_filter_graph(Task &task) {
             if (ret != AVERROR(EAGAIN) && ret < 0) {
                 return ret;
             }
-            int index = filter_graph_->get_the_most_failed_nb_request();
+            int index = filter_graph_->get_the_most_failed_nb_request(push_eof_);
             if (index >= 0) {
                 AVFrame *frame;
                 int choose_index;
@@ -491,13 +502,18 @@ int CFFFilter::process_filter_graph(Task &task) {
                     push_frame_flag = 1;
                     if (frame) {
                         av_frame_free(&frame);
+
+                    } else if(choose_index >=0 && choose_index < num_input_streams_){
+                        push_eof_[choose_index] = true;
                     }
+
                     if (ret < 0) {
                         BMFLOG_NODE(BMF_INFO, node_id_) << "push frame, choose_index: " << choose_index << " ret: " << ret;
                         return ret;
                     }
                 } else if (in_eof_[index]) {
                     filter_graph_->push_frame(NULL, index);
+                    push_eof_[index] = true;
                     push_frame_flag = 1;
                 } else {
                     break;
@@ -535,6 +551,15 @@ bool CFFFilter::check_finished() {
     return true;
 }
 
+bool CFFFilter::check_input_finished() {
+    for (int i = 0; i < num_input_streams_; i++) {
+        if (!in_eof_[i] || !push_eof_[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 int CFFFilter::process(Task &task) {
     std::lock_guard<std::mutex> lk(cache_mutex_);
 
@@ -556,6 +581,11 @@ int CFFFilter::process(Task &task) {
         if (in_eof_.size() == 0) {
             for (int i = 0; i < num_input_streams_; i++) {
                 in_eof_.push_back(false);
+            }
+        }
+        if (push_eof_.size() == 0) {
+            for (int i = 0; i < num_input_streams_; i++) {
+                push_eof_.push_back(false);
             }
         }
     }
@@ -642,6 +672,7 @@ int CFFFilter::process(Task &task) {
 int CFFFilter::reset() {
     for (int i = 0; i < num_input_streams_; i++) {
         in_eof_[i] = false;
+        push_eof_[i] = false;
     }
     for (int i = 0; i < num_output_streams_; i++) {
         out_eof_[i] = false;

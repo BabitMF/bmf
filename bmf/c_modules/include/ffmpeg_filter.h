@@ -38,6 +38,9 @@ class CFFFilter : public Module {
     std::vector<bool> in_eof_;
     std::vector<bool> out_eof_;
     std::vector<bool> out_eof_send_;
+    std::vector<bool> push_eof_;
+
+
     std::map<int, FilterConfig> config_;
     int64_t stream_start_time_;
     int64_t stream_first_dts_;
@@ -79,6 +82,7 @@ class CFFFilter : public Module {
 
     bmf_sdk::Packet convert_avframe_to_packet(AVFrame *frame, int index);
     bool check_finished();
+    bool check_input_finished();
     int get_cache_frame(int index, AVFrame *&frame, int &choose_index);
 };
 

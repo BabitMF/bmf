@@ -246,9 +246,15 @@ class CFFDecoder : public Module {
  * The module can be used by BMF API such as bmf.decode() by providing json
  style "option" to config such as the 3rd parameter below:
  * @code
-            bmf.decode(
-                {'input_path': input_video_path}
-            )
+        bmf.decode(
+            {
+                "input_path": input_path,
+                "map_v": 0,
+                "map_a": 2,
+                "start_time": 2,
+                "end_time": 3,
+            }
+        )
  * @endcode
  * Details:\n
  * @arg module name: c_ffmpeg_decoder\n

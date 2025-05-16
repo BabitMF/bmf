@@ -116,10 +116,10 @@ done
 
 mkdir -p output
 
-if [[ $LOCAL_BUILD != "OFF" ]];
-then
-  git submodule update --init --recursive
-fi
+# if [[ $LOCAL_BUILD != "OFF" ]];
+# then
+#   git submodule update --init --recursive
+# fi
 
 if [ ! -d "3rd_party/breakpad" ]
 then

@@ -141,6 +141,20 @@ endif()
 
 # json
 if (BMF_LOCAL_DEPENDENCIES)
+include(FetchContent)
+set(JSON_DOWNLOAD_DIR "${PROJECT_SOURCE_DIR}/3rd_party/json")
+
+FetchContent_Declare(
+    json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git 
+    GIT_TAG v3.11.2
+    SOURCE_DIR ${JSON_DOWNLOAD_DIR}
+)
+
+FetchContent_GetProperties(json)
+if(NOT json_POPULATED)
+    FetchContent_Populate(json)
+endif()
     add_custom_command(TARGET bmf_assem
         POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/3rd_party/json/include

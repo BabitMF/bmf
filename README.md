@@ -139,6 +139,7 @@ This example implements the denoise algorithm as a BMF module, showcasing a BMF 
     - [Face Detect With TensorRT](#face-detect-with-tensorrt)
 
 - [Getting Started](https://babitmf.github.io/docs/bmf/getting_started_yourself/)
+  - [Download Resources](https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz)
   - [Install](https://babitmf.github.io/docs/bmf/getting_started_yourself/install/)
   - [Create a Graph](https://babitmf.github.io/docs/bmf/getting_started_yourself/create_a_graph/)
     - one of transcode example with 3 languages

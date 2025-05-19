@@ -27,6 +27,20 @@ endif()
 
 ### json
 if (BMF_LOCAL_DEPENDENCIES)
+    include(FetchContent)
+    set(JSON_DOWNLOAD_DIR "${PROJECT_SOURCE_DIR}/3rd_party/json")
+
+    FetchContent_Declare(
+        json
+        GIT_REPOSITORY https://github.com/nlohmann/json.git 
+        GIT_TAG v3.11.2
+        SOURCE_DIR ${JSON_DOWNLOAD_DIR}
+    )
+
+    FetchContent_GetProperties(json)
+    if(NOT json_POPULATED)
+        FetchContent_Populate(json)
+    endif()
     add_library(nlohmann INTERFACE IMPORTED GLOBAL)
     set_property(TARGET nlohmann PROPERTY INTERFACE_INCLUDE_DIRECTORIES
             ${PROJECT_SOURCE_DIR}/3rd_party/json/include)

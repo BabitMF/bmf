@@ -37,10 +37,7 @@ if (BMF_LOCAL_DEPENDENCIES)
         SOURCE_DIR ${JSON_DOWNLOAD_DIR}
     )
 
-    FetchContent_GetProperties(json)
-    if(NOT json_POPULATED)
-        FetchContent_Populate(json)
-    endif()
+    FetchContent_MakeAvailable(json)
     add_library(nlohmann INTERFACE IMPORTED GLOBAL)
     set_property(TARGET nlohmann PROPERTY INTERFACE_INCLUDE_DIRECTORIES
             ${PROJECT_SOURCE_DIR}/3rd_party/json/include)

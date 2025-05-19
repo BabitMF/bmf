@@ -1,3 +1,4 @@
+include(FetchContent)
 
 
 # python
@@ -27,7 +28,6 @@ endif()
 
 ### json
 if (BMF_LOCAL_DEPENDENCIES)
-    include(FetchContent)
     set(JSON_DOWNLOAD_DIR "${PROJECT_SOURCE_DIR}/3rd_party/json")
 
     FetchContent_Declare(

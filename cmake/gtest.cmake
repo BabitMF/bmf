@@ -25,8 +25,7 @@ else()
                 ${GTEST_MAIN_LIBRARY})
         endif()
     else()
-        message("GTEST not found in system path, fetching via FetchContent to ${PROJECT_SOURCE_DIR}/3rd_party/gtest")
-        include(FetchContent)
+        message("GTEST not found in system path, fetching via FetchContent to ${PROJECT_SOURCE_DIR}/3rd_party/gtest")        
         FetchContent_Declare(
             googletest
             GIT_REPOSITORY https://github.com/google/googletest.git

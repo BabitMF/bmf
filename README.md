@@ -151,6 +151,8 @@ This example implements the denoise algorithm as a BMF module, showcasing a BMF 
   - [Create a Module](https://babitmf.github.io/docs/bmf/getting_started_yourself/create_a_module/)
     - customize module with python, C++ and Go. You can try it on [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BabitMF/bmf/blob/master/bmf/test/customize_module/bmf_customize_demo_latest.ipynb)
 
+If you need example files, you can find them in <https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz>
+
 - [Multiple Features (with examples)](https://babitmf.github.io/docs/bmf/multiple_features/)
   - [Graph Mode](https://babitmf.github.io/docs/bmf/multiple_features/graph_mode/)
     - [Generator Mode](https://babitmf.github.io/docs/bmf/multiple_features/graph_mode/generatemode/)

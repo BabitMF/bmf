@@ -1331,7 +1331,7 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
         }
         /** @addtogroup EncM
          * @{
-         * @arg max_fr: to set the frame rate, similar as ffmpeg
+         * @arg r: to set the frame rate, similar as ffmpeg
          * @} */
         if (video_params_.has_key("r")) {
             double fr;

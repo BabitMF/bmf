@@ -134,9 +134,10 @@ int TraceLogger::register_queue(std::string process_name,
     queue_map_[thread_count_].process_name = process_name;
     queue_map_[thread_count_].thread_name = thread_name;
     running_count_++;
-    if (thread_count_ == queue_map_.size() - 1)
+    thread_count_++;
+    if (thread_count_ == queue_map_.size())
         thread_count_ = 0; // Back to first buffer to reuse buffer
-    return thread_count_++;
+    return thread_count_;
 }
 
 void TraceLogger::close_queue(int thread_id) {

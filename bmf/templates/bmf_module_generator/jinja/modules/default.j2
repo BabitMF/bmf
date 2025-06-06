@@ -1,0 +1,45 @@
+{% extends 'modules/base.j2' %}
+
+{% block custom_init -%}
+        self._eof_received = {}
+
+        # TODO: Add custom initialisation logic here.
+{%- endblock %}
+
+{%- block before_process_mainloop -%}
+{%- endblock -%}
+
+{% block process_mainloop -%}
+        for input_id, input_stream in task.get_inputs().items():
+            output_stream = task.get_outputs()[input_id]
+            while not input_stream.empty():
+                pkt = input_stream.get()
+
+                {% block detect_eof -%}
+                if pkt.timestamp == Timestamp.EOF:
+                    {% if logging_enabled -%}
+                    Log.log_node(LogLevel.INFO, task.get_node(), f"Stream {input_id} - Received EOF")
+                    {%- endif %}
+                    self._eof_received[input_id] = True
+                    output_stream.put(Packet.generate_eof_packet())
+                    continue
+                {%- endblock %}
+
+                {% block process_packet -%}
+                {% if passthrough -%}
+                output_stream.put(pkt) # passthrough
+                {%- endif -%}
+                # TODO: Add per-frame packet processing logic here.
+                {%- endblock %}
+{%- endblock %}
+
+{% block handle_eof -%}
+        if all(self._eof_received.get(input_id, False) for input_id in task.get_inputs()):
+            # TODO: Add additional EOF processing logic here.
+            task.timestamp = Timestamp.DONE
+            return ProcessResult.OK
+{%- endblock %}
+
+{% block run_graph -%}
+{{ macros.run_bmf_graph(filename, class_name, module_name, required_options, has_video=True, has_audio=True) }}
+{%- endblock %}

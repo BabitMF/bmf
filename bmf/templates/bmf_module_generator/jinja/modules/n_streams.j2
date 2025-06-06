@@ -1,0 +1,4 @@
+{% extends 'modules/base.j2' %}
+
+{%- set input_stream_data = input_stream_data | default({'id': 0, 'name': 'input_stream', packet_type: 'VideoFrame'}) -%}
+{%- set output_stream_data = output_stream_data | default({'id': 0, 'name': 'output_stream', packet_type: 'VideoFrame'}) -%}

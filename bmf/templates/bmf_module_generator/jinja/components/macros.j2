@@ -1,0 +1,93 @@
+{% macro run_bmf_graph(filename, class_name, module_name, required_options=[], has_video=True, has_audio=True) -%}
+{%- if not has_video and not has_audio -%}{{ raise_error("The 'run_bmf_graph' macro requires either 'has_video' or 'has_audio' args to be True.") }}{%- endif -%}
+def run_bmf_graph(
+    input_path,
+    output_path,
+    custom_module_options=None,
+    {%- if has_video %}
+    custom_video_params=None,
+    {%- endif -%}
+    {%- if has_audio %}
+    custom_audio_params=None
+    {%- endif %}
+):
+    module_info = {
+        "name": "{{ module_name }}",
+        "path": os.path.abspath(__file__),
+        "entry": "{{ filename[:-3] }}.{{ class_name }}"
+    }
+
+    {% if required_options -%}
+    # TODO: Add test values for the module options below.
+    module_options = {
+        {% for option_name in required_options -%}
+        "{{ option_name }}": None
+        {%- if not loop.last %},
+        {% endif -%}
+        {%- endfor %}
+    }
+    {%- else -%}
+    module_options = {}
+    {%- endif %}
+
+    if custom_module_options is not None:
+        module_options.update(custom_module_options)
+
+    graph = bmf.graph()
+    streams = graph.decode({"input_path": input_path})
+    processed_streams = bmf.module(
+        {% if has_video and has_audio -%}
+        [streams["video"], streams["audio"]],
+        {%- elif has_video -%}
+        [streams["video"]],
+        {%- elif has_audio -%}
+        [streams["audo"]],
+        {%- endif %}
+        module_info,
+        module_options
+    )
+
+    {% if has_video -%}
+    video_params = {
+        "codec": "h264",
+        # TODO: Add extra encoder video params if necessary.
+    }
+    {%- endif %}
+    {%- if has_audio %}
+    audio_params = {
+        "codec": "aac",
+        # TODO: Add extra encoder audio params if necessary.
+    }
+    {%- endif %}
+
+    {% if has_video -%}
+    if custom_video_params is not None:
+        video_params.update(custom_video_params)
+    {%- endif %}
+    {%- if has_audio %}
+    if custom_audio_params is not None:
+        audio_params.update(custom_audio_params)
+    {%- endif %}
+
+    bmf.encode(
+        {% if has_video -%}
+        processed_streams[0], # video stream
+        {%- else -%}
+        None,
+        {%- endif %}
+        {% if has_audio -%}
+        processed_streams[1], # audio stream
+        {%- else -%}
+        None,
+        {%- endif %}
+        {
+            "output_path": output_path,
+            {% if has_video -%}
+            "video_params": video_params,
+            {%- endif %}
+            {%- if has_audio %}
+            "audio_params": audio_params
+            {%- endif %}
+        }
+    ).run()
+{%- endmacro %}

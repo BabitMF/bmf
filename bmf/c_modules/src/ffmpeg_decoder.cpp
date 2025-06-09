@@ -314,12 +314,26 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
 
     /** @addtogroup DecM
      * @{
-     * @arg hwaccel: hardware accelete exp. cuda.
-     * @arg extract_frames: support extract frames with given fps and device.
+     * @arg video_params: video codec parameters which similar as
+      ffmpeg. exp.
+     * @code
+            "video_params": {
+                "hwaccel": "cuda",
+                "extract_frames": {
+                    "fps": 25,
+                    "device": "0",
+                }
+            },
+     * @endcode
      * @} */
     if (option.has_key("video_params")) {
         JsonParam video_params;
         option.get_object("video_params", video_params);
+        /** @addtogroup DecM
+         * @{
+         * @arg hwaccel: hardware accelete exp. cuda.
+         * @arg extract_frames: support extract frames with given fps and device.
+         * @} */
         if (video_params.has_key("hwaccel")) {
             video_params.get_string("hwaccel", hwaccel_str_);
         }
@@ -356,6 +370,11 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
     /** @addtogroup DecM
      * @{
      * @arg dec_params: set the decode codec parameters, such as "threads": 1
+     * @code
+            "dec_params": {
+                "threads": 1,
+            },
+     * @endcode
      * @} */
     AVDictionary *opts = NULL;
     if (option.has_key("dec_params")) {

@@ -142,6 +142,9 @@ else
             $OSX_XCOMPILE_TOOL_PREFIX-install_name_tool -change /usr/local/opt/ffmpeg/lib/libavutil.56.dylib $RLINK_TYPE/libavutil.56.dylib "$file"
             $OSX_XCOMPILE_TOOL_PREFIX-install_name_tool -change /usr/local/opt/ffmpeg/lib/libswresample.3.dylib $RLINK_TYPE/libswresample.3.dylib "$file"
 
+            # Add the default homebrew install location of ffmpeg@4 on Apple Silicon to the binary's LC_RPATH
+            $OSX_XCOMPILE_TOOL_PREFIX-install_name_tool -add_rpath /opt/homebrew/opt/ffmpeg@4/lib "$file"
+
             # Copy all .dylib to .so
             cp "$file" "${file/.dylib/.so}"
         done

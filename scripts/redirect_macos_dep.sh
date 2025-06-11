@@ -31,12 +31,23 @@ function change_lib_deps() {
         echo "Updating $old_dep -> $new_dep"
     done
 
-    $otool_bin -L $1 | awk '{if(NF>1){print($1)}}' | grep "ffmpeg" | while read old_dep
-    do
-        new_dep="@rpath/"$(basename ${old_dep})
-        $install_name_tool_bin -change ${old_dep} ${new_dep} $1
-        echo "Updating $old_dep -> $new_dep"
-    done
+    depends_ffmpeg=0
+    if $otool_bin -L $1 | awk '{if(NF>1){print($1)}}' | grep -q "ffmpeg"; then
+        depends_ffmpeg=1
+    fi
+    if [ $depends_ffmpeg -eq 1 ]
+    then
+        echo "Adding ffmpeg@4 rpath to $1"
+        $install_name_tool_bin -add_rpath "/opt/homebrew/opt/ffmpeg@4/lib" $1
+        
+        # Now, also update the dependency paths within the same conditional block
+        $otool_bin -L $1 | awk '{if(NF>1){print($1)}}' | grep "ffmpeg" | while read old_dep 
+        do 
+            new_dep="@rpath/"$(basename ${old_dep}) 
+            $install_name_tool_bin -change ${old_dep} ${new_dep} $1 
+            echo "Updating $old_dep -> $new_dep"
+        done 
+    fi
 
     $otool_bin -L $1 | awk '{if(NF>1){print($1)}}' | grep "Python" | while read old_dep
     do

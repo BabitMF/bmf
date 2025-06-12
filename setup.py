@@ -183,10 +183,21 @@ setup(
     readme='README.md',
     url="https://github.com/BabitMF/bmf",
     install_requires=[
-        "numpy >= 1.19.5"
+        "numpy >= 1.19.5",
     ],
     #zip_safe=False,
-    extras_require={"test": ["pytest"]},
+    extras_require={
+        "test": ["pytest"],
+        "templates": [
+            "jinja2",
+            "click",
+            "InquirerPy",
+        ],
+    },
+    include_package_data=True,
+    package_data={
+        "bmf.templates": ["jinja_templates/**/*.j2"]
+    },
     packages=[
         'bmf',
         'bmf.builder',
@@ -196,6 +207,7 @@ setup(
         'bmf.modules',
         'bmf.python_sdk',
         'bmf.server',
+        'bmf.templates',
     ],
     ext_modules=[CMakeExtension("bmf")],
     cmdclass={"build_ext": CMakeBuild},
@@ -204,7 +216,8 @@ setup(
            'run_bmf_graph = bmf.cmd.python_wrapper.wrapper:run_bmf_graph',
            'trace_format_log = bmf.cmd.python_wrapper.wrapper:trace_format_log',
            'module_manager = bmf.cmd.python_wrapper.wrapper:module_manager',
-           "bmf_env = bmf.cmd.python_wrapper.wrapper:bmf_env",
+           'bmf_env = bmf.cmd.python_wrapper.wrapper:bmf_env',
+           'bmf_template_generator = bmf.templates.cli:main',
         ],
     }
 )

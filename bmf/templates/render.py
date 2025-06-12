@@ -1,15 +1,13 @@
-import sys
 import os
 import argparse
 
-from jinja2 import Environment, FileSystemLoader
+from importlib.resources import files
+from jinja2 import Environment, PackageLoader
 
-from utils import *
-
-TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), "jinja")
+from bmf.templates.utils import *
 
 env = Environment(
-    loader=FileSystemLoader(TEMPLATE_DIR),
+    loader=PackageLoader("bmf.templates", "jinja_templates"),
     extensions=['jinja2.ext.do']
 )
 
@@ -32,10 +30,14 @@ def indent_component(component_path, indent_level=0, skip_first=True, **kwargs):
 def render_module_template(template_name, output_path, **kwargs):
     global env
 
+    modules_dir = files("bmf.templates.jinja_templates").joinpath("modules")
+
+    # template_name is the prefix you're searching for
     template_rel_path = None
-    for fn in os.listdir(os.path.join(TEMPLATE_DIR, "modules")):
-        if fn.startswith(template_name):
-            template_rel_path = f"modules/{fn}"
+    for entry in modules_dir.iterdir():
+        if entry.name.startswith(template_name):
+            template_rel_path = f"modules/{entry.name}"
+            break
 
     if template_rel_path is None:
         raise ValueError(f"Template '{template_name}' not found")
@@ -59,12 +61,11 @@ def render_module_template(template_name, output_path, **kwargs):
         f.write(rendered_class)
 
 def generate_all_modules():
-    module_template_dir = os.path.join(os.path.dirname(__file__), "jinja/modules")
-    for fn in os.listdir(module_template_dir):
+    modules_template_dir = files("bmf.templates.jinja_templates").joinpath("modules")
+    for entry in modules_template_dir.iterdir():
         os.makedirs("output", exist_ok=True)
-        template_name = f"modules/{fn}"
-        output_path = f"output/{os.path.splitext(fn)[0]}.py"
-        render_module_template(template_name, output_path)    
+        output_path = f"output/{os.path.splitext(entry.name)[0]}.py"
+        render_module_template(entry.name, output_path)    
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(

@@ -5,7 +5,7 @@ import os
 import re
 from InquirerPy import inquirer
 
-from render import render_module_template
+from bmf.templates.render import render_module_template
 
 # Total number of stages
 TOTAL_STAGES = 8
@@ -138,11 +138,14 @@ def create_module(from_json):
     # Stage 8: Ask for output filename
     stage(8)
     default_filename = f"{module_definition['module_name']}.py" if do_generate_template else f"{module_definition['module_name']}_definition.json"
-    module_definition["output_path"] = click.prompt(
-        click.style("Enter the output path", fg='yellow', bold=True),
-        default=default_filename
+    module_definition["output_path"] = os.path.join(
+        os.getcwd(),
+        click.prompt(
+            click.style("Enter the output path", fg='yellow', bold=True),
+            default=default_filename
+        )
     )
-
+    
     # Summary Output
     click.echo()
     click.echo(style_header("🔍 BMF Module Template Definition Summary"))
@@ -171,5 +174,8 @@ def stage(n):
     header = f"--- Stage {n} of {TOTAL_STAGES} ---"
     click.echo(click.style(header, fg='blue', bold=True))
 
-if __name__ == '__main__':
+def main():
     create_module()
+
+if __name__ == '__main__':
+    main()

@@ -105,7 +105,7 @@ class {{ class_name }}(Module):
             {% block process_packet -%}
             {% if passthrough -%}
             output_stream.put(pkt) # passthrough
-            {%- endif -%}
+            {% endif %}
             # TODO: Add per-frame packet processing logic here.
             {%- endblock %}
         {%- endblock %}
@@ -165,13 +165,16 @@ def main():
     if not any(input_path.lower().endswith(ext) for ext in valid_video_extensions):
         print(f"Warning: File {input_path} may not be a valid video file.")
     
-    # Check if config is a valid JSON
-    try:
-        with open(config_path, 'r') as f:
-            config = json.load(f)
-    except json.JSONDecodeError:
-        print(f"Error: Config file is not a valid JSON: {config_path}")
-        sys.exit(1)
+    # Load config
+    if config_path:
+        try:
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+        except json.JSONDecodeError:
+            print(f"Error: Config file is not a valid JSON: {config_path}")
+            sys.exit(1)
+    else:
+        config = {}
     
     # Process the video according to the configuration
     output_path = args.output

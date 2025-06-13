@@ -28,7 +28,7 @@
                 {% block process_packet -%}
                 {% if passthrough -%}
                 output_stream.put(pkt) # passthrough
-                {%- endif -%}
+                {% endif %}
                 # TODO: Add per-frame packet processing logic here.
                 {%- endblock %}
 {%- endblock %}

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import json
 import click
 import os
@@ -18,10 +17,10 @@ def to_pascal_case(s):
     return ''.join(word.capitalize() for word in re.split(r'[^a-zA-Z0-9]', s) if word)
 
 @click.command()
-@click.option('--from-json', type=click.Path(exists=True), help='Provide full module definition JSON file to skip prompts.')
+@click.help_option('--help', '-h', help='Show this help message and exit.')
+@click.option('--from-json', type=click.Path(exists=True), help='Import an existing BMF module definition JSON file.')
 def create_module(from_json):
-    """Interactive CLI to create a module definition with enhanced styling."""
-
+    """A CLI application to generate BMF module template files!"""
     # Initialize values
     module_definition = {}
 
@@ -44,7 +43,7 @@ def create_module(from_json):
         module_definition["module_name"] = click.prompt(
             click.style("Enter the module name", fg='yellow', bold=True),
             default="my_module"
-        )
+        ).strip()
 
         # Stage 2: Class Name
         stage(2)
@@ -52,13 +51,17 @@ def create_module(from_json):
         module_definition["class_name"] = click.prompt(
             click.style("Enter the class name", fg='yellow', bold=True),
             default=default_class_name
-        )
+        ).strip()
 
         # Stage 3: Template Selection
         stage(3)
         module_definition["template_name"] = inquirer.select(
             message="Select a template:",
-            choices=["base", "default", "n_streams"],
+            choices=[
+                "base", 
+                "default", 
+                # "n_streams"
+            ],
             default="default",
             pointer="👉",
             instruction="Use ↑ ↓ to navigate"
@@ -107,15 +110,18 @@ def create_module(from_json):
         else:
             click.echo(click.style("Enter custom settings (leave name blank to finish):", fg='green', bold=True))
             while True:
-                name = click.prompt(click.style("  Setting name", fg='green'), default="", show_default=False)
+                name = click.prompt(click.style("  Setting name", fg='green'), default="", show_default=False).strip()
                 if not name:
                     break
 
-                default_str = click.prompt(click.style("  Default value (as JSON)", fg='green'), default='null')
-                try:
-                    default_val = json.loads(default_str)
-                except json.JSONDecodeError:
-                    default_val = default_str
+                while True:
+                    default_str = click.prompt(click.style("  Default value (as JSON)", fg='green'), default='null')
+                    try:
+                        default_val = json.loads(default_str)
+                        break
+                    except json.JSONDecodeError:
+                        click.secho("Error: Invalid JSON input. Please enter a valid JSON string.", fg='red', err=True)
+                        continue
 
                 required = click.confirm(click.style("  Is this setting required?", fg='green'), default=False)
 

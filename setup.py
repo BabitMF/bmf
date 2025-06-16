@@ -194,7 +194,6 @@ setup(
             "InquirerPy",
         ],
     },
-    include_package_data=True,
     package_data={
         "bmf.templates": ["jinja_templates/**/*.j2"]
     },

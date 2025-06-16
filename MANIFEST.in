@@ -1,1 +1,0 @@
-recursive-include bmf/templates/jinja_templates *.j2

@@ -55,6 +55,8 @@ while [ $# -gt 0 ]; do
         clean)
             # Clean up
             rm -rf build
+            rm -rf dist
+            rm -rf custom_deps
             exit
         ;;
         debug)
@@ -205,6 +207,7 @@ then
 
         rm -rf build
         rm -rf dist
+        rm -rf custom_deps
         rm -rf bmf/lib
         rm -rf bmf/bin
         rm -rf bmf/include

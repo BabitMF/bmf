@@ -17,6 +17,10 @@ then
     if [ "$1" = "clean" ]
     then
         rm -rf build_osx
+        rm -rf build
+        rm -rf dist
+        rm -rf custom_deps
+        rm -rf BabitMF.egg-info
         exit
     fi
 
@@ -173,9 +177,11 @@ else
         # Clean up
         rm -rf build_osx
         rm -rf dist
+        rm -rf custom_deps
         rm -rf bmf/lib
         rm -rf bmf/bin
         rm -rf bmf/include
         rm -rf byted_bmf.egg-info
+        rm -rf BabitMF.egg-info
     done
 fi

@@ -1,15 +1,27 @@
 import os
 import argparse
-
+from pathlib import Path
 from importlib.resources import files
-from jinja2 import Environment, PackageLoader
+from jinja2 import Environment, FileSystemLoader, PackageLoader
 
-from bmf.templates.utils import *
+try:
+    from bmf.templates.utils import *
+except ModuleNotFoundError:
+    from utils import *
 
-env = Environment(
-    loader=PackageLoader("bmf.templates", "jinja_templates"),
-    extensions=['jinja2.ext.do']
-)
+try:
+    env = Environment(
+        loader=PackageLoader("bmf.templates", "jinja_templates"),
+        extensions=['jinja2.ext.do']
+    )
+except:
+    # Fallback to FileSystemLoader if bmf is installed but templates not found
+    script_dir = Path(__file__).parent
+    templates_dir = script_dir / "jinja_templates"
+    env = Environment(
+        loader=FileSystemLoader(templates_dir),
+        extensions=['jinja2.ext.do']
+    )
 
 env.globals['raise_error'] = raise_exception
 
@@ -29,8 +41,12 @@ def indent_component(component_path, indent_level=0, skip_first=True, **kwargs):
 
 def render_module_template(template_name, output_path, **kwargs):
     global env
-
-    modules_dir = files("bmf.templates.jinja_templates").joinpath("modules")
+    script_dir = Path(__file__).parent
+    
+    try:
+        modules_dir = files("bmf.templates.jinja_templates").joinpath("modules")
+    except:
+        modules_dir = script_dir / "jinja_templates" / "modules"
 
     # template_name is the prefix you're searching for
     template_rel_path = None
@@ -61,7 +77,12 @@ def render_module_template(template_name, output_path, **kwargs):
         f.write(rendered_class)
 
 def generate_all_modules():
-    modules_template_dir = files("bmf.templates.jinja_templates").joinpath("modules")
+    script_dir = Path(__file__).parent
+    try:
+        modules_template_dir = files("bmf.templates.jinja_templates").joinpath("modules")
+    except:
+        modules_template_dir = script_dir / "jinja_templates" / "modules"
+        
     for entry in modules_template_dir.iterdir():
         os.makedirs("output", exist_ok=True)
         output_path = f"output/{os.path.splitext(entry.name)[0]}.py"

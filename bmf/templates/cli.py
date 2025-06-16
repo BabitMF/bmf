@@ -4,7 +4,10 @@ import os
 import re
 from InquirerPy import inquirer
 
-from bmf.templates.render import render_module_template
+try:
+    from bmf.templates.render import render_module_template
+except ModuleNotFoundError:
+    from render import render_module_template
 
 # Total number of stages
 TOTAL_STAGES = 8
@@ -35,7 +38,7 @@ def create_module(from_json):
     else:
         # Welcome Banner
         click.echo()
-        click.echo(style_header("🛠️  BMF Module Template Generator CLI 🛠️"))
+        click.echo(style_header("🛠️ BMF Module Template Generator CLI 🛠️"))
         click.echo(style_header("=" * 36))
 
         # Stage 1: Module Name
@@ -138,7 +141,7 @@ def create_module(from_json):
     stage(7)
     do_generate_template = click.confirm(
         click.style("Would you like to generate a BMF module template based on the collected information?", fg='yellow', bold=True),
-        default=False
+        default=True
     )
 
     # Stage 8: Ask for output filename

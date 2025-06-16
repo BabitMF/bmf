@@ -48,12 +48,9 @@ import bmf.hmp as mp
 class {{ class_name }}(Module):
     {% block init -%}
     def __init__(self, node=None, option=None):
+        {% if logging_enabled %}Log.log(LogLevel.INFO, "{{ class_name }} module option: ", option){% endif %}
         {% if store_node %}self._node = node{% endif %}
         {% if store_option %}self._option = option{% endif %}
-        
-        {% if logging_enabled -%}
-        Log.log(LogLevel.INFO, "{{ class_name }} module option: ", option)
-        {%- endif %}
         {% for option_info in option_schema -%}
         self._{{ option_info.name }} = option.get("{{ option_info.name }}", {{ render_primitive_value(option_info.default, 2) }})
         {%- if option_info.required %}{% do required_options.append(option_info.name) %}{% endif -%}
@@ -70,9 +67,7 @@ class {{ class_name }}(Module):
         {% endif -%}
         {%- endfor %}
         {%- endif %}
-
-        self.version = self.get_version()
-
+        self._version = self.get_version()
         {% block custom_init -%}
         self._eof_received = False
         
@@ -105,7 +100,8 @@ class {{ class_name }}(Module):
             {% block process_packet -%}
             {% if passthrough -%}
             output_stream.put(pkt) # passthrough
-            {% endif %}
+
+            {% endif -%}
             # TODO: Add per-frame packet processing logic here.
             {%- endblock %}
         {%- endblock %}

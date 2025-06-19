@@ -39,7 +39,7 @@ def create_module(from_json):
         # Welcome Banner
         click.echo()
         click.echo(style_header("🛠️ BMF Module Template Generator CLI 🛠️"))
-        click.echo(style_header("=" * 36))
+        click.echo(style_header("=" * 39))
 
         # Stage 1: Module Name
         stage(1)

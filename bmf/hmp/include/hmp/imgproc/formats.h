@@ -109,9 +109,6 @@ enum ColorRange { CR_UNSPECIFIED = 0, CR_MPEG = 1, CR_JPEG = 2, CR_NB };
 
 enum PixelFormat {
     PF_NONE = -1,
-    PF_YUV420P = 0,
-    PF_YUV422P = 4,
-    PF_YUV444P = 5,
     PF_NV12 = 23,
     PF_NV21 = 24,
 
@@ -127,7 +124,6 @@ enum PixelFormat {
     PF_BGRA32 = 28,
 
     PF_GRAY16 = 30,
-    PF_YUVA420P = 33,
     PF_RGB48 = 35,
     PF_YA8 = 58,
     PF_BGR48 = 61,
@@ -135,21 +131,49 @@ enum PixelFormat {
 
     PF_P010LE = 161,
     PF_P016LE = 172,
-    PF_YUV422P10LE = 66,
-    PF_YUV420P10LE = 64,
-    PF_YUV444P10LE = 68,
 
-    PF_YUVA422P = 80,
-    PF_YUVA444P = 81,
 
     PF_NV16 = 103,
     PF_NV24 = 191,
+
+    //8bit
+    PF_YUV420P = 0,
+    PF_YUV422P = 4,
+    PF_YUV444P = 5,
+
+    PF_YUVA420P = 33,
+    PF_YUVA422P = 80,
+    PF_YUVA444P = 81,
+
+    //10bit
+    PF_YUV422P10LE = 66,
+    PF_YUV420P10LE = 64,
+    PF_YUV444P10LE = 70,
+
+    PF_YUVA422P10LE = 91,
+    PF_YUVA420P10LE = 89,
+    PF_YUVA444P10LE = 93,
+
+    //12bit
+    PF_YUV420P12LE = 125,
+    PF_YUV422P12LE = 129,
+    PF_YUV444P12LE = 133,
+
+    PF_YUVA422P12LE = 188,
+    PF_YUVA444P12LE = 190,
+
+    //16bit
+    PF_YUV420P16LE = 47,
+    PF_YUV422P16LE = 49,
+    PF_YUV444P16LE = 51,
+
+    PF_YUVA420P16LE = 95,
+    PF_YUVA422P16LE = 97,
+    PF_YUVA444P16LE = 99,
+
 };
 
 #define HMP_FORALL_PIXEL_FORMATS(_)                                            \
-    _(PF_YUV420P)                                                              \
-    _(PF_YUV422P)                                                              \
-    _(PF_YUV444P)                                                              \
     _(PF_NV12)                                                                 \
     _(PF_NV21)                                                                 \
     _(PF_GRAY8)                                                                \
@@ -158,18 +182,36 @@ enum PixelFormat {
     _(PF_RGBA32)                                                               \
     _(PF_BGRA32)                                                               \
     _(PF_GRAY16)                                                               \
-    _(PF_YUVA420P)                                                             \
     _(PF_RGB48)                                                                \
     _(PF_YA8)                                                                  \
     _(PF_RGBA64)                                                               \
     _(PF_P010LE)                                                               \
     _(PF_P016LE)                                                               \
-    _(PF_YUV422P10LE)                                                          \
-    _(PF_YUV420P10LE)                                                          \
+    _(PF_NV16)                                                                 \
+    _(PF_NV24)                                                                 \
+    _(PF_YUV420P)                                                              \
+    _(PF_YUV422P)                                                              \
+    _(PF_YUV444P)                                                              \
+    _(PF_YUVA420P)                                                             \
     _(PF_YUVA422P)                                                             \
     _(PF_YUVA444P)                                                             \
-    _(PF_NV16)                                                                 \
-    _(PF_NV24)
+    _(PF_YUV422P10LE)                                                          \
+    _(PF_YUV420P10LE)                                                          \
+    _(PF_YUV444P10LE)                                                          \
+    _(PF_YUVA422P10LE)                                                         \
+    _(PF_YUVA420P10LE)                                                         \
+    _(PF_YUVA444P10LE)                                                         \
+    _(PF_YUV420P12LE)                                                          \
+    _(PF_YUV422P12LE)                                                          \
+    _(PF_YUV444P12LE)                                                          \
+    _(PF_YUVA422P12LE)                                                         \
+    _(PF_YUVA444P12LE)                                                         \
+    _(PF_YUV420P16LE)                                                          \
+    _(PF_YUV422P16LE)                                                          \
+    _(PF_YUV444P16LE)                                                          \
+    _(PF_YUVA420P16LE)                                                         \
+    _(PF_YUVA422P16LE)                                                         \
+    _(PF_YUVA444P16LE)
 
 HMP_API std::string stringfy(const PixelFormat &format);
 PixelFormat HMP_API get_pixel_format(std::string pixfmt);

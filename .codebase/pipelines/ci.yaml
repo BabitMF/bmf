@@ -10,7 +10,6 @@ jobs:
       - uses: actions/checkout
         inputs:
           depth: 1
-      - uses: actions/setup-proxy
       - name: prepare libraries
         commands:
           - export DEBIAN_FRONTEND=noninteractive
@@ -22,6 +21,7 @@ jobs:
           # When running unit tests, nasm/yasm installed via apt will cause the indicators to be misaligned, so it needs to be compiled from source code
           #apt install -y nasm yasm
           - scripts/build_ffmpeg.sh nasm yasm x264 x265 opus
+      - uses: actions/setup-proxy
       - name: build_env
         commands:
           # unit test
@@ -32,6 +32,7 @@ jobs:
           - pip3 install --upgrade pip
           - pip3 install timeout_decorator onnxruntime==1.18.0 numpy==1.26.4 requests opencv-python librosa
           - echo "build finished"
+      - uses: actions/setup-proxy
       - name: run_test
         commands:
           - export C_INCLUDE_PATH=${C_INCLUDE_PATH}:$(pwd)/output/bmf/include
@@ -266,7 +267,6 @@ jobs:
       - uses: actions/checkout
         inputs:
           depth: 1
-      - uses: actions/setup-proxy
       - name: prepare libraries
         commands:
           - export DEBIAN_FRONTEND=noninteractive
@@ -279,6 +279,7 @@ jobs:
           # When running unit tests, nasm/yasm installed via apt will cause the indicators to be misaligned, so it needs to be compiled from source code
           #apt install -y nasm yasm
           - scripts/build_ffmpeg.sh nasm yasm x264 x265 opus # ffmpeg is compiled with default compiler (gcc)
+      - uses: actions/setup-proxy
       - name: build_env
         commands:
           # unit test

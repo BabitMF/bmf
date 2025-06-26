@@ -15,7 +15,7 @@ on:
 jobs:
   build_manylinux_wheels:
     name: Build linux wheels with ${{ matrix.py_ver_prefix }}-${{ matrix.linux_arch }}-${{ matrix.device }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         py_ver_prefix: [cp36, cp37, cp38, cp39, cp310, cp311, cp312]

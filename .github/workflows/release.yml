@@ -20,33 +20,33 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             arch: x86_64
-            py_ver_prefix: cp39
+            py_ver_prefix: cp310
             device: cpu
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             arch: x86_64
-            py_ver_prefix: cp39
+            py_ver_prefix: cp310
             device: gpu
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             arch: aarch64
-            py_ver_prefix: cp39
+            py_ver_prefix: cp310
             device: cpu
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             arch: s390x
-            py_ver_prefix: cp39
+            py_ver_prefix: cp310
             device: cpu
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             arch: ppc64le
-            py_ver_prefix: cp39
+            py_ver_prefix: cp310
             device: cpu
           - os: macos-13
             arch: x86_64
-            py_ver_prefix: cp39
+            py_ver_prefix: cp310
             device: cpu
           - os: macos-13
             arch: arm64
-            py_ver_prefix: cp39
+            py_ver_prefix: cp310
             device: cpu
             #- os: windows-2019
             #  arch: AMD64
@@ -115,8 +115,8 @@ jobs:
     - name: Build macos release package
       if: runner.os == 'macOS'
       run: |
-        wget https://www.python.org/ftp/python/3.9.13/python-3.9.13-macos11.pkg
-        sudo installer -pkg python-3.9.13-macos11.pkg -target /
+        wget https://www.python.org/ftp/python/3.10.11/python-3.10.11-macos11.pkg
+        sudo installer -pkg python-3.10.11-macos11.pkg -target /
         brew install binutils
         ./scripts/build_ffmpeg.sh --arch=${{ matrix.arch }}
         export PKG_CONFIG_PATH=$(pwd)/ffmpeg_${{ matrix.arch }}/lib/pkgconfig

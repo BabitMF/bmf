@@ -23,7 +23,7 @@ PLAT_TO_CMAKE = {
 }
 
 package_name="BabitMF"
-package_version="0.1.0"
+package_version="0.2.0"
 
 if "DEVICE" in os.environ and os.environ["DEVICE"] == "gpu":
     package_name="BabitMF_GPU"

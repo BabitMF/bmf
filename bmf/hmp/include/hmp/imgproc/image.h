@@ -54,6 +54,10 @@ class HMP_API Frame {
 
     const PixelInfo &pix_info() const { return pix_info_; }
 
+    void copy_props(const Frame &from) {
+        pix_info_.set_color_model(from.pix_info().color_model());
+    }
+
     /**
      * @brief
      *

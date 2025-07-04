@@ -1,6 +1,6 @@
 #!/bin/bash
 # Check if BMF_VERSION_OVERRIDE is set and use it if available
-if [ -n "${BMF_VERSION_OVERRIDE}" ]; then
+if [ -n "${BMF_VERSION_OVERRIDE:-}" ]; then
     BMF_BUILD_VERSION="${BMF_VERSION_OVERRIDE}"
 else
     # Otherwise use the existing logic to get version from setup.py

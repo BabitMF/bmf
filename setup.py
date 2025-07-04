@@ -48,19 +48,20 @@ PACKAGE_DATA = {
     "bmf.templates": ["jinja_templates/**/*.j2"]
 }
 
-CONSOLE_SCRIPTS = [
-    'run_bmf_graph = bmf.cmd.python_wrapper.wrapper:run_bmf_graph',
-    'trace_format_log = bmf.cmd.python_wrapper.wrapper:trace_format_log',
-    'module_manager = bmf.cmd.python_wrapper.wrapper:module_manager',
-    'bmf_env = bmf.cmd.python_wrapper.wrapper:bmf_env',
-    'bmf_template_generator = bmf.templates.cli:main',
-]
+CONSOLE_SCRIPTS = {
+    'run_bmf_graph': 'bmf.cmd.python_wrapper.wrapper:run_bmf_graph',
+    'trace_format_log': 'bmf.cmd.python_wrapper.wrapper:trace_format_log',
+    'module_manager': 'bmf.cmd.python_wrapper.wrapper:module_manager',
+    'bmf_env': 'bmf.cmd.python_wrapper.wrapper:bmf_env',
+    'bmf_template_generator': 'bmf.templates.cli:main',
+}
 
 if NAMESPACE:
     PACKAGES = [NAMESPACE] + [NAMESPACE + "." + p for p in PACKAGES]
     PACKAGE_DATA = {NAMESPACE + "." + k: v for k, v in PACKAGE_DATA.items()}
-    CONSOLE_SCRIPTS = [NAMESPACE + "." + s for s in CONSOLE_SCRIPTS]
-
+    CONSOLE_SCRIPTS = [f"{k} = {NAMESPACE}.{v}" for k, v in CONSOLE_SCRIPTS.items()]
+else:
+    CONSOLE_SCRIPTS = [f"{k} = {v}" for k, v in CONSOLE_SCRIPTS.items()]
 
 # A CMakeExtension needs a sourcedir instead of a file list.
 # The name must be the _single_ output extension from the CMake build.
@@ -221,11 +222,11 @@ setup(
         "numpy >= 1.19.5, < 2.0.0",
     ],
     extras_require={
-        "test": ["pytest >= 6.0.0, < 7.0.0"],
+        "test": ["pytest"],
         "templates": [
-            "jinja2 >= 2.11.0, < 3.0.0",
-            "click >= 7.0.0, < 8.0.0",
-            "InquirerPy >= 0.3.0, <= 0.3.4",
+            "jinja2",
+            "click",
+            "InquirerPy",
         ],
     },
     package_data=PACKAGE_DATA,

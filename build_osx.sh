@@ -20,7 +20,7 @@ then
         rm -rf build
         rm -rf dist
         rm -rf custom_deps
-        rm -rf BabitMF.egg-info
+        rm -rf *.egg-info
         exit
     fi
 
@@ -184,7 +184,6 @@ else
         rm -rf bmf/lib
         rm -rf bmf/bin
         rm -rf bmf/include
-        rm -rf byted_bmf.egg-info
-        rm -rf BabitMF.egg-info
+        rm -rf *.egg-info
     done
 fi

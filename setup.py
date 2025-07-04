@@ -22,11 +22,44 @@ PLAT_TO_CMAKE = {
     "win-arm64": "ARM64",
 }
 
-package_name="BabitMF"
 package_version="0.2.0"
 
+NAMESPACE = os.environ.get("BMF_PACKAGE_NAMESPACE")
+PACKAGE_NAME = os.environ.get("BMF_PACKAGE_NAME_OVERRIDE", "BabitMF")
+PACKAGE_VERSION = os.environ.get("BMF_VERSION_OVERRIDE", package_version)
+PACKAGE_URL = os.environ.get("BMF_PACKAGE_URL_OVERRIDE", "https://github.com/BabitMF/BabitMF")
+
 if "DEVICE" in os.environ and os.environ["DEVICE"] == "gpu":
-    package_name="BabitMF_GPU"
+    PACKAGE_NAME = PACKAGE_NAME + "_gpu"
+
+PACKAGES = [
+    'bmf',
+    'bmf.builder',
+    'bmf.cmd.python_wrapper',
+    'bmf.ffmpeg_engine',
+    'bmf.hmp',
+    'bmf.modules',
+    'bmf.python_sdk',
+    'bmf.server',
+    'bmf.templates',
+]
+
+PACKAGE_DATA = {
+    "bmf.templates": ["jinja_templates/**/*.j2"]
+}
+
+CONSOLE_SCRIPTS = [
+    'run_bmf_graph = bmf.cmd.python_wrapper.wrapper:run_bmf_graph',
+    'trace_format_log = bmf.cmd.python_wrapper.wrapper:trace_format_log',
+    'module_manager = bmf.cmd.python_wrapper.wrapper:module_manager',
+    'bmf_env = bmf.cmd.python_wrapper.wrapper:bmf_env',
+    'bmf_template_generator = bmf.templates.cli:main',
+]
+
+if NAMESPACE:
+    PACKAGES = [NAMESPACE] + [NAMESPACE + "." + p for p in PACKAGES]
+    PACKAGE_DATA = {NAMESPACE + "." + k: v for k, v in PACKAGE_DATA.items()}
+    CONSOLE_SCRIPTS = [NAMESPACE + "." + s for s in CONSOLE_SCRIPTS]
 
 
 # A CMakeExtension needs a sourcedir instead of a file list.
@@ -67,7 +100,7 @@ class CMakeBuild(build_ext):
             f"-DPYTHON_INCLUDE_DIR={sysconfig.get_path('include')}",
             f"-DPYTHON_LIBRARY={sysconfig.get_config_var('LIBDIR')}",
             f"-DBMF_PYENV={'{}.{}.{}'.format(sys.version_info.major, sys.version_info.minor, sys.version_info.micro)}", #There is a situation on macOS, that is, cibuildwheel uses python3.8.10 to call the setup.py, but cmake finds python3.8.9 installed under the xcode path, resulting in the python path in the final executable file starting with @rpath, which is There will be problems at runtime. So we use the full python version number, which is major.minor.patch
-            f"-DBMF_BUILD_VERSION={package_version}",
+            f"-DBMF_BUILD_VERSION={PACKAGE_VERSION}",
             f"-DBMF_BUILD_COMMIT={short_sha}",
         ]
 
@@ -156,24 +189,26 @@ class CMakeBuild(build_ext):
         # a static config file. Obviously, setup.py is more convenient than pyproject.toml, so we manually copy
         # _bmf, _hmp, py_module_loader, go_module_loader and builtin_moduls before repair, instead of
         # the entire lib directory. the build directory is temporary, so we need to copy it here, instead of package_data.
+        output_prefix = os.path.join(extdir, NAMESPACE) if NAMESPACE else extdir
+        bmf_output_root = os.path.join(output_prefix, "bmf")
         for output_dir in ["bin", "lib", "include", "cpp_modules", "python_modules"]: #"go_modules"
-            shutil.copytree(os.path.join(build_temp, "output", "bmf", output_dir), os.path.join(extdir, "bmf", output_dir))
+            shutil.copytree(os.path.join(build_temp, "output", "bmf", output_dir), os.path.join(bmf_output_root, output_dir))
         for file in ["BUILTIN_CONFIG.json"]:
-           shutil.copyfile(os.path.join(build_temp, "output", "bmf", file), os.path.join(extdir, "bmf", file))
+           shutil.copyfile(os.path.join(build_temp, "output", "bmf", file), os.path.join(bmf_output_root, file))
 
         # TODO: Remove versioned libraries to reduce package size
 
         if sys.platform.startswith("darwin"):
             subprocess.run(
-                ["./scripts/redirect_macos_dep.sh", extdir], check=True
+                ["./scripts/redirect_macos_dep.sh", output_prefix], check=True
             )
 
 
 # The information here can also be placed in setup.cfg - better separation of
 # logic and declaration, and simpler if you include description/version in a file.
 setup(
-    name=package_name,
-    version=package_version,
+    name=NAMESPACE + "." + PACKAGE_NAME if NAMESPACE else PACKAGE_NAME,
+    version=PACKAGE_VERSION,
     author="",
     author_email="",
     python_requires='>= 3.6',
@@ -181,42 +216,23 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     readme='README.md',
-    url="https://github.com/BabitMF/bmf",
+    url=PACKAGE_URL,
     install_requires=[
-        "numpy >= 1.19.5",
+        "numpy >= 1.19.5, < 2.0.0",
     ],
-    #zip_safe=False,
     extras_require={
-        "test": ["pytest"],
+        "test": ["pytest >= 6.0.0, < 7.0.0"],
         "templates": [
-            "jinja2",
-            "click",
-            "InquirerPy",
+            "jinja2 >= 2.11.0, < 3.0.0",
+            "click >= 7.0.0, < 8.0.0",
+            "InquirerPy >= 0.3.0, <= 0.3.4",
         ],
     },
-    package_data={
-        "bmf.templates": ["jinja_templates/**/*.j2"]
-    },
-    packages=[
-        'bmf',
-        'bmf.builder',
-        'bmf.cmd.python_wrapper',
-        'bmf.ffmpeg_engine',
-        'bmf.hmp',
-        'bmf.modules',
-        'bmf.python_sdk',
-        'bmf.server',
-        'bmf.templates',
-    ],
+    package_data=PACKAGE_DATA,
+    packages=PACKAGES,
     ext_modules=[CMakeExtension("bmf")],
     cmdclass={"build_ext": CMakeBuild},
     entry_points={
-        'console_scripts': [
-           'run_bmf_graph = bmf.cmd.python_wrapper.wrapper:run_bmf_graph',
-           'trace_format_log = bmf.cmd.python_wrapper.wrapper:trace_format_log',
-           'module_manager = bmf.cmd.python_wrapper.wrapper:module_manager',
-           'bmf_env = bmf.cmd.python_wrapper.wrapper:bmf_env',
-           'bmf_template_generator = bmf.templates.cli:main',
-        ],
+        'console_scripts': CONSOLE_SCRIPTS,
     }
 )

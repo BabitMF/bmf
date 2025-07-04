@@ -1,12 +1,18 @@
 #!/bin/bash
-if [[ $OS == *Windows* ]]; 
-then
-    BMF_BUILD_VERSION=$(python setup.py --version)
+# Check if BMF_VERSION_OVERRIDE is set and use it if available
+if [ -n "${BMF_VERSION_OVERRIDE}" ]; then
+    BMF_BUILD_VERSION="${BMF_VERSION_OVERRIDE}"
 else
-    if [ "$(uname -s)" = "Darwin" ]; then
-        BMF_BUILD_VERSION=$(awk -F\" '/package_version=/ {print $2}' setup.py)
+    # Otherwise use the existing logic to get version from setup.py
+    if [[ $OS == *Windows* ]]; 
+    then
+        BMF_BUILD_VERSION=$(python setup.py --version)
     else
-        BMF_BUILD_VERSION=$(cat setup.py | grep "package_version=" | grep -oP '"\K[0-9.]+')
+        if [ "$(uname -s)" = "Darwin" ]; then
+            BMF_BUILD_VERSION=$(awk -F\" '/package_version=/ {print $2}' setup.py)
+        else
+            BMF_BUILD_VERSION=$(cat setup.py | grep "package_version=" | grep -oP '"\K[0-9.]+')
+        fi
     fi
 fi
 

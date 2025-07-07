@@ -28,6 +28,7 @@ NAMESPACE = os.environ.get("BMF_PACKAGE_NAMESPACE")
 PACKAGE_NAME = os.environ.get("BMF_PACKAGE_NAME_OVERRIDE", "BabitMF")
 PACKAGE_VERSION = os.environ.get("BMF_VERSION_OVERRIDE", package_version)
 PACKAGE_URL = os.environ.get("BMF_PACKAGE_URL_OVERRIDE", "https://github.com/BabitMF/BabitMF")
+NAMESPACE_NESTING = bool(NAMESPACE and (os.environ.get("BMF_ENABLE_NAMESPACE_NESTING", "OFF").upper() == "ON"))
 
 if "DEVICE" in os.environ and os.environ["DEVICE"] == "gpu":
     PACKAGE_NAME = PACKAGE_NAME + "_gpu"
@@ -56,7 +57,7 @@ CONSOLE_SCRIPTS = {
     'bmf_template_generator': 'bmf.templates.cli:main',
 }
 
-if NAMESPACE:
+if NAMESPACE_NESTING:
     PACKAGES = [NAMESPACE] + [NAMESPACE + "." + p for p in PACKAGES]
     PACKAGE_DATA = {NAMESPACE + "." + k: v for k, v in PACKAGE_DATA.items()}
     CONSOLE_SCRIPTS = [f"{k} = {NAMESPACE}.{v}" for k, v in CONSOLE_SCRIPTS.items()]
@@ -190,7 +191,7 @@ class CMakeBuild(build_ext):
         # a static config file. Obviously, setup.py is more convenient than pyproject.toml, so we manually copy
         # _bmf, _hmp, py_module_loader, go_module_loader and builtin_moduls before repair, instead of
         # the entire lib directory. the build directory is temporary, so we need to copy it here, instead of package_data.
-        output_prefix = os.path.join(extdir, NAMESPACE) if NAMESPACE else extdir
+        output_prefix = os.path.join(extdir, NAMESPACE) if NAMESPACE_NESTING else extdir
         bmf_output_root = os.path.join(output_prefix, "bmf")
         for output_dir in ["bin", "lib", "include", "cpp_modules", "python_modules"]: #"go_modules"
             shutil.copytree(os.path.join(build_temp, "output", "bmf", output_dir), os.path.join(bmf_output_root, output_dir))

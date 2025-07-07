@@ -23,7 +23,6 @@ bmf/go_module_sdk/.idea
 bmf/go_module_sdk/build
 bmf/go_module_sdk/cmake-build-debug
 dist/
-bytedance/
 *.egg-info/
 custom_deps/
 output/

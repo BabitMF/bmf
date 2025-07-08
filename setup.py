@@ -24,11 +24,11 @@ PLAT_TO_CMAKE = {
 
 package_version="0.2.0"
 
-NAMESPACE = os.environ.get("BMF_PACKAGE_NAMESPACE")
+NAMESPACE = os.environ.get("BMF_PACKAGE_NAMESPACE", "")
 PACKAGE_NAME = os.environ.get("BMF_PACKAGE_NAME_OVERRIDE", "BabitMF")
 PACKAGE_VERSION = os.environ.get("BMF_VERSION_OVERRIDE", package_version)
 PACKAGE_URL = os.environ.get("BMF_PACKAGE_URL_OVERRIDE", "https://github.com/BabitMF/BabitMF")
-NAMESPACE_NESTING = bool(NAMESPACE and (os.environ.get("BMF_ENABLE_NAMESPACE_NESTING", "OFF").upper() == "ON"))
+NAMESPACE_NESTING = len(NAMESPACE) > 0 and os.environ.get("BMF_ENABLE_NAMESPACE_NESTING", "OFF").upper() == "ON"
 
 if "DEVICE" in os.environ and os.environ["DEVICE"] == "gpu":
     PACKAGE_NAME = PACKAGE_NAME + "_gpu"

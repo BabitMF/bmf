@@ -105,6 +105,7 @@ jobs:
           ls /usr/lib
           ls /usr/include
           ls /usr/bin
+          export FFMPEG_ROOT_PATH=/usr/local
           cmake -version
           ./build_win_lite.sh --msvc=2022 --preset=x64-Release bmf_ffmpeg
           cmake --build build_win_lite/x64-Release --config Release --target ALL_BUILD

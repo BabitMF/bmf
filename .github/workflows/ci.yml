@@ -112,6 +112,8 @@ jobs:
           cmake --build build_win_lite/x64-Release --config Release --target ALL_BUILD
           cmake --build build_win_lite/x64-Release --config Release --target ALL_BUILD
           cp -r build_win_lite/x64-Release/output .
+          set -e
+          python -m pip install --upgrade pip
           python -m pip install timeout_decorator numpy onnxruntime pytest opencv-python
           export PYTHONHOME="$(dirname "$(which python)")"
           export C_INCLUDE_PATH=${C_INCLUDE_PATH}:$(pwd)/output/bmf/include

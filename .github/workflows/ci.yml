@@ -124,8 +124,8 @@ jobs:
           echo $PATH
           echo $(pwd)
           export HMP_TEST_DATA_ROOT=$(pwd)/bmf/hmp/tests/data
-          ffmpeg
-          module_manager
+          ffmpeg -version
+          module_manager help
           ./output/bmf/bin/module_manager install python_copy_module python my_module:my_module $(pwd)/output/test/customize_module v0.0.1
           ./output/bmf/bin/module_manager install cpp_copy_module c++ copy_module:CopyModule $(pwd)/output/test/c_module/lib v0.0.1
           (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz && tar xvf files.tar.gz && rm -rf files.tar.gz)

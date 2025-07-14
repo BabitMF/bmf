@@ -143,7 +143,7 @@ TEST(module_manager, resolve_module_info) {
         EXPECT_TRUE(fs::exists(info->module_path));
         EXPECT_EQ(info->module_entry, "my_module.my_module");
     }
-
+    #ifndef _WIN32
     // resolve module info from sys repo(go)
     {
         auto info = M.resolve_module_info("go_copy_module");
@@ -153,6 +153,7 @@ TEST(module_manager, resolve_module_info) {
         EXPECT_TRUE(fs::exists(info->module_path));
         EXPECT_EQ(info->module_entry, "go_copy_module.PassThrough");
     }
+    #endif
 }
 
 TEST(module_manager, load_module) {

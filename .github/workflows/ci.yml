@@ -21,8 +21,8 @@ jobs:
     - name: prepare libraries
       run: |
         sudo apt update
-        sudo apt install -y make git pkg-config libssl-dev cmake binutils-dev libgoogle-glog-dev gcc g++ golang wget libgl1
-        sudo apt install -y python3.9 python3-dev python3-pip libsndfile1 libsndfile1-dev
+        sudo apt install -y make git pkg-config libssl-dev cmake binutils-dev libgoogle-glog-dev libunwind-dev gcc g++ golang wget libgl1
+        sudo apt install -y python3 python3-dev python3-pip libsndfile1 libsndfile1-dev
         sudo python3 -m pip install timeout_decorator numpy onnxruntime pytest opencv-python librosa
         # The version of ffmpeg installed via apt is 4.2, but the current test results are based on version 4.4, so here we need to compile version 4.4 of ffmpeg from source code
         #apt install -y ffmpeg libavcodec-dev libavdevice-dev libavfilter-dev libavformat-dev libavresample-dev libavutil-dev libpostproc-dev libswresample-dev libswscale-dev
@@ -81,7 +81,7 @@ jobs:
   
   build_and_test_win:
     name: build and test win
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
       - name: build_test
@@ -105,12 +105,15 @@ jobs:
           ls /usr/lib
           ls /usr/include
           ls /usr/bin
+          export FFMPEG_ROOT_PATH=/usr/local
           cmake -version
-          ./build_win_lite.sh --msvc=2019 --preset=x64-Release bmf_ffmpeg
+          ./build_win_lite.sh --msvc=2022 --preset=x64-Release bmf_ffmpeg
           cmake --build build_win_lite/x64-Release --config Release --target ALL_BUILD
           cmake --build build_win_lite/x64-Release --config Release --target ALL_BUILD
           cmake --build build_win_lite/x64-Release --config Release --target ALL_BUILD
           cp -r build_win_lite/x64-Release/output .
+          set -e
+          python -m pip install --upgrade pip
           python -m pip install timeout_decorator numpy onnxruntime pytest opencv-python
           export PYTHONHOME="$(dirname "$(which python)")"
           export C_INCLUDE_PATH=${C_INCLUDE_PATH}:$(pwd)/output/bmf/include
@@ -121,9 +124,8 @@ jobs:
           echo $PATH
           echo $(pwd)
           export HMP_TEST_DATA_ROOT=$(pwd)/bmf/hmp/tests/data
-          run_bmf_graph
-          ffmpeg
-          module_manager
+          ffmpeg -version
+          module_manager help
           ./output/bmf/bin/module_manager install python_copy_module python my_module:my_module $(pwd)/output/test/customize_module v0.0.1
           ./output/bmf/bin/module_manager install cpp_copy_module c++ copy_module:CopyModule $(pwd)/output/test/c_module/lib v0.0.1
           (cd output && wget https://github.com/BabitMF/bmf/releases/download/files/files.tar.gz && tar xvf files.tar.gz && rm -rf files.tar.gz)
@@ -158,3 +160,7 @@ jobs:
           '@
 
           echo $bashCommand | & $bashPath
+
+      - name: Setup tmate session
+        if: ${{ failure() }}
+        uses: mxschmitt/action-tmate@v3

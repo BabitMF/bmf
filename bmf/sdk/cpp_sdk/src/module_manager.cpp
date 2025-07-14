@@ -595,7 +595,9 @@ void ModuleManager::init() {
                       .string());
     #endif
     set_repo_root(s_bmf_repo_root.string());
+    #if !defined(_WIN32) && !defined(EMSCRIPTEN)
     set_repo_root(s_bmf_mods_path.string());
+    #endif
     set_repo_root(fs::current_path().string());
 }
 

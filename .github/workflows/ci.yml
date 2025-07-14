@@ -124,7 +124,6 @@ jobs:
           echo $PATH
           echo $(pwd)
           export HMP_TEST_DATA_ROOT=$(pwd)/bmf/hmp/tests/data
-          run_bmf_graph
           ffmpeg
           module_manager
           ./output/bmf/bin/module_manager install python_copy_module python my_module:my_module $(pwd)/output/test/customize_module v0.0.1

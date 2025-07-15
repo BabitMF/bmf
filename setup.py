@@ -220,14 +220,14 @@ setup(
     readme='README.md',
     url=PACKAGE_URL,
     install_requires=[
-        "numpy >= 1.19.5, < 2.0.0",
+        "numpy>=1.19.5,<2.0.0",
     ],
     extras_require={
-        "test": ["pytest"],
+        "test": ["pytest>=6.2.5,<=8.4.1"],
         "templates": [
-            "jinja2",
-            "click",
-            "InquirerPy",
+            "jinja2>=2.11.0,<=3.1.6",
+            "click>=7.1.2,<=8.2.1",
+            "InquirerPy>=0.0.1,<=0.3.4",
         ],
     },
     package_data=PACKAGE_DATA,

@@ -444,6 +444,8 @@ void RealGraph::Start(
 
 int RealGraph::Close() {
     return graphInstance_->close();
+int RealGraph::ForceClose() {
+    return graphInstance_->force_close();
 }
 
 bmf::BMFGraph RealGraph::Instantiate(bool dumpGraph, bool needMerge) {
@@ -820,6 +822,8 @@ void Graph::Start(std::vector<Stream> &generateStreams, bool dumpGraph,
 
 int Graph::Close() {
     return graph_->Close();
+int Graph::ForceClose() {
+    return graph_->ForceClose();
 }
 
 Packet Graph::Generate(std::string streamName, bool block) {

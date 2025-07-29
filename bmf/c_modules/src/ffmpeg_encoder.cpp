@@ -931,6 +931,7 @@ int CFFEncoder::write_current_packet_data(uint8_t *buf, int buf_size) {
     av_new_packet(avpkt, buf_size);
     data = avpkt->data;
     BMFAVPacket bmf_avpkt = ffmpeg::to_bmf_av_packet(avpkt, true);
+    av_packet_free(&avpkt);
 
     memcpy(data, buf, buf_size);
     bmf_avpkt.set_offset(current_offset_);

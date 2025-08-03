@@ -53,12 +53,21 @@ class ComfyNodeRunner(Module):
             return []
 
     def process(self, task):
+        # Check if this is a processing node and all inputs are EOF
+        if task.get_inputs() and all(not q.empty() and q.front().timestamp == Timestamp.EOF for _, q in task.get_inputs().items()):
+            # All input streams are at EOF. Propagate EOF and finish.
+            for i in task.get_outputs():
+                task.get_outputs()[i].put(Packet.generate_eof_packet())
+            task.set_timestamp(Timestamp.DONE)
+            return ProcessResult.OK
+
         kwargs = self.widget_inputs.copy()
         
         # Unpack inputs from BMF packets
         for i in range(len(task.get_inputs())):
             input_queue = task.get_inputs()[i]
             if not input_queue.empty():
+                # For processing nodes, we get the packet. For EOF checking above, we only peeked.
                 pkt = input_queue.get()
                 if pkt.timestamp != Timestamp.EOF:
                     input_name = self.link_inputs_info[i]
@@ -80,9 +89,11 @@ class ComfyNodeRunner(Module):
                     out_pkt = Packet(data_bytes)
                     out_pkt.timestamp = task.timestamp
                     task.get_outputs()[i].put(out_pkt)
-                    
-        for i in task.get_outputs():
-            task.get_outputs()[i].put(Packet.generate_eof_packet())
+        
+        # If this is a source node, send EOF after execution
+        if not task.get_inputs():
+            for i in task.get_outputs():
+                task.get_outputs()[i].put(Packet.generate_eof_packet())
 
         return ProcessResult.OK
 

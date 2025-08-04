@@ -53,27 +53,41 @@ class ComfyNodeRunner(Module):
             return []
 
     def process(self, task):
-        # Check if this is a processing node and all inputs are EOF
-        if task.get_inputs() and all(not q.empty() and q.front().timestamp == Timestamp.EOF for _, q in task.get_inputs().items()):
-            # All input streams are at EOF. Propagate EOF and finish.
-            for i in task.get_outputs():
-                task.get_outputs()[i].put(Packet.generate_eof_packet())
-            task.set_timestamp(Timestamp.DONE)
-            return ProcessResult.OK
+        # Handle EOF: if any input stream is finished, we propagate EOF and finish this node.
+        if task.get_inputs():
+            is_eof = False
+            for input_id, input_queue in task.get_inputs().items():
+                if not input_queue.empty() and input_queue.front().timestamp == Timestamp.EOF:
+                    is_eof = True
+                    break
+            if is_eof:
+                for output_id, output_queue in task.get_outputs().items():
+                    output_queue.put(Packet.generate_eof_packet())
+                task.set_timestamp(Timestamp.DONE)
+                return ProcessResult.OK
 
         kwargs = self.widget_inputs.copy()
         
-        # Unpack inputs from BMF packets
-        for i in range(len(task.get_inputs())):
-            input_queue = task.get_inputs()[i]
-            if not input_queue.empty():
-                # For processing nodes, we get the packet. For EOF checking above, we only peeked.
-                pkt = input_queue.get()
-                if pkt.timestamp != Timestamp.EOF:
-                    input_name = self.link_inputs_info[i]
-                    data_bytes = pkt.get(bytes)
-                    unwrapped_data = dill.loads(data_bytes)
-                    kwargs[input_name] = unwrapped_data
+        # Check if all inputs for this task are ready
+        all_inputs_ready = True
+        for input_id, input_queue in task.get_inputs().items():
+            if input_queue.empty():
+                all_inputs_ready = False
+                break
+        
+        if not all_inputs_ready:
+            # Not all inputs are ready, wait for more packets
+            return ProcessResult.OK
+
+        # Process inputs
+        for i, (input_id, input_queue) in enumerate(task.get_inputs().items()):
+            pkt = input_queue.get()
+            # We only process data packets here. EOF is handled above.
+            if pkt.timestamp != Timestamp.EOF:
+                input_name = self.link_inputs_info[i]
+                data_bytes = pkt.get(bytes)
+                unwrapped_data = dill.loads(data_bytes)
+                kwargs[input_name] = unwrapped_data
 
         function_name = getattr(self.comfy_node_instance, 'FUNCTION', 'execute')
         execute_func = getattr(self.comfy_node_instance, function_name)
@@ -89,11 +103,12 @@ class ComfyNodeRunner(Module):
                     out_pkt = Packet(data_bytes)
                     out_pkt.timestamp = task.timestamp
                     task.get_outputs()[i].put(out_pkt)
-        
-        # If this is a source node, send EOF after execution
+
+        # Source nodes (no inputs) send EOF after their single execution
         if not task.get_inputs():
-            for i in task.get_outputs():
-                task.get_outputs()[i].put(Packet.generate_eof_packet())
+            for output_id, output_queue in task.get_outputs().items():
+                output_queue.put(Packet.generate_eof_packet())
+            task.set_timestamp(Timestamp.DONE)
 
         return ProcessResult.OK
 

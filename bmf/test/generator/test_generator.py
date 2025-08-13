@@ -66,6 +66,74 @@ class TestGenerator(BaseTestCase):
             else:
                 break
 
+    def test_multistream_async_generator(self):
+        graph = bmf.graph({
+            "dump_graph": 1
+        })
+        output_streams = graph.decode({
+                'input_path':
+                "../../files/big_bunny_10s_30fps.mp4"
+            })
+        v = output_streams['video']
+        a = output_streams['audio']
+        graph.start_multiple_streams([v, a])
+        video_pkt_list = []
+        audio_pkt_list = []
+        v_eof = False
+        a_eof = False
+        while not v_eof or not a_eof:
+            pkt_v = graph.poll_packet(v.get_name(), False)
+            pkt_a = graph.poll_packet(a.get_name(), False)
+            if pkt_v.defined() and pkt_v.timestamp == bmf.Timestamp.EOF:
+                v_eof = True
+                print("video eof")
+            if pkt_a.defined() and pkt_a.timestamp == bmf.Timestamp.EOF:
+                a_eof = True
+                print("audio eof")
+            has_audio_data = False
+            has_video_data = False
+            if pkt_v.is_(bmf.VideoFrame):
+                video_pkt_list.append(pkt_v)
+                has_video_data = True
+            
+            if pkt_a.is_(bmf.AudioFrame):
+                audio_pkt_list.append(pkt_a)
+                has_audio_data = True
+
+            # 情况1: 未获取到任何数据，继续轮询
+            if not has_video_data and not has_audio_data:
+                continue
+            if has_video_data:
+                print("has_video_data")
+                while True:
+                    pkt = graph.poll_packet(v.get_name(), False)
+                    if pkt.is_(bmf.VideoFrame):
+                        print("video frame")
+                        video_pkt_list.append(pkt)
+                    elif pkt.defined() and pkt.timestamp == bmf.Timestamp.EOF:
+                        v_eof = True
+                        print("video eof")
+                        break
+                    else:
+                        break
+                
+                print("video packet over len of video_pkt_list", len(video_pkt_list))
+                video_pkt_list = []
+            if has_audio_data:
+                print("has_audio_data")
+                while True:
+                    pkt = graph.poll_packet(a.get_name(), False)
+                    if pkt.is_(bmf.AudioFrame):
+                        print("audio frame")
+                        audio_pkt_list.append(pkt)
+                    elif pkt.defined() and pkt.timestamp == bmf.Timestamp.EOF:
+                        a_eof = True
+                        print("audio eof")
+                        break
+                    else:
+                        print("audio packet over len of audio_pkt_list", len(audio_pkt_list))
+                        audio_pkt_list = []
+                        break
 
 if __name__ == "__main__":
     unittest.main()

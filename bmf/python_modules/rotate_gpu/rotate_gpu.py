@@ -153,9 +153,7 @@ class rotate_gpu(Module):
                 cvimg_batch_out = cvcuda.ImageBatchVarShape(
                     in_frame.frame().nplanes())
                 # t3 = torch.ones((in_frame.frame().nplanes(),), dtype=torch.double, device='cuda') * self.flip_code
-                if (in_frame.frame().format() == hmp.PixelFormat.kPF_YUV420P
-                        or in_frame.frame().format()
-                        == hmp.PixelFormat.kPF_YUV420P10):
+                if (in_frame.frame().format() == hmp.PixelFormat.kPF_YUV420P):
                     center[1:3] //= 2
                 xform = numpy.zeros((4, 6), dtype='float32')
                 xform[:] = [
@@ -167,8 +165,8 @@ class rotate_gpu(Module):
                 cvxform = cvcuda.as_tensor(hmp.from_numpy(xform).cuda())
 
                 fill = numpy.array((0, 127, 127))
-                if in_frame.frame().format() == hmp.PixelFormat.kPF_YUV420P10:
-                    fill = numpy.array((0, 511, 511))
+                # if in_frame.frame().format() == hmp.PixelFormat.kPF_YUV420P10:
+                #     fill = numpy.array((0, 511, 511))
 
                 for t, f in zip(tensor_list, out_list):
                     cvimg = cvcuda.as_image(t)

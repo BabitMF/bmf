@@ -4,8 +4,14 @@ from bmf import Module, Task, Packet, Timestamp, ProcessResult
 import sys
 import os
 import torch
+import torch.utils.dlpack as torch_dlpack
 import dill 
 from bmf.builder.graph_config import GraphConfig, NodeConfig, StreamConfig, ModuleConfig
+import logging
+try:
+    import bmf.hmp as hmp
+except Exception as e:
+    hmp = None
 
 # Add ComfyUI to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../ComfyUI')))
@@ -22,6 +28,7 @@ class ComfyNodeRunner(Module):
         
         self.widget_inputs = {}
         self.link_inputs_info = {} 
+        self.input_type_map = {}
 
         # Separate widget inputs from linked inputs
         if 'inputs' in self.option:
@@ -41,6 +48,9 @@ class ComfyNodeRunner(Module):
                  if not isinstance(value, list):
                     self.widget_inputs[name] = value
 
+        # Build expected type map for inputs (IMAGE/LATENT/MASK/...)
+        self.input_type_map = self._build_input_type_map()
+
     def _get_input_order(self, class_type):
         """Gets the canonical input order from the node's class definition."""
         try:
@@ -51,6 +61,125 @@ class ComfyNodeRunner(Module):
             return required + optional
         except Exception:
             return []
+
+    def _build_input_type_map(self):
+        """Infer expected ComfyUI type name for each input (best-effort)."""
+        type_map = {}
+        try:
+            input_types = self.comfy_node_class.INPUT_TYPES()
+            for section in ('required', 'optional'):
+                if section in input_types:
+                    for name, spec in input_types[section].items():
+                        typ = None
+                        if isinstance(spec, tuple) and len(spec) > 0:
+                            base = spec[0]
+                        else:
+                            base = spec
+                        if isinstance(base, str):
+                            typ = base
+                        else:
+                            # IO.* or other enums/classes
+                            typ = getattr(base, 'name', str(base))
+                        type_map[name] = typ
+        except Exception:
+            pass
+        return type_map
+
+    def _torch_from_hmp(self, hmp_tensor):
+        """Convert hmp.Tensor -> torch.Tensor via DLPack (zero-copy)."""
+        if hmp is None:
+            raise RuntimeError("bmf.hmp is not available")
+        # Prefer direct torch() bridge if available
+        to_torch = getattr(hmp_tensor, 'torch', None)
+        if callable(to_torch):
+            return to_torch()
+        # Fallback to DLPack
+        cap = hmp_tensor.__dlpack__(1)
+        return torch_dlpack.from_dlpack(cap)
+
+    def _hmp_from_torch(self, torch_tensor):
+        """Convert torch.Tensor -> hmp.Tensor via DLPack (zero-copy)."""
+        if hmp is None:
+            raise RuntimeError("bmf.hmp is not available")
+        # Prefer direct from_torch() if available
+        if hasattr(hmp, 'from_torch'):
+            return hmp.from_torch(torch_tensor)
+        # Fallback to DLPack by passing tensor object (not capsule)
+        return hmp.from_dlpack(torch_tensor)
+
+    def close(self):
+        """Release strong references held by this module to encourage GC/VRAM release.
+        Avoid global unloads here; the executor will manage model memory.
+        """
+        try:
+            # Optional per-node cleanup hook
+            if hasattr(self.comfy_node_instance, 'cleanup') and callable(self.comfy_node_instance.cleanup):
+                try:
+                    self.comfy_node_instance.cleanup()
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        # Drop references so tensors/modules can be GC'd
+        self.comfy_node_instance = None
+        self.widget_inputs = None
+        self.link_inputs_info = None
+        self.input_type_map = None
+        return 0
+
+    def _adapt_input_for_comfy(self, input_name, t):
+        """Adapt a torch tensor into the exact structure Comfy expects for this input."""
+        expected = self.input_type_map.get(input_name, None)
+        # Handle our zero-copy latent wrapper
+        if expected == 'LATENT' and isinstance(t, tuple) and len(t) >= 3 and t[0] == 'LATENT_ZC':
+            meta = dict(t[1]) if isinstance(t[1], dict) else {}
+            samples_hmp = t[2]
+            noise_hmp = t[3] if len(t) > 3 else None
+            samples_torch = self._torch_from_hmp(samples_hmp)
+            meta['samples'] = samples_torch
+            if noise_hmp is not None:
+                meta['noise_mask'] = self._torch_from_hmp(noise_hmp)
+            return meta
+        # LATENT expects a dict with key 'samples' if given raw tensor
+        if expected == 'LATENT' and isinstance(t, torch.Tensor):
+            return {"samples": t}
+        # IMAGE expects NHWC float tensor in [0,1]
+        if expected == 'IMAGE' and isinstance(t, torch.Tensor):
+            if t.dim() == 4 and t.shape[1] in (1, 3, 4) and t.shape[-1] not in (1, 3, 4):
+                # NCHW -> NHWC using a view (no copy)
+                t = t.permute(0, 2, 3, 1)
+            return t
+        # MASK can be [H,W] or [B,H,W] (leave as is)
+        return t
+
+    def _packet_from_output(self, obj):
+        """Wrap node output into a Packet using zero-copy when possible.
+        - torch.Tensor -> hmp.Tensor inside Packet
+        - dict with 'samples' tensor -> Packet of hmp.Tensor (samples)
+        Others: fall back to bytes (non-zero-copy), but log once.
+        """
+        try:
+            # Never emit a null packet; wrap None explicitly
+            if obj is None:
+                return Packet(("PYOBJ", None))
+            if isinstance(obj, torch.Tensor):
+                return Packet(self._hmp_from_torch(obj))
+            if isinstance(obj, dict) and 'samples' in obj and isinstance(obj['samples'], torch.Tensor):
+                meta = dict(obj)
+                samples = meta.pop('samples')
+                noise = None
+                if 'noise_mask' in meta and isinstance(meta['noise_mask'], torch.Tensor):
+                    noise = meta.pop('noise_mask')
+                tup = ('LATENT_ZC', meta, self._hmp_from_torch(samples), self._hmp_from_torch(noise) if isinstance(noise, torch.Tensor) else None)
+                return Packet(tup)
+        except Exception as e:
+            logging.debug(f"Zero-copy packet wrap failed: {e}")
+        # Fallbacks:
+        # - If dict (may contain tensors), wrap to avoid JsonParam conversion
+        if isinstance(obj, dict):
+            return Packet(("PYOBJ", obj))
+        # - Store Python object pointer directly (no serialization). Avoid bare None
+        return Packet(("PYOBJ", obj))
 
     def process(self, task):
         # Handle EOF: if any input stream is finished, we propagate EOF and finish this node.
@@ -85,9 +214,41 @@ class ComfyNodeRunner(Module):
             # We only process data packets here. EOF is handled above.
             if pkt.timestamp != Timestamp.EOF:
                 input_name = self.link_inputs_info[i]
-                data_bytes = pkt.get(bytes)
-                unwrapped_data = dill.loads(data_bytes)
-                kwargs[input_name] = unwrapped_data
+                # Prefer zero-copy path via hmp.Tensor -> torch.Tensor
+                value_set = False
+                expected = self.input_type_map.get(input_name)
+                heavy_types = {"IMAGE", "LATENT", "MASK"}
+                if hmp is not None and expected in heavy_types:
+                    try:
+                        h = pkt.get(hmp.Tensor)
+                        if h is not None:
+                            t = self._torch_from_hmp(h)
+                            kwargs[input_name] = self._adapt_input_for_comfy(input_name, t)
+                            value_set = True
+                    except Exception as e:
+                        logging.debug(f"Zero-copy input decode failed for {input_name}: {e}")
+                if not value_set:
+                    # Fallback: get stored Python object directly (pointer, no copy)
+                    py_obj = pkt.get(None)
+                    # Guard against null/invalid payloads: treat as None
+                    if py_obj is None:
+                        kwargs[input_name] = None
+                        continue
+                    if isinstance(py_obj, tuple) and len(py_obj) >= 2 and py_obj[0] == 'PYOBJ':
+                        py_obj = py_obj[1]
+                    if py_obj is None:
+                        # Leave as None to avoid raising and emitting null packets downstream
+                        kwargs[input_name] = None
+                        continue
+                    # If it's our zero-copy latent wrapper, adapt to Comfy format
+                    if isinstance(py_obj, tuple) and len(py_obj) >= 3 and py_obj[0] == 'LATENT_ZC':
+                        kwargs[input_name] = self._adapt_input_for_comfy(input_name, py_obj)
+                    # If it's hmp.Tensor carried as PythonObject
+                    elif hmp is not None and isinstance(py_obj, hmp.Tensor):
+                        t = self._torch_from_hmp(py_obj)
+                        kwargs[input_name] = self._adapt_input_for_comfy(input_name, t)
+                    else:
+                        kwargs[input_name] = py_obj
 
         function_name = getattr(self.comfy_node_instance, 'FUNCTION', 'execute')
         execute_func = getattr(self.comfy_node_instance, function_name)
@@ -96,13 +257,37 @@ class ComfyNodeRunner(Module):
              results = execute_func(**kwargs)
 
         # Wrap outputs in BMF packets and send
-        if results:
-            for i, res_item in enumerate(results):
-                if i in task.get_outputs():
-                    data_bytes = dill.dumps(res_item)
-                    out_pkt = Packet(data_bytes)
-                    out_pkt.timestamp = task.timestamp
-                    task.get_outputs()[i].put(out_pkt)
+        expected_outputs = getattr(self.comfy_node_class, 'RETURN_TYPES', ())
+        expected_count = len(expected_outputs) if isinstance(expected_outputs, (tuple, list)) else 0
+
+        # Normalize results into a list of length expected_count
+        out_values = []
+        if results is None:
+            out_values = [None] * expected_count
+        elif isinstance(results, tuple) or isinstance(results, list):
+            out_values = list(results)
+        elif isinstance(results, dict) and ('result' in results):
+            r = results['result']
+            if isinstance(r, (tuple, list)):
+                out_values = list(r)
+            else:
+                out_values = [r]
+        else:
+            # Single object
+            out_values = [results]
+
+        if expected_count > 0:
+            if len(out_values) < expected_count:
+                out_values.extend([None] * (expected_count - len(out_values)))
+            elif len(out_values) > expected_count:
+                out_values = out_values[:expected_count]
+
+        # Emit packets for each declared output index
+        for i, output_queue in task.get_outputs().items():
+            value = out_values[i] if i < len(out_values) else None
+            out_pkt = self._packet_from_output(value)
+            out_pkt.timestamp = task.timestamp
+            output_queue.put(out_pkt)
 
         # Source nodes (no inputs) send EOF after their single execution
         if not task.get_inputs():
@@ -179,6 +364,7 @@ class BmfWorkflowConverter:
             if 'inputs' in node_info:
                 links = {k: v for k, v in node_info['inputs'].items() if isinstance(v, list)}
                 input_order = self._get_input_order(class_type)
+                input_link_count = 0
                 for input_name in input_order:
                     if input_name in links:
                         link_val = links[input_name]
@@ -187,6 +373,15 @@ class BmfWorkflowConverter:
                         if stream_identifier:
                             stream_conf = StreamConfig({"identifier": stream_identifier, "stream_alias": ""})
                             node_config.add_input_stream(stream_conf)
+                            input_link_count += 1
+
+            # Select input manager strategy
+            # - framesync for nodes requiring multiple inputs ready together
+            # - default for single-input or source nodes
+            if node_config.get_input_streams() and len(node_config.get_input_streams()) >= 2:
+                node_config.set_input_manager('framesync')
+            else:
+                node_config.set_input_manager('default')
 
             # Create output stream configs for the current node
             output_count = len(nodes.NODE_CLASS_MAPPINGS[class_type].RETURN_TYPES)
@@ -217,5 +412,7 @@ class BmfWorkflowConverter:
                 node_cfg = node_configs[output_node_id]
                 for stream_cfg in node_cfg.get_input_streams():
                     self.graph_config.add_output_stream(stream_cfg)
+        # Use generator mode so graph outputs are exposed for polling
+        self.graph_config.set_mode("Generator")
 
         return self.graph_config

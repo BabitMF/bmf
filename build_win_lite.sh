@@ -11,7 +11,7 @@ BUILD_DIR=build_win_lite
 OUTPUT_DIR=output
 COMPILE_ARCH=""
 preset=""
-PYTHON_VERSION=3.7
+PYTHON_VERSION=3.9
 export SCRIPT_EXEC_MODE=win
 
 export WIN_XCOMPILE_ROOT=$(pwd)/3rd_party/win_rootfs

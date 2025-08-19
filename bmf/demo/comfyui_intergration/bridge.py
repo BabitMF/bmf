@@ -16,6 +16,31 @@ except Exception as e:
 # Add ComfyUI to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../ComfyUI')))
 import nodes
+from collections import OrderedDict
+
+# Persistent LRU cache for loader node outputs to enable cross-request reuse with bounded memory
+class _LRUCache:
+    def __init__(self, capacity: int = 16):
+        self.capacity = capacity
+        self.data = OrderedDict()
+
+    def get(self, key):
+        if key not in self.data:
+            return None
+        value = self.data.pop(key)
+        self.data[key] = value
+        return value
+
+    def set(self, key, value):
+        if key in self.data:
+            self.data.pop(key)
+        self.data[key] = value
+        while len(self.data) > self.capacity:
+            # Drop least recently used entry to release references
+            self.data.popitem(last=False)
+
+_CACHE_CAP = int(os.environ.get('BMF_COMFY_LOADER_CACHE_SIZE', '16'))
+PERSISTENT_NODE_CACHE = _LRUCache(capacity=max(1, _CACHE_CAP))
 
 class ComfyNodeRunner(Module):
     def __init__(self, node_id=None, option=None):
@@ -50,6 +75,9 @@ class ComfyNodeRunner(Module):
 
         # Build expected type map for inputs (IMAGE/LATENT/MASK/...)
         self.input_type_map = self._build_input_type_map()
+
+        # Identify if this node is a cacheable loader (model/clip/vae/controlnet/etc.)
+        self.is_loader_node = self._is_cacheable_loader(self.class_type)
 
     def _get_input_order(self, class_type):
         """Gets the canonical input order from the node's class definition."""
@@ -106,6 +134,46 @@ class ComfyNodeRunner(Module):
             return hmp.from_torch(torch_tensor)
         # Fallback to DLPack by passing tensor object (not capsule)
         return hmp.from_dlpack(torch_tensor)
+
+    def _is_cacheable_loader(self, class_type: str) -> bool:
+        """Return True if this class type loads persistent heavy models."""
+        return class_type in {
+            'CheckpointLoader', 'CheckpointLoaderSimple', 'unCLIPCheckpointLoader',
+            'DiffusersLoader', 'VAELoader', 'CLIPLoader', 'DualCLIPLoader',
+            'CLIPVisionLoader', 'ControlNetLoader', 'DiffControlNetLoader',
+            'UNETLoader', 'StyleModelLoader', 'GLIGENLoader'
+        }
+
+    def _make_cache_key(self) -> str:
+        """Make a stable cache key from class type and widget inputs (sorted)."""
+        try:
+            import json
+            key_inputs = {k: self.widget_inputs.get(k) for k in sorted(self.widget_inputs.keys())}
+            return f"{self.class_type}|{json.dumps(key_inputs, sort_keys=True, default=str)}"
+        except Exception:
+            return f"{self.class_type}|{str(sorted(self.widget_inputs.items()))}"
+
+    def _collect_models_from_result(self, results):
+        """Best-effort to extract models to mark as used in Comfy's cache.
+        Returns a list of model-like objects accepted by comfy.model_management.load_models_gpu
+        """
+        models = []
+        def try_add(x):
+            if x is None:
+                return
+            m = getattr(x, 'model', None)
+            if m is not None:
+                models.append(m)
+                return
+            # Heuristic: looks like a ModelPatcher
+            if hasattr(x, 'model_patches_to') and hasattr(x, 'patch_model'):
+                models.append(x)
+        if isinstance(results, (list, tuple)):
+            for x in results:
+                try_add(x)
+        else:
+            try_add(results)
+        return models
 
     def close(self):
         """Release strong references held by this module to encourage GC/VRAM release.
@@ -252,9 +320,30 @@ class ComfyNodeRunner(Module):
 
         function_name = getattr(self.comfy_node_instance, 'FUNCTION', 'execute')
         execute_func = getattr(self.comfy_node_instance, function_name)
-        
-        with torch.inference_mode():
-             results = execute_func(**kwargs)
+
+        # Try to reuse cached outputs for loader nodes
+        cache_key = None
+        results = None
+        if self.is_loader_node:
+            cache_key = self._make_cache_key()
+            cached = PERSISTENT_NODE_CACHE.get(cache_key)
+            if cached is not None:
+                results = cached
+                # Touch the underlying model loaders so Comfy marks them as currently used
+                try:
+                    import comfy.model_management as mm
+                    models = self._collect_models_from_result(results)
+                    if models:
+                        mm.load_models_gpu(models)
+                except Exception:
+                    pass
+
+        if results is None:
+            with torch.inference_mode():
+                results = execute_func(**kwargs)
+            # Store outputs for cacheable loader nodes
+            if self.is_loader_node and cache_key is not None:
+                PERSISTENT_NODE_CACHE.set(cache_key, results)
 
         # Wrap outputs in BMF packets and send
         expected_outputs = getattr(self.comfy_node_class, 'RETURN_TYPES', ())

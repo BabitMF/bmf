@@ -1197,7 +1197,7 @@ int CFFEncoder::init_codec(int idx, AVFrame *frame) {
             enc_ctxs_[idx]->width = frame->width;
             enc_ctxs_[idx]->height = frame->height;
         }
-        enc_ctxs_[idx]->bit_rate = 0;
+        // enc_ctxs_[idx]->bit_rate = 0; # remove this for rockship-ffmpeg
         enc_ctxs_[idx]->time_base = av_make_q(1, 1000000);
         if (frame && frame->metadata) {
             AVDictionaryEntry *tag = NULL;

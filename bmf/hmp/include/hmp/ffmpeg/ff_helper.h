@@ -405,9 +405,9 @@ static AVFrame *to_audio_frame(const TensorList &planes, const AVFrame *avf_ref,
 
     if (planes.size() > FF_ARRAY_ELEMS(avf->buf)) {
         auto nb_extended_buf = planes.size() - FF_ARRAY_ELEMS(avf->buf);
-        avf->extended_buf = (AVBufferRef **)av_mallocz_array(
+        avf->extended_buf = (AVBufferRef **)av_malloc_array(
             nb_extended_buf, sizeof(*avf->extended_buf));
-        avf->extended_data = (uint8_t **)av_mallocz_array(
+        avf->extended_data = (uint8_t **)av_malloc_array(
             planes.size(), sizeof(*avf->extended_data));
         avf->nb_extended_buf = nb_extended_buf;
     } else {

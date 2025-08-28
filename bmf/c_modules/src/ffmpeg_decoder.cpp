@@ -2111,10 +2111,8 @@ int CFFDecoder::decode_send_packet(Task &task, AVPacket *pkt, int *got_frame) {
             if (avctx == audio_decode_ctx_)
                 ist->sample_decoded += decoded_frm_->nb_samples;
 
-            if (io_frm_match_ && avctx == video_decode_ctx_) {
-                //add frame index
-                av_dict_set_int(&decoded_frm_->metadata, "inputFrmOrder", ist->frame_decoded, 0);
-            }
+            //add frame index
+            av_dict_set_int(&decoded_frm_->metadata, "inputFrmOrder", ist->frame_decoded, 0);
             ist->frame_decoded++;
             *got_frame = 1;
             decode_error_[0]++;

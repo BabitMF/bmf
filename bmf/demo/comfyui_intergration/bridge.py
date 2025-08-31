@@ -17,6 +17,7 @@ except Exception as e:
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../ComfyUI')))
 import nodes
 from collections import OrderedDict
+from comfy_execution.utils import CurrentNodeContext
 
 # Persistent LRU cache for loader node outputs to enable cross-request reuse with bounded memory
 class _LRUCache:
@@ -41,6 +42,14 @@ class _LRUCache:
 
 _CACHE_CAP = int(os.environ.get('BMF_COMFY_LOADER_CACHE_SIZE', '16'))
 PERSISTENT_NODE_CACHE = _LRUCache(capacity=max(1, _CACHE_CAP))
+
+# Global handle to ComfyUI server for progress/preview and executing updates
+GLOBAL_SERVER_INSTANCE = None
+
+def set_server_instance(server):
+    global GLOBAL_SERVER_INSTANCE
+    GLOBAL_SERVER_INSTANCE = server
+
 
 class ComfyNodeRunner(Module):
     def __init__(self, node_id=None, option=None):
@@ -230,6 +239,37 @@ class ComfyNodeRunner(Module):
             # Never emit a null packet; wrap None explicitly
             if obj is None:
                 return Packet(("PYOBJ", None))
+            # If this is an IMAGE tensor or dict, also emit a preview to UI
+            try:
+                from comfy_execution.progress import get_progress_state
+                from PIL import Image
+                import numpy as np
+                nid = str(self.option.get('comfy_node_id', ''))
+                # Try to derive an image for preview
+                preview_img = None
+                t = None
+                if isinstance(obj, torch.Tensor):
+                    t = obj
+                elif isinstance(obj, dict) and 'samples' in obj and isinstance(obj['samples'], torch.Tensor):
+                    t = obj['samples']
+                if t is not None and t.dim() >= 3:
+                    # Expect NHWC or NCHW in [0,1]
+                    if t.dim() == 4:
+                        t0 = t[0]
+                    else:
+                        t0 = t
+                    if t0.shape[0] in (1,3,4):
+                        # CHW -> HWC
+                        arr = (t0.detach().float().clamp(0,1).permute(1,2,0).cpu().numpy() * 255.0).astype('uint8')
+                    else:
+                        arr = (t0.detach().float().clamp(0,1).cpu().numpy() * 255.0).astype('uint8')
+                    preview_img = Image.fromarray(arr)
+                if preview_img is not None and nid:
+                    reg = get_progress_state()
+                    # Use current value as-is with max 1 so it shows as activity
+                    reg.update_progress(nid, reg.ensure_entry(nid)["value"], reg.ensure_entry(nid)["max"], preview_img)
+            except Exception:
+                pass
             if isinstance(obj, torch.Tensor):
                 return Packet(self._hmp_from_torch(obj))
             if isinstance(obj, dict) and 'samples' in obj and isinstance(obj['samples'], torch.Tensor):
@@ -250,6 +290,25 @@ class ComfyNodeRunner(Module):
         return Packet(("PYOBJ", obj))
 
     def process(self, task):
+        # Notify frontend which node is executing to enable progress bar binding
+        try:
+            server = GLOBAL_SERVER_INSTANCE
+            if server is not None:
+                node_id = str(self.option.get('comfy_node_id', ''))
+                if node_id:
+                    server.last_node_id = node_id
+                    if server.client_id is not None:
+                        server.send_sync("executing", {"node": node_id, "display_node": node_id, "prompt_id": getattr(server, 'last_prompt_id', None)}, server.client_id)
+        except Exception:
+            pass
+        # Mark node as running in progress registry
+        try:
+            from comfy_execution.progress import get_progress_state
+            nid = str(self.option.get('comfy_node_id', ''))
+            if nid:
+                get_progress_state().start_progress(nid)
+        except Exception:
+            pass
         # Handle EOF: if any input stream is finished, we propagate EOF and finish this node.
         if task.get_inputs():
             is_eof = False
@@ -340,7 +399,26 @@ class ComfyNodeRunner(Module):
 
         if results is None:
             with torch.inference_mode():
-                results = execute_func(**kwargs)
+                # Set executing context so Comfy's global progress hook can resolve node/prompt ids
+                ctx_node_id = str(self.option.get('comfy_node_id', ''))
+                prompt_id = None
+                try:
+                    # Use the server's last prompt id if available
+                    prompt_id = getattr(GLOBAL_SERVER_INSTANCE, 'last_prompt_id', None)
+                except Exception:
+                    prompt_id = None
+                with CurrentNodeContext(prompt_id or '', ctx_node_id or '', None):
+                    results = execute_func(**kwargs)
+                # Forward UI output to frontend if provided by this node (e.g., SaveImage)
+                try:
+                    if isinstance(results, dict) and 'ui' in results:
+                        server = GLOBAL_SERVER_INSTANCE
+                        if server is not None and server.client_id is not None:
+                            node_id = str(self.option.get('comfy_node_id', ''))
+                            display_node = node_id
+                            server.send_sync("executed", {"node": node_id, "display_node": display_node, "output": results['ui'], "prompt_id": getattr(server, 'last_prompt_id', None)}, server.client_id)
+                except Exception:
+                    pass
             # Store outputs for cacheable loader nodes
             if self.is_loader_node and cache_key is not None:
                 PERSISTENT_NODE_CACHE.set(cache_key, results)
@@ -384,6 +462,15 @@ class ComfyNodeRunner(Module):
                 output_queue.put(Packet.generate_eof_packet())
             task.set_timestamp(Timestamp.DONE)
 
+        # Mark node as finished in progress registry
+        try:
+            from comfy_execution.progress import get_progress_state
+            nid = str(self.option.get('comfy_node_id', ''))
+            if nid:
+                get_progress_state().finish_progress(nid)
+        except Exception:
+            pass
+
         return ProcessResult.OK
 
 class BmfWorkflowConverter:
@@ -392,6 +479,11 @@ class BmfWorkflowConverter:
         self.server = server_instance
         self.graph_config = GraphConfig()
         self.graph_config.set_option({"dump_graph": 1, "graph_name": "comfy_to_bmf"})
+        # Expose server globally so modules can send executing/progress/preview events
+        try:
+            set_server_instance(server_instance)
+        except Exception:
+            pass
 
     def _get_input_order(self, class_type):
         """Gets the canonical input order from the node's class definition."""

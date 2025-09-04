@@ -257,6 +257,11 @@ int32_t BMFModule::dynamic_reset(JsonParam opt_reset) {
                          ->dynamic_reset(opt_reset);
 }
 
+int32_t BMFModule::flush() {
+    return internal::ConnectorMapping::ModuleInstanceMapping()
+                         .get(module_uid_)
+                         ->flush();
+}
 
 int32_t BMFModule::init() {
     return internal::ConnectorMapping::ModuleInstanceMapping()

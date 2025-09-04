@@ -68,6 +68,9 @@ class SyncModule(object):
     def dynamic_reset(self, opt_reset=None):
         self.mod.dynamic_reset(opt_reset)
 
+    def flush(self):
+        self.mod.flush()
+
 ## @ingroup pyAPI
 ## @ingroup syncMd
 ###@{

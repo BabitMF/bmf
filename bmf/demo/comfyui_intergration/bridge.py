@@ -5,7 +5,6 @@ import sys
 import os
 import torch
 import torch.utils.dlpack as torch_dlpack
-import dill 
 from bmf.builder.graph_config import GraphConfig, NodeConfig, StreamConfig, ModuleConfig
 import logging
 try:
@@ -153,6 +152,12 @@ class ComfyNodeRunner(Module):
             'UNETLoader', 'StyleModelLoader', 'GLIGENLoader'
         }
 
+    def _is_model_mutating_node(self, class_type: str) -> bool:
+        """Nodes that patch/modify model weights or routing (should run outside inference_mode)."""
+        return class_type in {
+            'LoraLoader', 'LoraLoaderModelOnly', 'StyleModelApply', 'CLIPSetLastLayer'
+        }
+
     def _make_cache_key(self) -> str:
         """Make a stable cache key from class type and widget inputs (sorted)."""
         try:
@@ -170,18 +175,25 @@ class ComfyNodeRunner(Module):
         def try_add(x):
             if x is None:
                 return
+            # Prefer ModelPatcher-like objects (have patching APIs)
+            if hasattr(x, 'model_patches_to') and hasattr(x, 'patch_model'):
+                models.append(x)
+                return
+            # Fallback: raw .model attribute
             m = getattr(x, 'model', None)
             if m is not None:
                 models.append(m)
                 return
-            # Heuristic: looks like a ModelPatcher
-            if hasattr(x, 'model_patches_to') and hasattr(x, 'patch_model'):
-                models.append(x)
         if isinstance(results, (list, tuple)):
             for x in results:
                 try_add(x)
         else:
             try_add(results)
+        
+        print(f"[Debug BMF] ComfyNodeRunner {self.option.get('comfy_node_id', '')} _collect_models_from_result: collected {len(models)} models.")
+        for i, m in enumerate(models):
+            print(f"[Debug BMF]   model {i}: {type(m)}")
+            
         return models
 
     def close(self):
@@ -393,32 +405,42 @@ class ComfyNodeRunner(Module):
                     import comfy.model_management as mm
                     models = self._collect_models_from_result(results)
                     if models:
-                        mm.load_models_gpu(models)
-                except Exception:
+                        print(f"[Debug BMF] ComfyNodeRunner {self.option.get('comfy_node_id', '')} calling load_models_gpu from cache path (force_full_load).")
+                        mm.load_models_gpu(models, force_patch_weights=True, force_full_load=True)
+                except Exception as e:
+                    print(f"[Debug BMF] Error in load_models_gpu: {e}")
                     pass
 
         if results is None:
-            with torch.inference_mode():
-                # Set executing context so Comfy's global progress hook can resolve node/prompt ids
-                ctx_node_id = str(self.option.get('comfy_node_id', ''))
+            # Loaders and model-mutating nodes: run OUTSIDE inference_mode to avoid creating inference tensors as params
+            use_inference = not (self.is_loader_node or self._is_model_mutating_node(self.class_type))
+            # Set executing context so Comfy's global progress hook can resolve node/prompt ids
+            ctx_node_id = str(self.option.get('comfy_node_id', ''))
+            prompt_id = None
+            try:
+                # Use the server's last prompt id if available
+                prompt_id = getattr(GLOBAL_SERVER_INSTANCE, 'last_prompt_id', None)
+            except Exception:
                 prompt_id = None
-                try:
-                    # Use the server's last prompt id if available
-                    prompt_id = getattr(GLOBAL_SERVER_INSTANCE, 'last_prompt_id', None)
-                except Exception:
-                    prompt_id = None
+            if use_inference:
+                print(f"[Debug BMF] Node {self.class_type} ({self.option.get('comfy_node_id','')}) running under inference_mode", flush=True)
+                with torch.inference_mode():
+                    with CurrentNodeContext(prompt_id or '', ctx_node_id or '', None):
+                        results = execute_func(**kwargs)
+            else:
+                print(f"[Debug BMF] Node {self.class_type} ({self.option.get('comfy_node_id','')}) running outside inference_mode", flush=True)
                 with CurrentNodeContext(prompt_id or '', ctx_node_id or '', None):
                     results = execute_func(**kwargs)
-                # Forward UI output to frontend if provided by this node (e.g., SaveImage)
-                try:
-                    if isinstance(results, dict) and 'ui' in results:
-                        server = GLOBAL_SERVER_INSTANCE
-                        if server is not None and server.client_id is not None:
-                            node_id = str(self.option.get('comfy_node_id', ''))
-                            display_node = node_id
-                            server.send_sync("executed", {"node": node_id, "display_node": display_node, "output": results['ui'], "prompt_id": getattr(server, 'last_prompt_id', None)}, server.client_id)
-                except Exception:
-                    pass
+            # Forward UI output to frontend if provided by this node (e.g., SaveImage)
+            try:
+                if isinstance(results, dict) and 'ui' in results:
+                    server = GLOBAL_SERVER_INSTANCE
+                    if server is not None and server.client_id is not None:
+                        node_id = str(self.option.get('comfy_node_id', ''))
+                        display_node = node_id
+                        server.send_sync("executed", {"node": node_id, "display_node": display_node, "output": results['ui'], "prompt_id": getattr(server, 'last_prompt_id', None)}, server.client_id)
+            except Exception:
+                pass
             # Store outputs for cacheable loader nodes
             if self.is_loader_node and cache_key is not None:
                 PERSISTENT_NODE_CACHE.set(cache_key, results)

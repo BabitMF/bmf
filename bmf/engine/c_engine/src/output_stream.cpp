@@ -33,11 +33,20 @@ OutputStream::OutputStream(int stream_id, std::string const &identifier,
 int OutputStream::add_mirror_stream(
     std::shared_ptr<InputStreamManager> input_stream_manager, int stream_id) {
     mirror_streams_.emplace_back(MirrorStream(input_stream_manager, stream_id));
+    // Debug: log edge creation (upstream stream identifier to downstream node/stream)
+    BMFLOG(BMF_INFO) << "link created: upstream identifier='" << identifier_
+                     << "' -> downstream node="
+                     << input_stream_manager->node_id_ << ":stream="
+                     << stream_id;
     return 0;
 }
 
 int OutputStream::propagate_packets(
     std::shared_ptr<SafeQueue<Packet>> packets) {
+    // Debug: log fanout propagation
+    BMFLOG(BMF_INFO) << "propagate: identifier='" << identifier_
+                     << "' fanout=" << mirror_streams_.size()
+                     << " packets=" << packets->size();
     for (auto &s : mirror_streams_) {
         auto copy_queue = std::make_shared<SafeQueue<Packet>>(*packets.get());
         copy_queue->set_identifier(identifier_);

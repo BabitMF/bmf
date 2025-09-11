@@ -359,6 +359,16 @@ int Node::process_node(Task &task) {
         result = module_->process(task);
         state_ = NodeState::PENDING;
         BMF_TRACE_PROCESS(module_name_.c_str(), "process", END);
+        // Debug: after module process, log outputs per stream
+        size_t out_streams = 0;
+        for (auto &output : task.get_outputs()) {
+            out_streams++;
+            size_t cnt = output.second ? output.second->size() : 0;
+            BMFLOG_NODE(BMF_INFO, id_) << "produced: stream_id="
+                                       << output.first << " packets=" << cnt;
+        }
+        BMFLOG_NODE(BMF_INFO, id_)
+            << "process done: outputs_streams=" << out_streams;
         if (result != 0)
             BMF_Error_(BMF_StsBadArg, "[%s] Process result != 0.\n",
                        node_name_.c_str());

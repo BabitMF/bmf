@@ -68,6 +68,10 @@ int InputStream::add_packets(std::shared_ptr<SafeQueue<Packet>> &packets) {
     Packet pkt;
     while (packets->pop(pkt)) {
         queue_->push(pkt);
+        // Debug: per-packet enqueue
+        BMFLOG_NODE(BMF_INFO, node_id_) << "in_queue: id='" << identifier_
+                                        << "' stream_id=" << stream_id_
+                                        << " ts=" << pkt.timestamp();
         // advance time bounding
         next_time_bounding_ = pkt.timestamp() + 1;
         // if received EOS, set stream done

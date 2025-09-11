@@ -55,10 +55,25 @@ OutputStreamManager::OutputStreamManager(
 }
 
 int OutputStreamManager::post_process(Task &task) {
+    // Debug: node fanout post_process
+    BMFLOG(BMF_INFO) << "node post_process: node=" << task.node_id_
+                     << " outputs=" << task.outputs_queue_.size();
     for (auto &t : task.outputs_queue_) {
         auto q = std::make_shared<SafeQueue<Packet>>(t.second);
-        if (output_streams_.find(t.first) != output_streams_.end())
+        size_t qsize = q->size();
+        if (output_streams_.find(t.first) != output_streams_.end()) {
+            BMFLOG(BMF_INFO) << "  stream_id=" << t.first
+                             << " identifier='"
+                             << output_streams_[t.first]->identifier_
+                             << "' packets=" << qsize
+                             << " mirrors="
+                             << output_streams_[t.first]->mirror_streams_.size();
             output_streams_[t.first]->propagate_packets(q);
+        } else {
+            BMFLOG(BMF_WARNING) << "  stream_id=" << t.first
+                                << " not found in output_streams_ (packets="
+                                << qsize << ")";
+        }
     }
     return 0;
 }

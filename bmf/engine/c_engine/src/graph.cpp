@@ -988,6 +988,12 @@ void GraphOutputStream::set_manager(
 
 void GraphOutputStream::poll_packet(Packet &packet, bool block) {
     packet = input_manager_->pop_next_packet(0, block);
+    // Debug: graph output poll
+    if (packet.timestamp() == Timestamp::BMF_EOF) {
+        BMFLOG(BMF_INFO) << "graph output poll: EOF";
+    } else {
+        BMFLOG(BMF_INFO) << "graph output poll: ts=" << packet.timestamp();
+    }
 }
 
 void GraphOutputStream::inject_packet(Packet &packet, int index) {

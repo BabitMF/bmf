@@ -40,7 +40,7 @@ cd /root/bmf/output/demo/comfyui_intergration
 python run_bmf_comfy.py
 ```
 
-4) Open http://localhost:8188 and execute your workflow as usual.
+4) Open http://localhost:8188 and execute your workflow as usual. Put models in `./ComfyUI/models`, inputs in `./ComfyUI/inputs`, and outputs in `./ComfyUI/outputs`.
 
 ## Quick start (Docker)
 If you prefer a container or you are on Windows via WSL2:

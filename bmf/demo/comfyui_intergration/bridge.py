@@ -13,7 +13,7 @@ except Exception as e:
     hmp = None
 
 # Add ComfyUI to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../ComfyUI')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'ComfyUI')))
 import nodes
 from collections import OrderedDict
 from comfy_execution.utils import CurrentNodeContext

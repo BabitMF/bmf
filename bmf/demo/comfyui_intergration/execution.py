@@ -589,7 +589,7 @@ class PromptExecutor:
     def execute(self, prompt, prompt_id, extra_data={}, execute_outputs=[]):
 
         # Force BMF execution for debugging
-        print("[ComfyUI execute] Forcing BMF execution path for debugging.")
+        print("[ComfyUI execute] Forcing BMF execution path.")
         self.execute_by_bmf_same_process(prompt, prompt_id, extra_data, execute_outputs)
         return
 

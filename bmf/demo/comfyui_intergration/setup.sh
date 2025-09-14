@@ -51,5 +51,9 @@ else
      echo "Warning: ComfyUI/requirements.txt not found."
 fi
 
+# 4. Inject BMF hook into ComfyUI execution.py (idempotent)
+echo "Applying BMF hook to ComfyUI/execution.py..."
+$PYTHON_BIN patch_comfy.py --comfy-path ComfyUI --apply || true
+
 echo "Setup complete!"
 echo "You can now run the integration using: $PYTHON_BIN run_bmf_comfy.py"

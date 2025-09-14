@@ -7,12 +7,16 @@ import sys
 import os
 import torch
 import torch.utils.dlpack as torch_dlpack
+import asyncio
+import inspect
 from bmf.builder.graph_config import GraphConfig, NodeConfig, StreamConfig, ModuleConfig
 import logging
+from types import SimpleNamespace
 try:
     import bmf.hmp as hmp
 except Exception as e:
     hmp = None
+from comfy.cli_args import args
 
 # Add ComfyUI to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'ComfyUI')))
@@ -46,16 +50,23 @@ PERSISTENT_NODE_CACHE = _LRUCache(capacity=max(1, _CACHE_CAP))
 
 # Global handle to ComfyUI server for progress/preview and executing updates
 GLOBAL_SERVER_INSTANCE = None
+# Global handle to current PromptExecutor instance to align with native caches/history
+GLOBAL_EXECUTOR_INSTANCE = None
 
 def set_server_instance(server):
     global GLOBAL_SERVER_INSTANCE
     GLOBAL_SERVER_INSTANCE = server
+
+def set_executor_instance(executor):
+    global GLOBAL_EXECUTOR_INSTANCE
+    GLOBAL_EXECUTOR_INSTANCE = executor
 
 
 class ComfyNodeRunner(Module):
     def __init__(self, node_id=None, option=None):
         super().__init__(node_id, option)
         self.option = option
+        #logging.warning(f"[Debug BMF] ComfyNodeRunner.__init__ received option for node {option.get('comfy_node_id', '')}: {option}")
         
         self.class_type = option['class_type']
         self.comfy_node_class = nodes.NODE_CLASS_MAPPINGS[self.class_type]
@@ -64,6 +75,7 @@ class ComfyNodeRunner(Module):
         self.widget_inputs = {}
         self.link_inputs_info = {} 
         self.input_type_map = {}
+        self.extra_data = option.get('extra_data')
 
         # Separate widget inputs from linked inputs
         if 'inputs' in self.option:
@@ -88,6 +100,12 @@ class ComfyNodeRunner(Module):
 
         # Identify if this node is a cacheable loader (model/clip/vae/controlnet/etc.)
         self.is_loader_node = self._is_cacheable_loader(self.class_type)
+
+        # Inject comfy_api hidden tokens if this is a comfy_api.latest style node
+        try:
+            self._inject_comfy_api_hidden()
+        except Exception:
+            pass
 
     def _get_input_order(self, class_type):
         """Gets the canonical input order from the node's class definition."""
@@ -243,7 +261,7 @@ class ComfyNodeRunner(Module):
         # MASK can be [H,W] or [B,H,W] (leave as is)
         return t
 
-    def _packet_from_output(self, obj):
+    def _packet_from_output(self, obj, expected_type=None):
         """Wrap node output into a Packet using zero-copy when possible.
         - torch.Tensor -> hmp.Tensor inside Packet
         - dict with 'samples' tensor -> Packet of hmp.Tensor (samples)
@@ -253,35 +271,28 @@ class ComfyNodeRunner(Module):
             # Never emit a null packet; wrap None explicitly
             if obj is None:
                 return Packet(("PYOBJ", None))
-            # If this is an IMAGE tensor or dict, also emit a preview to UI
+            # Optional preview aligned with ComfyUI: only for IMAGE outputs and opt-in via env
+            # ComfyUI samplers already emit previews through latent_preview + global hook.
+            # Here we avoid injecting previews for non-image outputs (e.g., LATENT) to match native behavior.
             try:
-                from comfy_execution.progress import get_progress_state
-                from PIL import Image
-                import numpy as np
-                nid = str(self.option.get('comfy_node_id', ''))
-                # Try to derive an image for preview
-                preview_img = None
-                t = None
-                if isinstance(obj, torch.Tensor):
-                    t = obj
-                elif isinstance(obj, dict) and 'samples' in obj and isinstance(obj['samples'], torch.Tensor):
-                    t = obj['samples']
-                if t is not None and t.dim() >= 3:
-                    # Expect NHWC or NCHW in [0,1]
-                    if t.dim() == 4:
-                        t0 = t[0]
-                    else:
-                        t0 = t
-                    if t0.shape[0] in (1,3,4):
-                        # CHW -> HWC
-                        arr = (t0.detach().float().clamp(0,1).permute(1,2,0).cpu().numpy() * 255.0).astype('uint8')
-                    else:
-                        arr = (t0.detach().float().clamp(0,1).cpu().numpy() * 255.0).astype('uint8')
-                    preview_img = Image.fromarray(arr)
-                if preview_img is not None and nid:
-                    reg = get_progress_state()
-                    # Use current value as-is with max 1 so it shows as activity
-                    reg.update_progress(nid, reg.ensure_entry(nid)["value"], reg.ensure_entry(nid)["max"], preview_img)
+                if expected_type == 'IMAGE' and os.environ.get('BMF_COMFY_PREVIEW_IMAGES', '0') == '1':
+                    from comfy_execution.progress import get_progress_state
+                    from PIL import Image
+                    import numpy as np
+                    nid = str(self.option.get('comfy_node_id', ''))
+                    preview_img = None
+                    t = obj if isinstance(obj, torch.Tensor) else None
+                    if t is not None and t.dim() >= 3:
+                        t0 = t[0] if t.dim() == 4 else t
+                        if t0.shape[0] in (1, 3, 4):
+                            arr = (t0.detach().float().clamp(0, 1).permute(1, 2, 0).cpu().numpy() * 255.0).astype('uint8')
+                        else:
+                            arr = (t0.detach().float().clamp(0, 1).cpu().numpy() * 255.0).astype('uint8')
+                        preview_img = Image.fromarray(arr)
+                    if preview_img is not None and nid:
+                        reg = get_progress_state()
+                        image_tuple = ("JPEG", preview_img, getattr(args, 'preview_size', 512))
+                        reg.update_progress(nid, reg.ensure_entry(nid)["value"], reg.ensure_entry(nid)["max"], image_tuple)
             except Exception:
                 pass
             if isinstance(obj, torch.Tensor):
@@ -304,25 +315,7 @@ class ComfyNodeRunner(Module):
         return Packet(("PYOBJ", obj))
 
     def process(self, task):
-        # Notify frontend which node is executing to enable progress bar binding
-        try:
-            server = GLOBAL_SERVER_INSTANCE
-            if server is not None:
-                node_id = str(self.option.get('comfy_node_id', ''))
-                if node_id:
-                    server.last_node_id = node_id
-                    if server.client_id is not None:
-                        server.send_sync("executing", {"node": node_id, "display_node": node_id, "prompt_id": getattr(server, 'last_prompt_id', None)}, server.client_id)
-        except Exception:
-            pass
-        # Mark node as running in progress registry
-        try:
-            from comfy_execution.progress import get_progress_state
-            nid = str(self.option.get('comfy_node_id', ''))
-            if nid:
-                get_progress_state().start_progress(nid)
-        except Exception:
-            pass
+        # Progress start/event moved to actual execution time to avoid false-running states
         # Handle EOF: if any input stream is finished, we propagate EOF and finish this node.
         if task.get_inputs():
             is_eof = False
@@ -334,6 +327,15 @@ class ComfyNodeRunner(Module):
                 for output_id, output_queue in task.get_outputs().items():
                     output_queue.put(Packet.generate_eof_packet())
                 task.set_timestamp(Timestamp.DONE)
+                # Finish progress only if it was started before
+                try:
+                    from comfy_execution.progress import get_progress_state
+                    nid = str(self.option.get('comfy_node_id', ''))
+                    reg = get_progress_state()
+                    if nid and hasattr(reg, 'nodes') and (nid in reg.nodes):
+                        reg.finish_progress(nid)
+                except Exception:
+                    pass
                 return ProcessResult.OK
 
         kwargs = self.widget_inputs.copy()
@@ -391,8 +393,31 @@ class ComfyNodeRunner(Module):
                     else:
                         kwargs[input_name] = py_obj
 
+        # Add hidden inputs from extra_data, mimicking ComfyUI's execution logic
+        if self.extra_data is not None and hasattr(self.comfy_node_class, 'INPUT_TYPES'):
+            #logging.warning(f"[Debug BMF] extra_data for node {self.option.get('comfy_node_id', '')}: {self.extra_data}")
+            try:
+                class_inputs = self.comfy_node_class.INPUT_TYPES()
+                if "hidden" in class_inputs:
+                    hidden_map = class_inputs["hidden"]
+                    for key, value in hidden_map.items():
+                        if value == "AUTH_TOKEN_COMFY_ORG":
+                            kwargs[key] = self.extra_data.get("auth_token_comfy_org")
+                        elif value == "API_KEY_COMFY_ORG":
+                            kwargs[key] = self.extra_data.get("comfy_api_key")
+                        elif value == "UNIQUE_ID":
+                            kwargs[key] = str(self.option.get('comfy_node_id'))
+                        elif value == "EXTRA_PNGINFO":
+                            kwargs[key] = self.extra_data.get('extra_pnginfo')
+                        elif value == "PROMPT":
+                            pass # prompt is already part of the workflow
+            except Exception:
+                pass
+
         function_name = getattr(self.comfy_node_instance, 'FUNCTION', 'execute')
         execute_func = getattr(self.comfy_node_instance, function_name)
+
+        logging.warning(f"[Debug BMF] kwargs keys for node {self.option.get('comfy_node_id', '')}: {kwargs.keys()}")
 
         # Try to reuse cached outputs for loader nodes
         cache_key = None
@@ -408,12 +433,30 @@ class ComfyNodeRunner(Module):
                     models = self._collect_models_from_result(results)
                     if models:
                         print(f"[Debug BMF] ComfyNodeRunner {self.option.get('comfy_node_id', '')} calling load_models_gpu from cache path (force_full_load).")
-                        mm.load_models_gpu(models, force_patch_weights=True, force_full_load=True)
+                        mm.load_models_gpu(models)
                 except Exception as e:
                     print(f"[Debug BMF] Error in load_models_gpu: {e}")
                     pass
 
         if results is None:
+            # Filter kwargs to match the signature of the node's execution function.
+            # This prevents TypeErrors for nodes that don't accept arbitrary (**kwargs).
+            sig = inspect.signature(execute_func)
+            params = sig.parameters
+            has_var_keyword = any(p.kind == inspect.Parameter.VAR_KEYWORD for p in params.values())
+
+            if not has_var_keyword:
+                filtered_kwargs = {k: v for k, v in kwargs.items() if k in params}
+            else:
+                filtered_kwargs = kwargs
+
+            def do_execute():
+                # Handle both sync and async node execution functions
+                if inspect.iscoroutinefunction(execute_func):
+                    return asyncio.run(execute_func(**filtered_kwargs))
+                else:
+                    return execute_func(**filtered_kwargs)
+
             # Loaders and model-mutating nodes: run OUTSIDE inference_mode to avoid creating inference tensors as params
             use_inference = not (self.is_loader_node or self._is_model_mutating_node(self.class_type))
             # Set executing context so Comfy's global progress hook can resolve node/prompt ids
@@ -424,23 +467,97 @@ class ComfyNodeRunner(Module):
                 prompt_id = getattr(GLOBAL_SERVER_INSTANCE, 'last_prompt_id', None)
             except Exception:
                 prompt_id = None
+            # Announce executing and mark progress start now that inputs are ready and we're about to run
+            try:
+                server = GLOBAL_SERVER_INSTANCE
+                if server is not None and ctx_node_id:
+                    server.last_node_id = ctx_node_id
+                    if server.client_id is not None:
+                        server.send_sync("executing", {"node": ctx_node_id, "display_node": ctx_node_id, "prompt_id": getattr(server, 'last_prompt_id', None)}, server.client_id)
+                from comfy_execution.progress import get_progress_state
+                if ctx_node_id:
+                    get_progress_state().start_progress(ctx_node_id)
+            except Exception:
+                pass
+
             if use_inference:
                 print(f"[Debug BMF] Node {self.class_type} ({self.option.get('comfy_node_id','')}) running under inference_mode", flush=True)
                 with torch.inference_mode():
                     with CurrentNodeContext(prompt_id or '', ctx_node_id or '', None):
-                        results = execute_func(**kwargs)
+                        results = do_execute()
             else:
                 print(f"[Debug BMF] Node {self.class_type} ({self.option.get('comfy_node_id','')}) running outside inference_mode", flush=True)
                 with CurrentNodeContext(prompt_id or '', ctx_node_id or '', None):
-                    results = execute_func(**kwargs)
-            # Forward UI output to frontend if provided by this node (e.g., SaveImage)
+                    results = do_execute()
+            # If result is a V3 NodeOutput, unwrap args and capture UI for forwarding
+            nodeoutput_ui = None
             try:
-                if isinstance(results, dict) and 'ui' in results:
+                from comfy_api.latest import io as comfy_io  # type: ignore
+                NodeOutput = getattr(comfy_io, "NodeOutput", None)
+            except Exception:
+                NodeOutput = None
+            if NodeOutput is not None and isinstance(results, NodeOutput):
+                try:
+                    nodeoutput_ui = getattr(results, "ui", None)
+                except Exception:
+                    nodeoutput_ui = None
+                try:
+                    # NodeOutput.result returns tuple or None
+                    results = results.result
+                except Exception:
+                    pass
+            # Forward UI output to frontend if provided by this node (e.g., SaveImage / SaveAudio / SaveVideo)
+            try:
+                if nodeoutput_ui is not None:
                     server = GLOBAL_SERVER_INSTANCE
+                    node_id = str(self.option.get('comfy_node_id', ''))
+                    display_node = node_id
+                    ui_payload = None
+                    try:
+                        ui_payload = nodeoutput_ui.as_dict() if hasattr(nodeoutput_ui, 'as_dict') else nodeoutput_ui
+                    except Exception:
+                        ui_payload = nodeoutput_ui
                     if server is not None and server.client_id is not None:
-                        node_id = str(self.option.get('comfy_node_id', ''))
-                        display_node = node_id
+                        server.send_sync("executed", {"node": node_id, "display_node": display_node, "output": ui_payload, "prompt_id": getattr(server, 'last_prompt_id', None)}, server.client_id)
+                    try:
+                        exec_inst = GLOBAL_EXECUTOR_INSTANCE
+                        if exec_inst is not None:
+                            if not hasattr(exec_inst, 'history_result') or exec_inst.history_result is None:
+                                exec_inst.history_result = {"outputs": {}, "meta": {}}
+                            outputs_map = exec_inst.history_result.setdefault("outputs", {})
+                            meta_map = exec_inst.history_result.setdefault("meta", {})
+                            outputs_map[node_id] = ui_payload
+                            meta_map[node_id] = {
+                                "node_id": node_id,
+                                "display_node": display_node,
+                                "parent_node": None,
+                                "real_node_id": node_id,
+                            }
+                    except Exception:
+                        pass
+                elif isinstance(results, dict) and 'ui' in results:
+                    server = GLOBAL_SERVER_INSTANCE
+                    node_id = str(self.option.get('comfy_node_id', ''))
+                    display_node = node_id
+                    if server is not None and server.client_id is not None:
                         server.send_sync("executed", {"node": node_id, "display_node": display_node, "output": results['ui'], "prompt_id": getattr(server, 'last_prompt_id', None)}, server.client_id)
+                    # Align with native: accumulate UI outputs into executor.history_result
+                    try:
+                        exec_inst = GLOBAL_EXECUTOR_INSTANCE
+                        if exec_inst is not None:
+                            if not hasattr(exec_inst, 'history_result') or exec_inst.history_result is None:
+                                exec_inst.history_result = {"outputs": {}, "meta": {}}
+                            outputs_map = exec_inst.history_result.setdefault("outputs", {})
+                            meta_map = exec_inst.history_result.setdefault("meta", {})
+                            outputs_map[node_id] = results['ui']
+                            meta_map[node_id] = {
+                                "node_id": node_id,
+                                "display_node": display_node,
+                                "parent_node": None,
+                                "real_node_id": node_id,
+                            }
+                    except Exception:
+                        pass
             except Exception:
                 pass
             # Store outputs for cacheable loader nodes
@@ -476,7 +593,12 @@ class ComfyNodeRunner(Module):
         # Emit packets for each declared output index
         for i, output_queue in task.get_outputs().items():
             value = out_values[i] if i < len(out_values) else None
-            out_pkt = self._packet_from_output(value)
+            expected_type = None
+            try:
+                expected_type = expected_outputs[i] if i < len(expected_outputs) else None
+            except Exception:
+                expected_type = None
+            out_pkt = self._packet_from_output(value, expected_type=expected_type)
             out_pkt.timestamp = task.timestamp
             output_queue.put(out_pkt)
 
@@ -486,21 +608,49 @@ class ComfyNodeRunner(Module):
                 output_queue.put(Packet.generate_eof_packet())
             task.set_timestamp(Timestamp.DONE)
 
-        # Mark node as finished in progress registry
+        # Mark node as finished in progress registry (only if previously started)
         try:
             from comfy_execution.progress import get_progress_state
             nid = str(self.option.get('comfy_node_id', ''))
-            if nid:
-                get_progress_state().finish_progress(nid)
+            reg = get_progress_state()
+            if nid and hasattr(reg, 'nodes') and (nid in reg.nodes):
+                reg.finish_progress(nid)
         except Exception:
             pass
 
         return ProcessResult.OK
 
+    def _inject_comfy_api_hidden(self):
+        """For comfy_api.latest.io based nodes, emulate ComfyUI's hidden context by
+        setting class-level `hidden` attributes expected by their execute methods.
+        """
+        try:
+            # Lazy import to avoid hard dependency if comfy_api is absent
+            from comfy_api.latest import io as comfy_io  # type: ignore
+        except Exception:
+            return
+        try:
+            if hasattr(self.comfy_node_class, "define_schema") and isinstance(self.comfy_node_class, type) and issubclass(self.comfy_node_class, getattr(comfy_io, "ComfyNode", object)):
+                tokens = self.extra_data or {}
+                hidden_obj = SimpleNamespace(
+                    auth_token_comfy_org=tokens.get("auth_token_comfy_org"),
+                    api_key_comfy_org=tokens.get("comfy_api_key"),
+                    unique_id=str(self.option.get('comfy_node_id')),
+                    extra_pnginfo=tokens.get("extra_pnginfo"),
+                    prompt=tokens.get("prompt", None),
+                    dynprompt=tokens.get("dynprompt", None),
+                )
+                setattr(self.comfy_node_class, "hidden", hidden_obj)
+        except Exception:
+            # Best-effort; if injection fails, let execution proceed and raise naturally
+            pass
+
 class BmfWorkflowConverter:
-    def __init__(self, comfy_workflow, server_instance):
+    def __init__(self, comfy_workflow, server_instance, extra_data=None):
         self.comfy_workflow = comfy_workflow
         self.server = server_instance
+        self.extra_data = extra_data
+        #logging.warning(f"[Debug BMF] BmfWorkflowConverter.__init__ received extra_data: {self.extra_data}")
         self.graph_config = GraphConfig()
         self.graph_config.set_option({"dump_graph": 1, "graph_name": "comfy_to_bmf"})
         # Expose server globally so modules can send executing/progress/preview events
@@ -553,7 +703,8 @@ class BmfWorkflowConverter:
             option = {
                 "class_type": class_type,
                 "inputs": node_info['inputs'],
-                "comfy_node_id": node_id
+                "comfy_node_id": node_id,
+                "extra_data": self.extra_data
             }
             node_config.set_option(option)
 

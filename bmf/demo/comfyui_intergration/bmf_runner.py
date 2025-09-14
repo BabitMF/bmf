@@ -50,7 +50,7 @@ def _execute_with_bmf(self_obj: Any,
     consistent.
     """
     import bmf
-    from bmf import BMF_TRACE_INIT, BMF_TRACE_DONE
+    #from bmf import BMF_TRACE_INIT, BMF_TRACE_DONE
     from bmf.python_sdk import Timestamp
 
     #logging.warning(f"[Debug BMF] _execute_with_bmf received extra_data: {extra_data}")
@@ -78,7 +78,7 @@ def _execute_with_bmf(self_obj: Any,
     except Exception:
         pass
 
-    BMF_TRACE_INIT()
+    #BMF_TRACE_INIT()
 
     # Initialize Comfy progress registry and hook
     try:
@@ -153,7 +153,7 @@ def _execute_with_bmf(self_obj: Any,
         self_obj.add_message("execution_success", {"prompt_id": prompt_id}, broadcast=False)
     finally:
         logging.info("[BMF] Closing BMF graph for prompt_id=%s", prompt_id)
-        BMF_TRACE_DONE()
+        #BMF_TRACE_DONE()
         try:
             bmf_graph.close()
         except Exception:

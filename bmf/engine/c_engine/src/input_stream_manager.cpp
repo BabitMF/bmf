@@ -99,9 +99,6 @@ int InputStreamManager::wait_on_stream_empty(int stream_id) {
 bool InputStreamManager::schedule_node() {
     int64_t min_timestamp;
     NodeReadiness node_readiness = get_node_readiness(min_timestamp);
-    BMFLOG_NODE(BMF_INFO, node_id_) << "schedule_node: readiness="
-                                    << (int)node_readiness
-                                    << " min_ts=" << min_timestamp;
     if (node_readiness == NodeReadiness::READY_FOR_PROCESS) {
         Task task = Task(node_id_, stream_id_list_, output_stream_id_list_);
         task.set_timestamp(min_timestamp);
@@ -111,17 +108,6 @@ bool InputStreamManager::schedule_node() {
             BMFLOG_NODE(BMF_DEBUG, node_id_) << "Failed to fill packet to task";
             return false;
         }
-        // Debug: print input packet counts for this task
-        size_t inputs_non_empty = 0;
-        for (auto &in : task.inputs_queue_) {
-            if (in.second && !in.second->empty()) inputs_non_empty++;
-        }
-        BMFLOG_NODE(BMF_INFO, node_id_) << "task filled: ts="
-                                        << task.timestamp()
-                                        << " inputs_non_empty="
-                                        << inputs_non_empty
-                                        << " outputs_declared="
-                                        << output_stream_id_list_.size();
         callback_.scheduler_cb(task);
         // TODO update node schedule_node_success cnt
         // remove to node to add
@@ -142,13 +128,6 @@ void InputStreamManager::add_packets(
     if (packets->size() == 0)
         return;
     if (input_streams_.count(stream_id) > 0) {
-        // Debug: log enqueue to input stream
-        size_t psize = packets->size();
-        BMFLOG_NODE(BMF_INFO, node_id_) << "enqueue: stream_id=" << stream_id
-                                        << " packets=" << psize
-                                        << " identifier='"
-                                        << input_streams_[stream_id]->get_identifier()
-                                        << "'";
         // bool is_empty = input_streams_[stream_id]->is_empty();
         input_streams_[stream_id]->add_packets(packets);
         if (callback_.sched_required != NULL) {

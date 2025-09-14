@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2025 BabitMF
 set -e
 
 # This script automates the setup process for the BMF and ComfyUI integration.

@@ -1,3 +1,8 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# This file is a derivative work based on ComfyUI's execution.py.
+# Original project: https://github.com/comfyanonymous/ComfyUI
+# Copyright (c) The ComfyUI contributors
+# Modifications for BMF integration Copyright (c) 2025 BabitMF
 import copy
 import heapq
 import inspect

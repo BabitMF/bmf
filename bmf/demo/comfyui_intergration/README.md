@@ -70,4 +70,14 @@ python run_bmf_comfy.py
 - `ComfyUI/`: Vendored ComfyUI tree used by the demo launcher
 
 ## Notes
-- This demo focuses on typical ComfyUI nodes. Exotic nodes that dynamically expand subgraphs may require additional handling.
+- This demo focuses on typical ComfyUI nodes. Exotic nodes may require additional handling.
+
+## Licensing
+- This integration demo combines BMF (Apache-2.0) with ComfyUI (GPL-3.0). The BMF core project remains licensed under Apache-2.0.
+- File-level licenses in this directory:
+  - `execution.py`: derivative of ComfyUI's `execution.py`; licensed under GPL-3.0. Portions Copyright (c) the ComfyUI contributors; modifications Copyright (c) 2025 BabitMF.
+  - `bridge.py`, `run_bmf_comfy.py`, `setup.sh`, this `README.md`: licensed under Apache-2.0.
+- Distribution guidance (non-legal advice): If you distribute this demo together with ComfyUI code or binaries that include it, you must comply with the GPL-3.0 terms. Using BMF core in commercial products is unaffected; keep this demo as an optional, separable component if you wish to avoid extending GPL obligations beyond the integration itself.
+- License references:
+  - ComfyUI: GPL-3.0 (`https://github.com/comfyanonymous/ComfyUI?tab=GPL-3.0-1-ov-file`)
+  - BMF: Apache-2.0 (`https://github.com/BabitMF/bmf?tab=Apache-2.0-1-ov-file`)

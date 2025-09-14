@@ -8,7 +8,7 @@ This integration replaces ComfyUI’s Python prompt executor with BMF’s high�
 - Bridge tensors zero‑copy between BMF (hmp/DLPack) and PyTorch so images/latents avoid memcpy.
 - Forward progress and preview signals to the Web UI and accumulate `history_result` to match native behavior.
 
-You can enable the hook purely at runtime (default via `run_bmf_comfy.py`) or apply an idempotent on‑disk injection with `patch_comfy.py`.
+The hook is installed at runtime via `run_bmf_comfy.py` (no on‑disk patching).
 
 ### Key features
 - Drop‑in engine swap: run existing ComfyUI workflows unchanged; GPL code stays in your local clone
@@ -29,7 +29,7 @@ export CMAKE_ARGS="-DBMF_ENABLE_CUDA=ON"
 ./build.sh
 ```
 
-2) Set up the ComfyUI integration and dependencies (clones ComfyUI, installs deps, injects BMF hook idempotently):
+2) Set up the ComfyUI integration and dependencies (clones ComfyUI, installs deps):
 ```bash
 cd /root/bmf/output/demo/comfyui_intergration
 ./setup.sh
@@ -67,20 +67,20 @@ cd /root/bmf
 export CMAKE_ARGS="-DBMF_ENABLE_CUDA=ON"
 ./build.sh
 cd /root/bmf/output/demo/comfyui_intergration
-./setup.sh  # clones ComfyUI, installs deps, injects hook
+./setup.sh  # clones ComfyUI, installs deps
 python run_bmf_comfy.py
 ```
 
 ## Repository layout
 - `bridge.py`: Converts ComfyUI JSON to a BMF `GraphConfig` (topological sort, stream wiring). Implements `ComfyNodeRunner` to instantiate node classes, adapt inputs/outputs, perform zero‑copy tensor bridging, forward UI events, and cache loader outputs.
 - `bmf_runner.py`: Runtime hook that replaces `PromptExecutor.execute` with `_execute_with_bmf`, sets up progress handlers, builds and runs the BMF graph, polls generator outputs, and ensures clean shutdown.
-- `patch_comfy.py`: Idempotent injector that appends a small import+hook block to `ComfyUI/execution.py`.
 - `run_bmf_comfy.py`: Launcher that adds import paths, installs the runtime hook, and boots ComfyUI.
-- `setup.sh`: Convenience script to clone ComfyUI, install requirements, and apply the injection.
+- `setup.sh`: Convenience script to clone ComfyUI and install requirements.
 - `ComfyUI/`: Created by `setup.sh`; ComfyUI itself is not vendored here
 
 ## Notes
 - This demo focuses on typical ComfyUI nodes. Exotic nodes may require additional handling.
 - Controls: Environment variable `BMF_COMFY_FORCE` (default: "1"). When set to "1",
-  the patched executor runs the BMF engine by default; when "0", it defers to
+  the hooked executor runs the BMF engine by default; when "0", it defers to
   ComfyUI's stock executor unless `extra_data.get("enable_bmf")` is truthy.
+- To run stock ComfyUI without BMF, use: `cd ComfyUI && python main.py`. Also, you can run our launcher but default to the stock engine with: `BMF_COMFY_FORCE=0 python run_bmf_comfy.py`.

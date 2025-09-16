@@ -38,6 +38,9 @@ cd "$INTEGRATION_DIR"
 if [ ! -d "ComfyUI" ]; then
     echo "Cloning ComfyUI..."
     git clone https://github.com/comfyanonymous/ComfyUI.git
+    cd ComfyUI
+    git switch --detach f228367c5e3906de194968fa9b6fbe7aa9987bfa
+    cd ..
     #git clone https://github.com/ischencheng/ComfyUI.git
 else
     echo "ComfyUI directory already exists. Skipping clone."

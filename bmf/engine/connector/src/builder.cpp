@@ -266,6 +266,10 @@ nlohmann::json RealNode::Dump() {
         info["output_streams"].push_back(s->Dump());
     info["option"] = option_.json_value_;
     info["scheduler"] = scheduler_;
+
+    if (!action_.empty())
+        info["action"] = action_;
+
     switch (inputManager_) {
     case Default:
         info["input_manager"] = "default";
@@ -433,6 +437,27 @@ int RealGraph::Run(bool dumpGraph, bool needMerge) {
             std::make_shared<bmf::BMFGraph>(graph_config, false, needMerge);
     graphInstance_->start();
     return graphInstance_->close();
+}
+
+int RealGraph::Update(std::shared_ptr<RealGraph> update_graph) {
+    if (!update_graph) {
+        throw std::logic_error("Update graph is null.");
+    }
+    std::string config_str = to_string(update_graph->Dump());
+    graphInstance_->update(config_str, false);
+    return 0;
+}
+
+void RealGraph::DynamicReset(const bmf_sdk::JsonParam& node_config) {
+    if (!node_config.json_value_.is_object() || !node_config.json_value_.contains("alias")) {
+        throw std::logic_error("Invalid configuration: missing alias.");
+    }
+
+    std::string alias = node_config.json_value_["alias"];
+    auto reset_node = AddModule(alias, bmf_sdk::JsonParam(node_config.json_value_),
+                               {}, "", CPP, "", "", Immediate, 0);
+
+    reset_node->action_ = "reset";
 }
 
 void RealGraph::Start(
@@ -820,6 +845,14 @@ void Graph::Start(std::vector<Stream> &generateStreams, bool dumpGraph,
     for (auto &s : generateStreams)
         generateRealStreams.emplace_back(s.baseP_);
     graph_->Start(generateRealStreams, dumpGraph, needMerge);
+}
+
+int Graph::Update(const Graph& update_graph) {
+    return graph_->Update(update_graph.graph_);
+}
+
+void Graph::DynamicReset(const bmf_sdk::JsonParam& node_config) {
+    graph_->DynamicReset(node_config);
 }
 
 int Graph::Close() {

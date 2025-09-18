@@ -189,6 +189,7 @@ class RealNode : public std::enable_shared_from_this<RealNode> {
     std::weak_ptr<RealGraph> graph_;
     int id_;
     std::string alias_;
+    std::string action_;
     bmf_sdk::JsonParam option_;
     std::vector<std::shared_ptr<RealStream>> inputStreams_;
     std::vector<std::shared_ptr<RealStream>> outputStreams_;
@@ -239,6 +240,8 @@ class RealGraph : public std::enable_shared_from_this<RealGraph> {
                         bool dumpGraph, bool needMerge);
 
     int Run(bool dumpGraph, bool needMerge);
+    int Update(std::shared_ptr<RealGraph> update_graph);
+    void DynamicReset(const bmf_sdk::JsonParam& node_config);
     int Close();
     int ForceClose();
     Packet Generate(std::string streamName, bool block = true);
@@ -645,6 +648,10 @@ class BMF_ENGINE_API Graph {
     void Start(bool dumpGraph = true, bool needMerge = true);
 
     void Start(std::vector<Stream>& generateStreams, bool dumpGraph = true, bool needMerge = true);
+
+    int Update(const Graph& update_graph);
+
+    void DynamicReset(const bmf_sdk::JsonParam& node_config);
 
     int Close();
     int ForceClose();

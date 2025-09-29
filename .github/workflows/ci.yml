@@ -141,6 +141,8 @@ jobs:
           ls output/bmf/bin
           which python
           which python3
+          # copy missing DLLs(ffmpeg, ld) for python
+          (cp -r /usr/local/bin/*dll output/bmf/lib && cp -r 3rd_party/win_rootfs/x64/usr/lib/*dll output/bmf/lib)
           (cd output/demo/transcode               && python test_transcode.py)
           (cd output/demo/edit                    && python test_edit.py)
           (cd output/demo/predict                 && python predict_sample.py)

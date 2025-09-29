@@ -94,6 +94,7 @@ TraceLogger::TraceLogger(int queue_size, bool loop_mode)
     std::stringstream tss;
     tss << tid;
     thread_name_ = tss.str();
+    std::cout << "Creating tracelogger with buffer size of " << queue_size << std::endl;
 
     // Set the process name
     pid_t pid = getpid();
@@ -133,11 +134,13 @@ int TraceLogger::register_queue(std::string process_name,
     // Assign buffer for the thread
     queue_map_[thread_count_].process_name = process_name;
     queue_map_[thread_count_].thread_name = thread_name;
-    running_count_++;
-    thread_count_++;
-    if (thread_count_ == queue_map_.size())
-        thread_count_ = 0; // Back to first buffer to reuse buffer
-    return thread_count_;
+    const int prev_thread_count = thread_count_.load(std::memory_order_relaxed);
+
+    running_count_.fetch_add(1, std::memory_order_relaxed);
+    thread_count_.fetch_add(1, std::memory_order_relaxed);
+    if (thread_count_.load(std::memory_order_relaxed) == queue_map_.size())
+        thread_count_.store(0, std::memory_order_relaxed); // Back to first buffer to reuse buffer
+    return prev_thread_count;
 }
 
 void TraceLogger::close_queue(int thread_id) {
@@ -222,6 +225,7 @@ ThreadTrace::ThreadTrace() {
         std::stringstream tss;
         tss << tid;
         thread_name_ = tss.str();
+        std::uint64_t id = std::stoull(tss.str());
 
         // Set the process name
         pid_t pid = getpid();
@@ -232,6 +236,7 @@ ThreadTrace::ThreadTrace() {
         // Register with Tracer
         thread_id_ = TraceLogger::instance()->register_queue(process_name_,
                                                              thread_name_);
+        std::cout << "Registering queue " << thread_name_ << " with id " << id << std::endl;
     }
 }
 

@@ -865,6 +865,9 @@ int Graph::close() {
             cond_close_.wait(lk);
     }
 
+    std::cout << "Tracing graph end " << std::endl;
+    BMF_TRACE(GRAPH_END, "End");
+
     if (not exception_from_scheduler_)
         scheduler_->close();
     else
@@ -910,6 +913,8 @@ int Graph::force_close() {
     for (auto &node : nodes_) {
         node.second->close();
     }
+    std::cout << "Tracing graph end " << std::endl;
+    BMF_TRACE(GRAPH_END, "End");
     scheduler_->close();
     //report
     if (bmf_stat_enabled()) {
@@ -1014,6 +1019,9 @@ void Graph::quit_gracefully() {
 }
 
 Graph::~Graph() {
+    std::cout << "Tracing graph end " << std::endl;
+    BMF_TRACE(GRAPH_END, "End");
+
     if (not exception_from_scheduler_)
         scheduler_->close();
 }

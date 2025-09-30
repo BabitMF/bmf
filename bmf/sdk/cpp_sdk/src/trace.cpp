@@ -288,7 +288,7 @@ void TraceLogger::format_logs(bool include_info) {
 
     std::string categories[] = {"INTERLATENCY", "PROCESSING", "SCHEDULE",
                                 "QUEUE_INFO",   "THROUGHPUT", "CUSTOM",
-                                "TRACE_START",  "GRAPH_START"};
+                                "TRACE_START",  "GRAPH_START", "GRAPH_END"};
 
     std::string phases[] = {"i", "B", "E"};
 

@@ -132,9 +132,9 @@ void TraceLogger::end() {
 int TraceLogger::register_queue(std::string process_name,
                                 std::string thread_name) {
     // Assign buffer for the thread
-    queue_map_[thread_count_].process_name = process_name;
-    queue_map_[thread_count_].thread_name = thread_name;
     const int prev_thread_count = thread_count_.load(std::memory_order_relaxed);
+    queue_map_[prev_thread_count].process_name = process_name;
+    queue_map_[prev_thread_count].thread_name = thread_name;
 
     running_count_.fetch_add(1, std::memory_order_relaxed);
     thread_count_.fetch_add(1, std::memory_order_relaxed);
@@ -225,7 +225,6 @@ ThreadTrace::ThreadTrace() {
         std::stringstream tss;
         tss << tid;
         thread_name_ = tss.str();
-        std::uint64_t id = std::stoull(tss.str());
 
         // Set the process name
         pid_t pid = getpid();
@@ -236,7 +235,7 @@ ThreadTrace::ThreadTrace() {
         // Register with Tracer
         thread_id_ = TraceLogger::instance()->register_queue(process_name_,
                                                              thread_name_);
-        std::cout << "Registering queue " << thread_name_ << " with id " << id << std::endl;
+        std::cout << "Registering queue " << thread_name_ << " with local id " << thread_id_ << std::endl;
     }
 }
 

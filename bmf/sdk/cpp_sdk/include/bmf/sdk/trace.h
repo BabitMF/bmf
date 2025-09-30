@@ -131,7 +131,8 @@ enum TraceType {
     THROUGHPUT,
     CUSTOM,
     TRACE_START,
-    GRAPH_START
+    GRAPH_START,
+    GRAPH_END
 };
 
 /* TracePhase enum contains the phases for each of the trace event
@@ -172,6 +173,8 @@ inline uint16_t get_trace_allowed() {
                     allowed_types |= (1 << CUSTOM);
                 } else if (mode == "TRACE_START") {
                     allowed_types |= (1 << TRACE_START);
+                } else if (mode == "GRAPH_END") {
+                    allowed_types |= (1 << GRAPH_END);
                 }
             }
             // In the event that the variable does not contain any of the

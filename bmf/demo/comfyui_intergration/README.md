@@ -18,6 +18,32 @@ The hook is installed at runtime via `run_bmf_comfy.py` (no on‑disk patching).
 - In‑process execution: maximize model reuse; no subprocess boundary; automatic fallback to the stock executor on errors or when `BMF_COMFY_FORCE=0`
 - Deterministic scheduling: framesync aligns multi‑input nodes; generator mode exposes terminal streams for polling
 
+### Using ComfyNodeRunner with BMF modules, and building graphs programmatically
+
+You can mix `ComfyNodeRunner` (wrapping ComfyUI nodes) with native BMF modules in the same BMF graph.
+
+#### Try the examples
+
+- Mixed JSON graph (Comfy + BMF together)
+  - Script: `mixed_json_graph_example.py`
+  - Demonstrates converting a ComfyUI workflow JSON, then inserting BMF modules (`TensorToVideoFrame` and `c_ffmpeg_encoder`) alongside Comfy’s `SaveImage` to write a JPG.
+  - Run:
+    ```bash
+    cd /root/bmf/output/demo/comfyui_intergration
+    python mixed_json_graph_example.py
+    ```
+    Outputs: `json_output.jpg`.
+
+- Programmatic graph (built in Python with ComfyNodeRunner)
+  - Script: `mixed_programmatic_graph_example.py`
+  - Demonstrates constructing a `GraphConfig` entirely in code using `ComfyNodeRunner` nodes (`CheckpointLoaderSimple`, `LoadImage`, `VAEEncode`, `VAEDecode`), then adding BMF modules to save a JPG.
+  - Run:
+    ```bash
+    cd /root/bmf/output/demo/comfyui_intergration
+    python mixed_programmatic_graph_example.py
+    ```
+    Outputs: `programmatic_output.jpg`.
+
 ## Requirements
 - BMF built with CUDA and a Python version (>=3.12) compatible with ComfyUI
 
@@ -77,6 +103,8 @@ python run_bmf_comfy.py
 - `run_bmf_comfy.py`: Launcher that adds import paths, installs the runtime hook, and boots ComfyUI.
 - `setup.sh`: Convenience script to clone ComfyUI and install requirements.
 - `ComfyUI/`: Created by `setup.sh`; ComfyUI itself is not vendored here
+ - `mixed_json_graph_example.py`: Example mixing `ComfyNodeRunner` with native BMF modules from a JSON workflow.
+ - `mixed_programmatic_graph_example.py`: Example building a BMF graph in Python using `ComfyNodeRunner` nodes.
 
 ## Notes
 - This demo focuses on typical ComfyUI nodes. Exotic nodes may require additional handling.

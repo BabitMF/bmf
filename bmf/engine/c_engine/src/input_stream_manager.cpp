@@ -448,10 +448,12 @@ FrameSyncInputStreamManager::get_node_readiness(int64_t &min_timestamp) {
     if (frames_ready_) {
         for (auto &input_stream : input_streams_) {
             if (sync_frm_state_[input_stream.first] != BMF_PAUSE) {
-                curr_pkt_[input_stream.first].set_timestamp(
-                    timestamp_[sync_level_]);
-                pkt_ready_[input_stream.first]->push(
-                    curr_pkt_[input_stream.first]);
+                auto &curr = curr_pkt_[input_stream.first];
+                // Guard: only push defined packets
+                if (curr) {
+                    curr.set_timestamp(timestamp_[sync_level_]);
+                    pkt_ready_[input_stream.first]->push(curr);
+                }
             }
         }
         frames_ready_ = false;

@@ -126,12 +126,15 @@ BMFGraph::BMFGraph(const std::string &graph_config, bool is_path,
 }
 
 BMFGraph::BMFGraph(BMFGraph const &graph) {
+    BMFLOG(BMF_INFO) << "bmf graph construct";
     graph_uid_ = graph.graph_uid_;
     internal::ConnectorMapping::GraphInstanceMapping().ref(graph_uid_);
 }
 
 BMFGraph::~BMFGraph() {
-    internal::ConnectorMapping::GraphInstanceMapping().remove(graph_uid_);
+    if (graph_uid_ > 0)
+        internal::ConnectorMapping::GraphInstanceMapping().remove(graph_uid_);
+    BMFLOG(BMF_INFO) << "bmf graph deconstruct";
 }
 
 BMFGraph &BMFGraph::operator=(BMFGraph const &graph) {
@@ -166,9 +169,15 @@ void BMFGraph::update(const std::string &graph_config, bool is_path) {
 }
 
 int BMFGraph::close() {
-    return internal::ConnectorMapping::GraphInstanceMapping()
+    if (graph_uid_ == 0) {
+        return 0;
+    }
+    int ret = internal::ConnectorMapping::GraphInstanceMapping()
         .get(graph_uid_)
         ->close();
+    internal::ConnectorMapping::GraphInstanceMapping().remove(graph_uid_);
+    graph_uid_ = 0;
+    return ret;
 }
 
 int BMFGraph::force_close() {

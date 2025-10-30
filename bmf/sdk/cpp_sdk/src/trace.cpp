@@ -94,7 +94,7 @@ TraceLogger::TraceLogger(int queue_size, bool loop_mode)
     std::stringstream tss;
     tss << tid;
     thread_name_ = tss.str();
-    std::cout << "Creating tracelogger with buffer size of " << queue_size << std::endl;
+    BMFLOG(BMF_DEBUG) << "Creating tracelogger with buffer size of " << queue_size << std::endl;
 
     // Set the process name
     pid_t pid = getpid();
@@ -235,7 +235,7 @@ ThreadTrace::ThreadTrace() {
         // Register with Tracer
         thread_id_ = TraceLogger::instance()->register_queue(process_name_,
                                                              thread_name_);
-        std::cout << "Registering queue " << thread_name_ << " with local id " << thread_id_ << std::endl;
+        BMFLOG(BMF_DEBUG) << "Registering queue " << thread_name_ << " with local id " << thread_id_ << std::endl;
     }
 }
 

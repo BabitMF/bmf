@@ -1,4 +1,6 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+# TODO: update 3rd/json cmake version minimum to remove this workaround
+set(CMAKE_POLICY_VERSION_MINIMUM "3.5" CACHE STRING "Force CMake policy version to 3.5" FORCE)
 
 # Cross Compile
 # cmake -DCMAKE_TOOLCHAIN_FILE=cmake/aarch64-toolchain.cmake

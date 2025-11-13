@@ -33,7 +33,7 @@ jobs:
     - name: build
       id: build
       run: |
-        ./build.sh debug
+        ./build.sh
 
     - name: set envs
       run: |

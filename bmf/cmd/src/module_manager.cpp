@@ -122,6 +122,32 @@ int install_module(const bmf_sdk::ModuleInfo &info, bool force) {
                 << "cannot find the module file:" << module_file << std::endl;
             return -1;
         }
+        
+        // add syntax check for python module
+        if (info.module_type == "python") {
+            // use compile command to check syntax
+            std::string check_cmd = "python3 -m py_compile \"" + module_file + "\" 2>&1";
+            FILE* pipe = popen(check_cmd.c_str(), "r");
+            if (!pipe) {
+                BMFLOG(BMF_ERROR) << "Failed to run Python syntax check" << std::endl;
+                return -1;
+            }
+            
+            char buffer[256];
+            std::string result = "";
+            while (!feof(pipe)) {
+                if (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+                    result += buffer;
+                }
+            }
+            int status = pclose(pipe);
+            
+            if (status != 0) {
+                BMFLOG(BMF_ERROR) << "Python syntax error in file: " << module_file << std::endl;
+                BMFLOG(BMF_ERROR) << "Error details: " << result << std::endl;
+                return -1;
+            }
+        }
     } else {
         BMFLOG(BMF_ERROR) << "invalid module_type, must be one of c++/python/go"
                           << std::endl;

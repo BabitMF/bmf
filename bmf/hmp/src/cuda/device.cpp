@@ -15,6 +15,7 @@
  */
 
 #include <mutex>
+#include <hmp/format.h>
 #include <hmp/cuda/macros.h>
 #include <hmp/cuda/device.h>
 #include <hmp/core/device.h>

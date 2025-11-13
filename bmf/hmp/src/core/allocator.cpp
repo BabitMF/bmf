@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <hmp/format.h>
 #include <hmp/core/logging.h>
 #include <hmp/core/allocator.h>
 #include <hmp/core/scalar_type.h>

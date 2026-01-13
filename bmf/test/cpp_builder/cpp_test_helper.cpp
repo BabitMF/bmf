@@ -179,15 +179,15 @@ bool MediaInfo::MediaCompareMD5(const std::string &md5) {
         return false;
     }
     MD5_CTX md5Context;
-    MD5_Init(&md5Context);
+    EVP_DigestInit_ex(&md5Context);
     char buf[1024 * 16];
     while (file.good()) {
         file.read(buf, sizeof(buf));
-        MD5_Update(&md5Context, buf, file.gcount());
+        EVP_DigestUpdate(&md5Context, buf, file.gcount());
     }
 
     unsigned char result[MD5_DIGEST_LENGTH];
-    MD5_Final(result, &md5Context);
+    EVP_DigestFinal_ex(result, &md5Context);
 
     char hex[35];
     memset(hex, 0, sizeof(hex));

@@ -21,7 +21,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
-#include <openssl/md5.h>
+#include <openssl/evp.h>
 
 #include "gtest/gtest.h"
 #include "nlohmann/json.hpp"

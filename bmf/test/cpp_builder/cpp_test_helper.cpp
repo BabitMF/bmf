@@ -178,28 +178,30 @@ bool MediaInfo::MediaCompareEVP(const std::string &evp) {
     if (!file) {
         return false;
     }
-    EVP_MD_CTX evpContext;
-    EVP_DigestInit_ex(&evpContext);
+    EVP_MD_CTX *evpContext = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(evpContext);
     char buf[1024 * 16];
     while (file.good()) {
         file.read(buf, sizeof(buf));
-        EVP_DigestUpdate(&evpContext, buf, file.gcount());
+        EVP_DigestUpdate(evpContext, buf, file.gcount());
     }
-    int md_length = EVP_MD_size(evpContext);
+    int md_length = EVP_MD_CTX_size(evpContext);
 
     unsigned char *result = (unsigned char * ) OPENSSL_malloc(md_length);
 
-    EVP_DigestFinal_ex(result, &evpContext);
+    EVP_DigestFinal_ex(result, evpContext);
 
     char hex[35];
     memset(hex, 0, sizeof(hex));
     for (int i = 0; i < md_length; ++i) {
         sprintf(hex + i * 2, "%02x", result[i]);
     }
-    OPENSSL_free(result);
+    
     hex[32] = '\0';
     evp_value = std::string(hex);
-
+    
+    OPENSSL_free(result);
+    EVP_MD_CTX_free(evpContext);
     if (evp_value.compare(evp) == 0) {
         return true;
     }

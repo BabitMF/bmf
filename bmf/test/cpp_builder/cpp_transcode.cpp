@@ -709,7 +709,7 @@ TEST(cpp_transcode, transcode_output_raw_video) {
     };
     graph.Encode(video["video"], bmf_sdk::JsonParam(encode_para));
     graph.Run();
-    BMF_CPP_FILE_CHECK_MD5(output_file, "992f929388f18c43c06c767d63eea15d");
+    BMF_CPP_FILE_CHECK_EVP(output_file, "992f929388f18c43c06c767d63eea15d");
 }
 
 TEST(cpp_transcode, transcode_output_null) {

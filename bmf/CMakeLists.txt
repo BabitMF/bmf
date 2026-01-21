@@ -157,7 +157,7 @@ endif()
 if(NOT APPLE AND NOT ANDROID AND NOT EMSCRIPTEN)
     add_custom_command(TARGET bmf_assem
         POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
             $<TARGET_FILE_DIR:hmp>/
             ${BMF_ASSEMBLE_ROOT}/bmf/lib/
     )
@@ -165,7 +165,7 @@ if(NOT APPLE AND NOT ANDROID AND NOT EMSCRIPTEN)
     if(BMF_ENABLE_JNI)
         add_custom_command(TARGET bmf_assem
             POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy
+                COMMAND ${CMAKE_COMMAND} -E copy_directory
                 $<TARGET_FILE_DIR:_jhmp>/
                 ${BMF_ASSEMBLE_ROOT}/bmf/lib/
         )

@@ -141,9 +141,9 @@ endif()
 
 # COPY hmp related resources
 set(HMP_ROOT ${PROJECT_SOURCE_DIR}/bmf/hmp)
-    add_custom_command(TARGET bmf_assem
-        POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:hmp> ${BMF_ASSEMBLE_ROOT}/bmf/lib
+add_custom_command(TARGET bmf_assem
+    POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:hmp> ${BMF_ASSEMBLE_ROOT}/bmf/lib
 )
 
 if (BMF_LOCAL_DEPENDENCIES)

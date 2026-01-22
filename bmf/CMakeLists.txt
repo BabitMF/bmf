@@ -162,6 +162,13 @@ if(NOT APPLE AND NOT ANDROID AND NOT EMSCRIPTEN)
             ${BMF_ASSEMBLE_ROOT}/bmf/lib/
     )
 
+    add_custom_command(TARGET bmf_assem
+        POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            $<TARGET_FILE_DIR:bmf_module_sdk>/
+            ${BMF_ASSEMBLE_ROOT}/bmf/bin/
+    )
+
     if(BMF_ENABLE_JNI)
         add_custom_command(TARGET bmf_assem
             POST_BUILD

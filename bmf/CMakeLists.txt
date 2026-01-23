@@ -3,12 +3,12 @@ add_subdirectory(sdk)
 #add_subdirectory(go_module_sdk) #FIXME: compile failed
 add_subdirectory(engine)
 add_subdirectory(c_modules)
+add_subdirectory(cmd)
 
 if (NOT EMSCRIPTEN)
     add_subdirectory(python_modules)
     # XXX: no go modules now
     #add_subdirectory(go_modules)
-    add_subdirectory(cmd)
 endif()
 
 if(BMF_ENABLE_TEST)
@@ -160,13 +160,6 @@ if(NOT APPLE AND NOT ANDROID AND NOT EMSCRIPTEN)
             COMMAND ${CMAKE_COMMAND} -E copy_directory
             $<TARGET_FILE_DIR:hmp>/
             ${BMF_ASSEMBLE_ROOT}/bmf/lib/
-    )
-
-    add_custom_command(TARGET bmf_assem
-        POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-            $<TARGET_FILE_DIR:bmf_module_sdk>/
-            ${BMF_ASSEMBLE_ROOT}/bmf/bin/
     )
 
     if(BMF_ENABLE_JNI)

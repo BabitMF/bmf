@@ -123,7 +123,7 @@ jobs:
           export PATH=$(pwd)/3rd_party/win_rootfs/x64/usr/bin:$(pwd)/3rd_party/win_rootfs/x64/usr/lib:$(pwd)/output/bmf/bin:$(pwd)/output/bmf/lib:${PATH}
           echo $PATH
           echo $(pwd)
-          ls
+          ls ./output/bmf
           export HMP_TEST_DATA_ROOT=$(pwd)/bmf/hmp/tests/data
           ffmpeg -version
           module_manager help

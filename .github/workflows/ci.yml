@@ -93,6 +93,8 @@ jobs:
           export PATH=/usr/bin:/usr/lib:/usr/local/bin:/usr/local/lib:$PATH
           python -V
           python3 -V
+          python -m pip install --upgrade pip
+          python -m pip install timeout_decorator numpy onnxruntime pytest opencv-python setuptools
           echo $PATH
           echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" | sed 's/[^0-9A-Za-z]/^&/g'
           eval "$(./win_env/vcvarsall.sh x64)"
@@ -113,8 +115,6 @@ jobs:
           cmake --build build_win_lite/x64-Release --config Release --target ALL_BUILD
           cp -r build_win_lite/x64-Release/output .
           set -e
-          python -m pip install --upgrade pip
-          python -m pip install timeout_decorator numpy onnxruntime pytest opencv-python setuptools
           export PYTHONHOME="$(dirname "$(which python)")"
           export C_INCLUDE_PATH=${C_INCLUDE_PATH}:$(pwd)/output/bmf/include
           export CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:$(pwd)/output/bmf/include
@@ -123,8 +123,7 @@ jobs:
           export PATH=$(pwd)/3rd_party/win_rootfs/x64/usr/bin:$(pwd)/3rd_party/win_rootfs/x64/usr/lib:$(pwd)/output/bmf/bin:$(pwd)/output/bmf/lib:${PATH}
           echo $PATH
           echo $(pwd)
-          ls output/bmf/lib
-          ls output/bmf/bin
+          ls
           export HMP_TEST_DATA_ROOT=$(pwd)/bmf/hmp/tests/data
           ffmpeg -version
           module_manager help

@@ -3,12 +3,12 @@ add_subdirectory(sdk)
 #add_subdirectory(go_module_sdk) #FIXME: compile failed
 add_subdirectory(engine)
 add_subdirectory(c_modules)
-add_subdirectory(cmd)
 
 if (NOT EMSCRIPTEN)
     add_subdirectory(python_modules)
     # XXX: no go modules now
     #add_subdirectory(go_modules)
+    add_subdirectory(cmd)
 endif()
 
 if(BMF_ENABLE_TEST)

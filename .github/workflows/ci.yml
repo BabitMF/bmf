@@ -84,6 +84,16 @@ jobs:
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
+      - name: Install Python 3.9.13
+        shell: powershell
+        run: |
+          winget install --id Python.Python.3.9 --version 3.9.13 --exact --silent --accept-package-agreements
+          
+          # Manually add it to the path for the rest of the CI run
+          $pythonPath = "C:\Program Files\Python39"
+          echo "$pythonPath" >> $env:GITHUB_PATH
+          echo "$pythonPath\Scripts" >> $env:GITHUB_PATH
+  
       - name: build_test
         shell: pwsh
         run: |
@@ -91,7 +101,6 @@ jobs:
 
           $bashCommand = @'
           export PATH=/usr/bin:/usr/lib:/usr/local/bin:/usr/local/lib:$PATH
-          winget install Python.Python.3.9.13
           python -V
           python3 -V
           python -m pip install --upgrade pip

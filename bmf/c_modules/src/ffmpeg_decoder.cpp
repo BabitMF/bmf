@@ -83,7 +83,6 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
     stream_frame_number_ = 0;
     current_target_pts_ = AV_NOPTS_VALUE;
     drop_output_until_target_ = false;
-    target_reached_flag_ = false;
 
     /** @addtogroup DecM
      * @{
@@ -1001,7 +1000,7 @@ int CFFDecoder::init_input(AVDictionary *options) {
                                            video_stream_->time_base);
         }
         video_decode_ctx_->skip_frame = skip_frame_;
-        init_extract_frames_targets();
+        init_target_frames();
         if (max_wh_) {
             parser_ = av_parser_init(video_decode_ctx_->codec_id);
             if (!parser_) {
@@ -1203,12 +1202,11 @@ fail:
     return err;
 }
 
-void CFFDecoder::init_extract_frames_targets() {
+void CFFDecoder::init_target_frames() {
     target_frames_pts_.clear();
     target_frames_index_ = 0;
     current_target_pts_ = AV_NOPTS_VALUE;
     drop_output_until_target_ = false;
-    target_reached_flag_ = false;
     if (!video_stream_ || !input_fmt_ctx_)
         return;
     if (extract_frames_frame_indexes_.empty() && extract_frames_n_frames_ <= 0 && extract_frames_fps_ <= 0)
@@ -1283,19 +1281,34 @@ void CFFDecoder::init_extract_frames_targets() {
         if (duration_pts <= 0) {
             target_frames_pts_.push_back(start_pts);
         } else {
-            int64_t count = duration_pts / step_pts;
-            for (int64_t i = 0; i <= count; i++) {
-                target_frames_pts_.push_back(start_pts + step_pts * i);
+            int64_t target_pts = start_pts;
+            while (target_pts <= duration_pts) {
+                target_frames_pts_.push_back(target_pts);
+                target_pts += step_pts;
             }
         }
     }
 
+    // sort and remove duplicate targets
     if (!target_frames_pts_.empty()) {
-        // std::sort(target_frames_pts_.begin(), target_frames_pts_.end());
+        std::sort(target_frames_pts_.begin(), target_frames_pts_.end());
         target_frames_pts_.erase(
             std::unique(target_frames_pts_.begin(), target_frames_pts_.end()),
             target_frames_pts_.end());
     }
+
+    // logging
+    std::stringstream ss;
+    ss << "[";
+    for (size_t i = 0; i < target_frames_pts_.size(); ++i) {
+        ss << target_frames_pts_[i];
+        if (i != target_frames_pts_.size() - 1)
+            ss << ", ";
+    }
+    ss << "]";
+    BMFLOG_NODE(BMF_DEBUG, node_id_) 
+        << "Target frames (PTS): " 
+        << ss.str();
 }
 
 int CFFDecoder::extract_frames(AVFrame *frame,
@@ -1473,18 +1486,39 @@ int CFFDecoder::handle_output_data(Task &task, int index, AVPacket *pkt,
 
         if (index == 0 && got_output && drop_output_until_target_ &&
             current_target_pts_ != AV_NOPTS_VALUE) {
+            bool target_found = false;
             int64_t compare_pts = best_effort_timestamp;
             if (compare_pts == AV_NOPTS_VALUE)
                 compare_pts = decoded_frm_->pts;
-            if (compare_pts != AV_NOPTS_VALUE &&
-                compare_pts < current_target_pts_) {
-                return 0;
+            if (compare_pts != AV_NOPTS_VALUE) {
+                if (compare_pts >= current_target_pts_)
+                    target_found = true;
+                else {
+                    // guess frame duration in video stream time base
+                    AVRational frame_rate = av_guess_frame_rate(input_fmt_ctx_, video_stream_, NULL);
+                    if (frame_rate.num <= 0 || frame_rate.den <= 0)
+                        frame_rate = video_stream_->avg_frame_rate;
+                    if (frame_rate.num <= 0 || frame_rate.den <= 0) 
+                        frame_rate = av_make_q(30, 1); // default guess 30fps
+                    AVRational frame_duration_tb = {frame_rate.den, frame_rate.num};
+                    int64_t frame_duration_pts = av_rescale_q(1, frame_duration_tb, video_stream_->time_base);
+                    int64_t diff_threshold = frame_duration_pts / 2;
+                    int64_t diff_pts = (current_target_pts_ > compare_pts)
+                                    ? current_target_pts_ - compare_pts
+                                    : compare_pts - current_target_pts_;
+                    if (diff_pts <= diff_threshold || 
+                        (target_frames_index_ == target_frames_pts_.size() - 1 && diff_pts <= frame_duration_pts)) 
+                        target_found = true;
+                }
             }
-            if (compare_pts != AV_NOPTS_VALUE &&
-                compare_pts >= current_target_pts_) {
-                drop_output_until_target_ = false;
-                target_reached_flag_ = true;
-            }
+            if (!target_found)
+                return 0; // drop
+            BMFLOG_NODE(BMF_DEBUG, node_id_) 
+                << "Target frame found" 
+                << ", Target PTS: " << current_target_pts_ 
+                << ", Actual PTS: " << compare_pts;
+            drop_output_until_target_ = false;
+            push_data_flag_ = true;
         }
 
         frame = av_frame_clone(decoded_frm_);
@@ -2731,90 +2765,70 @@ int CFFDecoder::process(Task &task) {
         audio_end_ = true;
     }
 
+    const bool target_frames_mode_enabled = !target_frames_pts_.empty() && video_stream_;
+    if (target_frames_mode_enabled &&
+        target_frames_index_ < target_frames_pts_.size()) {
+        // update state
+        current_target_pts_ = target_frames_pts_[target_frames_index_];
+        drop_output_until_target_ = true; // flag for handle_output_data
+
+        // seek logic
+        int64_t current_pts = AV_NOPTS_VALUE;
+        if (ist_[0].next_dts != AV_NOPTS_VALUE) {
+            current_pts = av_rescale_q(ist_[0].next_dts, AV_TIME_BASE_Q,
+                                        video_stream_->time_base);
+        }
+        size_t gop_size = video_decode_ctx_->gop_size;
+        AVRational frame_rate = av_guess_frame_rate(input_fmt_ctx_, video_stream_, NULL);
+        if (frame_rate.num <= 0 || frame_rate.den <= 0)
+            frame_rate = video_stream_->avg_frame_rate;
+        if (frame_rate.num <= 0 || frame_rate.den <= 0) 
+            frame_rate = av_make_q(30, 1); // default guess 30fps
+        AVRational frame_duration_tb = {frame_rate.den, frame_rate.num};
+        int64_t frame_duration_pts = av_rescale_q(1, frame_duration_tb, video_stream_->time_base);
+        int64_t seek_threshold_pts = (frame_duration_pts * gop_size) / 2; // seek if target frame is further than half GOP size
+        int64_t diff_pts = 0;
+        if (current_pts != AV_NOPTS_VALUE) {
+            diff_pts = (current_target_pts_ > current_pts)
+                            ? current_target_pts_ - current_pts
+                            : INT64_MAX; // should never be the case
+        }
+        bool need_seek = (current_pts == AV_NOPTS_VALUE || current_target_pts_ < current_pts || diff_pts > seek_threshold_pts);
+        if (need_seek) {
+            BMFLOG_NODE(BMF_DEBUG, node_id_)
+                    << "ffmpeg_decoder seeking to target pts: " << current_target_pts_;
+            int s_ret = avformat_seek_file(input_fmt_ctx_,
+                                            video_stream_index_, INT64_MIN,
+                                            current_target_pts_, current_target_pts_,
+                                            AVSEEK_FLAG_BACKWARD);
+            if (s_ret < 0) {
+                BMFLOG_NODE(BMF_ERROR, node_id_)
+                    << "ffmpeg_decoder seek failed to pts: " << current_target_pts_;
+            } else {
+                if (video_decode_ctx_)
+                    avcodec_flush_buffers(video_decode_ctx_);
+                if (audio_decode_ctx_)
+                    avcodec_flush_buffers(audio_decode_ctx_);
+                ist_[0].next_dts = AV_NOPTS_VALUE;
+                ist_[0].next_pts = AV_NOPTS_VALUE;
+                ist_[1].next_dts = AV_NOPTS_VALUE;
+                ist_[1].next_pts = AV_NOPTS_VALUE;
+                last_ts_ = AV_NOPTS_VALUE;
+            }
+        }
+    }
+
     AVPacket pkt;
     push_data_flag_ = false;
-    bool use_target_frames = !target_frames_pts_.empty() && video_stream_;
-    size_t active_target_index = target_frames_index_;
-    bool seeked_to_target = false;
-    int64_t target_pts = AV_NOPTS_VALUE;
-    if (use_target_frames &&
-        target_frames_index_ < target_frames_pts_.size()) {
-        current_target_pts_ = target_frames_pts_[target_frames_index_];
-        drop_output_until_target_ = true;
-        target_reached_flag_ = false;
-    }
     while (!(video_end_ && audio_end_)) {
-        if (use_target_frames) {
-            if (target_frames_index_ >= target_frames_pts_.size()) {
-                flush(task);
-                if (file_list_.size() == 0) {
-                    task.set_timestamp(DONE);
-                    task_done_ = true;
-                }
-                break;
+        if (target_frames_mode_enabled && 
+            target_frames_index_ >= target_frames_pts_.size()) {
+            flush(task);
+            if (file_list_.size() == 0) {
+                task.set_timestamp(DONE);
+                task_done_ = true;
             }
-            if (active_target_index != target_frames_index_) {
-                active_target_index = target_frames_index_;
-                seeked_to_target = false;
-                drop_output_until_target_ = true;
-                target_reached_flag_ = false;
-            }
-            target_pts = target_frames_pts_[target_frames_index_];
-            current_target_pts_ = target_pts;
-            int64_t current_pts = AV_NOPTS_VALUE;
-            if (ist_[0].next_dts != AV_NOPTS_VALUE) {
-                current_pts = av_rescale_q(ist_[0].next_dts, AV_TIME_BASE_Q,
-                                           video_stream_->time_base);
-            }
-            int64_t seek_threshold_pts = 0;
-            AVRational frame_rate =
-                av_guess_frame_rate(input_fmt_ctx_, video_stream_, NULL);
-            if (frame_rate.num <= 0 || frame_rate.den <= 0) {
-                frame_rate = video_stream_->avg_frame_rate;
-            }
-            if (frame_rate.num > 0 && frame_rate.den > 0) {
-                AVRational frame_duration_tb = {frame_rate.den, frame_rate.num};
-                int64_t frame_duration_pts = av_rescale_q(
-                    1, frame_duration_tb, video_stream_->time_base);
-                if (frame_duration_pts > 0) {
-                    seek_threshold_pts = frame_duration_pts * 30;
-                }
-            }
-            if (seek_threshold_pts <= 0) {
-                seek_threshold_pts = av_rescale_q(
-                    2, av_make_q(1, 1), video_stream_->time_base);
-            }
-            int64_t diff_pts = 0;
-            if (current_pts != AV_NOPTS_VALUE) {
-                diff_pts = (target_pts > current_pts)
-                               ? target_pts - current_pts
-                               : current_pts - target_pts;
-            }
-            bool need_seek =
-                !seeked_to_target &&
-                (current_pts == AV_NOPTS_VALUE || target_pts < current_pts ||
-                 diff_pts > seek_threshold_pts);
-            if (need_seek) {
-                int s_ret = avformat_seek_file(input_fmt_ctx_,
-                                               video_stream_index_, INT64_MIN,
-                                               target_pts, target_pts,
-                                               AVSEEK_FLAG_BACKWARD);
-                if (s_ret < 0) {
-                    BMFLOG_NODE(BMF_ERROR, node_id_)
-                        << "ffmpeg_decoder seek failed to pts " << target_pts;
-                } else {
-                    if (video_decode_ctx_)
-                        avcodec_flush_buffers(video_decode_ctx_);
-                    if (audio_decode_ctx_)
-                        avcodec_flush_buffers(audio_decode_ctx_);
-                    ist_[0].next_dts = AV_NOPTS_VALUE;
-                    ist_[0].next_pts = AV_NOPTS_VALUE;
-                    ist_[1].next_dts = AV_NOPTS_VALUE;
-                    ist_[1].next_pts = AV_NOPTS_VALUE;
-                    last_ts_ = AV_NOPTS_VALUE;
-                }
-                seeked_to_target = true;
-            }
+            break;
         }
         av_init_packet(&pkt);
         ret = av_read_frame(input_fmt_ctx_, &pkt);
@@ -2831,14 +2845,11 @@ int CFFDecoder::process(Task &task) {
             break;
         }
 
-        bool target_reached = false;
         if (ret >= 0 && check_valid_packet(&pkt, task)) {
             ret = decode_send_packet(task, &pkt, &got_frame);
             if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF &&
                 !(video_end_ && audio_end_))
                 break;
-            if (use_target_frames)
-                target_reached = target_reached_flag_;
         }
         av_packet_unref(&pkt);
         if (ret == AVERROR_EOF || (video_end_ && audio_end_)) {
@@ -2848,11 +2859,9 @@ int CFFDecoder::process(Task &task) {
                 task_done_ = true;
             }
             break;
-        } else if (!use_target_frames && push_data_flag_) {
-            break;
-        } else if (use_target_frames && target_reached) {
-            target_reached_flag_ = false;
-            target_frames_index_++;
+        } else if (push_data_flag_) {
+            if (target_frames_mode_enabled) // target found
+                target_frames_index_++;
             break;
         }
     }

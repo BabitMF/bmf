@@ -585,7 +585,7 @@ class TestTranscode(BaseTestCase):
                 # we can add some more processing here, e.g. predicting
             else:
                 break
-        assert (num == 6)
+        self.assertEqual(num, 6)
 
     @timeout_decorator.timeout(seconds=120)
     def test_incorrect_stream_notify(self):

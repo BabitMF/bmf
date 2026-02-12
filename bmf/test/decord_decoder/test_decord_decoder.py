@@ -50,6 +50,20 @@ class TestDecordDecoder(BaseTestCase):
                 break
         return timestamps
 
+    def _bmf_decode_all_timestamps_us(self, video_path):
+        graph = bmf.graph()
+        streams = graph.decode({
+            "input_path": video_path
+        })
+        pkts = streams["video"].start()
+        timestamps = []
+        for pkt in pkts:
+            if pkt.is_(bmf.VideoFrame):
+                timestamps.append(int(pkt.timestamp))
+            else:
+                break
+        return timestamps
+
     def _decord_frames(self, video_path):
         vr = VideoReader(video_path, ctx=cpu(0))
         frame_ts = vr.get_frame_timestamp(list(range(len(vr))))
@@ -85,6 +99,13 @@ class TestDecordDecoder(BaseTestCase):
         self.assertEqual(len(bmf_ts_us), len(expected_us))
         tolerance_us = int(max((1.5 / avg_fps) * 1e6, 20000))
         diffs = np.abs(np.array(bmf_ts_us) - expected_us)
+        self.assertTrue(np.all(diffs <= tolerance_us))
+
+    def _compare_alignment_unordered(self, bmf_ts_us, expected_times_s, avg_fps):
+        expected_us = (expected_times_s * 1e6).astype(np.int64)
+        self.assertEqual(len(bmf_ts_us), len(expected_us))
+        tolerance_us = int(max((1.5 / avg_fps) * 1e6, 20000))
+        diffs = np.abs(np.sort(np.array(bmf_ts_us)) - np.sort(expected_us))
         self.assertTrue(np.all(diffs <= tolerance_us))
 
     def _run_case(self, video_path, extract_params, expected_times_fn):
@@ -169,6 +190,77 @@ class TestDecordDecoder(BaseTestCase):
                 "ratio",
                 bmf_time / max(decord_time, 1e-6),
             )
+
+    @timeout_decorator.timeout(seconds=240)
+    def test_extract_frames_frame_indexes_duplicates(self):
+        path = self._get_video_paths()["10s"]
+        vr, start_ts, end_ts = self._decord_frames(path)
+        max_index = len(vr) - 1
+        indices = [0, 5, 5, 10, 10, 0, max_index, max_index]
+        expected_times = self._expected_times_indexes(start_ts, indices)
+
+        bmf_ts_us = self._bmf_extract_timestamps_us(
+            path,
+            {"frame_indexes": indices},
+        )
+
+        avg_fps = vr.get_avg_fps()
+        self._compare_alignment_unordered(bmf_ts_us, expected_times, avg_fps)
+
+    @timeout_decorator.timeout(seconds=240)
+    def test_extract_frames_frame_indexes_non_increasing(self):
+        path = self._get_video_paths()["10s"]
+        vr, start_ts, end_ts = self._decord_frames(path)
+        max_index = len(vr) - 1
+        indices = [min(max_index, i) for i in [20, 10, 10, 5, 2, 0]]
+        expected_times = self._expected_times_indexes(start_ts, indices)
+
+        bmf_ts_us = self._bmf_extract_timestamps_us(
+            path,
+            {"frame_indexes": indices},
+        )
+
+        avg_fps = vr.get_avg_fps()
+        self._compare_alignment_unordered(bmf_ts_us, expected_times, avg_fps)
+
+    @timeout_decorator.timeout(seconds=240)
+    def test_extract_frames_n_frames_perf_vs_naive(self):
+        path = self._get_video_paths()["1min"]
+        vr, start_ts, end_ts = self._decord_frames(path)
+        avg_fps = vr.get_avg_fps()
+        n_frames = 7
+        expected_times = self._expected_times_n_frames(start_ts, end_ts, n_frames)
+
+        naive_start = time.perf_counter()
+        all_ts_us = self._bmf_decode_all_timestamps_us(path)
+        self.assertTrue(len(all_ts_us) > 0)
+        indices = np.linspace(0, len(all_ts_us) - 1, n_frames).astype(np.int64)
+        naive_sampled_ts_us = [all_ts_us[i] for i in indices]
+        naive_time = time.perf_counter() - naive_start
+
+        bmf_start = time.perf_counter()
+        bmf_ts_us = self._bmf_extract_timestamps_us(
+            path,
+            {"n_frames": n_frames},
+        )
+        bmf_time = time.perf_counter() - bmf_start
+
+        self._compare_alignment(naive_sampled_ts_us, expected_times, avg_fps)
+        self._compare_alignment(bmf_ts_us, expected_times, avg_fps)
+        self.assertTrue(naive_time > 0)
+        self.assertTrue(bmf_time > 0)
+        print(
+            "video",
+            os.path.basename(path),
+            "params",
+            {"naive_n_frames": n_frames, "bmf_n_frames": n_frames},
+            "naive_s",
+            naive_time,
+            "bmf_s",
+            bmf_time,
+            "ratio",
+            naive_time / max(bmf_time, 1e-6),
+        )
 
 if __name__ == "__main__":
     unittest.main()

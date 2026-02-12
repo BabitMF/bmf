@@ -155,7 +155,6 @@ class CFFDecoder : public Module {
     size_t target_frames_index_ = 0;
     int64_t current_target_pts_ = AV_NOPTS_VALUE;
     bool drop_output_until_target_ = false;
-    bool target_reached_flag_ = false;
     std::string extract_frames_device_;
     std::shared_ptr<VideoSync> video_sync_ = NULL;
     bool start_decode_flag_ = false;
@@ -213,7 +212,7 @@ class CFFDecoder : public Module {
     int process_task_output_packet(int index, Packet &packet);
     int64_t get_start_time();
     int extract_frames(AVFrame *frame, std::vector<AVFrame *> &output_frames);
-    void init_extract_frames_targets();
+    void init_target_frames();
 
 #ifdef BMF_USE_MEDIACODEC
     int init_android_vm();

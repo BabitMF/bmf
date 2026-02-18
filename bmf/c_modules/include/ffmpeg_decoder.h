@@ -148,6 +148,7 @@ class CFFDecoder : public Module {
     std::mutex process_mutex_;
     std::thread exec_thread_;
     Task task_;
+    bool disable_seek_ = false;
     double extract_frames_fps_ = 0;
     int extract_frames_n_frames_ = 0;
     std::vector<int> extract_frames_frame_indexes_ = {};

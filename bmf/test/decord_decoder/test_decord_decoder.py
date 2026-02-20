@@ -19,17 +19,41 @@ import bmf
 import numpy as np
 from decord import VideoReader, cpu
 
-def bmf_decode(decode_param):
+def bmf_decode_packets(decode_param, stream_name="video"):
     graph = bmf.graph()
     streams = graph.decode(decode_param)
-    video_pkts = streams["video"].start()
-    timestamps = []
-    for pkt in video_pkts:
+    packet_generator = streams[stream_name].start()
+    packets = []
+    for pkt in packet_generator:
         if pkt.is_(bmf.VideoFrame):
-            timestamps.append(int(pkt.timestamp))
-    return timestamps
+            packets.append(pkt)
+    return packets
+def bmf_decode_timestamps(decode_param, stream_name="video"):
+    packets = bmf_decode_packets(decode_param, stream_name)
+    return [pkt.timestamp for pkt in packets]
+
+def bmf_decode_videoframes(decode_param, stream_name="video"):
+    packets = bmf_decode_packets(decode_param, stream_name)
+    return [pkt.get(bmf.VideoFrame) for pkt in packets]
+
+def bmf_decode_videoframes_with_metadata(decode_param, stream_name="video"):
+    """Extract videoframes along with their dimensions and timestamps"""
+    packets = bmf_decode_packets(decode_param, stream_name)
+    frames = []
+    for pkt in packets:
+        vf = pkt.get(bmf.VideoFrame)
+        frames.append({
+            'frame': vf,
+            'width': vf.width,
+            'height': vf.height,
+            'timestamp': pkt.timestamp
+        })
+    return frames
 
 class TestDecordDecoder(BaseTestCase):
+    # Performance data storage
+    performance_data = []
+    
     def _get_video_paths(self):
         files_dir = "../../../output/files"
         short_video = os.path.join(files_dir, "big_bunny_10s_30fps.mp4")
@@ -97,6 +121,20 @@ class TestDecordDecoder(BaseTestCase):
         self.assertTrue(np.all(diffs <= tol_us))
         self.assertTrue(decord_time > 0)
         self.assertTrue(bmf_time > 0)
+        
+        # Store performance data
+        performance_ratio = bmf_time / max(decord_time, 1e-6)
+        TestDecordDecoder.performance_data.append({
+            "test_type": "sampling_comparison",
+            "video": os.path.basename(video_path),
+            "mode": mode,
+            "params": str(extract_params),
+            "bmf_time_s": bmf_time,
+            "decord_time_s": decord_time,
+            "ratio": performance_ratio,
+            "frames_extracted": len(bmf_ts_us)
+        })
+        
         print(
             "video",
             os.path.basename(video_path),
@@ -109,7 +147,7 @@ class TestDecordDecoder(BaseTestCase):
             "decord_s",
             decord_time,
             "ratio",
-            bmf_time / max(decord_time, 1e-6),
+            performance_ratio,
         )
 
     def _bmf_extract_timestamps_us(self, video_path, extract_params):
@@ -117,7 +155,7 @@ class TestDecordDecoder(BaseTestCase):
             "input_path": video_path,
             "video_params": {"extract_frames": extract_params},
         }
-        return bmf_decode(video_param)
+        return bmf_decode_timestamps(video_param)
 
     @timeout_decorator.timeout(seconds=240)
     def test_fps_sampling_matches_decord(self):
@@ -140,5 +178,246 @@ class TestDecordDecoder(BaseTestCase):
             indices = [0, 5, 10, min(20, len(vr) - 1), len(vr) - 1]
             self._compare_bmf_vs_decord(path, "indices", {"frame_indexes": indices})
 
+    @timeout_decorator.timeout(seconds=240)
+    def test_naive_vs_sampling_performance(self):
+        video_paths = self._get_video_paths()
+        long_video_path = video_paths["1min"]
+        vr, n_total, avg_fps, duration = self._get_vr_meta(long_video_path)
+        naive_start = time.perf_counter()
+        naive_timestamps = bmf_decode_timestamps({"input_path": long_video_path})
+        naive_time = time.perf_counter() - naive_start
+        print(f"Naive: {len(naive_timestamps)} frames, {naive_time:.3f}s")
+        
+        # Store naive performance data
+        TestDecordDecoder.performance_data.append({
+            "test_type": "naive_vs_sampling",
+            "video": os.path.basename(long_video_path),
+            "mode": "naive",
+            "params": "full_decode",
+            "bmf_time_s": naive_time,
+            "decord_time_s": 0.0,
+            "ratio": 0.0,
+            "frames_extracted": len(naive_timestamps),
+            "speedup": 1.0
+        })
+        
+        for n_frames in [1, 5, 10, 30, 60, 120]:
+            if n_frames > n_total:
+                continue
+            with self.subTest(n_frames=n_frames):
+                sampling_start = time.perf_counter()
+                sampling_param = {
+                    "input_path": long_video_path,
+                    "video_params": {"extract_frames": {"n_frames": n_frames}}
+                }
+                sampling_timestamps = bmf_decode_timestamps(sampling_param)
+                sampling_time = time.perf_counter() - sampling_start
+                speedup = naive_time / max(sampling_time, 1e-6)
+                print(f"Sample {n_frames}: {sampling_time:.3f}s, {speedup:.2f}x")
+                
+                # Store sampling performance data
+                TestDecordDecoder.performance_data.append({
+                    "test_type": "naive_vs_sampling",
+                    "video": os.path.basename(long_video_path),
+                    "mode": "n_frames",
+                    "params": f"n_frames={n_frames}",
+                    "bmf_time_s": sampling_time,
+                    "decord_time_s": 0.0,
+                    "ratio": 0.0,
+                    "frames_extracted": n_frames,
+                    "speedup": speedup
+                })
+                
+                self.assertEqual(len(sampling_timestamps), n_frames)
+                # if n_frames < n_total * 0.5:
+                #     self.assertLess(sampling_time, naive_time)
+
+    @timeout_decorator.timeout(seconds=240)
+    def test_ffmpeg_filter_param_fps(self):
+        video_paths = self._get_video_paths()
+        short_video_path = video_paths["10s"]
+        for fps in [2, 5, 10]:
+            with self.subTest(video="10s", fps=fps):
+                decode_param = {
+                    "input_path": short_video_path,
+                    "filter_param": {"fps": fps}
+                }
+                # Test timestamps
+                timestamps = bmf_decode_timestamps(decode_param)
+                vr, n_total, avg_fps, duration = self._get_vr_meta(path)
+                expected_frames = int(duration * fps)
+                self.assertGreater(len(timestamps), 0)
+                self.assertLessEqual(len(timestamps), expected_frames + 2)
+                
+                # Test frame properties
+                frames = bmf_decode_videoframes_with_metadata(decode_param)
+                self.assertEqual(len(frames), len(timestamps))
+                
+                # Verify frame dimensions match original video
+                original_vr = VideoReader(path, ctx=cpu(0))
+                original_width, original_height = original_vr[0].shape[1], original_vr[0].shape[0]
+                
+                for frame_info in frames:
+                    self.assertEqual(frame_info['width'], original_width)
+                    self.assertEqual(frame_info['height'], original_height)
+                    self.assertIsNotNone(frame_info['frame'])
+                    self.assertIsInstance(frame_info['timestamp'], (int, float))
+                
+                print(f"FFmpeg FPS {fps}: {len(timestamps)} frames from {name}, dimensions verified")
+
+    @timeout_decorator.timeout(seconds=240)
+    def test_ffmpeg_filter_param_crop(self):
+        video_paths = self._get_video_paths()
+        for name, path in video_paths.items():
+            crop_params = {
+                "x": 100,
+                "y": 100,
+                "w": 640,
+                "h": 480
+            }
+            with self.subTest(video=name):
+                decode_param = {
+                    "input_path": path,
+                    "filter_param": {"crop": crop_params}
+                }
+                # Test timestamps
+                timestamps = bmf_decode_timestamps(decode_param)
+                self.assertGreater(len(timestamps), 0)
+                
+                # Test frame properties with crop verification
+                frames = bmf_decode_videoframes_with_metadata(decode_param)
+                self.assertEqual(len(frames), len(timestamps))
+                
+                # Verify crop dimensions
+                for frame_info in frames:
+                    self.assertEqual(frame_info['width'], crop_params['w'])
+                    self.assertEqual(frame_info['height'], crop_params['h'])
+                    self.assertIsNotNone(frame_info['frame'])
+                    self.assertIsInstance(frame_info['timestamp'], (int, float))
+                
+                print(f"FFmpeg Crop: {len(timestamps)} frames from {name}, crop dimensions {crop_params['w']}x{crop_params['h']} verified")
+
+    @timeout_decorator.timeout(seconds=240)
+    def test_ffmpeg_filter_param_scale(self):
+        video_paths = self._get_video_paths()
+        for name, path in video_paths.items():
+            scale_params = {
+                "w": 640,
+                "h": 480
+            }
+            with self.subTest(video=name):
+                decode_param = {
+                    "input_path": path,
+                    "filter_param": {"scale": scale_params}
+                }
+                # Test timestamps
+                timestamps = bmf_decode_timestamps(decode_param)
+                self.assertGreater(len(timestamps), 0)
+                
+                # Test frame properties with scale verification
+                frames = bmf_decode_videoframes_with_metadata(decode_param)
+                self.assertEqual(len(frames), len(timestamps))
+                
+                # Verify scale dimensions
+                for frame_info in frames:
+                    self.assertEqual(frame_info['width'], scale_params['w'])
+                    self.assertEqual(frame_info['height'], scale_params['h'])
+                    self.assertIsNotNone(frame_info['frame'])
+                    self.assertIsInstance(frame_info['timestamp'], (int, float))
+                
+                print(f"FFmpeg Scale: {len(timestamps)} frames from {name}, scale dimensions {scale_params['w']}x{scale_params['h']} verified")
+
+    @timeout_decorator.timeout(seconds=240)
+    def test_ffmpeg_filter_param_combined(self):
+        video_paths = self._get_video_paths()
+        for name, path in video_paths.items():
+            with self.subTest(video=name):
+                decode_param = {
+                    "input_path": path,
+                    "filter_param": {
+                        "fps": 10,
+                        "crop": {"x": 100, "y": 100, "w": 640, "h": 480},
+                        "scale": {"w": 320, "h": 240}
+                    }
+                }
+                # Test timestamps
+                timestamps = bmf_decode_timestamps(decode_param)
+                self.assertGreater(len(timestamps), 0)
+                vr, n_total, avg_fps, duration = self._get_vr_meta(path)
+                expected_frames = int(duration * 10)
+                self.assertLessEqual(len(timestamps), expected_frames + 2)
+                
+                # Test frame properties with combined filter verification
+                frames = bmf_decode_videoframes_with_metadata(decode_param)
+                self.assertEqual(len(frames), len(timestamps))
+                
+                # Verify combined filter dimensions (scale should be applied after crop)
+                for frame_info in frames:
+                    self.assertEqual(frame_info['width'], 320)  # Final scale width
+                    self.assertEqual(frame_info['height'], 240)  # Final scale height
+                    self.assertIsNotNone(frame_info['frame'])
+                    self.assertIsInstance(frame_info['timestamp'], (int, float))
+                
+                print(f"FFmpeg Combined: {len(timestamps)} frames from {name}, final dimensions 320x240 verified")
+
+    @classmethod
+    def tearDownClass(cls):
+        """Print performance data as ASCII table after all tests complete"""
+        if cls.performance_data:
+            print("\n" + "="*80)
+            print("PERFORMANCE SUMMARY")
+            print("="*80)
+            
+            # Group data by test type
+            grouped_data = {}
+            for entry in cls.performance_data:
+                test_type = entry["test_type"]
+                if test_type not in grouped_data:
+                    grouped_data[test_type] = []
+                grouped_data[test_type].append(entry)
+            
+            # Print sampling comparison table
+            if "sampling_comparison" in grouped_data:
+                print("\n## Sampling Comparison (BMF vs Decord)")
+                print("| Video | Mode | Params | Frames | BMF Time (s) | Decord Time (s) | Ratio |")
+                print("|-------|------|--------|--------|--------------|----------------|-------|")
+                
+                for entry in grouped_data["sampling_comparison"]:
+                    video = entry["video"]
+                    mode = entry["mode"]
+                    params = entry["params"][:30]  # Truncate long params
+                    frames = entry["frames_extracted"]
+                    bmf_time = f"{entry['bmf_time_s']:.3f}"
+                    decord_time = f"{entry['decord_time_s']:.3f}"
+                    ratio = f"{entry['ratio']:.2f}"
+                    
+                    print(f"| {video} | {mode} | {params} | {frames} | {bmf_time} | {decord_time} | {ratio} |")
+            
+            # Print naive vs sampling performance table
+            if "naive_vs_sampling" in grouped_data:
+                print("\n## Naive vs N-Frames Seek-Based Sampling Performance")
+                print("| Video | Mode | Params | Frames | BMF Time (s) | Speedup |")
+                print("|-------|------|--------|--------|--------------|---------|")
+                
+                for entry in grouped_data["naive_vs_sampling"]:
+                    video = entry["video"]
+                    mode = entry["mode"]
+                    params = entry["params"][:30]  # Truncate long params
+                    frames = entry["frames_extracted"]
+                    bmf_time = f"{entry['bmf_time_s']:.3f}"
+                    speedup = f"{entry.get('speedup', 0):.2f}x" if entry.get('speedup') else "N/A"
+                    
+                    print(f"| {video} | {mode} | {params} | {frames} | {bmf_time} | {speedup} |")
+            
+            print("\n" + "="*80)
+            print("End of Performance Summary")
+            print("="*80 + "\n")
+
 if __name__ == "__main__":
-    unittest.main()
+    # Run tests and ensure performance data is printed
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestDecordDecoder)
+    runner = unittest.TextTestRunner(verbosity=2)
+    result = runner.run(suite)
+    
+    # Print performance summary after tests
+    TestDecordDecoder.tearDownClass()

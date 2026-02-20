@@ -1307,7 +1307,8 @@ void CFFDecoder::init_target_frames() {
     }
     ss << "]";
     BMFLOG_NODE(BMF_DEBUG, node_id_) 
-        << "Target frames (PTS): " 
+        << target_frames_pts_.size() << " target frames,"
+        << " PTS list: " 
         << ss.str();
 }
 
@@ -1484,13 +1485,12 @@ int CFFDecoder::handle_output_data(Task &task, int index, AVPacket *pkt,
                 return 0;
         }
 
-        if (index == 0 && got_output && seek_decode_mode_enabled_ && 
-            current_target_pts_ != AV_NOPTS_VALUE) {
+        if (index == 0 && got_output && seek_decode_mode_enabled_) {
             bool target_found = false;
             int64_t compare_pts = best_effort_timestamp;
             if (compare_pts == AV_NOPTS_VALUE)
                 compare_pts = decoded_frm_->pts;
-            if (compare_pts != AV_NOPTS_VALUE) {
+            if (current_target_pts_ != AV_NOPTS_VALUE && compare_pts != AV_NOPTS_VALUE) {
                 if (compare_pts >= current_target_pts_)
                     target_found = true;
                 else {
@@ -1515,11 +1515,12 @@ int CFFDecoder::handle_output_data(Task &task, int index, AVPacket *pkt,
                     << "Target frame found" 
                     << ", Target PTS: " << current_target_pts_ 
                     << ", Actual PTS: " << compare_pts;
-                if (++target_frames_index_ < target_frames_pts_.size()) // go to next target
-                    current_target_pts_ = target_frames_pts_[target_frames_index_];
+                current_target_pts_ = (++target_frames_index_ < target_frames_pts_.size()) // next target
+                    ? target_frames_pts_[target_frames_index_]
+                    : AV_NOPTS_VALUE;
                 push_data_flag_ = true;
             } else // drop
-                return 0; 
+                return 0;
         }
 
         frame = av_frame_clone(decoded_frm_);

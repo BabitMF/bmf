@@ -155,7 +155,7 @@ class CFFDecoder : public Module {
     std::vector<int64_t> target_frames_pts_ = {};
     size_t target_frames_index_ = 0;
     int64_t current_target_pts_ = AV_NOPTS_VALUE;
-    bool drop_output_until_target_ = false;
+    bool seek_decode_mode_enabled_ = false;
     std::string extract_frames_device_;
     std::shared_ptr<VideoSync> video_sync_ = NULL;
     bool start_decode_flag_ = false;

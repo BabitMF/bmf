@@ -82,7 +82,6 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
     extract_frames_device_ = "";
     stream_frame_number_ = 0;
     current_target_pts_ = AV_NOPTS_VALUE;
-    drop_output_until_target_ = false;
 
     /** @addtogroup DecM
      * @{
@@ -1210,7 +1209,6 @@ void CFFDecoder::init_target_frames() {
     target_frames_pts_.clear();
     target_frames_index_ = 0;
     current_target_pts_ = AV_NOPTS_VALUE;
-    drop_output_until_target_ = false;
     if (!video_stream_ || !input_fmt_ctx_)
         return;
     if (extract_frames_frame_indexes_.empty() && extract_frames_n_frames_ <= 0 && extract_frames_fps_ <= 0)
@@ -1486,7 +1484,7 @@ int CFFDecoder::handle_output_data(Task &task, int index, AVPacket *pkt,
                 return 0;
         }
 
-        if (index == 0 && got_output && drop_output_until_target_ &&
+        if (index == 0 && got_output && seek_decode_mode_enabled_ && 
             current_target_pts_ != AV_NOPTS_VALUE) {
             bool target_found = false;
             int64_t compare_pts = best_effort_timestamp;
@@ -1509,18 +1507,19 @@ int CFFDecoder::handle_output_data(Task &task, int index, AVPacket *pkt,
                                     ? current_target_pts_ - compare_pts
                                     : compare_pts - current_target_pts_;
                     if (diff_pts < diff_threshold)
-                        // || (target_frames_index_ == target_frames_pts_.size() - 1 && diff_pts < frame_duration_pts)) 
                         target_found = true;
                 }
             }
-            if (!target_found)
-                return 0; // drop
-            BMFLOG_NODE(BMF_DEBUG, node_id_) 
-                << "Target frame found" 
-                << ", Target PTS: " << current_target_pts_ 
-                << ", Actual PTS: " << compare_pts;
-            drop_output_until_target_ = false;
-            push_data_flag_ = true;
+            if (target_found) {
+                BMFLOG_NODE(BMF_DEBUG, node_id_) 
+                    << "Target frame found" 
+                    << ", Target PTS: " << current_target_pts_ 
+                    << ", Actual PTS: " << compare_pts;
+                if (++target_frames_index_ < target_frames_pts_.size()) // go to next target
+                    current_target_pts_ = target_frames_pts_[target_frames_index_];
+                push_data_flag_ = true;
+            } else // drop
+                return 0; 
         }
 
         frame = av_frame_clone(decoded_frm_);
@@ -2767,14 +2766,9 @@ int CFFDecoder::process(Task &task) {
         audio_end_ = true;
     }
 
-    const bool target_frames_mode_enabled = !target_frames_pts_.empty() && video_stream_;
-    if (target_frames_mode_enabled &&
-        target_frames_index_ < target_frames_pts_.size()) {
-        // update state
+    seek_decode_mode_enabled_ = !disable_seek_ && video_stream_ && !target_frames_pts_.empty();
+    if (seek_decode_mode_enabled_ && target_frames_index_ < target_frames_pts_.size()) {
         current_target_pts_ = target_frames_pts_[target_frames_index_];
-        drop_output_until_target_ = true; // flag for handle_output_data
-
-        // seek logic
         int64_t current_pts = AV_NOPTS_VALUE;
         if (ist_[0].next_dts != AV_NOPTS_VALUE) {
             current_pts = av_rescale_q(ist_[0].next_dts, AV_TIME_BASE_Q,
@@ -2852,17 +2846,15 @@ int CFFDecoder::process(Task &task) {
                 task_done_ = true;
             }
             break;
+        } else if (seek_decode_mode_enabled_ && target_frames_index_ >= target_frames_pts_.size()) {
+            task.fill_output_packet(0, Packet::generate_eof_packet());
+            task.fill_output_packet(1, Packet::generate_eof_packet());
+            video_end_ = true;
+            audio_end_ = true;
+            task.set_timestamp(DONE);
+            task_done_ = true;
+            break;
         } else if (push_data_flag_) {
-            if (target_frames_mode_enabled && 
-                ++target_frames_index_ >= target_frames_pts_.size()) {
-                BMFLOG_NODE(BMF_DEBUG, node_id_) << "All target frames decoded";
-                task.fill_output_packet(0, Packet::generate_eof_packet());
-                task.fill_output_packet(1, Packet::generate_eof_packet());
-                video_end_ = true;
-                audio_end_ = true;
-                task.set_timestamp(DONE);
-                task_done_ = true;
-            }
             break;
         }
     }

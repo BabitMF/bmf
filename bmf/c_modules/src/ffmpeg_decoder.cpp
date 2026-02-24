@@ -82,6 +82,8 @@ CFFDecoder::CFFDecoder(int node_id, JsonParam option) {
     extract_frames_device_ = "";
     stream_frame_number_ = 0;
     current_target_pts_ = AV_NOPTS_VALUE;
+    last_keyframe_pts_ = AV_NOPTS_VALUE;
+    last_keyframe_duration_pts_ = AV_NOPTS_VALUE;
 
     /** @addtogroup DecM
      * @{
@@ -1514,13 +1516,19 @@ int CFFDecoder::handle_output_data(Task &task, int index, AVPacket *pkt,
                 BMFLOG_NODE(BMF_DEBUG, node_id_) 
                     << "Target frame found" 
                     << ", Target PTS: " << current_target_pts_ 
-                    << ", Actual PTS: " << compare_pts;
+                    << ", Actual PTS: " << compare_pts
+                    << ", Num decodes sent before target: " << num_sent_before_target_
+                    << ", Num decodes recv before target: " << num_recv_before_target_;
                 current_target_pts_ = (++target_frames_index_ < target_frames_pts_.size()) // next target
                     ? target_frames_pts_[target_frames_index_]
                     : AV_NOPTS_VALUE;
+                num_sent_before_target_ = 0;
+                num_recv_before_target_ = 0;
                 push_data_flag_ = true;
-            } else // drop
+            } else { // drop
+                num_recv_before_target_++;
                 return 0;
+            }
         }
 
         frame = av_frame_clone(decoded_frm_);
@@ -2033,7 +2041,7 @@ int CFFDecoder::decode_send_packet(Task &task, AVPacket *pkt, int *got_frame) {
             if (index == 0 && pkt && pkt->size != 0)
                 pkt->dts = dts; // "ffmpeg.c probably shouldn't do this", but
                                 // actually it influence
-
+            num_sent_before_target_++;
             ret = avcodec_send_packet(avctx, in_pkt);
             if (ret < 0 && ret != AVERROR_EOF) { //&& ret != AVERROR(EAGAIN)) {
                 std::string tmp = (in_pkt->stream_index == video_stream_index_)
@@ -2770,47 +2778,66 @@ int CFFDecoder::process(Task &task) {
     seek_decode_mode_enabled_ = !disable_seek_ && video_stream_ && !target_frames_pts_.empty();
     if (seek_decode_mode_enabled_ && target_frames_index_ < target_frames_pts_.size()) {
         current_target_pts_ = target_frames_pts_[target_frames_index_];
-        int64_t current_pts = AV_NOPTS_VALUE;
-        if (ist_[0].next_dts != AV_NOPTS_VALUE) {
-            current_pts = av_rescale_q(ist_[0].next_dts, AV_TIME_BASE_Q,
-                                        video_stream_->time_base);
-        }
-        size_t gop_size = video_decode_ctx_->gop_size;
-        AVRational frame_rate = av_guess_frame_rate(input_fmt_ctx_, video_stream_, NULL);
-        if (frame_rate.num <= 0 || frame_rate.den <= 0)
-            frame_rate = video_stream_->avg_frame_rate;
-        if (frame_rate.num <= 0 || frame_rate.den <= 0) 
-            frame_rate = av_make_q(30, 1); // default guess 30fps
-        AVRational frame_duration_tb = {frame_rate.den, frame_rate.num};
-        int64_t frame_duration_pts = av_rescale_q(1, frame_duration_tb, video_stream_->time_base);
-        int64_t seek_threshold_pts = (frame_duration_pts * gop_size) / 2; // seek if target frame is further than half GOP size
-        int64_t diff_pts = 0;
-        if (current_pts != AV_NOPTS_VALUE) {
-            diff_pts = (current_target_pts_ > current_pts)
-                            ? current_target_pts_ - current_pts
-                            : INT64_MAX; // should never be the case
-        }
-        bool need_seek = (current_pts == AV_NOPTS_VALUE || current_target_pts_ < current_pts || diff_pts > seek_threshold_pts) && !disable_seek_;
-        if (need_seek) {
-            BMFLOG_NODE(BMF_DEBUG, node_id_)
-                    << "ffmpeg_decoder seeking to target pts: " << current_target_pts_;
-            int s_ret = avformat_seek_file(input_fmt_ctx_,
+        if (last_keyframe_pts_ != AV_NOPTS_VALUE) {
+            auto seek = [&](int64_t target_pts) {
+                BMFLOG_NODE(BMF_DEBUG, node_id_)
+                        << "ffmpeg_decoder seeking to target pts: " << target_pts;
+                int s_ret = avformat_seek_file(input_fmt_ctx_,
                                             video_stream_index_, INT64_MIN,
-                                            current_target_pts_, current_target_pts_,
+                                            target_pts, target_pts,
                                             AVSEEK_FLAG_BACKWARD);
-            if (s_ret < 0) {
-                BMFLOG_NODE(BMF_ERROR, node_id_)
-                    << "ffmpeg_decoder seek failed to pts: " << current_target_pts_;
-            } else {
-                if (video_decode_ctx_)
-                    avcodec_flush_buffers(video_decode_ctx_);
-                if (audio_decode_ctx_)
-                    avcodec_flush_buffers(audio_decode_ctx_);
-                ist_[0].next_dts = AV_NOPTS_VALUE;
-                ist_[0].next_pts = AV_NOPTS_VALUE;
-                ist_[1].next_dts = AV_NOPTS_VALUE;
-                ist_[1].next_pts = AV_NOPTS_VALUE;
-                last_ts_ = AV_NOPTS_VALUE;
+                num_seeks_++;
+                if (s_ret < 0) {
+                    BMFLOG_NODE(BMF_ERROR, node_id_)
+                        << "ffmpeg_decoder seek failed to pts: " << target_pts;
+                } else {
+                    if (video_decode_ctx_)
+                        avcodec_flush_buffers(video_decode_ctx_);
+                    if (audio_decode_ctx_)
+                        avcodec_flush_buffers(audio_decode_ctx_);
+                    ist_[0].next_dts = AV_NOPTS_VALUE;
+                    ist_[0].next_pts = AV_NOPTS_VALUE;
+                    ist_[1].next_dts = AV_NOPTS_VALUE;
+                    ist_[1].next_pts = AV_NOPTS_VALUE;
+                    last_ts_ = AV_NOPTS_VALUE;
+                }
+                return s_ret;
+            };
+            int64_t last_pts = ist_[0].next_pts != AV_NOPTS_VALUE ? 
+                av_rescale_q(ist_[0].next_pts, AV_TIME_BASE_Q, video_stream_->time_base) : last_keyframe_pts_;
+            int keyframe_index = av_index_search_timestamp(video_stream_, current_target_pts_, AVSEEK_FLAG_BACKWARD);
+            if (keyframe_index >= 0) { // media container has keyframe indexes
+                int64_t next_keyframe_pts = video_stream_->index_entries[keyframe_index].timestamp;
+                if (next_keyframe_pts <= last_keyframe_pts_ && current_target_pts_ > last_pts) { // target is ahead in the current GOP, just keep decoding
+                    BMFLOG_NODE(BMF_DEBUG, node_id_)
+                        << "ffmpeg_decoder target frame is ahead in the current GOP, just keep decoding\n"
+                        << "  last_keyframe_pts_: " << last_keyframe_pts_ << "\n"
+                        << "  last_pts: " << last_pts << "\n"
+                        << "  current_target_pts_: " << current_target_pts_ << "\n"
+                        << "  next_keyframe_pts: " << next_keyframe_pts;
+                } else {
+                    BMFLOG_NODE(BMF_DEBUG, node_id_)
+                        << "ffmpeg_decoder need to seek backwards OR target frame is in a future GOP\n"
+                        << "  last_keyframe_pts_: " << last_keyframe_pts_ << "\n"
+                        << "  last_pts: " << last_pts << "\n"
+                        << "  current_target_pts_: " << current_target_pts_ << "\n"
+                        << "  next_keyframe_pts: " << next_keyframe_pts;
+                    seek(current_target_pts_);
+                }
+            } else if (current_target_pts_ <= last_pts) { // target is overrun, need to seek backwards
+                BMFLOG_NODE(BMF_DEBUG, node_id_)
+                    << "ffmpeg_decoder target frame is overrun, need to seek backwards\n"
+                    << "  last_pts: " << last_pts << "\n"
+                    << "  current_target_pts_: " << current_target_pts_;
+                seek(current_target_pts_);
+            } else if (last_keyframe_duration_pts_ != AV_NOPTS_VALUE && // No index found, use heuristic based on last keyframe duration
+                    (current_target_pts_ > last_keyframe_pts_ + last_keyframe_duration_pts_)) { 
+                BMFLOG_NODE(BMF_DEBUG, node_id_)
+                    << "ffmpeg_decoder need to seek based on last keyframe duration heuristic\n" 
+                    << "  last_keyframe_pts_: " << last_keyframe_pts_ << "\n"
+                    << "  last_keyframe_duration_pts_: " << last_keyframe_duration_pts_ << "\n"
+                    << "  current_target_pts_: " << current_target_pts_;
+                seek(current_target_pts_);
             }
         }
     }
@@ -2834,6 +2861,11 @@ int CFFDecoder::process(Task &task) {
         }
 
         if (ret >= 0 && check_valid_packet(&pkt, task)) {
+            if (pkt.stream_index == video_stream_index_ && pkt.flags & AV_PKT_FLAG_KEY) {
+                if (last_keyframe_pts_ != AV_NOPTS_VALUE)
+                    last_keyframe_duration_pts_ = pkt.pts - last_keyframe_pts_;
+                last_keyframe_pts_ = pkt.pts;
+            }
             ret = decode_send_packet(task, &pkt, &got_frame);
             if (ret < 0 && ret != AVERROR(EAGAIN) && ret != AVERROR_EOF &&
                 !(video_end_ && audio_end_))
@@ -2860,8 +2892,11 @@ int CFFDecoder::process(Task &task) {
         }
     }
 
-    if (task_done_)
+    if (task_done_) {
+        BMFLOG_NODE(BMF_DEBUG, node_id_)
+            << "ffmpeg_decoder task done, total num seeks: " << num_seeks_;
         task.set_timestamp(DONE);
+    }
     return PROCESS_OK;
 }
 

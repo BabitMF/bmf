@@ -17,7 +17,30 @@ from base_test.base_test_case import BaseTestCase
 
 import bmf
 import numpy as np
+from bmf import bmf_sync, Packet, Task, ProcessResult
 from decord import VideoReader, cpu
+
+def bmf_sync_decode_packets(decode_param, stream_name="video"):
+    decoder = bmf_sync.sync_module(
+        "c_ffmpeg_decoder",
+        decode_param,
+        [],
+        [0]
+    )
+    decoder.init()
+    packets = []
+    while True:
+        task = Task(0, decoder.get_input_streams(), decoder.get_output_streams())
+        result = decoder.process(task)
+        q = task.get_outputs()[0]
+        while not q.empty():
+            pkt = q.get()
+            if pkt.is_(bmf.VideoFrame):
+                packets.append(pkt)
+        if task.timestamp == bmf.Timestamp.DONE:
+            break
+    decoder.close()
+    return packets
 
 def bmf_decode_packets(decode_param, stream_name="video"):
     graph = bmf.graph()
@@ -28,17 +51,18 @@ def bmf_decode_packets(decode_param, stream_name="video"):
         if pkt.is_(bmf.VideoFrame):
             packets.append(pkt)
     return packets
-def bmf_decode_timestamps(decode_param, stream_name="video"):
-    packets = bmf_decode_packets(decode_param, stream_name)
+
+def bmf_decode_timestamps(decode_param, stream_name="video", sync_module=True):
+    packets = bmf_sync_decode_packets(decode_param, stream_name) if sync_module else bmf_decode_packets(decode_param, stream_name)
     return [pkt.timestamp for pkt in packets]
 
-def bmf_decode_videoframes(decode_param, stream_name="video"):
-    packets = bmf_decode_packets(decode_param, stream_name)
+def bmf_decode_videoframes(decode_param, stream_name="video", sync_module=True):
+    packets = bmf_sync_decode_packets(decode_param, stream_name) if sync_module else bmf_decode_packets(decode_param, stream_name)
     return [pkt.get(bmf.VideoFrame) for pkt in packets]
 
-def bmf_decode_videoframes_with_metadata(decode_param, stream_name="video"):
+def bmf_decode_videoframes_with_metadata(decode_param, stream_name="video", sync_module=True):
     """Extract videoframes along with their dimensions and timestamps"""
-    packets = bmf_decode_packets(decode_param, stream_name)
+    packets = bmf_sync_decode_packets(decode_param, stream_name) if sync_module else bmf_decode_packets(decode_param, stream_name)
     frames = []
     for pkt in packets:
         vf = pkt.get(bmf.VideoFrame)
@@ -201,7 +225,12 @@ class TestDecordDecoder(BaseTestCase):
             "speedup": 1.0
         })
         
-        for n_frames in [1, 5, 10, 30, 60, 120]:
+        if os.getenv("PERF_COMPREHENSIVE", "false").lower() == "true":
+            n_frames_opts = [1, 5, 10, 20, 30, 60, 120]
+        else:
+            n_frames_opts = [1, 30, 120]
+
+        for n_frames in n_frames_opts:
             if n_frames > n_total:
                 continue
             with self.subTest(n_frames=n_frames):
@@ -229,8 +258,8 @@ class TestDecordDecoder(BaseTestCase):
                 })
                 
                 self.assertEqual(len(sampling_timestamps), n_frames)
-                # if n_frames < n_total * 0.5:
-                #     self.assertLess(sampling_time, naive_time)
+                if n_frames < n_total * 0.5:
+                    self.assertLess(sampling_time, naive_time)
 
     @timeout_decorator.timeout(seconds=240)
     def test_ffmpeg_filter_param_fps(self):
@@ -244,7 +273,7 @@ class TestDecordDecoder(BaseTestCase):
                 }
                 # Test timestamps
                 timestamps = bmf_decode_timestamps(decode_param)
-                vr, n_total, avg_fps, duration = self._get_vr_meta(path)
+                vr, n_total, avg_fps, duration = self._get_vr_meta(short_video_path)
                 expected_frames = int(duration * fps)
                 self.assertGreater(len(timestamps), 0)
                 self.assertLessEqual(len(timestamps), expected_frames + 2)
@@ -254,7 +283,7 @@ class TestDecordDecoder(BaseTestCase):
                 self.assertEqual(len(frames), len(timestamps))
                 
                 # Verify frame dimensions match original video
-                original_vr = VideoReader(path, ctx=cpu(0))
+                original_vr = VideoReader(short_video_path, ctx=cpu(0))
                 original_width, original_height = original_vr[0].shape[1], original_vr[0].shape[0]
                 
                 for frame_info in frames:
@@ -263,7 +292,7 @@ class TestDecordDecoder(BaseTestCase):
                     self.assertIsNotNone(frame_info['frame'])
                     self.assertIsInstance(frame_info['timestamp'], (int, float))
                 
-                print(f"FFmpeg FPS {fps}: {len(timestamps)} frames from {name}, dimensions verified")
+                print(f"FFmpeg FPS {fps}: {len(timestamps)} frames, dimensions verified")
 
     @timeout_decorator.timeout(seconds=240)
     def test_ffmpeg_filter_param_crop(self):
@@ -378,9 +407,9 @@ class TestDecordDecoder(BaseTestCase):
             
             # Print sampling comparison table
             if "sampling_comparison" in grouped_data:
-                print("\n## Sampling Comparison (BMF vs Decord)")
+                print("\nSampling Comparison (BMF vs Decord):")
                 print("| Video | Mode | Params | Frames | BMF Time (s) | Decord Time (s) | Ratio |")
-                print("|-------|------|--------|--------|--------------|----------------|-------|")
+                print("|-------|------|--------|--------|--------------|-----------------|-------|")
                 
                 for entry in grouped_data["sampling_comparison"]:
                     video = entry["video"]
@@ -395,7 +424,7 @@ class TestDecordDecoder(BaseTestCase):
             
             # Print naive vs sampling performance table
             if "naive_vs_sampling" in grouped_data:
-                print("\n## Naive vs N-Frames Seek-Based Sampling Performance")
+                print("\nNaive vs N-Frames Seek-Based Sampling Performance:")
                 print("| Video | Mode | Params | Frames | BMF Time (s) | Speedup |")
                 print("|-------|------|--------|--------|--------------|---------|")
                 
@@ -408,16 +437,6 @@ class TestDecordDecoder(BaseTestCase):
                     speedup = f"{entry.get('speedup', 0):.2f}x" if entry.get('speedup') else "N/A"
                     
                     print(f"| {video} | {mode} | {params} | {frames} | {bmf_time} | {speedup} |")
-            
-            print("\n" + "="*80)
-            print("End of Performance Summary")
-            print("="*80 + "\n")
 
 if __name__ == "__main__":
-    # Run tests and ensure performance data is printed
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestDecordDecoder)
-    runner = unittest.TextTestRunner(verbosity=2)
-    result = runner.run(suite)
-    
-    # Print performance summary after tests
-    TestDecordDecoder.tearDownClass()
+    unittest.main()

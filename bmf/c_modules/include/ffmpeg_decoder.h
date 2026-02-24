@@ -149,12 +149,17 @@ class CFFDecoder : public Module {
     std::thread exec_thread_;
     Task task_;
     bool disable_seek_ = false;
+    size_t num_seeks_ = 0;
+    size_t num_sent_before_target_ = 0;
+    size_t num_recv_before_target_ = 0;
     double extract_frames_fps_ = 0;
     int extract_frames_n_frames_ = 0;
     std::vector<int> extract_frames_frame_indexes_ = {};
     std::vector<int64_t> target_frames_pts_ = {};
     size_t target_frames_index_ = 0;
-    int64_t current_target_pts_ = AV_NOPTS_VALUE;
+    int64_t current_target_pts_ = 0;
+    int64_t last_keyframe_pts_ = 0;
+    int64_t last_keyframe_duration_pts_ = 0;
     bool seek_decode_mode_enabled_ = false;
     std::string extract_frames_device_;
     std::shared_ptr<VideoSync> video_sync_ = NULL;

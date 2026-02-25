@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import unittest
+import subprocess as sp
 
 if os.name == "nt":
     class timeout_decorator:
@@ -14,6 +15,7 @@ else:
 sys.path.append("../../test/")
 
 from base_test.base_test_case import BaseTestCase
+from base_test.media_info import MediaInfo
 
 import bmf
 import numpy as np
@@ -74,53 +76,70 @@ def bmf_decode_videoframes_with_metadata(decode_param, stream_name="video", sync
         })
     return frames
 
+TEST_FILES_DIR = "../../../output/files"
+
 class TestDecordDecoder(BaseTestCase):
     # Performance data storage
     performance_data = []
     
+    def setUp(self):
+        super().setUp()
+        ffpmeg_path = os.getenv("FFMPEG_PATH", "ffmpeg")
+        short_video_path = os.path.join(TEST_FILES_DIR, "big_bunny_10s_30fps.mp4")
+        if not os.path.exists(short_video_path):
+            raise FileNotFoundError(short_video_path)
+        vfr_video_path = os.path.join(TEST_FILES_DIR, "big_bunny_10s_30fps_vfr.mp4")
+        if not os.path.exists(vfr_video_path):
+            sp.run([ffpmeg_path, "-i", short_video_path, "-vf", "mpdecimate", "-vsync", "vfr", vfr_video_path], check=True)
+
     def _get_video_paths(self):
-        files_dir = "../../../output/files"
-        short_video = os.path.join(files_dir, "big_bunny_10s_30fps.mp4")
-        long_video = os.path.join(files_dir, "big_bunny_1min_30fps.mp4")
+        short_video = os.path.join(TEST_FILES_DIR, "big_bunny_10s_30fps.mp4")
+        long_video = os.path.join(TEST_FILES_DIR, "big_bunny_1min_30fps.mp4")
+        vfr_video = os.path.join(TEST_FILES_DIR, "big_bunny_10s_30fps_vfr.mp4")
         if not os.path.exists(short_video):
             raise FileNotFoundError(short_video)
         if not os.path.exists(long_video):
             raise FileNotFoundError(long_video)
-        return {"10s": short_video, "1min": long_video}
+        if not os.path.exists(vfr_video):
+            raise FileNotFoundError(vfr_video)
+        return {"10s": short_video, "1min": long_video, "10s_vfr": vfr_video}
 
-    def _get_vr_meta(self, video_path):
-        vr = VideoReader(video_path, ctx=cpu(0))
-        n_total = len(vr)
-        avg_fps = max(vr.get_avg_fps(), 1e-6)
-        duration = n_total / avg_fps if avg_fps > 0 else 0.0
-        return vr, n_total, avg_fps, duration
+    def _get_meta(self, video_path):
+        mi = MediaInfo(video_path)
+        duration = mi.get_duration()
+        v_stream = mi.av_out_info.get('v_stream', {})
+        n_total = int(v_stream.get('nb_frames', 0))
+        avg_fps = mi.parse_fraction(v_stream.get('avg_frame_rate', '0/1'))
+        if n_total == 0 and avg_fps > 0 and duration > 0:
+            n_total = int(duration * avg_fps)
+        return n_total, avg_fps, duration
 
-    def _indices_for_fps(self, n_total, avg_fps, fps):
-        if n_total <= 0 or avg_fps <= 0 or fps <= 0:
+    def _indices_for_fps(self, duration, n_total, fps):
+        if duration <= 0 or n_total <= 0 or fps <= 0:
             return np.array([0], dtype=np.int64)
-        duration = n_total / avg_fps
         count = int(duration * fps) + 1
         times = np.arange(count, dtype=np.float64) / fps
-        indices = np.rint(times * avg_fps).astype(np.int64)
+        indices = np.rint(times * (n_total / duration)).astype(np.int64)
         indices = indices[indices < n_total]
         return np.unique(indices)
 
-    def _indices_for_n_frames(self, n_total, n_frames):
-        if n_frames <= 1 or n_total <= 0:
+    def _indices_for_n_frames(self, duration, n_total, n_frames):
+        if n_frames <= 1 or n_total <= 0 or duration <= 0:
             return np.array([0], dtype=np.int64)
-        indices = np.linspace(0, max(n_total - 1, 0), n_frames).astype(np.int64)
+        times = np.linspace(0, duration, n_frames)
+        indices = np.rint(times * (n_total - 1) / duration).astype(np.int64)
         return np.unique(indices)
 
     def _compare_bmf_vs_decord(self, video_path, mode, params):
-        vr, n_total, avg_fps, duration = self._get_vr_meta(video_path)
+        n_total, avg_fps, duration = self._get_meta(video_path)
         if mode == "fps":
             fps = params["fps"]
-            indices = self._indices_for_fps(n_total, avg_fps, fps).tolist()
+            indices = self._indices_for_fps(duration, n_total, fps).tolist()
             extract_params = {"fps": fps}
             tol_us = int(max((1.5 / max(fps, 1e-6)) * 1e6, 20000))
         elif mode == "n_frames":
             n = params["n_frames"]
-            indices = self._indices_for_n_frames(n_total, n).tolist()
+            indices = self._indices_for_n_frames(duration, n_total, n).tolist()
             extract_params = {"n_frames": n}
             tol_us = int(max((1.5 / avg_fps) * 1e6, 20000))
         elif mode == "indices":
@@ -131,6 +150,7 @@ class TestDecordDecoder(BaseTestCase):
             raise ValueError("unknown mode")
 
         decord_start = time.perf_counter()
+        vr = VideoReader(video_path, ctx=cpu(0))
         vr.get_batch(indices)
         decord_time = time.perf_counter() - decord_start
         ts_pair = vr.get_frame_timestamp(indices)
@@ -140,8 +160,22 @@ class TestDecordDecoder(BaseTestCase):
         bmf_ts_us = self._bmf_extract_timestamps_us(video_path, extract_params)
         bmf_time = time.perf_counter() - bmf_start
 
+        if len(bmf_ts_us) != len(decord_ts_us):
+            print(f"Length mismatch: BMF {len(bmf_ts_us)} vs Decord {len(decord_ts_us)}")
+            print(f"BMF timestamps: {bmf_ts_us}")
+            print(f"Decord timestamps: {decord_ts_us}")
         self.assertEqual(len(bmf_ts_us), len(decord_ts_us))
         diffs = np.abs(np.array(bmf_ts_us, dtype=np.int64) - decord_ts_us)
+        if not np.all(diffs <= tol_us):
+            max_diff = np.max(diffs)
+            print(f"Timestamp mismatch: max diff {max_diff} > tol {tol_us}")
+            print(f"BMF timestamps: {bmf_ts_us}")
+            print(f"Decord timestamps: {decord_ts_us}")
+            print(f"Diffs: {diffs}")
+            mismatch_indices = np.where(diffs > tol_us)[0]
+            print(f"Mismatch indices: {mismatch_indices}")
+            for idx in mismatch_indices[:10]:  # Limit output to first 10 mismatches
+                print(f"Index {idx}: BMF {bmf_ts_us[idx]} vs Decord {decord_ts_us[idx]} (diff {diffs[idx]})")
         self.assertTrue(np.all(diffs <= tol_us))
         self.assertTrue(decord_time > 0)
         self.assertTrue(bmf_time > 0)
@@ -185,12 +219,16 @@ class TestDecordDecoder(BaseTestCase):
     def test_fps_sampling_matches_decord(self):
         for name, path in self._get_video_paths().items():
             for fps in [0.25, 0.5, 1.0, 2.0]:
+                if "vfr" in name: 
+                    continue # the fps test is not applicable for vfr videos
                 with self.subTest(video=name, fps=fps):
                     self._compare_bmf_vs_decord(path, "fps", {"fps": fps})
 
     @timeout_decorator.timeout(seconds=240)
     def test_n_frames_sampling_matches_decord(self):
         for name, path in self._get_video_paths().items():
+            if "vfr" in name: 
+                continue # the n_frames test is not applicable for vfr videos
             for n in [1, 2, 5, 10, 30, 100]:
                 with self.subTest(video=name, n_frames=n):
                     self._compare_bmf_vs_decord(path, "n_frames", {"n_frames": n})
@@ -206,7 +244,7 @@ class TestDecordDecoder(BaseTestCase):
     def test_naive_vs_sampling_performance(self):
         video_paths = self._get_video_paths()
         long_video_path = video_paths["1min"]
-        vr, n_total, avg_fps, duration = self._get_vr_meta(long_video_path)
+        n_total, avg_fps, duration = self._get_meta(long_video_path)
         naive_start = time.perf_counter()
         naive_timestamps = bmf_decode_timestamps({"input_path": long_video_path})
         naive_time = time.perf_counter() - naive_start
@@ -273,7 +311,7 @@ class TestDecordDecoder(BaseTestCase):
                 }
                 # Test timestamps
                 timestamps = bmf_decode_timestamps(decode_param)
-                vr, n_total, avg_fps, duration = self._get_vr_meta(short_video_path)
+                n_total, avg_fps, duration = self._get_meta(short_video_path)
                 expected_frames = int(duration * fps)
                 self.assertGreater(len(timestamps), 0)
                 self.assertLessEqual(len(timestamps), expected_frames + 2)
@@ -372,7 +410,7 @@ class TestDecordDecoder(BaseTestCase):
                 # Test timestamps
                 timestamps = bmf_decode_timestamps(decode_param)
                 self.assertGreater(len(timestamps), 0)
-                vr, n_total, avg_fps, duration = self._get_vr_meta(path)
+                n_total, avg_fps, duration = self._get_meta(path)
                 expected_frames = int(duration * 10)
                 self.assertLessEqual(len(timestamps), expected_frames + 2)
                 
@@ -410,7 +448,6 @@ class TestDecordDecoder(BaseTestCase):
                 print("\nSampling Comparison (BMF vs Decord):")
                 print("| Video | Mode | Params | Frames | BMF Time (s) | Decord Time (s) | Ratio |")
                 print("|-------|------|--------|--------|--------------|-----------------|-------|")
-                
                 for entry in grouped_data["sampling_comparison"]:
                     video = entry["video"]
                     mode = entry["mode"]
@@ -419,7 +456,6 @@ class TestDecordDecoder(BaseTestCase):
                     bmf_time = f"{entry['bmf_time_s']:.3f}"
                     decord_time = f"{entry['decord_time_s']:.3f}"
                     ratio = f"{entry['ratio']:.2f}"
-                    
                     print(f"| {video} | {mode} | {params} | {frames} | {bmf_time} | {decord_time} | {ratio} |")
             
             # Print naive vs sampling performance table
@@ -427,7 +463,6 @@ class TestDecordDecoder(BaseTestCase):
                 print("\nNaive vs N-Frames Seek-Based Sampling Performance:")
                 print("| Video | Mode | Params | Frames | BMF Time (s) | Speedup |")
                 print("|-------|------|--------|--------|--------------|---------|")
-                
                 for entry in grouped_data["naive_vs_sampling"]:
                     video = entry["video"]
                     mode = entry["mode"]
@@ -435,7 +470,6 @@ class TestDecordDecoder(BaseTestCase):
                     frames = entry["frames_extracted"]
                     bmf_time = f"{entry['bmf_time_s']:.3f}"
                     speedup = f"{entry.get('speedup', 0):.2f}x" if entry.get('speedup') else "N/A"
-                    
                     print(f"| {video} | {mode} | {params} | {frames} | {bmf_time} | {speedup} |")
 
 if __name__ == "__main__":

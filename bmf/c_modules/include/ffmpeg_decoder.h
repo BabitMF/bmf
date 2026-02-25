@@ -219,6 +219,7 @@ class CFFDecoder : public Module {
     int64_t get_start_time();
     int extract_frames(AVFrame *frame, std::vector<AVFrame *> &output_frames);
     void init_target_frames();
+    int seek_start(bool force = false);
 
 #ifdef BMF_USE_MEDIACODEC
     int init_android_vm();

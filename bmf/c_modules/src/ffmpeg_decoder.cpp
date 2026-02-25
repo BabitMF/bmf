@@ -736,6 +736,39 @@ int CFFDecoder::codec_context(int *stream_idx, AVCodecContext **dec_ctx,
     return 0;
 }
 
+int CFFDecoder::seek_start(bool force) {
+    int ret = 0;
+    int64_t timestamp = (start_time_ == AV_NOPTS_VALUE) ? 0 : start_time_;
+    if (input_fmt_ctx_->start_time != AV_NOPTS_VALUE)
+        timestamp += input_fmt_ctx_->start_time;
+    if (start_time_ != AV_NOPTS_VALUE || force) {
+        int64_t seek_timestamp = timestamp;
+        if (!(input_fmt_ctx_->iformat->flags & AVFMT_SEEK_TO_PTS)) {
+            int dts_heuristic = 0;
+            for (int i = 0; i < input_fmt_ctx_->nb_streams; i++) {
+                const AVCodecParameters *par =
+                    input_fmt_ctx_->streams[i]->codecpar;
+                if (par->video_delay) {
+                    dts_heuristic = 1;
+                    break;
+                }
+            }
+            if (dts_heuristic) {
+                seek_timestamp -= 3 * AV_TIME_BASE / 23;
+            }
+        }
+        ret = avformat_seek_file(input_fmt_ctx_, -1, INT64_MIN, seek_timestamp,
+                                 seek_timestamp, AVSEEK_FLAG_BACKWARD);
+        if (ret < 0) {
+            av_log(NULL, AV_LOG_WARNING,
+                   "%s: could not seek to position %0.3f\n",
+                   input_path_.c_str(), (double)timestamp / AV_TIME_BASE);
+        }
+    }
+    ts_offset_ = copy_ts_ ? 0 : -timestamp;
+    return ret;
+}
+
 int CFFDecoder::init_filtergraph(int index, AVFrame *frame) {
     std::string graph_descr = "";
     std::string head_descr = "[i0_0]";
@@ -968,34 +1001,18 @@ int CFFDecoder::init_input(AVDictionary *options) {
         }
     }
 
-    int64_t timestamp = (start_time_ == AV_NOPTS_VALUE) ? 0 : start_time_;
-    if (input_fmt_ctx_->start_time != AV_NOPTS_VALUE)
-        timestamp += input_fmt_ctx_->start_time;
-    if (start_time_ != AV_NOPTS_VALUE) {
-        int64_t seek_timestamp = timestamp;
-        if (!(input_fmt_ctx_->iformat->flags & AVFMT_SEEK_TO_PTS)) {
-            int dts_heuristic = 0;
-            for (int i = 0; i < input_fmt_ctx_->nb_streams; i++) {
-                const AVCodecParameters *par =
-                    input_fmt_ctx_->streams[i]->codecpar;
-                if (par->video_delay) {
-                    dts_heuristic = 1;
-                    break;
-                }
-            }
-            if (dts_heuristic) {
-                seek_timestamp -= 3 * AV_TIME_BASE / 23;
-            }
-        }
-        ret = avformat_seek_file(input_fmt_ctx_, -1, INT64_MIN, seek_timestamp,
-                                 seek_timestamp, 0);
-        if (ret < 0) {
-            av_log(NULL, AV_LOG_WARNING,
-                   "%s: could not seek to position %0.3f\n",
-                   input_path_.c_str(), (double)timestamp / AV_TIME_BASE);
-        }
+    ret = seek_start();
+    if (ret < 0) {
+        std::string msg = "seek_start failed: " + error_msg(ret);
+        BMF_Error(BMF_TranscodeError, msg.c_str());
     }
-    ts_offset_ = copy_ts_ ? 0 : -timestamp;
+
+    int ret_video = av_find_best_stream(input_fmt_ctx_, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+    if (ret_video >= 0) {
+        video_stream_index_ = ret_video;
+        video_stream_ = input_fmt_ctx_->streams[video_stream_index_];
+        init_target_frames();
+    }
 
     if (codec_context(&video_stream_index_, &video_decode_ctx_, input_fmt_ctx_,
                       AVMEDIA_TYPE_VIDEO) >= 0) {
@@ -1005,7 +1022,6 @@ int CFFDecoder::init_input(AVDictionary *options) {
                                            video_stream_->time_base);
         }
         video_decode_ctx_->skip_frame = skip_frame_;
-        init_target_frames();
         if (max_wh_) {
             parser_ = av_parser_init(video_decode_ctx_->codec_id);
             if (!parser_) {
@@ -1013,6 +1029,8 @@ int CFFDecoder::init_input(AVDictionary *options) {
                 return -1;
             }
         }
+    } else {
+        video_stream_ = NULL;
     }
     ist_[0].next_dts = AV_NOPTS_VALUE;
     ist_[0].next_pts = AV_NOPTS_VALUE;
@@ -1251,12 +1269,31 @@ void CFFDecoder::init_target_frames() {
     int64_t frame_duration_pts = av_rescale_q(1, frame_duration_tb, video_stream_->time_base);
 
     if (!extract_frames_frame_indexes_.empty()) {
+        // for (auto index : extract_frames_frame_indexes_) {
+        //     if (index < 0)
+        //         continue;
+        //     int64_t offset_pts =
+        //         av_rescale_q(index, frame_duration_tb, video_stream_->time_base);
+        //     target_frames_pts_.push_back(start_pts + offset_pts);
+        // }
+        AVPacket *pkt = av_packet_alloc();
+        std::vector<int64_t> all_frames_pts;
+        while (av_read_frame(input_fmt_ctx_, pkt) >= 0) {
+            if (pkt->stream_index == video_stream_->index) 
+                all_frames_pts.push_back(start_pts + pkt->pts);
+        }
+        std::sort(all_frames_pts.begin(), all_frames_pts.end());
         for (auto index : extract_frames_frame_indexes_) {
-            if (index < 0)
+            if (index < 0 || index >= all_frames_pts.size())
                 continue;
-            int64_t offset_pts =
-                av_rescale_q(index, frame_duration_tb, video_stream_->time_base);
-            target_frames_pts_.push_back(start_pts + offset_pts);
+            target_frames_pts_.push_back(all_frames_pts[index]);
+        }
+        av_packet_unref(pkt);
+        av_packet_free(&pkt);
+        int ret = seek_start(true);
+        if (ret < 0) {
+            std::string msg = "seek_start failed: " + error_msg(ret);
+            BMF_Error(BMF_TranscodeError, msg.c_str());
         }
     } else if (extract_frames_n_frames_ > 0) {
         if (extract_frames_n_frames_ == 1 || video_duration_pts <= 0) {

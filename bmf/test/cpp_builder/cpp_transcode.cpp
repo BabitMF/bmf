@@ -578,7 +578,7 @@ TEST(cpp_transcode, transcode_extract_frames) {
 
     nlohmann::json decode_para = {
         {"input_path", input_file},
-        {"video_params", {{"extract_frames", {{"fps", 0.5}}}}}
+        {"video_params", {{"extract_frames", {{"fps", 0.5}, {"disable_seek", true}}}}}
         //{"video_params", {"extract_frames", { "fps", 0.5}}}
     };
     nlohmann::json encode_para = {

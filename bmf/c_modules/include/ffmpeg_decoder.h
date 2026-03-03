@@ -218,7 +218,7 @@ class CFFDecoder : public Module {
     int process_task_output_packet(int index, Packet &packet);
     int64_t get_start_time();
     int extract_frames(AVFrame *frame, std::vector<AVFrame *> &output_frames);
-    void init_target_frames();
+    void init_target_frames(AVStream *vid_stream);
     int seek_start(bool force = false);
 
 #ifdef BMF_USE_MEDIACODEC

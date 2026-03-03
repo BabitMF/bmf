@@ -1008,11 +1008,8 @@ int CFFDecoder::init_input(AVDictionary *options) {
     }
 
     int ret_video = av_find_best_stream(input_fmt_ctx_, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
-    if (ret_video >= 0) {
-        video_stream_index_ = ret_video;
-        video_stream_ = input_fmt_ctx_->streams[video_stream_index_];
-        init_target_frames();
-    }
+    if (ret_video >= 0)
+        init_target_frames(input_fmt_ctx_->streams[ret_video]);
 
     if (codec_context(&video_stream_index_, &video_decode_ctx_, input_fmt_ctx_,
                       AVMEDIA_TYPE_VIDEO) >= 0) {
@@ -1225,40 +1222,40 @@ fail:
     return err;
 }
 
-void CFFDecoder::init_target_frames() {
+void CFFDecoder::init_target_frames(AVStream *vid_stream) {
     target_frames_pts_.clear();
     target_frames_index_ = 0;
     current_target_pts_ = AV_NOPTS_VALUE;
-    if (!video_stream_ || !input_fmt_ctx_)
+    if (!vid_stream || !input_fmt_ctx_)
         return;
     if (extract_frames_frame_indexes_.empty() && extract_frames_n_frames_ <= 0 && extract_frames_fps_ <= 0)
         return;
     int64_t stream_start_pts =
-        (video_stream_->start_time != AV_NOPTS_VALUE) ? video_stream_->start_time
+        (vid_stream->start_time != AV_NOPTS_VALUE) ? vid_stream->start_time
                                                       : 0;
     int64_t start_offset_pts = 0;
     if (start_time_ != AV_NOPTS_VALUE) {
         start_offset_pts =
-            av_rescale_q(start_time_, AV_TIME_BASE_Q, video_stream_->time_base);
+            av_rescale_q(start_time_, AV_TIME_BASE_Q, vid_stream->time_base);
     }
     int64_t start_pts = stream_start_pts + start_offset_pts;
 
     int64_t video_duration_pts = 0;
     if (end_time_ > 0) {
         video_duration_pts =
-            av_rescale_q(end_time_, AV_TIME_BASE_Q, video_stream_->time_base);
-    } else if (video_stream_->duration > 0) {
-        video_duration_pts = video_stream_->duration;
+            av_rescale_q(end_time_, AV_TIME_BASE_Q, vid_stream->time_base);
+    } else if (vid_stream->duration > 0) {
+        video_duration_pts = vid_stream->duration;
     } else if (input_fmt_ctx_->duration > 0) {
         video_duration_pts = av_rescale_q(input_fmt_ctx_->duration, AV_TIME_BASE_Q,
-                                    video_stream_->time_base);
+                                    vid_stream->time_base);
     }
     if (end_time_ <= 0 && video_duration_pts > 0 && start_offset_pts > 0) {
         video_duration_pts = std::max<int64_t>(video_duration_pts - start_offset_pts, 0);
     }
-    AVRational frame_rate = av_guess_frame_rate(input_fmt_ctx_, video_stream_, NULL);
+    AVRational frame_rate = av_guess_frame_rate(input_fmt_ctx_, vid_stream, NULL);
     if (frame_rate.num <= 0 || frame_rate.den <= 0) {
-        frame_rate = video_stream_->avg_frame_rate;
+        frame_rate = vid_stream->avg_frame_rate;
     }
     if (frame_rate.num <= 0 || frame_rate.den <= 0) {
         BMFLOG_NODE(BMF_WARNING, node_id_) 
@@ -1266,20 +1263,20 @@ void CFFDecoder::init_target_frames() {
         return;
     }
     AVRational frame_duration_tb = {frame_rate.den, frame_rate.num};
-    int64_t frame_duration_pts = av_rescale_q(1, frame_duration_tb, video_stream_->time_base);
+    int64_t frame_duration_pts = av_rescale_q(1, frame_duration_tb, vid_stream->time_base);
 
     if (!extract_frames_frame_indexes_.empty()) {
         // for (auto index : extract_frames_frame_indexes_) {
         //     if (index < 0)
         //         continue;
         //     int64_t offset_pts =
-        //         av_rescale_q(index, frame_duration_tb, video_stream_->time_base);
+        //         av_rescale_q(index, frame_duration_tb, vid_stream->time_base);
         //     target_frames_pts_.push_back(start_pts + offset_pts);
         // }
         AVPacket *pkt = av_packet_alloc();
         std::vector<int64_t> all_frames_pts;
         while (av_read_frame(input_fmt_ctx_, pkt) >= 0) {
-            if (pkt->stream_index == video_stream_->index) 
+            if (pkt->stream_index == vid_stream->index) 
                 all_frames_pts.push_back(start_pts + pkt->pts);
         }
         std::sort(all_frames_pts.begin(), all_frames_pts.end());
@@ -1314,7 +1311,7 @@ void CFFDecoder::init_target_frames() {
         }
         AVRational sample_duration_tb = {fps_rate.den, fps_rate.num};
         int64_t step =
-            av_rescale_q(1, sample_duration_tb, video_stream_->time_base);
+            av_rescale_q(1, sample_duration_tb, vid_stream->time_base);
         if (step <= 0)
             return;
         if (video_duration_pts <= 0) {

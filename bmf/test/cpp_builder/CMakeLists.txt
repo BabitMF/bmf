@@ -1,6 +1,8 @@
 
 file(GLOB SRCS *.cpp *.h)
 
+find_package(OpenSSL 3.0 REQUIRED)
+
 add_executable(test_cpp_builder ${SRCS})
 
 target_link_libraries(test_cpp_builder
@@ -13,12 +15,12 @@ if(WIN32)
     target_link_directories(test_cpp_builder PRIVATE $ENV{WIN_XCOMPILE_ROOT}/$ENV{WIN_XCOMPILE_ARCH}/usr/lib)
     target_link_libraries(test_cpp_builder
         PRIVATE
-        libcrypto libssl
+        OpenSSL::Crypto OpenSSL::SSL
     )
 else()
     target_link_libraries(test_cpp_builder
         PRIVATE
-        crypto ssl
+        OpenSSL::Crypto OpenSSL::SSL
     )
 endif()
 

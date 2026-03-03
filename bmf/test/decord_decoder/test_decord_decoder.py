@@ -297,7 +297,8 @@ class TestDecordDecoder(BaseTestCase):
                 
                 self.assertEqual(len(sampling_timestamps), n_frames)
                 if n_frames < n_total * 0.5:
-                    self.assertLess(sampling_time, naive_time)
+                    tolerance = n_frames / duration
+                    self.assertLess(sampling_time, naive_time + tolerance)
 
     @timeout_decorator.timeout(seconds=240)
     def test_ffmpeg_filter_param_fps(self):

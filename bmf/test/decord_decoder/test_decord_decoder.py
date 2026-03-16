@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import unittest
+import psutil
 import subprocess as sp
 
 if os.name == "nt":
@@ -21,6 +22,14 @@ import bmf
 import numpy as np
 from bmf import bmf_sync, Packet, Task, ProcessResult
 from decord import VideoReader, cpu
+
+def get_total_cpu_utilization(n_seconds=None):
+    # n_seconds acts as the 'interval' for the measurement
+    # If None, it returns the utilization since the last call
+    core_percentages = psutil.cpu_percent(interval=n_seconds, percpu=True)
+    # Summing the list of percentages from each core
+    total_sum = sum(core_percentages)
+    return total_sum
 
 def bmf_sync_decode_packets(decode_param, stream_name="video"):
     decoder = bmf_sync.sync_module(
@@ -149,16 +158,20 @@ class TestDecordDecoder(BaseTestCase):
         else:
             raise ValueError("unknown mode")
 
+        get_total_cpu_utilization() # Initialize
         decord_start = time.perf_counter()
         vr = VideoReader(video_path, ctx=cpu(0))
         vr.get_batch(indices)
         decord_time = time.perf_counter() - decord_start
+        decord_cpu = get_total_cpu_utilization()
         ts_pair = vr.get_frame_timestamp(indices)
         decord_ts_us = (ts_pair[:, 0] * 1e6).astype(np.int64)
 
+        get_total_cpu_utilization() # Initialize
         bmf_start = time.perf_counter()
         bmf_ts_us = self._bmf_extract_timestamps_us(video_path, extract_params)
         bmf_time = time.perf_counter() - bmf_start
+        bmf_cpu = get_total_cpu_utilization()
 
         if len(bmf_ts_us) != len(decord_ts_us):
             print(f"Length mismatch: BMF {len(bmf_ts_us)} vs Decord {len(decord_ts_us)}")
@@ -181,7 +194,8 @@ class TestDecordDecoder(BaseTestCase):
         self.assertTrue(bmf_time > 0)
         
         # Store performance data
-        performance_ratio = bmf_time / max(decord_time, 1e-6)
+        time_ratio = bmf_time / max(decord_time, 1e-6)
+        cpu_ratio = bmf_cpu / max(decord_cpu, 1e-6)
         TestDecordDecoder.performance_data.append({
             "test_type": "sampling_comparison",
             "video": os.path.basename(video_path),
@@ -189,7 +203,10 @@ class TestDecordDecoder(BaseTestCase):
             "params": str(extract_params),
             "bmf_time_s": bmf_time,
             "decord_time_s": decord_time,
-            "ratio": performance_ratio,
+            "bmf_cpu_util": bmf_cpu,
+            "decord_cpu_util": decord_cpu,
+            "time_ratio": time_ratio,
+            "cpu_ratio": cpu_ratio,
             "frames_extracted": len(bmf_ts_us)
         })
         
@@ -204,8 +221,14 @@ class TestDecordDecoder(BaseTestCase):
             bmf_time,
             "decord_s",
             decord_time,
-            "ratio",
-            performance_ratio,
+            "bmf_cpu",
+            bmf_cpu,
+            "decord_cpu",
+            decord_cpu,
+            "time_ratio",
+            time_ratio,
+            "cpu_ratio",
+            cpu_ratio,
         )
 
     def _bmf_extract_timestamps_us(self, video_path, extract_params):
@@ -245,10 +268,12 @@ class TestDecordDecoder(BaseTestCase):
         video_paths = self._get_video_paths()
         long_video_path = video_paths["1min"]
         n_total, avg_fps, duration = self._get_meta(long_video_path)
+        get_total_cpu_utilization() # Initialize
         naive_start = time.perf_counter()
         naive_timestamps = bmf_decode_timestamps({"input_path": long_video_path})
         naive_time = time.perf_counter() - naive_start
-        print(f"Naive: {len(naive_timestamps)} frames, {naive_time:.3f}s")
+        naive_cpu = get_total_cpu_utilization()
+        print(f"Naive: {len(naive_timestamps)} frames, {naive_time:.3f}s, CPU: {naive_cpu:.2f}%")
         
         # Store naive performance data
         TestDecordDecoder.performance_data.append({
@@ -258,7 +283,10 @@ class TestDecordDecoder(BaseTestCase):
             "params": "full_decode",
             "bmf_time_s": naive_time,
             "decord_time_s": 0.0,
-            "ratio": 0.0,
+            "bmf_cpu_util": naive_cpu,
+            "decord_cpu_util": 0.0,
+            "time_ratio": 0.0,
+            "cpu_ratio": 0.0,
             "frames_extracted": len(naive_timestamps),
             "speedup": 1.0
         })
@@ -272,6 +300,7 @@ class TestDecordDecoder(BaseTestCase):
             if n_frames > n_total:
                 continue
             with self.subTest(n_frames=n_frames):
+                get_total_cpu_utilization() # Initialize
                 sampling_start = time.perf_counter()
                 sampling_param = {
                     "input_path": long_video_path,
@@ -279,8 +308,9 @@ class TestDecordDecoder(BaseTestCase):
                 }
                 sampling_timestamps = bmf_decode_timestamps(sampling_param)
                 sampling_time = time.perf_counter() - sampling_start
+                sampling_cpu = get_total_cpu_utilization()
                 speedup = naive_time / max(sampling_time, 1e-6)
-                print(f"Sample {n_frames}: {sampling_time:.3f}s, {speedup:.2f}x")
+                print(f"Sample {n_frames}: {sampling_time:.3f}s, CPU: {sampling_cpu:.2f}%, {speedup:.2f}x")
                 
                 # Store sampling performance data
                 TestDecordDecoder.performance_data.append({
@@ -290,7 +320,10 @@ class TestDecordDecoder(BaseTestCase):
                     "params": f"n_frames={n_frames}",
                     "bmf_time_s": sampling_time,
                     "decord_time_s": 0.0,
-                    "ratio": 0.0,
+                    "bmf_cpu_util": sampling_cpu,
+                    "decord_cpu_util": 0.0,
+                    "time_ratio": 0.0,
+                    "cpu_ratio": 0.0,
                     "frames_extracted": n_frames,
                     "speedup": speedup
                 })
@@ -447,31 +480,35 @@ class TestDecordDecoder(BaseTestCase):
             # Print sampling comparison table
             if "sampling_comparison" in grouped_data:
                 print("\nSampling Comparison (BMF vs Decord):")
-                print("| Video | Mode | Params | Frames | BMF Time (s) | Decord Time (s) | Ratio |")
-                print("|-------|------|--------|--------|--------------|-----------------|-------|")
+                print("| Video | Mode | Params | Frames | BMF Time (s) | Decord Time (s) | Time Ratio | BMF CPU (%) | Decord CPU (%) | CPU Ratio |")
+                print("|-------|------|--------|--------|--------------|-----------------|------------|-------------|----------------|-----------|")
                 for entry in grouped_data["sampling_comparison"]:
                     video = entry["video"]
                     mode = entry["mode"]
-                    params = entry["params"][:30]  # Truncate long params
+                    params = entry["params"][:20]  # Truncate long params
                     frames = entry["frames_extracted"]
                     bmf_time = f"{entry['bmf_time_s']:.3f}"
                     decord_time = f"{entry['decord_time_s']:.3f}"
-                    ratio = f"{entry['ratio']:.2f}"
-                    print(f"| {video} | {mode} | {params} | {frames} | {bmf_time} | {decord_time} | {ratio} |")
+                    bmf_cpu = f"{entry['bmf_cpu_util']:.2f}"
+                    decord_cpu = f"{entry['decord_cpu_util']:.2f}"
+                    time_ratio = f"{entry['time_ratio']:.2f}"
+                    cpu_ratio = f"{entry['cpu_ratio']:.2f}"
+                    print(f"| {video} | {mode} | {params} | {frames} | {bmf_time} | {decord_time} | {time_ratio} | {bmf_cpu} | {decord_cpu} | {cpu_ratio} |")
             
             # Print naive vs sampling performance table
             if "naive_vs_sampling" in grouped_data:
                 print("\nNaive vs N-Frames Seek-Based Sampling Performance:")
-                print("| Video | Mode | Params | Frames | BMF Time (s) | Speedup |")
-                print("|-------|------|--------|--------|--------------|---------|")
+                print("| Video | Mode | Params | Frames | BMF Time (s) | BMF CPU (%) | Speedup |")
+                print("|-------|------|--------|--------|--------------|-------------|---------|")
                 for entry in grouped_data["naive_vs_sampling"]:
                     video = entry["video"]
                     mode = entry["mode"]
-                    params = entry["params"][:30]  # Truncate long params
+                    params = entry["params"][:20]  # Truncate long params
                     frames = entry["frames_extracted"]
                     bmf_time = f"{entry['bmf_time_s']:.3f}"
+                    bmf_cpu = f"{entry['bmf_cpu_util']:.2f}"
                     speedup = f"{entry.get('speedup', 0):.2f}x" if entry.get('speedup') else "N/A"
-                    print(f"| {video} | {mode} | {params} | {frames} | {bmf_time} | {speedup} |")
+                    print(f"| {video} | {mode} | {params} | {frames} | {bmf_time} | {bmf_cpu} | {speedup} |")
 
 if __name__ == "__main__":
     unittest.main()

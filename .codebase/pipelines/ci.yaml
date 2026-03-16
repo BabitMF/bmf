@@ -30,7 +30,7 @@ jobs:
           - apt-get update
           - apt-get install -y protobuf-compiler libgflags-dev libdw-dev libgoogle-glog-dev
           - pip3 install --upgrade pip
-          - pip3 install timeout_decorator onnxruntime==1.18.0 numpy==1.26.4 requests opencv-python librosa decord
+          - pip3 install timeout_decorator onnxruntime==1.18.0 numpy==1.26.4 requests opencv-python librosa decord psutil
           - echo "build finished"
       - uses: actions/setup-proxy
       - name: run_test

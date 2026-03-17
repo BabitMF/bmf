@@ -172,10 +172,10 @@ jobs:
           eval "$(./win_env/vcvarsall.sh x64)"
           export INCLUDE="${INCLUDE};C:\\msys64\\usr\\local\\include"
           pacman -S unzip ca-certificates --noconfirm
-          wget https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2024-03-31-17-28/ffmpeg-n4.4.4-94-g5d07afd482-win64-gpl-shared-4.4.zip --no-check-certificate
-          unzip ffmpeg-n4.4.4-94-g5d07afd482-win64-gpl-shared-4.4.zip
+          wget https://github.com/GyanD/codexffmpeg/releases/download/4.4.1/ffmpeg-4.4.1-full_build.zip --no-check-certificate
+          unzip ffmpeg-4.4.1-full_build.zip
           mkdir -p /usr/local
-          cp -r ffmpeg-n4.4.4-94-g5d07afd482-win64-gpl-shared-4.4/* /usr/local/
+          cp -r ffmpeg-4.4.1-full_build/* /usr/local/
           ./build_win_lite.sh --msvc=2019 --preset=x64-Release bmf_ffmpeg
           cmake --build build_win_lite/x64-Release --config Release --target ALL_BUILD
           cmake --build build_win_lite/x64-Release --config Release --target ALL_BUILD

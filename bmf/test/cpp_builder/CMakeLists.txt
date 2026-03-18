@@ -1,7 +1,10 @@
 
 file(GLOB SRCS *.cpp *.h)
 
-find_package(OpenSSL 3.0 REQUIRED)
+find_package(OpenSSL 3.0 QUIET)
+if(NOT OpenSSL_FOUND)
+    find_package(OpenSSL REQUIRED)
+endif()
 
 add_executable(test_cpp_builder ${SRCS})
 

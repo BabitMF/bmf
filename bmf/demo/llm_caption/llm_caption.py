@@ -1,5 +1,5 @@
 from bmf import VideoFrame, Module, Timestamp, ProcessResult, Packet
-import bmf.hml.hmp as mp
+import bmf.hmp as mp
 from PIL import Image
 import numpy as np
 import os

@@ -21,6 +21,65 @@ from base_test.base_test_case import BaseTestCase
 from base_test.media_info import MediaInfo
 
 
+class OutputQueue(list):
+
+    def put(self, packet):
+        self.append(packet)
+
+
+class EofTask:
+
+    def __init__(self):
+        self.output_queue = OutputQueue()
+        self.timestamp = None
+
+    def get_inputs(self):
+        return {}
+
+    def get_outputs(self):
+        return {0: self.output_queue}
+
+    def set_timestamp(self, timestamp):
+        self.timestamp = timestamp
+
+
+class EofGraph:
+
+    def __init__(self):
+        self.packet = bmf.Packet.generate_eof_packet()
+        self.force_closed = False
+
+    def poll_packet(self, stream):
+        packet, self.packet = self.packet, None
+        return packet
+
+    def force_close(self):
+        self.force_closed = True
+
+
+class TestSubgraphEofHandling(unittest.TestCase):
+
+    def test_process_closes_after_all_outputs_reach_eof(self):
+        graph = EofGraph()
+        task = EofTask()
+        subgraph = object.__new__(bmf.SubGraph)
+        subgraph.graph = graph
+        subgraph.inputs = []
+        subgraph.output_streams = [object()]
+        subgraph.stream_done = {}
+        subgraph.node_id_ = 0
+
+        result = subgraph.process(task)
+
+        self.assertEqual(result, bmf.ProcessResult.OK)
+        self.assertEqual(task.timestamp, bmf.Timestamp.DONE)
+        self.assertTrue(graph.force_closed)
+        self.assertIsNone(subgraph.graph)
+        self.assertEqual(len(task.output_queue), 2)
+        for packet in task.output_queue:
+            self.assertEqual(packet.get_timestamp(), bmf.Timestamp.EOF)
+
+
 class TestSubgraph(BaseTestCase):
 
     @timeout_decorator.timeout(seconds=120)

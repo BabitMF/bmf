@@ -1,4 +1,5 @@
 import abc
+from bmf.lib._bmf.sdk import Packet
 from .module import Module, ProcessResult
 from .utils import Log, LogLevel
 from .timestamp import Timestamp

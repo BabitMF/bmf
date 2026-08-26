@@ -114,8 +114,32 @@ int install_module(const bmf_sdk::ModuleInfo &info, bool force) {
                  (module_file + bmf_sdk::SharedLibrary::default_extension()))
                     .string();
         } else {
+            // python module
             module_file =
                 (fs::path(info.module_path) / (module_file + ".py")).string();
+            if (fs::exists(module_file)) {
+                // validate python syntax before installing
+                std::string check_cmd =
+                    "python3 -m py_compile \"" + module_file + "\" 2>&1";
+                FILE *pipe = popen(check_cmd.c_str(), "r");
+                if (pipe) {
+                    char buffer[256];
+                    std::string result;
+                    while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+                        result += buffer;
+                    }
+                    int status = pclose(pipe);
+                    if (status != 0) {
+                        BMFLOG(BMF_ERROR)
+                            << "Python syntax check failed for: "
+                            << module_file << std::endl;
+                        if (!result.empty()) {
+                            BMFLOG(BMF_ERROR) << result << std::endl;
+                        }
+                        return -1;
+                    }
+                }
+            }
         }
         if (!fs::exists(module_file)) {
             BMFLOG(BMF_ERROR)

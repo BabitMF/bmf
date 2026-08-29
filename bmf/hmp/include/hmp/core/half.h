@@ -72,6 +72,11 @@ struct alignas(2) Half {
 
 }; // Half
 
+template<typename T>
+typename std::enable_if<std::is_base_of<Half, T>::value, float>::type format_as(T t) {
+    return float(t);
+}
+
 // CUDA intrinsics
 
 #if (defined(__CUDA_ARCH__) && (__CUDA_ARCH__ >= 350)) ||                      \

@@ -17,8 +17,9 @@
 #include <string_view>
 #include <mutex>
 #include <fmt/format.h>
-#include <hmp/core/logging.h>
 #include <hmp/core/device.h>
+#include <hmp/core/logging.h>
+#include <hmp/format.h>
 
 namespace hmp {
 

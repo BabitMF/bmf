@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 #include <mutex>
+#include <hmp/format.h>
 #include <hmp/core/stream.h>
 
 namespace hmp {

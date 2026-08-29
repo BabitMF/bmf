@@ -22,7 +22,7 @@ PLAT_TO_CMAKE = {
     "win-arm64": "ARM64",
 }
 
-package_version="0.2.0"
+package_version="0.2.1"
 
 NAMESPACE = os.environ.get("BMF_PACKAGE_NAMESPACE", "")
 PACKAGE_NAME = os.environ.get("BMF_PACKAGE_NAME_OVERRIDE", "BabitMF")

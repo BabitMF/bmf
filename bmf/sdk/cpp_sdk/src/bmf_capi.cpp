@@ -653,3 +653,13 @@ int bmf_module_functor_dynamic_reset(bmf_ModuleFunctor mf, const char* option)
     return 0;
 
 }
+
+int bmf_module_functor_flush(bmf_ModuleFunctor mf)
+{
+    BMF_PROTECT(
+        Module& md = mf->module();
+        return md.flush();
+    )
+    return 0;
+
+}

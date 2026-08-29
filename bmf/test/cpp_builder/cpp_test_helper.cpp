@@ -170,34 +170,39 @@ bool MediaInfo::MediaCompareEquals(std::string expected) {
     return true;
 }
 
-bool MediaInfo::MediaCompareMD5(const std::string &md5) {
+bool MediaInfo::MediaCompareEVP(const std::string &evp) {
 
-    std::string md5_value;
+    std::string evp_value;
 
     std::ifstream file(filePath.c_str(), std::ifstream::binary);
     if (!file) {
         return false;
     }
-    MD5_CTX md5Context;
-    MD5_Init(&md5Context);
+    EVP_MD_CTX *evpContext = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(evpContext, EVP_md5(), NULL);
     char buf[1024 * 16];
     while (file.good()) {
         file.read(buf, sizeof(buf));
-        MD5_Update(&md5Context, buf, file.gcount());
+        EVP_DigestUpdate(evpContext, buf, file.gcount());
     }
+    int md_length = EVP_MD_CTX_size(evpContext);
 
-    unsigned char result[MD5_DIGEST_LENGTH];
-    MD5_Final(result, &md5Context);
+    unsigned char *result = (unsigned char * ) OPENSSL_malloc(md_length);
+    unsigned int result_length;
+    EVP_DigestFinal_ex(evpContext, result, &result_length);
 
     char hex[35];
     memset(hex, 0, sizeof(hex));
-    for (int i = 0; i < MD5_DIGEST_LENGTH; ++i) {
+    for (int i = 0; i < result_length; ++i) {
         sprintf(hex + i * 2, "%02x", result[i]);
     }
+    
     hex[32] = '\0';
-    md5_value = std::string(hex);
-
-    if (md5_value.compare(md5) == 0) {
+    evp_value = std::string(hex);
+    
+    OPENSSL_free(result);
+    EVP_MD_CTX_free(evpContext);
+    if (evp_value.compare(evp) == 0) {
         return true;
     }
 

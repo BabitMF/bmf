@@ -30,7 +30,7 @@ jobs:
           - apt-get update
           - apt-get install -y protobuf-compiler libgflags-dev libdw-dev libgoogle-glog-dev
           - pip3 install --upgrade pip
-          - pip3 install timeout_decorator onnxruntime==1.18.0 numpy==1.26.4 requests opencv-python librosa
+          - pip3 install timeout_decorator onnxruntime==1.18.0 numpy==1.26.4 requests opencv-python librosa decord psutil
           - echo "build finished"
       - uses: actions/setup-proxy
       - name: run_test
@@ -63,6 +63,7 @@ jobs:
           - (cd output/test/run_by_config           && python3 test_run_by_config.py)
           - (cd output/test/server                  && python3 test_server.py)
           - (cd output/test/c_module                && python3 test_video_c_module.py)
+          - (cd output/test/decord_decoder          && python3 test_decord_decoder.py)
           - (cd output/test/dynamical_graph         && python3 dynamical_graph.py)
           - (cd output/test/av_log_buffer           && python3 test_av_log_buffer.py)
           - (cd output/test/push_data_into_graph    && python3 test_push_data.py)
@@ -171,10 +172,10 @@ jobs:
           eval "$(./win_env/vcvarsall.sh x64)"
           export INCLUDE="${INCLUDE};C:\\msys64\\usr\\local\\include"
           pacman -S unzip ca-certificates --noconfirm
-          wget https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2024-03-31-17-28/ffmpeg-n4.4.4-94-g5d07afd482-win64-gpl-shared-4.4.zip --no-check-certificate
-          unzip ffmpeg-n4.4.4-94-g5d07afd482-win64-gpl-shared-4.4.zip
+          wget https://github.com/GyanD/codexffmpeg/releases/download/4.4.1/ffmpeg-4.4.1-full_build.zip --no-check-certificate
+          unzip ffmpeg-4.4.1-full_build.zip
           mkdir -p /usr/local
-          cp -r ffmpeg-n4.4.4-94-g5d07afd482-win64-gpl-shared-4.4/* /usr/local/
+          cp -r ffmpeg-4.4.1-full_build/* /usr/local/
           ./build_win_lite.sh --msvc=2019 --preset=x64-Release bmf_ffmpeg
           cmake --build build_win_lite/x64-Release --config Release --target ALL_BUILD
           cmake --build build_win_lite/x64-Release --config Release --target ALL_BUILD
@@ -251,6 +252,8 @@ jobs:
             ./Miniconda3-latest-Linux-x86_64.sh -b
             export PATH=\"/root/miniconda3/bin:\$PATH\"
             source /root/miniconda3/bin/activate
+            conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+            conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
             conda create -n myenv python=3.12 numpy=2.0 -y
             conda init
             conda activate myenv

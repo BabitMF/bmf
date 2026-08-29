@@ -61,6 +61,7 @@ void engine_bind(py::module &m) {
         .def_nogil("init", &BMFModule::init)
         .def_nogil("close", &BMFModule::close)
         .def_nogil("dynamic_reset", &BMFModule::dynamic_reset)
+        .def_nogil("flush", &BMFModule::flush)
     ;
 
     py::class_<BMFCallback>(m, "Callback")

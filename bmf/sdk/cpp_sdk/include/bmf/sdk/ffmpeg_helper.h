@@ -333,10 +333,12 @@ static VideoFrame reformat(const VideoFrame &vf, const std::string &format_str,
 
     auto dst_vf = to_video_frame(result_frames[0], false);
 
+    //if we just do reformat, we could copy timebase
+    dst_vf.set_time_base(vf.time_base());
+
     av_frame_free(&result_frames[0]);
     av_frame_free(&av_frame);
 
-    dst_vf.copy_props(vf);
     return dst_vf;
 }
 
@@ -369,7 +371,7 @@ static VideoFrame siso_filter(const VideoFrame &vf, const std::string &filter_st
     av_frame_free(&result_frames[0]);
     av_frame_free(&av_frame);
 
-    dst_vf.copy_props(vf);
+    //dst_vf.copy_props(vf);
     return dst_vf;
 }
 

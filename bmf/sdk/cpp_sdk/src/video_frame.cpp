@@ -100,6 +100,9 @@ VideoFrame &VideoFrame::copy_props(const VideoFrame &from, bool copy_private) {
     OpaqueDataSet::copy_props(from);
     SequenceData::copy_props(from);
     Future::copy_props(from);
+
+    self->frame.copy_props(from.frame());
+
     return *this;
 }
 

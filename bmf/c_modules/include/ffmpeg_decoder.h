@@ -95,6 +95,13 @@ class CFFDecoder : public Module {
     int64_t last_ts_;
     int64_t ts_offset_;
     std::vector<double> durations_;
+    double filter_fps_ = 0;
+    int filter_crop_x_ = 0;
+    int filter_crop_y_ = 0;
+    int filter_crop_w_ = 0;
+    int filter_crop_h_ = 0;
+    int filter_scale_w_ = 0;
+    int filter_scale_h_ = 0;
     int idx_dur_;
     bool dur_end_[2];
     AVRational video_time_base_;
@@ -141,7 +148,19 @@ class CFFDecoder : public Module {
     std::mutex process_mutex_;
     std::thread exec_thread_;
     Task task_;
+    bool disable_seek_ = false;
+    size_t num_seeks_ = 0;
+    size_t num_sent_before_target_ = 0;
+    size_t num_recv_before_target_ = 0;
     double extract_frames_fps_ = 0;
+    int extract_frames_n_frames_ = 0;
+    std::vector<int> extract_frames_frame_indexes_ = {};
+    std::vector<int64_t> target_frames_pts_ = {};
+    size_t target_frames_index_ = 0;
+    int64_t current_target_pts_ = 0;
+    int64_t last_keyframe_pts_ = 0;
+    int64_t last_keyframe_duration_pts_ = 0;
+    bool seek_decode_mode_enabled_ = false;
     std::string extract_frames_device_;
     std::shared_ptr<VideoSync> video_sync_ = NULL;
     bool start_decode_flag_ = false;
@@ -199,6 +218,8 @@ class CFFDecoder : public Module {
     int process_task_output_packet(int index, Packet &packet);
     int64_t get_start_time();
     int extract_frames(AVFrame *frame, std::vector<AVFrame *> &output_frames);
+    void init_target_frames(AVStream *vid_stream);
+    int seek_start(bool force = false);
 
 #ifdef BMF_USE_MEDIACODEC
     int init_android_vm();

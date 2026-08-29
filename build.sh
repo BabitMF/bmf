@@ -80,7 +80,7 @@ while [ $# -gt 0 ]; do
             LOCAL_BUILD=OFF
         ;;
         disable_cuda)
-            CUDA_ENABLE=OFF
+            cmake_args="${cmake_args} -DBMF_ENABLE_CUDA=OFF"
         ;;
         clang)
             # NOTE: fuzz tests will be compiled in "Unit test mode"
@@ -99,9 +99,8 @@ while [ $# -gt 0 ]; do
             if [[ -x "$(command -v clang)" && -x "$(command -v clang++)" ]]; then
                 # Release mode optimisations with debug symbols
                 BUILD_TYPE="RelWithDebug"
-                CUDA_ENABLE=OFF # CUDA not supported in fuzzing mode
                 FUZZING_MODE=ON 
-                cmake_args="${cmake_args} -DCMAKE_C_COMPILER=$(which clang) -DCMAKE_CXX_COMPILER=$(which clang++) -DFUZZTEST_FUZZING_MODE=on"
+                cmake_args="${cmake_args} -DCMAKE_C_COMPILER=$(which clang) -DCMAKE_CXX_COMPILER=$(which clang++) -DFUZZTEST_FUZZING_MODE=on -DBMF_ENABLE_CUDA=OFF"
                 add_sanitizer "address"
             else 
                 echo "ERROR: clang/clang++ compiler not found. \nTo run clang_fuzz mode, you must first install clang and llvm compiler tools. \nRun `apt install -y lld llvm llvm-dev clang`"

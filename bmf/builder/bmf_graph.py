@@ -816,6 +816,28 @@ class BmfGraph:
 
         self.exec_graph_.close()
 
+    def start_multiple_streams(self, streams, is_sub_graph=False):
+        self.output_streams_.extend(streams)
+
+        # create a edge connected with stream and graph output stream
+        for idx, stream in enumerate(streams):
+            graph_output_stream = BmfStream(stream.get_name(), None, idx)
+            edge = BmfEdge(stream, graph_output_stream)
+            stream.get_node().add_outgoing_edge(edge)
+        self.mode = GraphMode.GENERATOR
+
+        # parse graph config
+        self.graph_config_, self.pre_module = self.generate_graph_config()
+
+        # for sub-graph, don't start executing
+        if is_sub_graph:
+            return
+
+        # create and run graph
+        graph_config_str = self.graph_config_.dump()
+        self.exec_graph_ = engine.Graph(graph_config_str, False, True)
+        self.exec_graph_.start()
+
     ## @ingroup pyAPI
     ## @ingroup grphClass
     ###@{

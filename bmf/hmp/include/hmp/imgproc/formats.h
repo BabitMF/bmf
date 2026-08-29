@@ -261,6 +261,8 @@ class HMP_API PixelInfo {
 
     const ColorModel &color_model() const { return color_model_; }
 
+    void set_color_model(ColorModel cm) { color_model_ = cm; }
+
     bool is_rgbx() const;
 
     const int &alignment() const { return align_; }

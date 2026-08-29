@@ -570,7 +570,8 @@ class TestTranscode(BaseTestCase):
                 'input_path': "../../files/big_bunny_10s_30fps.mp4",
                 "video_params": {
                     "extract_frames": {
-                        "fps": 0.5
+                        "fps": 0.5,
+                        "disable_seek": True,
                     }
                 }
             })['video'].start()  # this will return a packet generator
@@ -585,7 +586,7 @@ class TestTranscode(BaseTestCase):
                 # we can add some more processing here, e.g. predicting
             else:
                 break
-        assert (num == 6)
+        self.assertEqual(num, 6)
 
     @timeout_decorator.timeout(seconds=120)
     def test_incorrect_stream_notify(self):

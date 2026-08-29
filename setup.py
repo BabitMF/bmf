@@ -89,7 +89,7 @@ class CMakeBuild(build_ext):
         # Can be set with Conda-Build, for example.
         cmake_generator = os.environ.get("CMAKE_GENERATOR", "")
 
-        sha = os.environ.get("GIT_SHA")
+        sha = os.environ.get("GIT_SHA", "")
         short_sha = sha[:7]
 
         # Set Python_EXECUTABLE instead if you use PYBIND11_FINDPYTHON

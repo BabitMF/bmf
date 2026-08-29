@@ -3,6 +3,7 @@ add_subdirectory(sdk)
 #add_subdirectory(go_module_sdk) #FIXME: compile failed
 add_subdirectory(engine)
 add_subdirectory(c_modules)
+
 if (NOT EMSCRIPTEN)
     add_subdirectory(python_modules)
     # XXX: no go modules now
@@ -45,21 +46,12 @@ else()
     )
 endif()
 
-if(NOT WIN32)
-    add_custom_command(
-        OUTPUT
-            ${CMAKE_CURRENT_BINARY_DIR}/__always_update
-            ${CMAKE_CURRENT_BINARY_DIR}/always_update
-        COMMAND touch ${CMAKE_CURRENT_BINARY_DIR}/always_update
-    )
-else()
-    add_custom_command(
-            OUTPUT
-            ${CMAKE_CURRENT_BINARY_DIR}/__always_update
-            ${CMAKE_CURRENT_BINARY_DIR}/always_update
-            COMMAND copy /Y NUL \"${CMAKE_CURRENT_BINARY_DIR}/always_update\"
-    )
-endif()
+add_custom_command(
+    OUTPUT  
+        ${CMAKE_CURRENT_BINARY_DIR}/__always_update
+        ${CMAKE_CURRENT_BINARY_DIR}/always_update
+    COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_BINARY_DIR}/always_update
+)
 
 function(copy_dir_to_bmf_module)
     if(ARGV1)
@@ -81,16 +73,16 @@ if(NOT IOS)
     copy_dir_to_bmf_module(modules)
     copy_dir_to_bmf_module(python_sdk)
     copy_dir_to_bmf_module(server)
-    copy_dir_to_bmf_module(sdk/cpp_sdk/include include)
     copy_dir_to_bmf_module(engine/connector/include include)
     if(BMF_ENABLE_TEST)
         copy_dir_to_bmf_module(demo ../demo)
         copy_dir_to_bmf_module(test ../test)
         copy_dir_to_bmf_module(engine/c_engine/files files)
     endif()
-else()
-    copy_dir_to_bmf_module(sdk/cpp_sdk/include include)
 endif()
+
+copy_dir_to_bmf_module(sdk/cpp_sdk/include include)
+copy_dir_to_bmf_module(cmd)
 
 #### 
 if(ANDROID)
@@ -149,7 +141,6 @@ endif()
 
 # COPY hmp related resources
 set(HMP_ROOT ${PROJECT_SOURCE_DIR}/bmf/hmp)
-
 add_custom_command(TARGET bmf_assem
     POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:hmp> ${BMF_ASSEMBLE_ROOT}/bmf/lib
@@ -164,25 +155,19 @@ endif()
 
 ## copy symbol link of hmp and _jhmp
 if(NOT APPLE AND NOT ANDROID AND NOT EMSCRIPTEN)
-    if(WIN32)
-        add_custom_command(TARGET bmf_assem
-            POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy
-                $<TARGET_FILE_DIR:hmp>/${CMAKE_SHARED_LIBRARY_PREFIX}hmp${CMAKE_SHARED_LIBRARY_SUFFIX} ${BMF_ASSEMBLE_ROOT}/bmf/lib
-        )
-    else()
-        add_custom_command(TARGET bmf_assem
-            POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy
-                $<TARGET_FILE_DIR:hmp>/${CMAKE_SHARED_LIBRARY_PREFIX}hmp${CMAKE_SHARED_LIBRARY_SUFFIX}* ${BMF_ASSEMBLE_ROOT}/bmf/lib
-        )
-    endif()
+    add_custom_command(TARGET bmf_assem
+        POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory
+            $<TARGET_FILE_DIR:hmp>/
+            ${BMF_ASSEMBLE_ROOT}/bmf/lib/
+    )
 
     if(BMF_ENABLE_JNI)
         add_custom_command(TARGET bmf_assem
             POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy
-                $<TARGET_FILE_DIR:_jhmp>/${CMAKE_SHARED_LIBRARY_PREFIX}_jhmp${CMAKE_SHARED_LIBRARY_SUFFIX}* ${BMF_ASSEMBLE_ROOT}/bmf/lib
+                COMMAND ${CMAKE_COMMAND} -E copy_directory
+                $<TARGET_FILE_DIR:_jhmp>/
+                ${BMF_ASSEMBLE_ROOT}/bmf/lib/
         )
     endif()
 endif()
@@ -225,7 +210,6 @@ if(TARGET _hmp)
                         ${CMAKE_CURRENT_SOURCE_DIR}/hmp/tracer.py
                         ${BMF_ASSEMBLE_ROOT}/bmf/hmp/)
 endif()
-
 
 if(IOS)
     if(BUILD_SHARED_LIBS OR NOT BMF_LOCAL_DEPENDENCIES)

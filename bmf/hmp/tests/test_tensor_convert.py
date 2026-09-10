@@ -50,6 +50,16 @@ def test_tensor_device_convert(device_type, device_type2):
     assert ((b == d).all())
 
 
+@pytest.mark.skipif(not has_cuda, reason="CUDA is required")
+def test_tensor_dlpack_cuda_stream():
+    stream = mp.create_stream(mp.kCUDA)
+    if stream.handle() <= (1 << 31) - 1:
+        pytest.skip("CUDA stream handle does not exceed INT_MAX")
+
+    tensor = mp.empty((1,), device=mp.kCUDA, dtype=mp.kFloat32)
+    assert tensor.__dlpack__(stream=stream.handle()) is not None
+
+
 class TestWithHalf(object):
 
     @pytest.fixture

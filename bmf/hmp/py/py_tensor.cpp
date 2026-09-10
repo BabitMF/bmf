@@ -308,7 +308,7 @@ void tensorBind(py::module &m) {
              })
         .def(
             "__dlpack__",
-            [](const Tensor &self, const int stream) {
+            [](const Tensor &self, const int64_t stream) {
                 DLManagedTensor *dlMTensor = to_dlpack(self);
                 py::capsule cap(dlMTensor, "dltensor", [](PyObject *ptr) {
                     if (PyCapsule_IsValid(ptr, "dltensor")) {

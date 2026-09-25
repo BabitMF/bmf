@@ -24,7 +24,11 @@
 #include <bmf/sdk/trace.h>
 #include <bmf/sdk/bmf_stat.h>
 
+#include <algorithm>
 #include <csignal>
+#include <atomic>
+#include <mutex>
+#include <thread>
 #include <iomanip>
 #include <iostream>
 
@@ -34,26 +38,89 @@
 
 BEGIN_BMF_ENGINE_NS
 USE_BMF_SDK_NS
-std::vector<Graph *> g_ptr;
 
-void terminate(int signum) {
-    std::cout << "terminated, ending bmf gracefully..." << std::endl;
-    for (auto p : g_ptr)
-        p->quit_gracefully();
+namespace {
+    std::vector<Graph *> g_graphs;
+    std::mutex g_graphs_mutex;
+    std::atomic<bool> g_shutdown_requested{false};
+    std::atomic<bool> g_cleanup_started{false};
+    std::atomic<int> g_signal_count{0};
+    volatile std::sig_atomic_t g_signal_number = 0;
+
+    void force_exit_handler(int signum) {
+        const char msg[] = "\nBMF: Force exiting (received second signal)...\n";
+        (void)!write(STDERR_FILENO, msg, sizeof(msg) - 1);
+        _exit(128 + signum);
+    }
+
+    void async_cleanup() {
+        std::cerr << "quitting..." << std::endl;
+        std::vector<Graph *> graphs_copy;
+        {
+            std::lock_guard<std::mutex> lock(g_graphs_mutex);
+            graphs_copy = g_graphs;
+        }
+        for (auto g : graphs_copy) {
+            if (g) {
+                g->print_node_info_pretty();
+                g->force_close();
+            }
+        }
+    }
+
+    void signal_handler(int signum) {
+        int count = ++g_signal_count;
+        g_signal_number = signum;
+
+        if (count == 1) {
+            g_shutdown_requested.store(true, std::memory_order_release);
+            const char msg[] = "\nBMF: Shutdown requested, finishing gracefully... (press Ctrl+C again to force exit)\n";
+            (void)!write(STDERR_FILENO, msg, sizeof(msg) - 1);
+
+            bool expected = false;
+            if (g_cleanup_started.compare_exchange_strong(expected, true)) {
+                std::thread cleanup_thread(async_cleanup);
+                cleanup_thread.detach();
+            }
+        } else if (count >= 2) {
+            force_exit_handler(signum);
+        }
+    }
+
+    bool setup_signal_handler(int signum) {
+        struct sigaction sa;
+        sa.sa_handler = signal_handler;
+        sigemptyset(&sa.sa_mask);
+        sigaddset(&sa.sa_mask, SIGINT);
+        sigaddset(&sa.sa_mask, SIGTERM);
+        sigaddset(&sa.sa_mask, SIGHUP);
+        sa.sa_flags = 0;
+        return sigaction(signum, &sa, nullptr) == 0;
+    }
+
+    void install_signal_handlers() {
+        setup_signal_handler(SIGINT);
+        setup_signal_handler(SIGTERM);
+        setup_signal_handler(SIGHUP);
+    }
 }
 
-void interrupted(int signum) {
-    std::cout << "interrupted, ending bmf gracefully..." << std::endl;
-    for (auto p : g_ptr)
-        p->quit_gracefully();
+void Graph::quit_gracefully() {
+    std::cerr << "quitting..." << std::endl;
+    std::lock_guard<std::mutex> lock(g_graphs_mutex);
+    for (auto g : g_graphs) {
+        g->print_node_info_pretty();
+        g->force_close();
+    }
 }
 
 Graph::Graph(
     GraphConfig graph_config,
     std::map<int, std::shared_ptr<Module>> pre_modules,
     std::map<int, std::shared_ptr<ModuleCallbackLayer>> callback_bindings) {
-    std::signal(SIGTERM, terminate);
-    std::signal(SIGINT, interrupted);
+    std::lock_guard<std::mutex> lock(g_graphs_mutex);
+    g_graphs.push_back(this);
+    install_signal_handlers();
     configure_bmf_log();
     BMFLOG(BMF_INFO) << "BMF Version: " << BMF_VERSION;
     BMFLOG(BMF_INFO) << "BMF Commit: " << BMF_COMMIT;
@@ -75,7 +142,6 @@ Graph::Graph(
 
     BMF_TRACE(GRAPH_START, "Init");
     init(graph_config, pre_modules, callback_bindings);
-    g_ptr.push_back(this);
 }
 
 void Graph::init(
@@ -875,7 +941,13 @@ int Graph::close() {
                      "information to debug or optimze the graph..."
                   << std::endl;
 
-    g_ptr.clear();
+    {
+        std::lock_guard<std::mutex> lock(g_graphs_mutex);
+        auto it = std::find(g_graphs.begin(), g_graphs.end(), this);
+        if (it != g_graphs.end()) {
+            g_graphs.erase(it);
+        }
+    }
 
     if (scheduler_->eptr_) {
         auto graph_info = status();
@@ -1008,18 +1080,18 @@ void Graph::print_node_info_pretty() {
 #undef LEFTW
 }
 
-void Graph::quit_gracefully() {
-    std::cerr << "quitting..." << std::endl;
-    for (auto g : g_ptr) {
-        g->print_node_info_pretty();
-        g->force_close();
-    }
-}
-
 Graph::~Graph() {
     BMF_TRACE(GRAPH_END, "End");
 
-    if (not exception_from_scheduler_)
+    {
+        std::lock_guard<std::mutex> lock(g_graphs_mutex);
+        auto it = std::find(g_graphs.begin(), g_graphs.end(), this);
+        if (it != g_graphs.end()) {
+            g_graphs.erase(it);
+        }
+    }
+
+    if (scheduler_ && not exception_from_scheduler_)
         scheduler_->close();
 }
 
